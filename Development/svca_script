@@ -1,0 +1,24 @@
+#!/bin/sh
+#PBS -q normal
+#PBS -N "svca"
+#PBS -l select=1:ncpus=1:mem=50GB
+#PBS -l walltime=30:00:00
+
+#PBS -e /home/jun.xu/logs
+#PBS -o /home/jun.xu/logs
+
+source activate jon
+
+cd /home/jun.xu/spa/mouse_brain/data/hpdt_count_tables
+
+for file in *.tsv
+do
+    cd /home/jun.xu/spa/mouse_brain/data/hpdt_count_tables
+    name=`basename $file .tsv`
+    folder=/home/jun.xu/spa/mouse_brain/cell-cell_interactions/$name
+    mkdir $folder
+    cut -f1 $file | sed '/^$/d' | sed 's/x/,/g' > ${folder}/positions.txt
+    cut -f2-40000 $file | sed 's/\t/ /g' > ${folder}/expressions.txt
+    cd /home/jun.xu/spa/mouse_brain/cell-cell_interactions/run
+    python3 run_indiv.py --indir $folder
+done
