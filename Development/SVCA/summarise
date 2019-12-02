@@ -1,3 +1,0 @@
-ls *txt | cut -f1 --delimiter '_' > genes
-cat *txt | sed 's/intrinsic interactions environmental noise//g' |sed '/^$/d' > effects
-Rscript sort_c-c.r

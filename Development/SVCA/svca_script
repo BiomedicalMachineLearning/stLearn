@@ -8,17 +8,30 @@
 #PBS -o /home/jun.xu/logs
 
 source activate jon
+export R_LIBS=/shares/common/users/jun.xu/R_3.6.0.a
+module load R/3.6.0
 
-cd /home/jun.xu/spa/mouse_brain/data/hpdt_count_tables
+cd /home/jun.xu/gih/spa/data/hpdt_count_tables
 
 for file in *.tsv
 do
-    cd /home/jun.xu/spa/mouse_brain/data/hpdt_count_tables
+    cd /home/jun.xu/gih/spa/data/hpdt_count_tables
     name=`basename $file .tsv`
-    folder=/home/jun.xu/spa/mouse_brain/cell-cell_interactions/$name
+    folder=/home/jun.xu/gih/spa/cc/$name
+    folder2=$folder/image1
     mkdir $folder
-    cut -f1 $file | sed '/^$/d' | sed 's/x/,/g' > ${folder}/positions.txt
-    cut -f2-40000 $file | sed 's/\t/ /g' > ${folder}/expressions.txt
-    cd /home/jun.xu/spa/mouse_brain/cell-cell_interactions/run
-    python3 run_indiv.py --indir $folder
+    mkdir $folder2
+    Rscript /home/jun.xu/gih/spa/cc/common/filter.r $file
+    mv ${file}_filtered ${name}_filtered.tsv
+    file2=${name}_filtered.tsv
+    cut -f1 $file2 | sed '/^$/d' | sed 's/x/,/g' > ${folder2}/positions.txt
+    cut -f2-40000 $file2 | sed 's/\t/ /g' > ${folder2}/expressions.txt
+    cd /home/jun.xu/gih/spa/cc/run
+    python3 run_indiv.py --indir $folder2
+    cd /home/jun.xu/gih/spa/cc/plot_scripts
+    Rscript plot_signatures.R $folder $folder
+    cd $folder
+    ls results/*txt | cut -f1 --delimiter '_' > genes
+    cat results/*txt | sed 's/intrinsic interactions environmental noise//g' |sed '/^$/d' > effects
+    #Rscript sort_c-c.r
 done
