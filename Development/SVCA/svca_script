@@ -22,8 +22,7 @@ do
     mkdir $folder
     mkdir $folder2
     Rscript /home/jun.xu/gih/spa/cc/common/filter.r $file
-    mv ${file}_filtered ${name}_filtered.tsv
-    file2=${name}_filtered.tsv
+    file2=${file}_filtered
     cut -f1 $file2 | sed '/^$/d' | sed 's/x/,/g' > ${folder2}/positions.txt
     cut -f2-40000 $file2 | sed 's/\t/ /g' > ${folder2}/expressions.txt
     cd /home/jun.xu/gih/spa/cc/run
