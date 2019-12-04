@@ -7,4 +7,10 @@ annotation <- strsplit(file, '_')[[1]][3]
 n <- t(m)[1,,drop=FALSE]
 n[] <- 1
 rownames(n) <- annotation
+if (annotation=='hp') {
+    n <- rbind(0, n)
+} else {
+    n <- rbind(n, 0)
+}
+rownames(n) <- c("dt", "hp")
 write.table(n, paste0(file,'_splotch_annot'), col.names=NA, quote=FALSE, sep='\t')
