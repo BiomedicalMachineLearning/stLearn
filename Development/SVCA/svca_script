@@ -30,7 +30,7 @@ do
     cd /home/jun.xu/gih/spa/cc/plot_scripts
     Rscript plot_signatures.R $folder $folder
     cd $folder2
-    ls results/*txt | cut -f1 --delimiter '_' > genes
+    ls results/*txt | cut -f1 --delimiter '_' | sed 's/results\///g' > genes
     cat results/*txt | sed 's/intrinsic interactions environmental noise//g' |sed '/^$/d' > effects
     #Rscript sort_c-c.r
 done
