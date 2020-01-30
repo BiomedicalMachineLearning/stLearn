@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 def lr_cluster(
     adata: AnnData,
     use_data: str = "filtered_counts",
-    lr_pairs: list = None,
+    lr_pairs: str = "lr_means",
     num_clusters: int = 3,
 ) -> AnnData:
     
@@ -19,7 +19,7 @@ def lr_cluster(
     # build Ligand-Receptor spatial expression matrix
     st_lr_exp = pd.DataFrame(index=data.index)
 
-    for pair in lr_pairs:
+    for pair in adata.uns[lr_pairs]:
         lr_a = pair.split('_')[0]
         lr_b = pair.split('_')[1]
         try:
@@ -49,13 +49,12 @@ def lr_cluster(
 
     adata.obs['lr_cluster'] = kmeans.labels_
 
-    return adata
 
 
 def lr_scan(
     adata: AnnData,
     use_data: str = "filtered_counts",
-    lr_pairs: list = None,
+    lr_pairs: str = "lr_means",
     threshold: float = 0,
     distance: int = 10,
     num_clusters: int = 3,
@@ -64,16 +63,20 @@ def lr_scan(
     data = adata.obsm[use_data]
 
     # build Ligand-Receptor percentage in neighbours
-    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=lr_pairs)
+    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=adata.uns[lr_pairs])
 
-    coor = adata.obs[['imagerow', 'imagecol']]
+    coor = adata.obs[['imagecol', 'imagerow']]
     point_tree = spatial.cKDTree(coor)
 
+    i=0
     for spot in data.index:
-        n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
+        i+= 1
+        if i%1000 == 0:
+            print("Scanned "+i  + " spots...")
+        n_index = point_tree.query_ball_point(np.array([adata.obs['imagecol'].loc[spot], adata.obs['imagerow'].loc[spot]]), distance)
         neighbours = [item for item in data.index[n_index] if item != spot]
 
-        for pair in lr_pairs:
+        for pair in adata.uns[lr_pairs]:
             n = 0
             lr_a = pair.split('_')[0]
             lr_b = pair.split('_')[1]
@@ -85,6 +88,7 @@ def lr_scan(
                 st_lr_neighbour.loc[spot, pair] = n / len(neighbours)
             except:
                 pass
+    print("The scanning process is done")
     
     adata.obsm['lr_neighbours'] = st_lr_neighbour
 
@@ -103,4 +107,3 @@ def lr_scan(
 
     adata.obs['lr_neighbour_cluster'] = kmeans.labels_
 
-    return adata
