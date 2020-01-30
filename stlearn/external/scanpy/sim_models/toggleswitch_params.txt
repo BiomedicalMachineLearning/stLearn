@@ -1,0 +1,8 @@
+model = SCANPY_PATH/sim_models/toggleswitch.txt
+tmax = 100
+branching = True
+nrRealizations = 2
+noiseObs = 0.01
+noiseDyn = 0.001
+step = 1
+seed = 0
