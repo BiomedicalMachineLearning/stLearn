@@ -63,35 +63,28 @@ def lr_scan(
     data = adata.obsm[use_data]
 
     # build Ligand-Receptor percentage in neighbours
-    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=adata.uns[lr_pairs])
+    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=lr_pairs)
 
     coor = adata.obs[['imagecol', 'imagerow']]
     point_tree = spatial.cKDTree(coor)
-
-    i=0
+    import pdb; pdb.set_trace()
     for spot in data.index:
-        i+= 1
-        if i%1000 == 0:
-            print("Scanned "+i  + " spots...")
         n_index = point_tree.query_ball_point(np.array([adata.obs['imagecol'].loc[spot], adata.obs['imagerow'].loc[spot]]), distance)
         neighbours = [item for item in data.index[n_index] if item != spot]
 
-        for pair in adata.uns[lr_pairs]:
+        for pair in lr_pairs:
             n = 0
             lr_a = pair.split('_')[0]
             lr_b = pair.split('_')[1]
             try:
                 if data.loc[spot, lr_a] > threshold:
-                    for neighbour in neighbours:
-                        if data.loc[neighbour, lr_b] > threshold:
-                            n += 1
+                    n = sum(data.loc[neighbours, lr_b] > threshold)
                 st_lr_neighbour.loc[spot, pair] = n / len(neighbours)
             except:
                 pass
-    print("The scanning process is done")
     
     adata.obsm['lr_neighbours'] = st_lr_neighbour
-
+ 
     # run PCA and k-means
     lpca = StandardScaler().fit_transform(st_lr_neighbour)
     pca = PCA(n_components=20)
@@ -106,4 +99,3 @@ def lr_scan(
     print("The largest expressed LR cluster is: ", str(st_lr_cluster.index(max(st_lr_cluster))))
 
     adata.obs['lr_neighbour_cluster'] = kmeans.labels_
-

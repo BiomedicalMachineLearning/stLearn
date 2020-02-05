@@ -6,12 +6,14 @@ from stlearn.pp import neighbors
 
 def sublocal_level(
     adata: AnnData,
-    subcluster: int = 0,
+    subcluster: Union[int,list] = 0,
     use_data: str = "X_diffmap",
     alpha: float = 0.5,
-    #nodes_per_log10_cells: int = 8,
-    epg_n_nodes: int = 10,
-    incr_n_nodes: int = 0,
+    auto_tune: bool = True,
+    nodes_per_log10_cells: int =20,
+    n_neighbors: int = None,
+    epg_n_nodes: int = 20,
+    incr_n_nodes: int = 10,
     epg_lambda: int = 0.03,
     epg_mu: int = 0.01,
     epg_trimmingradius: str = 'Inf',
@@ -27,14 +29,29 @@ def sublocal_level(
 		
 	print("Start construct trajectory for subcluster " + str(subcluster))
 
-	tmp = adata.obs[adata.obs["sub_cluster_labels"]==str(subcluster)]
+	if type(subcluster) == list:
+		query = ''
+		for i in subcluster:
+		     query = " | ".join([query,'sub_cluster_labels == "' + str(i) + '"'])
+
+		tmp = adata.obs.query(query[3:])
+	else:
+		tmp = adata.obs[adata.obs["sub_cluster_labels"]==str(subcluster)]
 
 	subcluster_data = adata[list(tmp.index)]
 	
 	from stlearn.preprocessing.graph import neighbors
 
+	if n_neighbors is not None:
+		auto_tune = False
+
+	if auto_tune:
+		def n_neighbors_cal(ncells,nodes_per_log10_cells=20):
+		    import math
+		    return round(nodes_per_log10_cells * math.log10(ncells))
+		n_neighbors = n_neighbors_cal(len(tmp))
 	#from stlearn.spatials.clustering import clustgeo
-	neighbors(subcluster_data,n_neighbors=20,use_rep='X_umap_disk')
+	neighbors(subcluster_data,n_neighbors=n_neighbors,use_rep='X_umap_disk')
 
 	from stlearn.tools.clustering import louvain
 

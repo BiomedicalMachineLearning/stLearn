@@ -54,7 +54,6 @@ def lr_cluster(
 def lr_scan(
     adata: AnnData,
     use_data: str = "filtered_counts",
-    lr_pairs: str = "lr_means",
     threshold: float = 0,
     distance: int = 10,
     num_clusters: int = 3,
@@ -63,35 +62,26 @@ def lr_scan(
     data = adata.obsm[use_data]
 
     # build Ligand-Receptor percentage in neighbours
-    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=adata.uns[lr_pairs])
+    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=adata.uns["lr_means"])
 
     coor = adata.obs[['imagecol', 'imagerow']]
     point_tree = spatial.cKDTree(coor)
 
-    i=0
+    ligands = [item.split('_')[0] for item in adata.uns["lr_means"]]
+    receptors = [item.split('_')[1] for item in adata.uns["lr_means"]]
+    neighbours = []
     for spot in data.index:
-        i+= 1
-        if i%1000 == 0:
-            print("Scanned "+i  + " spots...")
         n_index = point_tree.query_ball_point(np.array([adata.obs['imagecol'].loc[spot], adata.obs['imagerow'].loc[spot]]), distance)
-        neighbours = [item for item in data.index[n_index] if item != spot]
-
-        for pair in adata.uns[lr_pairs]:
-            n = 0
-            lr_a = pair.split('_')[0]
-            lr_b = pair.split('_')[1]
-            try:
-                if data.loc[spot, lr_a] > threshold:
-                    for neighbour in neighbours:
-                        if data.loc[neighbour, lr_b] > threshold:
-                            n += 1
-                st_lr_neighbour.loc[spot, pair] = n / len(neighbours)
-            except:
-                pass
-    print("The scanning process is done")
-    
+        neighbours.append([item for item in data.index[n_index] if item != spot])
+    spot_ligands = data.loc[:, ligands]
+    spot_receptors = data.loc[:, receptors]
+    def nb_count(x):
+        nbs = spot_receptors.loc[neighbours[data.index.tolist().index(x.name)], :]
+        return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+    nb_receptors = spot_receptors.apply(nb_count, axis=1)
+    st_lr_neighbour = pd.DataFrame((spot_ligands > threshold).values * nb_receptors.values, index=data.index, columns=adata.uns["lr_means"])
     adata.obsm['lr_neighbours'] = st_lr_neighbour
-
+ 
     # run PCA and k-means
     lpca = StandardScaler().fit_transform(st_lr_neighbour)
     pca = PCA(n_components=20)
@@ -106,4 +96,3 @@ def lr_scan(
     print("The largest expressed LR cluster is: ", str(st_lr_cluster.index(max(st_lr_cluster))))
 
     adata.obs['lr_neighbour_cluster'] = kmeans.labels_
-

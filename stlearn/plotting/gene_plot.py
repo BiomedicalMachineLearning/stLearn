@@ -95,7 +95,7 @@ def _gene_plot(adata,method,genes):
         if genes[0] not in adata.var.index:
             raise ValueError(genes[0] + ' is not exist in the data, please try another gene')
 
-        colors = adata[:, genes].X
+        colors = list(adata[:, genes].X.toarray().reshape(1,-1)[0])
 
         return colors
     else:
@@ -128,6 +128,5 @@ def _gene_plot(adata,method,genes):
             count_gene = count_gene.cumsum(axis=1).iloc[:,-1]
 
         colors = count_gene
-        vmin = min(colors)
 
         return colors
