@@ -102,3 +102,4 @@ def lr_scan(
     adata.obs['lr_neighbour_cluster'] = kmeans.labels_
 
     return adata
+
