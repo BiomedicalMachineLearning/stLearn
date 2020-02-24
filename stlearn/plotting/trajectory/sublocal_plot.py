@@ -80,13 +80,13 @@ def sublocal_plot(
         a.plot(edgex,edgey,c = branch_i_color,lw=2,zorder=1)
         for j in range(0,len(edgex)):
             a.arrow(edgex[j],edgey[j],edgex[j+1]-edgex[j],edgey[j+1]-edgey[j],color="red",length_includes_head=True,
-                     head_width=5, head_length=5, linewidth=0,zorder=4)
+                     head_width=5, head_length=5, linewidth=0,zorder=100)
             if j == len(edgex)-2:
                 break
     if not show_axis:
         a.axis('off')
 
-    
+    a.scatter(tmp.uns["pseudotimespace"]["epg_centroids"][:,0],tmp.uns["pseudotimespace"]["epg_centroids"][:,1],c="pink",s=8,zorder=5)
 
     if show_root:
         dict_node_state = nx.get_node_attributes(flat_tree,'label')

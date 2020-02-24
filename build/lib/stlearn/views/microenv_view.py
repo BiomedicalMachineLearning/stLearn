@@ -132,7 +132,7 @@ def microenv_plot(
     if use_data not in str(adata.obsm):
         raise ValueError("Please run function: run_" + use_data )
     if factor is not None:
-        pts_plot(adata,use_data,factor)
+        plot(adata,use_data,factor)
     else:
         root=tk.Tk()
         root.title('stLearn - Factor Analysis')

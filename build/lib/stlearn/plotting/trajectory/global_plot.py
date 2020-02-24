@@ -14,7 +14,7 @@ def global_plot(
     adata: AnnData,
     name: str = None,
     use_label: str = "louvain",
-    list_cluster: str = None,
+    list_cluster: Union[str,list] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     edge_alpha: float = 0.8,
@@ -32,6 +32,8 @@ def global_plot(
     
     plt.rcParams['figure.dpi'] = dpi
 
+    if list_cluster == "all":
+        list_cluster = list(range(0,len(adata.obs[use_label].unique())))
     # Get query clusters
     command = []
     for i in list_cluster:

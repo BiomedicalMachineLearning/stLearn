@@ -7,7 +7,7 @@ import pandas as pd
 
 def microenv(
     adata: AnnData,
-    method: str = "fa",
+    use_data: str = "X_fa",
     factor: int = 1,
     gene_sets: str = "KEGG_2019_Human",
     cutoff: float = 0.05,
@@ -15,14 +15,14 @@ def microenv(
     copy: bool = False,
 ) -> Optional[AnnData]:
 
-    ft = adata.obsm["X_" + method][:,factor]
+    ft = adata.obsm[use_data][:,factor]
 
     genes = []
     result_pearson = []
     for gene in adata.var_names:
         
         genes.append(gene)
-        result_pearson.append(pearsonr(ft,adata[:, [gene]].X.toarray())[0])
+        result_pearson.append(pearsonr(ft,adata[:, gene].X.toarray().reshape(-1,len(adata))[0])[0])
 
     cor_results = pd.DataFrame(
         {'Gene': genes,
@@ -34,20 +34,20 @@ def microenv(
     if "factor_sig" not in adata.uns:
             adata.uns['factor_sig'] = {}
 
-    adata.uns['factor_sig'].update({method: {}})
+    adata.uns['factor_sig'].update({use_data: {}})
 
-    adata.uns['factor_sig'][method].update({"Factor_"+str(factor):{}})
+    adata.uns['factor_sig'][use_data].update({"Factor_"+str(factor):{}})
 
-    adata.uns['factor_sig'][method]["Factor_"+str(factor)].update({"top_genes" :top_genes}) 
+    adata.uns['factor_sig'][use_data]["Factor_"+str(factor)].update({"top_genes" :top_genes}) 
 
     print('Get top genes of Factor ' + str(factor) + 
-        ' is done! The top genes are stored in adata.uns["factor_sig"]["' + method+ '"]'+'["Factor_'+str(factor)+'"]["result"]')
+        ' is done! The top genes are stored in adata.uns["factor_sig"]["' + use_data+ '"]'+'["Factor_'+str(factor)+'"]["result"]')
 
 
 
     params = {'params':{'n_top': n_top,'factor': factor}}
 
-    adata.uns['factor_sig'][method]["Factor_"+str(factor)].update({"params":params}) 
+    adata.uns['factor_sig'][use_data]["Factor_"+str(factor)].update({"params":params}) 
 
 
 

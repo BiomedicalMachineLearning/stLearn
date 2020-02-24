@@ -13,7 +13,7 @@ from .utils import checkType
 def sublocal_plot(
     adata: AnnData,
     name: str = None,
-    subcluster: int = 0,
+    subcluster: Union[int,list] = 0,
     route: str = "S0",
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
