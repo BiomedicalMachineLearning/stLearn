@@ -7,19 +7,21 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
+# cluster spatial spots based on the sum of expression of all known ligand-receptor pairs from CellphoneDB 2.0 
 def lr_cluster(
     adata: AnnData,
     use_data: str = "filtered_counts",
-    lr_pairs: str = "lr_means",
+    lr_pairs: list = None,
     num_clusters: int = 3,
 ) -> AnnData:
     
     data = adata.obsm[use_data]
+    lr_pairs += [item.split('_')[1]+'_'+item.split('_')[0] for item in lr_pairs]
 
     # build Ligand-Receptor spatial expression matrix
     st_lr_exp = pd.DataFrame(index=data.index)
 
-    for pair in adata.uns[lr_pairs]:
+    for pair in lr_pairs:
         lr_a = pair.split('_')[0]
         lr_b = pair.split('_')[1]
         try:
@@ -29,7 +31,7 @@ def lr_cluster(
 
     st_lr_norm = st_lr_exp.div(st_lr_exp.sum(axis=1) + 0.001, axis=0)
 
-    print("Altogether " + str(st_lr_exp.shape) + " ligand receptor pairs.")
+    print("Altogether " + str(st_lr_exp.shape[1]) + " ligand receptor pairs.")
 
     # run PCA and k-means
     if st_lr_norm.shape[1] > 20:
@@ -49,11 +51,13 @@ def lr_cluster(
 
     adata.obs['lr_cluster'] = kmeans.labels_
 
+    return adata
 
-
+# cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots
 def lr_scan(
     adata: AnnData,
     use_data: str = "filtered_counts",
+    lr_pairs: list = None,
     threshold: float = 0,
     distance: int = 10,
     num_clusters: int = 3,
@@ -62,16 +66,16 @@ def lr_scan(
     data = adata.obsm[use_data]
 
     # build Ligand-Receptor percentage in neighbours
-    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=adata.uns["lr_means"])
+    st_lr_neighbour = pd.DataFrame(0, index=data.index, columns=lr_pairs)
 
-    coor = adata.obs[['imagecol', 'imagerow']]
+    coor = adata.obs[['imagerow', 'imagecol']]
     point_tree = spatial.cKDTree(coor)
-
-    ligands = [item.split('_')[0] for item in adata.uns["lr_means"]]
-    receptors = [item.split('_')[1] for item in adata.uns["lr_means"]]
+    
+    ligands = [item.split('_')[0] for item in lr_pairs]
+    receptors = [item.split('_')[1] for item in lr_pairs]
     neighbours = []
     for spot in data.index:
-        n_index = point_tree.query_ball_point(np.array([adata.obs['imagecol'].loc[spot], adata.obs['imagerow'].loc[spot]]), distance)
+        n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
         neighbours.append([item for item in data.index[n_index] if item != spot])
     spot_ligands = data.loc[:, ligands]
     spot_receptors = data.loc[:, receptors]
@@ -79,7 +83,7 @@ def lr_scan(
         nbs = spot_receptors.loc[neighbours[data.index.tolist().index(x.name)], :]
         return (nbs > threshold).sum(axis=0) / nbs.shape[0]
     nb_receptors = spot_receptors.apply(nb_count, axis=1)
-    st_lr_neighbour = pd.DataFrame((spot_ligands > threshold).values * nb_receptors.values, index=data.index, columns=adata.uns["lr_means"])
+    st_lr_neighbour = pd.DataFrame((spot_ligands > threshold).values * nb_receptors.values, index=data.index, columns=lr_pairs)
     adata.obsm['lr_neighbours'] = st_lr_neighbour
  
     # run PCA and k-means
@@ -96,3 +100,6 @@ def lr_scan(
     print("The largest expressed LR cluster is: ", str(st_lr_cluster.index(max(st_lr_cluster))))
 
     adata.obs['lr_neighbour_cluster'] = kmeans.labels_
+
+    return adata
+
