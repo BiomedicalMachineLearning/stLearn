@@ -6,6 +6,7 @@ from pathlib import Path
 # Test progress bar
 from tqdm import tqdm
 
+
 def tiling(
         adata: AnnData,
         out_path: Union[Path, str] = "./",

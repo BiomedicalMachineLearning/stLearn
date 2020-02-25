@@ -1,4 +1,4 @@
-from .model_zoo import encode
+from .model_zoo import encode, Model
 from typing import Optional, Union
 from anndata import AnnData
 import numpy as np
@@ -10,9 +10,7 @@ from pathlib import Path
 # Test progress bar
 from tqdm import tqdm
 
-_CNN_BASE = Literal['resnet50', 'vgg16', 'inceptionv3']
-
-
+_CNN_BASE = Literal['resnet50', 'vgg16', 'inception_v3', 'xception']
 
 
 def extract_feature(
@@ -23,10 +21,7 @@ def extract_feature(
         copy: bool = False
 ) -> Optional[AnnData]:
     feature_df = pd.DataFrame()
-    model = None
-    if cnn_base == 'resnet50':
-        from .model_zoo import ResNet
-        model = ResNet()
+    model = Model(cnn_base)
 
     if "tile_path" not in adata.obs:
         raise ValueError("Please run the function stlearn.pp.tiling")
@@ -43,7 +38,7 @@ def extract_feature(
             feature_df[spot] = features
             pbar.update(1)
 
-
+    adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
 
     from sklearn.decomposition import PCA
     pca = PCA(n_components = n_components)
@@ -53,9 +48,7 @@ def extract_feature(
 
     print("The morphology feature is added to adata.obsm['X_morphology']!")
 
-
     return adata if copy else None
 
-# TODO: add more CNN base
 
 
