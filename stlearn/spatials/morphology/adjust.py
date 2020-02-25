@@ -17,7 +17,7 @@ def adjust(
         #key_added: str = "X_pca_morph_adj",
         radius: float = 50.0,
         rates: int = 1,
-
+        method = "mean",
         copy: bool = False,
         similarity_matrix: _SIMILARITY_MATRIX = "cosine"
 

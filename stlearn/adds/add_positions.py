@@ -8,7 +8,7 @@ def positions(
     adata: AnnData,
     position_filepath: Union[Path, str] = None,
     scale_filepath: Union[Path, str] = None,
-    quality: str = None,
+    quality: str = "low",
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -21,7 +21,7 @@ def positions(
     if quality == "low":
         tissue_positions["imagerow"] = tissue_positions["imagerow"]*scale_factors['tissue_lowres_scalef']
         tissue_positions["imagecol"] = tissue_positions["imagecol"]*scale_factors['tissue_lowres_scalef']
-    else:
+    elif quality == "high":
         tissue_positions["imagerow"] = tissue_positions["imagerow"]*scale_factors['tissue_hires_scalef']
         tissue_positions["imagecol"] = tissue_positions["imagecol"]*scale_factors['tissue_hires_scalef']
 
