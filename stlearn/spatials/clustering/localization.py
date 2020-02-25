@@ -7,7 +7,7 @@ from natsort import natsorted
 
 def localization(
     adata: AnnData,
-    use_labels: str = "louvain_labels",
+    use_labels: str = "louvain",
     eps: int = 20,
     min_samples: int = 0,
     copy: bool = False,

@@ -8,12 +8,13 @@ def global_level(
     adata: AnnData,
     use_labels: str = "louvain",
     pseudo_root: int = 0,
+    eps: float = 20,
     copy: bool = False,
 ) -> Optional[AnnData]:
 	
 	# Localize 
 	from stlearn.spatials.clustering import localization 
-	localization(adata,use_labels=use_labels)
+	localization(adata,use_labels=use_labels,eps = eps)
 
 	# Running paga
 	from stlearn.external.scanpy.api.tl import paga

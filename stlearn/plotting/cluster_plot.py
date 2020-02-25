@@ -16,6 +16,7 @@ def cluster_plot(
     use_label: str = "louvain",
     list_cluster: list = None,
     data_alpha: float = 1.0,
+    cmap: str = "vega_20_scanpy",
     tissue_alpha: float = 1.0,
     title: str = None,
     spot_size: Union[float,int] = 6.5,
@@ -42,7 +43,20 @@ def cluster_plot(
 
     
     from stlearn.external.scanpy.plotting import palettes
-    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",palettes.vega_20_scanpy)
+    if cmap == "vega_10_scanpy":
+        cmap = palettes.vega_10_scanpy
+    elif cmap == "vega_20_scanpy":
+        cmap = palettes.vega_20_scanpy
+    elif cmap == "default_102":
+        cmap = palettes.default_102
+    elif cmap == "default_28":
+        cmap = palettes.default_28
+    else:
+        raise ValueError("We only support vega_10_scanpy, vega_20_scanpy, default_28, default_102")
+
+
+
+    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",cmap)
     
     cmap_ = plt.cm.get_cmap(cmaps)
 

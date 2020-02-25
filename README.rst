@@ -10,7 +10,7 @@ stlearn
 
 ``` conda config --add channels conda-forge ```
 
-``` conda install r r-base libopenblas r-elpigraph.r```
+``` conda install r r-base libopenblas r-elpigraph.r jupyterlab louvain```
 ### Step 2 (For Windows user):
 
 Access to: 
