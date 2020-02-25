@@ -12,7 +12,7 @@ class Model:
 
     def __init__(self, base, batch_size=1):
         self.base = base
-        self.model = self.load_model()
+        self.model, self.preprocess = self.load_model()
         self.batch_size = batch_size
         self.data_format = K.image_data_format()
 
@@ -31,10 +31,10 @@ class Model:
             cnn_base_model = Xception(include_top=False, weights='imagenet', pooling="avg")
         else:
             raise ValueError('{} is not a valid model'.format(self.base))
-        return cnn_base_model
+        return cnn_base_model, preprocess_input
 
     def predict(self, x):
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
-        x = preprocess_input(x.astype(K.floatx()))
+        x = self.preprocess(x.astype(K.floatx()))
         return self.model.predict(x, batch_size=self.batch_size)

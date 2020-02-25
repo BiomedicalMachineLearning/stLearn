@@ -3,6 +3,7 @@ import numpy as np
 from anndata import AnnData
 from ..._compat import Literal
 import scipy.spatial as spatial
+from scipy import stats
 # Test progress bar
 from tqdm import tqdm
 
@@ -42,13 +43,23 @@ def adjust(
             similarity = []
 
             for i in surrounding_img:
+                i = i.reshape(1, -1)  # reshape feature to (1, n_feature)
+
                 if similarity_matrix == "cosine":
                     from sklearn.metrics.pairwise import cosine_similarity
-                    cosine = cosine_similarity(main_img, i.reshape(1, -1))[0][0]
+                    cosine = cosine_similarity(main_img, i)[0][0]
                     cosine = (abs(cosine)+cosine)/2
                     similarity.append(cosine)
+
                 elif similarity_matrix == "euclidean":
+                    from sklearn.metrics.pairwise import euclidean_distances
+                    eculidean = euclidean_distances(main_img, i)[0][0]
+                    eculidean_similarity = 1 / (1 + eculidean)
+                    similarity.append(eculidean_similarity)
+
+                elif similarity_matrix == "pearson":
                     pass
+
             similarity = np.array(similarity).reshape((-1, 1))
             surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
 
