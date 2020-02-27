@@ -52,7 +52,7 @@ def sublocal_plot(
     sc = a.scatter(tmp.obs["imagecol"], tmp.obs["imagerow"], edgecolor="none", alpha=0.8,s=6,marker="o",
            vmin=vmin, vmax=vmax,cmap=plt.get_cmap(cmap),c=colors)
 
-    a.imshow(adata.uns["tissue_img"],alpha=1.0, zorder=-1,)
+    a.imshow(adata.uns["tissue_img"],alpha=tissue_alpha, zorder=-1,)
 
     for edge_i in flat_tree.edges():
         branch_i_nodes = flat_tree.edges[edge_i]['nodes']

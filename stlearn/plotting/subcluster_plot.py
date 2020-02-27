@@ -75,7 +75,7 @@ def subcluster_plot(
         a.text(centroids[i][0],centroids[i][1],label,color='white',fontsize = 5,zorder=3,
                bbox=dict(facecolor=matplotlib.colors.to_hex(m.to_rgba(mapping[label])),boxstyle='round',alpha=0.5))
 
-    a.imshow(adata.uns["tissue_img"],alpha=1, zorder=-1,)
+    a.imshow(adata.uns["tissue_img"],alpha=tissue_alpha, zorder=-1,)
     
 
 

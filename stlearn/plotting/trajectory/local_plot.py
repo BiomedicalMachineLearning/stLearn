@@ -68,8 +68,8 @@ def local_plot(
             else:
                 xyz = ([x[520],x[500]],[y[520],y[500]],[z[520],z[500]])
             
-            arrow = Arrow3D(xyz[0],xyz[1],xyz[2],zorder=10,mutation_scale=10, 
-                   lw=1, arrowstyle="simple", color="r",alpha=arrow_alpha)
+            arrow = Arrow3D(xyz[0],xyz[1],xyz[2],zorder=10,mutation_scale=5, 
+                   lw=1, arrowstyle="simple", color="r",alpha=arrow_alpha,)
             ax.add_artist(arrow)
             
             ax.text(x[500], y[500]-0.15, z[500], np.round(np.abs(m),2), color='black',size=5,zorder=100)

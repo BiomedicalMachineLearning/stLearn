@@ -66,10 +66,17 @@ def cluster_plot(
         tmp = adata.obs
 
     # Plot scatter plot based on pixel of spots
-    for i,cluster in tmp.groupby(use_label):
+    adata.uns["tmp_color"] =[]
 
-        _ = a.scatter(cluster['imagecol'], cluster['imagerow'], c=[cmap_(int(i)/19)], label=int(i),
+    for i,cluster in enumerate(tmp.groupby(use_label)):
+
+        _ = a.scatter(cluster[1]['imagecol'], cluster[1]['imagerow'], c=[cmap_(int(i)/19)], label=cluster[0],
                       edgecolor="none", alpha=data_alpha,s=spot_size,marker="o")
+
+        adata.uns["tmp_color"].append(matplotlib.colors.to_hex(cmap_(int(i)/19)))
+
+
+
 
     if show_legend:
         lgnd = a.legend(bbox_to_anchor=(1.2, 1.0),labelspacing=0.05,fontsize=8,handleheight=1.,edgecolor='white')
