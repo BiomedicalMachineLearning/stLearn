@@ -21,7 +21,7 @@ def non_spatial_plot(
     plt.rcParams['figure.dpi'] = dpi
 
     if 'paga' in adata.uns.keys():
-
+        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
         from stlearn.external.scanpy.api.pl import paga
         print("PAGA plot:")
 
@@ -30,6 +30,7 @@ def non_spatial_plot(
         from stlearn.external.scanpy.api.tl import draw_graph
 
         draw_graph(adata,init_pos='paga')
+        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         from stlearn.external.scanpy.api.pl import draw_graph
 
@@ -43,6 +44,7 @@ def non_spatial_plot(
         from stlearn.external.scanpy.api.tl import draw_graph
 
         draw_graph(adata)
+        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         from stlearn.external.scanpy.api.pl import draw_graph
         draw_graph(adata,color=use_label,legend_loc='on data')
