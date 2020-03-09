@@ -3,26 +3,21 @@ import numpy as np
 from anndata import AnnData
 from ..._compat import Literal
 import scipy.spatial as spatial
-from scipy import stats
-# Test progress bar
 from tqdm import tqdm
 
-_SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson"]
+_SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
 
 
 def adjust(
         adata: AnnData,
         use_data: str = "X_pca",
-        #use_image_data: str = "X_morphology",
-        #key_added: str = "X_pca_morph_adj",
         radius: float = 50.0,
         rates: int = 1,
-        method = "mean",
+        method="mean",
         copy: bool = False,
         similarity_matrix: _SIMILARITY_MATRIX = "cosine"
 
 ) -> Optional[AnnData]:
-
     if "X_morphology" not in adata.obsm:
         raise ValueError("Please run the function stlearn.pp.extract_feature")
     coor = adata.obs[["imagecol", "imagerow"]]
@@ -48,26 +43,34 @@ def adjust(
                 if similarity_matrix == "cosine":
                     from sklearn.metrics.pairwise import cosine_similarity
                     cosine = cosine_similarity(main_img, i)[0][0]
-                    cosine = (abs(cosine)+cosine)/2
+                    cosine = (abs(cosine) + cosine) / 2
                     similarity.append(cosine)
-
                 elif similarity_matrix == "euclidean":
                     from sklearn.metrics.pairwise import euclidean_distances
                     eculidean = euclidean_distances(main_img, i)[0][0]
-                    eculidean_similarity = 1 / (1 + eculidean)
-                    similarity.append(eculidean_similarity)
-
+                    eculidean = 1 / (1 + eculidean)
+                    similarity.append(eculidean)
                 elif similarity_matrix == "pearson":
-                    pass
+                    from scipy.stats import pearsonr
+                    pearson_corr = abs(pearsonr(main_img.reshape(-1), i.reshape(-1))[0])
+                    similarity.append(pearson_corr)
+                elif similarity_matrix == "spearman":
+                    from scipy.stats import spearmanr
+                    spearmanr_corr = abs(spearmanr(main_img.reshape(-1), i.reshape(-1))[0])
+                    similarity.append(spearmanr_corr)
 
             similarity = np.array(similarity).reshape((-1, 1))
             surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
 
             for i in range(0, rates):
                 if method == "median":
-                    main_count = np.append(main_count, np.median(surrounding_count_adjusted, axis=0).reshape(1, -1), axis=0)
+                    main_count = np.append(main_count, np.median(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                                           axis=0)
                 elif method == "mean":
-                    main_count = np.append(main_count, np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1), axis=0)
+                    main_count = np.append(main_count, np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                                           axis=0)
+                else:
+                    raise ValueError("Only 'median' and 'mean' are aceptable")
             lag_coor.append(list(np.sum(main_count, axis=0)))
             pbar.update(1)
     key_added = use_data + "_morphology"
@@ -76,5 +79,3 @@ def adjust(
     print("The data adjusted by morphology is added to adata.obsm['" + key_added + "']")
 
     return adata if copy else None
-
-# TODO: add more distance matrix
