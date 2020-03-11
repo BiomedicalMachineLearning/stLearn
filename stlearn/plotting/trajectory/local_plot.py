@@ -46,6 +46,9 @@ def local_plot(
         classes_.append(i)
         centroids_.append(adata.uns["centroid_dict"][int(i)])
 
+    #from sklearn.preprocessing import MinMaxScaler
+    #scaler = MinMaxScaler()
+    #centroids_scaled = scaler.fit_transform(centroids_)
 
     for i in range(0,len(centroids_)):
         if i == len(centroids_)-1:

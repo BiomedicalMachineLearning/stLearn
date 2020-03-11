@@ -3,7 +3,7 @@ from PIL import Image
 import pandas as pd
 import matplotlib
 import numpy as np
-
+import networkx as nx
 from stlearn._compat import Literal
 from typing import Optional, Union
 from anndata import AnnData
@@ -24,12 +24,14 @@ def cluster_plot(
     show_axis: bool = False,
     show_legend: bool = True,
     dpi: int = 180,
+    show_trajectory: bool = False,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
     
     plt.rcParams['figure.dpi'] = dpi
 
+    
 
     #tmp = adata.obs
     #tmp[use_data] = tmp[use_data].astype(int)
@@ -41,7 +43,23 @@ def cluster_plot(
     # Initialize matplotlib
     fig, a = plt.subplots()
 
-    
+    if show_trajectory:
+
+        if not adata.uns["PTS_graph"]:
+            raise ValueError("Please run stlearn.spatials.trajectory.pseudotimespace!")
+
+        tmp = adata.uns["PTS_graph"]
+
+        G = tmp.copy()
+
+        remove = [edge for edge in G.edges if 9999 in edge]
+        G.remove_edges_from(remove)
+        G.remove_node(9999)
+        centroid_dict = adata.uns["centroid_dict"]
+        nx.draw_networkx_edges(G, pos=centroid_dict,node_size=1,alpha=1.0,
+            font_size=5,linewidths=1,edge_color='#f4efd3',arrowsize=5,arrowstyle='->')
+
+
     from stlearn.external.scanpy.plotting import palettes
     if cmap == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
@@ -74,6 +92,7 @@ def cluster_plot(
                       edgecolor="none", alpha=data_alpha,s=spot_size,marker="o")
 
         adata.uns["tmp_color"].append(matplotlib.colors.to_hex(cmap_(int(i)/19)))
+
 
 
 
