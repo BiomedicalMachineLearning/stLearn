@@ -1,150 +1,106 @@
-import scipy.spatial as spatial
-import numpy as np
-import networkx as nx
 from anndata import AnnData
 from typing import Optional, Union
+import numpy as np
+import pandas as pd
+import networkx as nx
 
-from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.cluster import KMeans
-from sklearn.neighbors import NearestCentroid
-
-from rpy2.robjects.packages import importr
-from rpy2.robjects import r as R
-import rpy2.robjects as robjects
-from rpy2.robjects import pandas2ri
-
-from .extra import *
-
-
-def initialize_graph(
+def pseudotimespace(
     adata: AnnData,
+    use_labels: str = "louvain",
+    list_cluster: list = [],
+    w: float = 0.6,
+    method: str = "max",
     copy: bool = False,
 ) -> Optional[AnnData]:
+    
+    # Get global graph
+    G = adata.uns["global_graph"]
+    # Convert to directed graph
+    H = G.to_directed()
 
-    coor = adata.obs[["imagecol","imagerow"]]
-
-    adata.obs["epg_cluster"] = adata.obs["sub_cluster_labels"]
-
-    clf = NearestCentroid()
-    clf.fit(coor, adata.obs["epg_cluster"])
-
-    centroids = clf.centroids_
-    adata.uns["pseudotimespace"] = {}
-
-    adata.uns["pseudotimespace"].update({"epg_centroids": centroids})
-
-    init_nodes_pos = centroids
-    epg_nodes_pos = init_nodes_pos
-    D=pairwise_distances(epg_nodes_pos)
-    G=nx.from_numpy_matrix(D)
-    mst=nx.minimum_spanning_tree(G)
-    epg_edges = np.array(mst.edges())
-    epg=nx.Graph()
-    epg.add_nodes_from(range(epg_nodes_pos.shape[0]))
-    epg.add_edges_from(epg_edges)
-    dict_nodes_pos = {i:x for i,x in enumerate(epg_nodes_pos)}
-    nx.set_node_attributes(epg,values=dict_nodes_pos,name='pos')
-
-    dict_branches = extract_branches(epg)
-    flat_tree = construct_flat_tree(dict_branches)
-
-    nx.set_node_attributes(flat_tree,values={x:dict_nodes_pos[x] for x in flat_tree.nodes()},name='pos')
-
-    adata.uns["pseudotimespace"].update({'epg': deepcopy(epg)})
-    adata.uns["pseudotimespace"].update({'flat_tree': deepcopy(flat_tree)})
-    adata.uns["pseudotimespace"].update({'seed_epg': deepcopy(epg)})
-    adata.uns["pseudotimespace"].update({'seed_flat_tree': deepcopy(flat_tree)})
-
-    project_cells_to_epg(adata)
-    calculate_pseudotime(adata)
-
-    return adata if copy else None
-
-
-def pseudotimespace_epg(
-    adata: AnnData,
-    epg_n_nodes: int = 10,
-    incr_n_nodes: int = 0,
-    epg_lambda: int = 0.03,
-    epg_mu: int = 0.01,
-    epg_trimmingradius: str = 'Inf',
-    epg_finalenergy: str = 'Penalized',
-    epg_alpha: float = 0.02,
-    epg_beta: float = 0.0,
-    epg_n_processes: int = 1,
-    nReps: int = 1,
-    ProbPoint: int = 1,
-
-    copy: bool = False,
-) -> Optional[AnnData]:
-
-    input_data = adata.uns["pseudotimespace"]["epg_centroids"]
-    #input_data = adata.obs[["imagecol","imagerow"]].values
-    epg = adata.uns["pseudotimespace"]['seed_epg']
-    dict_nodes_pos = nx.get_node_attributes(epg,'pos')
-    init_nodes_pos = np.array(list(dict_nodes_pos.values()))
-    init_edges = np.array(list(epg.edges())) 
-    R_init_edges = init_edges + 1
-
-    if((init_nodes_pos.shape[0])<epg_n_nodes):
-        print('epg_n_nodes is too small. It is corrected to the initial number of nodes plus incr_n_nodes')
-        epg_n_nodes = init_nodes_pos.shape[0]+incr_n_nodes
+    # Query cluster
+    query_nodes = list_cluster
+    query_nodes = ordering_nodes(query_nodes,adata)
+    print(query_nodes)
 
 
 
-    ElPiGraph = importr('ElPiGraph.R')
-    pandas2ri.activate()
-    print('Learning elastic principal graph...')
-    import sys, os
+    edge_list = []
+    for i,j in enumerate(query_nodes):
+        if i == len(query_nodes)-1:
+            break
+        for j in adata.uns["split_node"][query_nodes[i]]:
+            for k in adata.uns["split_node"][query_nodes[i+1]]:
+                edge_list.append((int(j),int(k)))
 
-    # Disable
-    def blockPrint():
-        sys.stdout = open(os.devnull, 'w')
-    # Restore
-    def enablePrint():
-        sys.stdout = sys.__stdout__
-        
-    #blockPrint()
-    epg_obj = ElPiGraph.computeElasticPrincipalTree(X=input_data,
-                                                        NumNodes = epg_n_nodes, 
-                                                        #InitNodePositions = init_nodes_pos,
-                                                        #InitEdges=R_init_edges,
-                                                        Lambda=epg_lambda, Mu=epg_mu,
-                                                        TrimmingRadius= epg_trimmingradius,
-                                                        FinalEnergy = epg_finalenergy,
-                                                        alpha = epg_alpha,
-                                                        beta = epg_beta,                                                    
-                                                        Do_PCA=False,CenterData=False,
-                                                        n_cores = 1,
-                                                        nReps=nReps,
-                                                        ProbPoint=ProbPoint,
-                                                        drawAccuracyComplexity = False,
-                                                        drawPCAView = False,
-                                                        drawEnergy = False,
-                                                        verbose = False,
-                                                        ShowTimer=False,
-                                                        ComputeMSEP=False)
-    #enablePrint()
+    # Get centroid dictionary
+    centroid_dict=adata.uns["centroid_dict"]
 
-    epg_nodes_pos = np.array(epg_obj[0].rx2('NodePositions'))
-    epg_edges = np.array((epg_obj[0].rx2('Edges')).rx2('Edges'),dtype=int)-1
 
-    #store graph information and update adata
-    epg=nx.Graph()
-    epg.add_nodes_from(range(epg_nodes_pos.shape[0]))
-    epg.add_edges_from(epg_edges)
-    dict_nodes_pos = {i:x for i,x in enumerate(epg_nodes_pos)}
-    nx.set_node_attributes(epg,values=dict_nodes_pos,name='pos')
-    dict_branches = extract_branches(epg)
-    flat_tree = construct_flat_tree(dict_branches)
-    nx.set_node_attributes(flat_tree,values={x:dict_nodes_pos[x] for x in flat_tree.nodes()},name='pos')
-    adata.uns["pseudotimespace"]['epg'] = deepcopy(epg)
-    adata.uns["pseudotimespace"]['ori_epg'] = deepcopy(epg)
-    adata.uns["pseudotimespace"]['epg_obj'] = deepcopy(epg_obj)    
-    adata.uns["pseudotimespace"]['ori_epg_obj'] = deepcopy(epg_obj)
-    adata.uns["pseudotimespace"]['flat_tree'] = deepcopy(flat_tree)
-    project_cells_to_epg(adata)
-    calculate_pseudotime(adata)
-    print('Number of branches after learning elastic principal graph: ' + str(len(dict_branches)))
 
-    return adata if copy else None
+    H_sub = H.edge_subgraph(edge_list)
+    H_sub = nx.DiGraph(H_sub)
+    prepare_root = []
+    for node in adata.uns["split_node"][query_nodes[0]]:
+        H_sub.add_edge(9999,int(node))
+        prepare_root.append(centroid_dict[int(node)])
+
+    prepare_root = np.array(prepare_root)
+    centroide = (sum(prepare_root[:,0])/len(prepare_root[:,0]),sum(prepare_root[:,1])/len(prepare_root[:,1]))
+    centroid_dict[9999] = centroide
+
+
+    dpt_distance_dict = {}
+    for i in adata.obs["sub_cluster_labels"].unique():
+        if method == "max":
+            dpt_distance_dict[i] = adata.obs[adata.obs["sub_cluster_labels"]==i]["dpt_pseudotime"].max()
+        elif method == "mean":
+            dpt_distance_dict[i] = adata.obs[adata.obs["sub_cluster_labels"]==i]["dpt_pseudotime"].mean()
+        else:
+            dpt_distance_dict[i] = adata.obs[adata.obs["sub_cluster_labels"]==i]["dpt_pseudotime"].median()
+
+    centroid_scale_dict = {}
+    x = []
+    for i,j in centroid_dict.items():
+        x.append(j)
+    from sklearn.preprocessing import MinMaxScaler
+    scaler = MinMaxScaler()
+    scale = scaler.fit_transform(x)
+
+    for i,j in enumerate(centroid_dict.items()):
+        centroid_scale_dict[j[0]]=scale[i]
+
+
+    labels = nx.get_edge_attributes(H_sub,'weight')
+
+    for edge,_ in labels.items():
+        H_sub[edge[0]][edge[1]]['weight'] = (np.linalg.norm(centroid_scale_dict[edge[1]]-
+                                            centroid_scale_dict[edge[0]]))*w + (np.absolute(dpt_distance_dict[str(edge[0])] -
+                                                                                dpt_distance_dict[str(edge[1])]))*(1-w)
+
+
+    H_sub = nx.algorithms.tree.minimum_spanning_arborescence(H_sub)
+    #remove = [edge for edge in H_sub.edges if 9999 in edge]
+    #H_sub.remove_edges_from(remove)
+    #remove.remove_node(9999)
+
+    adata.uns["PTS_graph"] = H_sub
+
+
+
+
+
+
+
+def get_node(node_list,split_node):
+    result = np.array([])
+    for node in node_list:
+        result = np.append(result,np.array(split_node[node]).astype(int))
+    return result.astype(int)
+
+def ordering_nodes(node_list,adata):
+    mean_dpt = []
+    for node in node_list:
+        mean_dpt.append(adata.obs[adata.obs["louvain"]==str(node)]["dpt_pseudotime"].mean())
+
+    return list(np.array(node_list)[np.argsort(mean_dpt)])

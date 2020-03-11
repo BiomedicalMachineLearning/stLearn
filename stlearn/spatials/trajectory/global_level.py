@@ -7,8 +7,10 @@ import networkx as nx
 def global_level(
     adata: AnnData,
     use_labels: str = "louvain",
-    pseudo_root: int = 0,
     eps: float = 20,
+    threshold: float = 0.01,
+    radius: int = 50,
+    method: str = "mean",
     copy: bool = False,
 ) -> Optional[AnnData]:
 	
@@ -20,11 +22,18 @@ def global_level(
 	from stlearn.external.scanpy.api.tl import paga
 	paga(adata,groups=use_labels)
 
+	# Denoising the graph
+	from stlearn.external.scanpy.api.tl import diffmap
+	diffmap(adata)
+	from stlearn.spatials.morphology import adjust
+	adjust(adata,use_data="X_diffmap",radius=radius,method=method)
+	adata.obsm["X_diffmap"] = adata.obsm["X_diffmap_morphology"]
+
 	# Get connection matrix
 	cnt_matrix = adata.uns["paga"]["connectivities"].toarray()
 
 	# Filter by threshold
-	threshold = 0.01
+	threshold = threshold
 
 	cnt_matrix[cnt_matrix<threshold] = 0.
 	cnt_matrix = pd.DataFrame(cnt_matrix)
@@ -65,7 +74,7 @@ def global_level(
 	adata.uns["centroid_dict"] = centroid_dict
 
 	# Choose pseudo-root for the global level 
-	adata.uns["iroot"] = np.flatnonzero(adata.obs[use_labels]  == str(pseudo_root))[0]
+	#adata.uns["iroot"] = np.flatnonzero(adata.obs[use_labels]  == str(pseudo_root))[0]
 
 	# Running diffusion pseudo-time
 	from stlearn.external.scanpy.api.tl import dpt
