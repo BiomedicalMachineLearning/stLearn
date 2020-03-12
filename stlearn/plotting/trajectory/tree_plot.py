@@ -15,13 +15,14 @@ from copy import deepcopy
 
 def tree_plot(
     adata: AnnData,
-    figsize: Union[float,int] = (10,6),
+    figsize: Union[float,int] = (10,4),
     data_alpha: float = 1.0,
     use_label: str = "louvain",
     cmap: str = "vega_20_scanpy",
     spot_size: Union[float,int] = 50,
-    piesize: float = 0.1,
-    zoom: float = 0.4,
+    fontsize: int = 6,
+    piesize: float = 0.15,
+    zoom: float = 0.1,
     dpi: int = 180,
     output: str = None,
     copy: bool = False,
@@ -31,7 +32,7 @@ def tree_plot(
     for node in G.nodes:
         if node == 9999:
             break
-        tmp_img = _generate_image(adata,sub_cluster=node,zoom=zoom, spot_size=spot_size)
+        tmp_img = _generate_image(adata,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize)
 
         G.nodes[node]['image'] = tmp_img
 
@@ -54,13 +55,20 @@ def tree_plot(
             xa,ya=trans2((xx,yy)) # axes coordinates
             a = plt.axes([xa-p2,ya-p2, piesize, piesize])
             a.axis('off')
-            a.text(0.5,1,"PSEUDO-ROOT",horizontalalignment='center',verticalalignment='center', transform=a.transAxes)
+            a.text(0.5,0.7,"Pseudoroot",horizontalalignment='center',verticalalignment='center',
+             transform=a.transAxes,bbox=dict(facecolor="#F9F9F9",boxstyle='round',edgecolor="#D1D1D1"))
             break
             
         xx,yy=trans(pos[n]) # figure coordinates
         xa,ya=trans2((xx,yy)) # axes coordinates
         a = plt.axes([xa-p2,ya-p2, piesize, piesize])
-        a.text(0.5,1.2,str(n),horizontalalignment='center',verticalalignment='center', transform=a.transAxes)
+
+        subset = adata.obs[adata.obs["sub_cluster_labels"]==str(n)]
+        color = adata.uns["tmp_color"][int(subset[use_label][0])]
+
+        a.text(0.5,1.2,str(n),horizontalalignment='center',verticalalignment='center', 
+            transform=a.transAxes,color='black',fontsize = fontsize,zorder=3,
+               bbox=dict(facecolor=color,boxstyle='round'))
         #a.set_aspect('equal')
         a.axis('off')
         a.imshow(G.nodes[n]['image'])
@@ -68,8 +76,11 @@ def tree_plot(
 
 
 
-def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,dpi=96,use_label="louvain",data_alpha=1):
+def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1):
     
+    plt.rcParams['axes.linewidth'] = 4
+    plt.rcParams['axes.edgecolor'] = "#D1D1D1"
+
     subset = adata.obs[adata.obs["sub_cluster_labels"]==str(sub_cluster)]
     base = subset[["imagecol","imagerow"]].values
     if len(base)<25:
@@ -83,13 +94,15 @@ def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,dpi=96,use_label=
     #plt.rcParams['figure.dpi'] = 300
 
     fig2, ax2 = plt.subplots()
+
     color = adata.uns["tmp_color"][int(subset[use_label][0])]
 
     ax2.imshow(adata.uns["tissue_img"],alpha=1)
     ax2.scatter(x,y,s=spot_size,alpha=data_alpha,edgecolor="none",c=color)
-    ax2.axis('off')
-    #ax2.get_xaxis().set_ticks([])
-    #ax2.get_yaxis().set_ticks([])
+
+    #ax2.axis('off')
+    ax2.get_xaxis().set_ticks([])
+    ax2.get_yaxis().set_ticks([])
 
     try:
         ptp_bound = np.array(base).ptp(axis=0)
@@ -104,7 +117,7 @@ def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,dpi=96,use_label=
     plt.gca().invert_yaxis()
     
     buf = io.BytesIO()
-    fig2.savefig(buf, format='png', dpi = dpi,transparent=True,bbox_inches='tight',pad_inches=0)
+    fig2.savefig(buf, format='png', dpi = dpi,transparent=True,bbox_inches='tight',pad_inches=0.1)
     buf.seek(0)
     pil_img = deepcopy(Image.open(buf))
     plt.close(fig2)
