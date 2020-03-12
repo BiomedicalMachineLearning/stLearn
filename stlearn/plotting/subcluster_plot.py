@@ -55,7 +55,7 @@ def subcluster_plot(
 
 
     if len(adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"].unique()) < 2:
-        centroids = [centeroidpython(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values)]
+        centroids = [centroidpython(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values)]
         classes = np.array([adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"][0]])
         
     else:
@@ -110,7 +110,7 @@ def subcluster_plot(
     #plt.axis('off')
     
 
-def centeroidpython(data):
+def centroidpython(data):
     x, y = zip(*data)
     l = len(x)
     return sum(x) / l, sum(y) / l

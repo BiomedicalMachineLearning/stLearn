@@ -25,6 +25,7 @@ def cluster_plot(
     show_legend: bool = True,
     dpi: int = 180,
     show_trajectory: bool = False,
+    show_subcluster: bool = False,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -46,7 +47,7 @@ def cluster_plot(
     if show_trajectory:
 
         if not adata.uns["PTS_graph"]:
-            raise ValueError("Please run stlearn.spatials.trajectory.pseudotimespace!")
+            raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
         tmp = adata.uns["PTS_graph"]
 
@@ -58,6 +59,7 @@ def cluster_plot(
         centroid_dict = adata.uns["centroid_dict"]
         nx.draw_networkx_edges(G, pos=centroid_dict,node_size=1,alpha=1.0,
             font_size=5,linewidths=1,edge_color='#f4efd3',arrowsize=5,arrowstyle='->')
+
 
 
     from stlearn.external.scanpy.plotting import palettes
@@ -116,9 +118,40 @@ def cluster_plot(
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,bbox_inches='tight',pad_inches=0)
 
-    #fig_np = get_img_from_fig(fig,dpi)
+    if show_subcluster:
+        if "sub_cluster_labels" not in adata.obs.columns:
+            raise ValueError("Please run stlearn.spatial.cluster.localization")
+
+        for cluster in list_cluster:
+            if len(adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"].unique()) < 2:
+                centroids = [centroidpython(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values)]
+                classes = np.array([adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"][0]])
+            
+            else:
+                from sklearn.neighbors import NearestCentroid
+                clf = NearestCentroid()
+                clf.fit(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values, 
+                    adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"])
+
+                centroids = clf.centroids_
+                classes = clf.classes_
+
+            for i,label in enumerate(classes):
+                if centroids[i][0] < 1500:
+                    x = -100
+                    y = 50
+                else:
+                    x = 100
+                    y = -50
+                a.text(centroids[i][0]+x,centroids[i][1]+y,label,color='black',fontsize = 5,zorder=3,
+                       bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)],boxstyle='round',alpha=1.0))
     
     plt.show()
 
 
 
+
+def centroidpython(data):
+    x, y = zip(*data)
+    l = len(x)
+    return sum(x) / l, sum(y) / l
