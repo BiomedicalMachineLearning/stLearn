@@ -49,7 +49,7 @@ def parsing(
 	        counts_table.drop(index, inplace=True)
 
 	# Assign the new indexes 
-	counts_table.index = new_index_values
+	#counts_table.index = new_index_values
 
 	# Remove genes that have now a total count of zero
 	counts_table = counts_table.transpose()[counts_table.sum(axis=0) > 0].transpose()
