@@ -58,7 +58,7 @@ def cluster_plot(
         G.remove_node(9999)
         centroid_dict = adata.uns["centroid_dict"]
         nx.draw_networkx_edges(G, pos=centroid_dict,node_size=1,alpha=1.0,
-            font_size=5,linewidths=1,edge_color='#f4efd3',arrowsize=5,arrowstyle='->')
+            font_size=5,linewidths=1,edge_color='#f4efd3',arrowsize=5,arrowstyle='->',connectionstyle="arc3,rad=0.2")
 
 
 

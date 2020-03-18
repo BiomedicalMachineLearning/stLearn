@@ -23,6 +23,8 @@ def tree_plot(
     fontsize: int = 6,
     piesize: float = 0.15,
     zoom: float = 0.1,
+    angleA: int = 60,
+    angleB: int = 120,
     dpi: int = 180,
     output: str = None,
     copy: bool = False,
@@ -42,8 +44,7 @@ def tree_plot(
     a= plt.subplot(111)
 
     a.axis('off')
-    nx.draw_networkx_edges(G,pos,a=a,arrowstyle="-",with_labels=True,edge_color="#ADABAF")
-
+    nx.draw_networkx_edges(G,pos,a=a,arrowstyle="-",with_labels=True,edge_color="#ADABAF",connectionstyle="angle3,angleA=0,angleB=90")
     trans=a.transData.transform
     trans2=fig.transFigure.inverted().transform
 
@@ -55,7 +56,7 @@ def tree_plot(
             xa,ya=trans2((xx,yy)) # axes coordinates
             a = plt.axes([xa-p2,ya-p2, piesize, piesize])
             a.axis('off')
-            a.text(0.5,0.7,"Pseudoroot",horizontalalignment='center',verticalalignment='center',
+            a.text(0.5,0.9,"Pseudoroot",horizontalalignment='center',verticalalignment='center',
              transform=a.transAxes,bbox=dict(facecolor="#F9F9F9",boxstyle='round',edgecolor="#D1D1D1"))
             break
             

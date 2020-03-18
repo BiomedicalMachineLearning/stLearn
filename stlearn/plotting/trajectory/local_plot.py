@@ -39,7 +39,6 @@ def local_plot(
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
-
     centroids_ = []
     classes_ = []
     for i in adata.uns[ref_cluster].obs["sub_cluster_labels"].unique():
@@ -108,10 +107,11 @@ def local_plot(
         ax.get_zaxis().set_ticks([])
 
     ax.invert_zaxis()
-
-    fig.show()
+    ax.patch.set_visible(False) 
+    plt.show()
     plt.rcParams['figure.figsize'] = 6, 4
-
+    
+    fig.save
 
 def calculate_y(m):
     import math
