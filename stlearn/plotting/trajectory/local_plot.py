@@ -17,6 +17,7 @@ def local_plot(
     adata: AnnData,
     name: str = None,
     use_label: str = "louvain",
+    reverse: bool = False,
     cluster: int = 0,
     data_alpha: float = 1.0,
     arrow_alpha: float = 1.0,
@@ -45,10 +46,13 @@ def local_plot(
         classes_.append(i)
         centroids_.append(adata.uns["centroid_dict"][int(i)])
 
+    from sklearn.preprocessing import MinMaxScaler
+    scaler = MinMaxScaler()
+    scale = scaler.fit_transform(centroids_)
     #from sklearn.preprocessing import MinMaxScaler
     #scaler = MinMaxScaler()
     #centroids_scaled = scaler.fit_transform(centroids_)
-
+    w=0.1
     for i in range(0,len(centroids_)):
         if i == len(centroids_)-1:
             break
@@ -56,7 +60,10 @@ def local_plot(
         while j <= (len(centroids_)-2-i):
             j=j+1
             
-            m = adata.uns[ref_dpt][classes_[i]]-adata.uns[ref_dpt][classes_[i+j]]
+            
+            m = (adata.uns[ref_dpt][classes_[i]]-
+                adata.uns[ref_dpt][classes_[i+j]])*(1-w) + (np.linalg.norm(scale[i]-
+                                            scale[i+j]))*w
             y = calculate_y(np.abs(m))
             
             x = np.linspace(centroids_[i][0],centroids_[i+j][0], 1000)
@@ -64,7 +71,8 @@ def local_plot(
             
             
             branch = ax.plot(x,y,z,zorder=10,c="#333333",linewidth=1,alpha=branch_alpha)
-            
+            if reverse:
+                m = -m
             if m <=0:
                 xyz = ([x[500],x[520]],[y[500],y[520]],[z[500],z[520]])
             else:
@@ -74,7 +82,7 @@ def local_plot(
                    lw=1, arrowstyle="simple", color="r",alpha=arrow_alpha,)
             ax.add_artist(arrow)
             
-            ax.text(x[500], y[500]-0.15, z[500], np.round(np.abs(m),2), color='black',size=5,zorder=100)
+            ax.text(x[500], y[500]-0.15, z[500], np.round(np.abs(m),3), color='black',size=5,zorder=100)
         
             
     sc = ax.scatter(adata.uns[ref_cluster].obs["imagecol"],
@@ -110,8 +118,6 @@ def local_plot(
     ax.patch.set_visible(False) 
     plt.show()
     plt.rcParams['figure.figsize'] = 6, 4
-    
-    fig.save
 
 def calculate_y(m):
     import math
