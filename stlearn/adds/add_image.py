@@ -3,6 +3,8 @@ from anndata import AnnData
 from matplotlib import pyplot as plt
 from pathlib import Path
 import os
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
 
 
 def image(
