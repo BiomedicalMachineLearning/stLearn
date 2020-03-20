@@ -21,7 +21,6 @@ def pseudotimespace(
     # Query cluster
     query_nodes = list_cluster
     query_nodes = ordering_nodes(query_nodes,adata)
-    print(query_nodes)
 
 
 

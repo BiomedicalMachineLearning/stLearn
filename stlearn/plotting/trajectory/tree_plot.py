@@ -23,9 +23,8 @@ def tree_plot(
     fontsize: int = 6,
     piesize: float = 0.15,
     zoom: float = 0.1,
-    angleA: int = 0,
-    angleB: int = 90,
     dpi: int = 180,
+    show_all: bool = False,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -34,7 +33,7 @@ def tree_plot(
     for node in G.nodes:
         if node == 9999:
             break
-        tmp_img = _generate_image(adata,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize)
+        tmp_img = _generate_image(adata,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize,show_all=show_all)
 
         G.nodes[node]['image'] = tmp_img
 
@@ -73,11 +72,12 @@ def tree_plot(
         #a.set_aspect('equal')
         a.axis('off')
         a.imshow(G.nodes[n]['image'])
+        plt.rcParams.update(plt.rcParamsDefault)
 
 
 
 
-def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1):
+def _generate_image(adata,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1,show_all=False):
     
     plt.rcParams['axes.linewidth'] = 4
     plt.rcParams['axes.edgecolor'] = "#D1D1D1"
@@ -100,7 +100,7 @@ def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,fontsize=6,dpi=96
 
     ax2.imshow(adata.uns["tissue_img"],alpha=1)
     ax2.scatter(x,y,s=spot_size,alpha=data_alpha,edgecolor="none",c=color)
-
+    
     #ax2.axis('off')
     ax2.get_xaxis().set_ticks([])
     ax2.get_yaxis().set_ticks([])
@@ -109,14 +109,22 @@ def _generate_image(adata,sub_cluster,zoom = 0.5,spot_size=100,fontsize=6,dpi=96
         ptp_bound = np.array(base).ptp(axis=0)
     except:
         print(base)
-        
     
-    ax2.set_xlim(x.min() - ptp_bound[0]*zoom,
-                x.max() + ptp_bound[0]*zoom)
-    ax2.set_ylim(y.min() - ptp_bound[1]*zoom,
-                y.max() + ptp_bound[1]*zoom)
+    m = 0
+    n = 0
+    if np.abs((y.min() - ptp_bound[1]*zoom) - (y.max() + ptp_bound[1]*zoom)) <50:
+        m=m+50
+    elif np.abs((x.min() - ptp_bound[1]*zoom) - (x.max() + ptp_bound[1]*zoom)) <50:
+        n=n+50
+    ax2.set_xlim(x.min() - ptp_bound[0]*zoom -n,
+                x.max() + ptp_bound[0]*zoom -n)
+
+    ax2.set_ylim(y.min() - ptp_bound[1]*zoom - m,
+                y.max() + ptp_bound[1]*zoom + m)
+    
     plt.gca().invert_yaxis()
-    
+    if show_all:
+        plt.show()
     buf = io.BytesIO()
     fig2.savefig(buf, format='png', dpi = dpi,transparent=True,bbox_inches='tight',pad_inches=0.1)
     buf.seek(0)

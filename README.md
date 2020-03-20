@@ -1,16 +1,18 @@
-===============================
-stlearn
-===============================
-
-# A downstream analysis toolkit for Spatial Transcriptomic data
+# stLearn - A downstream analysis toolkit for Spatial Transcriptomic data (v0.1.7)
 
 # How to install
+
+### Step 0:
+
+Prepare conda environment for stlearn
+
+``` conda create -n stlearn python=3.8 ```
 
 ### Step 1:
 
 ``` conda config --add channels conda-forge ```
 
-``` conda install r r-base libopenblas r-elpigraph.r jupyterlab louvain```
+``` conda install jupyterlab louvain ipywidgets```
 ### Step 2 (For Windows user):
 
 Access to: 
