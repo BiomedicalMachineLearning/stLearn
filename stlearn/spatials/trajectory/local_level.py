@@ -9,6 +9,7 @@ def local_level(
     use_label_lvl2: str = "louvain",
     use_data_lvl2: str = "X_diffmap",
     cluster: int = 9,
+    method: str = "max",
     copy: bool = False,
 ) -> Optional[AnnData]:
     
@@ -50,7 +51,13 @@ def local_level(
     adata.uns["local_cluster_"+str(cluster)] = cluster_data
     
     for subcl in cluster_data.obs["sub_cluster_labels"].unique():
-        average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].mean()
+        if method == "max":
+            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].max()
+        elif method == "mean":
+            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].mean()
+        else:
+            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].median()
+        
 
     adata.uns["cluster_" +str(cluster) + "_dpt"] = average_time
 
