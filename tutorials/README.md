@@ -1,1 +1,1 @@
-### This folder contains different tutorials to perform different tasks using stlearn
+**This folder** contains different stlearn tutorials for performing different analysis tasks of spatial transcriptomics data
