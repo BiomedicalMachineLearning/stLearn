@@ -17,6 +17,7 @@ def local_plot(
     adata: AnnData,
     name: str = None,
     use_label: str = "louvain",
+    use_cluster: int = None,
     reverse: bool = False,
     cluster: int = 0,
     data_alpha: float = 1.0,
@@ -31,9 +32,8 @@ def local_plot(
     copy: bool = False,
 ) -> Optional[AnnData]:
 
-
-    ref_cluster = "local_cluster_" + str(cluster)
-    ref_dpt = "cluster_" +str(cluster) + "_dpt"
+    tmp=adata.obs[adata.obs[use_label]==str(use_cluster)]
+    ref_cluster = adata[list(tmp.index)]
 
     plt.rcParams['figure.dpi'] = dpi
     plt.rcParams['figure.figsize'] = 5, 5
@@ -42,17 +42,17 @@ def local_plot(
 
     centroids_ = []
     classes_ = []
-    for i in adata.uns[ref_cluster].obs["sub_cluster_labels"].unique():
+    order_dict = {}
+    order = 0
+    for i in ref_cluster.obs["sub_cluster_labels"].unique():
         classes_.append(i)
         centroids_.append(adata.uns["centroid_dict"][int(i)])
+        order_dict[int(i)] = int(order)
+        order += 1
 
-    from sklearn.preprocessing import MinMaxScaler
-    scaler = MinMaxScaler()
-    scale = scaler.fit_transform(centroids_)
-    #from sklearn.preprocessing import MinMaxScaler
-    #scaler = MinMaxScaler()
-    #centroids_scaled = scaler.fit_transform(centroids_)
-    w=0.1
+    stdm = adata.uns["ST_distance_matrix"]
+    non_abs_dpt = adata.uns["nonabs_dpt_distance_matrix"]
+
     for i in range(0,len(centroids_)):
         if i == len(centroids_)-1:
             break
@@ -61,9 +61,8 @@ def local_plot(
             j=j+1
             
             
-            m = (adata.uns[ref_dpt][classes_[i]]-
-                adata.uns[ref_dpt][classes_[i+j]])*(1-w) + (np.linalg.norm(scale[i]-
-                                            scale[i+j]))*w
+            m = stdm[order_dict[int(classes_[i])],order_dict[int(classes_[i+j])]]
+            dpt_distance = non_abs_dpt[order_dict[int(classes_[i])],order_dict[int(classes_[i+j])]]
             y = calculate_y(np.abs(m))
             
             x = np.linspace(centroids_[i][0],centroids_[i+j][0], 1000)
@@ -72,8 +71,8 @@ def local_plot(
             
             branch = ax.plot(x,y,z,zorder=10,c="#333333",linewidth=1,alpha=branch_alpha)
             if reverse:
-                m = -m
-            if m <=0:
+                dpt_distance = -dpt_distance
+            if dpt_distance <=0:
                 xyz = ([x[500],x[520]],[y[500],y[520]],[z[500],z[520]])
             else:
                 xyz = ([x[520],x[500]],[y[520],y[500]],[z[520],z[500]])
@@ -85,10 +84,10 @@ def local_plot(
             ax.text(x[500], y[500]-0.15, z[500], np.round(np.abs(m),3), color='black',size=5,zorder=100)
         
             
-    sc = ax.scatter(adata.uns[ref_cluster].obs["imagecol"],
+    sc = ax.scatter(ref_cluster.obs["imagecol"],
                0,
-               adata.uns[ref_cluster].obs["imagerow"],
-               c=adata.uns[ref_cluster].obs["dpt_pseudotime"],
+               ref_cluster.obs["imagerow"],
+               c=ref_cluster.obs["dpt_pseudotime"],
                s=spot_size,cmap = "viridis",zorder=0, alpha=data_alpha)
 
     _ = ax.scatter(adata.obs[adata.obs[use_label]!=cluster]["imagecol"],

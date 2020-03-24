@@ -3,6 +3,7 @@ from typing import Optional, Union
 import numpy as np
 import pandas as pd
 import networkx as nx
+from scipy.spatial.distance import cdist
 
 def global_level(
     adata: AnnData,
@@ -73,6 +74,8 @@ def global_level(
 	centroid_dict = dict(zip(clf.classes_.astype(int),clf.centroids_))
 	adata.uns["centroid_dict"] = centroid_dict
 
+
+
 	# Choose pseudo-root for the global level 
 	#adata.uns["iroot"] = np.flatnonzero(adata.obs[use_labels]  == str(pseudo_root))[0]
 
@@ -80,7 +83,11 @@ def global_level(
 	from stlearn.external.scanpy.api.tl import dpt
 	dpt(adata)
 
+
+
 	return adata if copy else None
+
+
 
 
 ######## utils ########
@@ -101,3 +108,4 @@ def selection_sort(x):
         swap = i + np.argmin(x[i:])
         (x[i], x[swap]) = (x[swap], x[i])
     return x
+

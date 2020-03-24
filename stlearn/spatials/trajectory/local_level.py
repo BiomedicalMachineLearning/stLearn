@@ -3,68 +3,49 @@ from typing import Optional, Union
 import numpy as np
 from stlearn.em import run_pca,run_diffmap
 from stlearn.pp import neighbors
+from scipy.spatial.distance import cdist
 
 def local_level(
     adata: AnnData,
-    use_label_lvl2: str = "louvain",
-    use_data_lvl2: str = "X_diffmap",
+    use_labels: str = "louvain",
     cluster: int = 9,
-    method: str = "max",
+    w: float = 0.5,
     copy: bool = False,
 ) -> Optional[AnnData]:
     
     print("Start construct trajectory for subcluster " + str(cluster))
     
-    tmp=adata.obs[adata.obs[use_label_lvl2]==str(cluster)]
+    tmp=adata.obs[adata.obs[use_labels]==str(cluster)]
     cluster_data = adata[list(tmp.index)]
 
+    list_cluster = cluster_data.obs["sub_cluster_labels"].unique()
+    dpt = []
+    sd = []
+    centroid_dict = cluster_data.uns["centroid_dict"]
+    for i in list_cluster:
+        dpt.append(cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==i]["dpt_pseudotime"].max())
+        sd.append(centroid_dict[int(i)])
+    dm = cdist(np.array(dpt).reshape(-1,1),np.array(dpt).reshape(-1,1),lambda u,v: np.abs(u-v))
 
-    #run_pca(cluster_data, svd_solver='arpack')
-    #neighbors(cluster_data, n_neighbors=4, n_pcs=20)
-
-    #run_diffmap(cluster_data)
+    non_abs_dm = cdist(np.array(dpt).reshape(-1,1),np.array(dpt).reshape(-1,1),lambda u,v: u-v)
+    adata.uns["nonabs_dpt_distance_matrix"] = non_abs_dm
 
 
-    #neighbors(cluster_data, n_neighbors=10, use_rep=use_data_lvl2)
+    scale_dm = dm/np.max(dm)
+    sdm = cdist(np.array(sd), np.array(sd), "euclidean")
+    scale_sdm = sdm/np.max(sdm)
 
-    #from stlearn.external.scanpy.api.tl import draw_graph
+    stdm = scale_dm*w + scale_sdm*(1-w)
+    adata.uns["ST_distance_matrix"] = stdm
 
-    #draw_graph(cluster_data)
-    #from sklearn.metrics import pairwise_distances_argmin_min
-    #x = [p[0] for p in cluster_data.obsm["X_draw_graph_fa"]]
-    #y = [p[1] for p in cluster_data.obsm["X_draw_graph_fa"]]
-    #centroid = (sum(x) / len(cluster_data.obsm["X_draw_graph_fa"]), sum(y) / len(cluster_data.obsm["X_draw_graph_fa"]))
-    #closest, _ = pairwise_distances_argmin_min([centroid], cluster_data.obsm["X_draw_graph_fa"])
-    #cluster_data.uns["cluster_" +str(cluster) +'_iroot'] = closest[0]
 
-    #from stlearn.external.scanpy.api.tl import dpt
-    #dpt(cluster_data)
 
     
-
-    average_time = {}
-    from sklearn.preprocessing import MinMaxScaler
-    scaler = MinMaxScaler()
-    scale = scaler.fit_transform(cluster_data.obs['dpt_pseudotime'].values.reshape(-1,1)).reshape(-1,1)
-    cluster_data.obs["dpt_pseudotime"] = scale 
-    
-    adata.uns["local_cluster_"+str(cluster)] = cluster_data
-    
-    for subcl in cluster_data.obs["sub_cluster_labels"].unique():
-        if method == "max":
-            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].max()
-        elif method == "mean":
-            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].mean()
-        else:
-            average_time[subcl] = cluster_data.obs[cluster_data.obs["sub_cluster_labels"]==subcl]["dpt_pseudotime"].median()
-        
-
-    adata.uns["cluster_" +str(cluster) + "_dpt"] = average_time
 
     return adata if copy else None
 
 
-        
+
 
 
     
