@@ -18,7 +18,8 @@ def extract_feature(
         cnn_base: _CNN_BASE = 'resnet50',
         n_components: int = 50,
         verbose: bool = False,
-        copy: bool = False
+        copy: bool = False,
+        seeds: int = 1
 ) -> Optional[AnnData]:
     feature_df = pd.DataFrame()
     model = Model(cnn_base)
@@ -41,7 +42,7 @@ def extract_feature(
     adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
 
     from sklearn.decomposition import PCA
-    pca = PCA(n_components = n_components)
+    pca = PCA(n_components = n_components, random_state=seeds)
     pca.fit(feature_df.transpose().to_numpy())
 
     adata.obsm["X_morphology"] = pca.transform(feature_df.transpose().to_numpy())
