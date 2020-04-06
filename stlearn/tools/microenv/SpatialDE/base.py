@@ -412,7 +412,7 @@ def dyn_de(X, exp_tab, kernel_space=None):
 
 def SpatialDE(
     adata: AnnData, 
-    use_data: str = "filtered_counts",
+    use_data: str = "normalized",
     top_genes: int = 10,
     kernel_space = None,
     copy: bool = False,
@@ -451,11 +451,11 @@ def SpatialDE(
     mll_results['pval'] = 1 - stats.chi2.cdf(mll_results['LLR'], df=1)
     mll_results['qval'] = qvalue(mll_results['pval'])
 
-    adata.uns["SptialDE_results"] = mll_results
+    adata.uns["SpatialDE_results"] = mll_results
 
-
-    adata.uns["SptialDE_top_genes"] = mll_results.sort_values('qval').head(top_genes)[['g', 'l', 'qval']]
+    adata.uns["SpatialDE_top_genes"] = mll_results.sort_values('qval').head(top_genes)['g'].tolist()
     
+    print("SpatialDE results stored in adata.uns['SpatialDE_results'] and adata.uns['SpatialDE_top_genes']")
 
     return adata if copy else None
 

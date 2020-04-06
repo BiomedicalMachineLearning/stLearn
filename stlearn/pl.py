@@ -5,3 +5,6 @@ from .plotting.microenv_plot import microenv_plot
 from .plotting.non_spatial_plot import non_spatial_plot
 from .plotting import trajectory
 from .plotting.QC_plot import QC_plot
+from .plotting.cci_plot import het_plot
+from .plotting.cci_plot import violin_plot
+from .plotting.cci_plot import stacked_bar_plot

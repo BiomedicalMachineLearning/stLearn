@@ -1,7 +1,8 @@
 # Adopted from spatialDE package
-from .base import dyn_de
-from .base import SpatialDE
-from .base import model_search
-from .aeh import fit_patterns
-from .aeh import spatial_patterns
+from .SpatialDE.base import dyn_de
+from .SpatialDE.base import SpatialDE
+from .SpatialDE.base import model_search
+from .SpatialDE.aeh import fit_patterns
+from .SpatialDE.aeh import spatial_patterns
 import NaiveDE
+
