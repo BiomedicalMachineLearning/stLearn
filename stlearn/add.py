@@ -3,3 +3,4 @@ from .adds.add_positions import positions
 from .adds.parsing import parsing
 from .adds.add_lr import lr
 from .adds.annotation import annotation
+from .adds.add_cpdb import cpdb

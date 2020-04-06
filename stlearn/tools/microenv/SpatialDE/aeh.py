@@ -231,8 +231,8 @@ def fit_patterns(X, Y, C, l, s2e_0=1.0, verbosity=0, maxiter=100, printerval=1, 
 def spatial_patterns(
     adata: AnnData, 
     results, 
-    C: int = 2, 
-    use_data: str = "filtered_counts", 
+    C: int = 3, 
+    use_data: str = "normalized", 
     copy: bool = False,
     **kwargs):
 
@@ -288,8 +288,5 @@ def spatial_patterns(
 
     for i in range(0,C):
         adata.uns["pattern_" + str(i)] = cres.query('pattern == @i').sort_values('membership')['g'].tolist()
-
-
-
 
     return adata if copy else None
