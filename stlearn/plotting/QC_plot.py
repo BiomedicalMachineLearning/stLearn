@@ -21,7 +21,8 @@ def QC_plot(
     from sklearn.preprocessing import MinMaxScaler
     reads_per_spot = adata.to_df().sum(axis=1)
     scaler = MinMaxScaler(feature_range=(5, spot_size))
-    reads_per_spot_size = scaler.fit_transform(reads_per_spot.to_numpy().reshape(-1, 1))
+    reads_per_spot_size = scaler.fit_transform(
+        reads_per_spot.to_numpy().reshape(-1, 1))
     genes_per_spot = adata.to_df().astype(bool).sum(axis=1)
 
     plt.rcParams['figure.dpi'] = dpi
@@ -40,7 +41,8 @@ def QC_plot(
                      vmin=vmin, vmax=vmax, cmap=plt.get_cmap(cmap), c=genes_per_spot)
 
     if show_color_bar:
-        cb = plt.colorbar(plot, cax=fig.add_axes([0.85, 0.5, 0.03, 0.35]), cmap=cmap)
+        cb = plt.colorbar(plot, cax=fig.add_axes(
+            [0.85, 0.5, 0.03, 0.35]), cmap=cmap)
         cb.ax.set_xlabel('Number of Genes', fontsize=10)
         cb.ax.xaxis.set_label_coords(0.98, 1.10)
         cb.outline.set_visible(False)
@@ -51,7 +53,8 @@ def QC_plot(
         markers = [size_min, size_min + 1 / 3 * (size_max - size_min),
                    size_min + 2 / 3 * (size_max - size_min), size_max]
         legend_markers = [plt.scatter([], [], s=i, c="grey") for i in markers]
-        labels = [str(int(scaler.inverse_transform(np.array(i).reshape(1, 1)))) for i in markers]
+        labels = [str(int(scaler.inverse_transform(np.array(i).reshape(1, 1))))
+                  for i in markers]
         fig.legend(handles=legend_markers, labels=labels, loc='lower right', bbox_to_anchor=(0.82, 0.1),
                    scatterpoints=1, frameon=False, handletextpad=0.1, title="Number of Reads")
 
@@ -65,6 +68,7 @@ def QC_plot(
     if name is None:
         name = method
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi, bbox_inches='tight', pad_inches=0)
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
 
     plt.show()

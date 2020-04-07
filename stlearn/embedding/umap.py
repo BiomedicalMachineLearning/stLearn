@@ -9,6 +9,7 @@ from .._compat import Literal
 
 _InitPos = Literal['paga', 'spectral', 'random']
 
+
 def run_umap(
     adata: AnnData,
     min_dist: float = 0.5,
@@ -53,7 +54,8 @@ def run_umap(
     """
     from stlearn.external.scanpy.api.tl import umap
     umap(adata, min_dist=min_dist, spread=spread, n_components=n_components,
-     maxiter=maxiter, alpha=alpha, gamma=gamma, negative_sample_rate=negative_sample_rate,
-      init_pos=init_pos, random_state=random_state, a=a, b=b, copy=copy, method=method)
+         maxiter=maxiter, alpha=alpha, gamma=gamma, negative_sample_rate=negative_sample_rate,
+         init_pos=init_pos, random_state=random_state, a=a, b=b, copy=copy, method=method)
 
-    print("UMAP is done! Generated in adata.obsm['X_umap'] nad adata.uns['umap']")
+    print(
+        "UMAP is done! Generated in adata.obsm['X_umap'] nad adata.uns['umap']")

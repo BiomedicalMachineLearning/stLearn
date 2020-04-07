@@ -72,8 +72,10 @@ def normalize_total(
     """
 
     from stlearn.external.scanpy.api.pp import normalize_total
-    
-    normalize_total(adata,target_sum=target_sum, exclude_highly_expressed=exclude_highly_expressed,
-     max_fraction=max_fraction, key_added=key_added, layers=layers, layer_norm=layer_norm, inplace=inplace)
+
+    normalize_total(adata, target_sum=target_sum,
+                    exclude_highly_expressed=exclude_highly_expressed,
+                    max_fraction=max_fraction, key_added=key_added,
+                    layers=layers, layer_norm=layer_norm, inplace=inplace)
 
     print("Normalization step is finished in adata.X")

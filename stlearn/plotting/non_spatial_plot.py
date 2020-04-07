@@ -10,6 +10,7 @@ from anndata import AnnData
 import warnings
 #from .utils import get_img_from_fig, checkType
 
+
 def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
@@ -17,7 +18,7 @@ def non_spatial_plot(
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
-    
+
     plt.rcParams['figure.dpi'] = dpi
 
     if 'paga' in adata.uns.keys():
@@ -25,20 +26,20 @@ def non_spatial_plot(
         from stlearn.external.scanpy.api.pl import paga
         print("PAGA plot:")
 
-        paga(adata,color=use_label)
+        paga(adata, color=use_label)
 
         from stlearn.external.scanpy.api.tl import draw_graph
 
-        draw_graph(adata,init_pos='paga')
+        draw_graph(adata, init_pos='paga')
         adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         from stlearn.external.scanpy.api.pl import draw_graph
 
         print("Gene expression (reduced dimension) plot:")
-        draw_graph(adata, color=use_label,legend_loc='on data')
+        draw_graph(adata, color=use_label, legend_loc='on data')
 
         print("Diffusion pseudotime plot:")
-        draw_graph(adata,color="dpt_pseudotime")
+        draw_graph(adata, color="dpt_pseudotime")
 
     else:
         from stlearn.external.scanpy.api.tl import draw_graph
@@ -47,14 +48,4 @@ def non_spatial_plot(
         adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         from stlearn.external.scanpy.api.pl import draw_graph
-        draw_graph(adata,color=use_label,legend_loc='on data')
-
-
-
-
-
-
-    
-
-
-        
+        draw_graph(adata, color=use_label, legend_loc='on data')

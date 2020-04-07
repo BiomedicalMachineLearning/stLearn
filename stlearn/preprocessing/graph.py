@@ -23,6 +23,7 @@ _MetricScipySpatial = Literal[
 ]
 _Metric = Union[_MetricSparseCapable, _MetricScipySpatial]
 
+
 def neighbors(
     adata: AnnData,
     n_neighbors: int = 15,
@@ -88,7 +89,7 @@ def neighbors(
     from stlearn.external.scanpy.api.pp import neighbors
 
     neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep,
-            knn=knn, random_state=random_state, method=method, metric=metric,
-            metric_kwds=metric_kwds, copy=copy)
+              knn=knn, random_state=random_state, method=method, metric=metric,
+              metric_kwds=metric_kwds, copy=copy)
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")

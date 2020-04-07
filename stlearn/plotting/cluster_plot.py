@@ -10,6 +10,7 @@ from anndata import AnnData
 import warnings
 #from .utils import get_img_from_fig, checkType
 
+
 def cluster_plot(
     adata: AnnData,
     name: str = None,
@@ -19,7 +20,7 @@ def cluster_plot(
     cmap: str = "vega_20_scanpy",
     tissue_alpha: float = 1.0,
     title: str = None,
-    spot_size: Union[float,int] = 6.5,
+    spot_size: Union[float, int] = 6.5,
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_legend: bool = True,
@@ -29,10 +30,8 @@ def cluster_plot(
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
-    
-    plt.rcParams['figure.dpi'] = dpi
 
-    
+    plt.rcParams['figure.dpi'] = dpi
 
     #tmp = adata.obs
     #tmp[use_data] = tmp[use_data].astype(int)
@@ -47,7 +46,8 @@ def cluster_plot(
     if show_trajectory:
 
         if not adata.uns["PTS_graph"]:
-            raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
+            raise ValueError(
+                "Please run stlearn.spatial.trajectory.pseudotimespace!")
 
         tmp = adata.uns["PTS_graph"]
 
@@ -57,10 +57,8 @@ def cluster_plot(
         G.remove_edges_from(remove)
         G.remove_node(9999)
         centroid_dict = adata.uns["centroid_dict"]
-        nx.draw_networkx_edges(G, pos=centroid_dict,node_size=1,alpha=1.0,
-            font_size=5,linewidths=1,edge_color='#f4efd3',arrowsize=5,arrowstyle='->',connectionstyle="arc3,rad=0.2")
-
-
+        nx.draw_networkx_edges(G, pos=centroid_dict, node_size=1, alpha=1.0,
+                               font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=5, arrowstyle='->', connectionstyle="arc3,rad=0.2")
 
     from stlearn.external.scanpy.plotting import palettes
     if cmap == "vega_10_scanpy":
@@ -72,83 +70,80 @@ def cluster_plot(
     elif cmap == "default_28":
         cmap = palettes.default_28
     else:
-        raise ValueError("We only support vega_10_scanpy, vega_20_scanpy, default_28, default_102")
+        raise ValueError(
+            "We only support vega_10_scanpy, vega_20_scanpy, default_28, default_102")
 
+    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
 
-
-    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",cmap)
-    
     cmap_ = plt.cm.get_cmap(cmaps)
 
     if list_cluster is not None:
-        tmp = adata.obs.loc[adata.obs[use_label].isin(np.array(list_cluster).astype(str))]
+        tmp = adata.obs.loc[adata.obs[use_label].isin(
+            np.array(list_cluster).astype(str))]
     else:
         tmp = adata.obs
 
     # Plot scatter plot based on pixel of spots
-    adata.uns["tmp_color"] =[]
+    adata.uns["tmp_color"] = []
 
-    for i,cluster in enumerate(tmp.groupby(use_label)):
+    for i, cluster in enumerate(tmp.groupby(use_label)):
 
         _ = a.scatter(cluster[1]['imagecol'], cluster[1]['imagerow'], c=[cmap_(int(i)/19)], label=cluster[0],
-                      edgecolor="none", alpha=data_alpha,s=spot_size,marker="o")
+                      edgecolor="none", alpha=data_alpha, s=spot_size, marker="o")
 
-        adata.uns["tmp_color"].append(matplotlib.colors.to_hex(cmap_(int(i)/19)))
-
-
-
-
+        adata.uns["tmp_color"].append(
+            matplotlib.colors.to_hex(cmap_(int(i)/19)))
 
     if show_legend:
-        lgnd = a.legend(bbox_to_anchor=(1.2, 1.0),labelspacing=0.05,fontsize=8,handleheight=1.,edgecolor='white')
+        lgnd = a.legend(bbox_to_anchor=(1.2, 1.0), labelspacing=0.05,
+                        fontsize=8, handleheight=1., edgecolor='white')
         for handle in lgnd.legendHandles:
             handle.set_sizes([20.0])
-
-            
 
     if not show_axis:
         a.axis('off')
 
     # Overlay the tissue image
-    a.imshow(adata.uns["tissue_img"],alpha=tissue_alpha, zorder=-1,)
+    a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
 
     if name is None:
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,bbox_inches='tight',pad_inches=0)
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
 
     if show_subcluster:
         if "sub_cluster_labels" not in adata.obs.columns:
             raise ValueError("Please run stlearn.spatial.cluster.localization")
 
         for cluster in list_cluster:
-            if len(adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"].unique()) < 2:
-                centroids = [centroidpython(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values)]
-                classes = np.array([adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"][0]])
-            
+            if len(adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"].unique()) < 2:
+                centroids = [centroidpython(adata.obs[adata.obs[use_label] == str(cluster)][[
+                                            "imagecol", "imagerow"]].values)]
+                classes = np.array(
+                    [adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"][0]])
+
             else:
                 from sklearn.neighbors import NearestCentroid
                 clf = NearestCentroid()
-                clf.fit(adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]].values, 
-                    adata.obs[adata.obs[use_label]==str(cluster)]["sub_cluster_labels"])
+                clf.fit(adata.obs[adata.obs[use_label] == str(cluster)][["imagecol", "imagerow"]].values,
+                        adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"])
 
                 centroids = clf.centroids_
                 classes = clf.classes_
 
-            for i,label in enumerate(classes):
+            for i, label in enumerate(classes):
                 if centroids[i][0] < 1500:
                     x = -100
                     y = 50
                 else:
                     x = 100
                     y = -50
-                a.text(centroids[i][0]+x,centroids[i][1]+y,label,color='black',fontsize = 5,zorder=3,
-                       bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)],boxstyle='round',alpha=1.0))
-    
+                a.text(centroids[i][0]+x, centroids[i][1]+y, label, color='black', fontsize=5, zorder=3,
+                       bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)], boxstyle='round', alpha=1.0))
+
     plt.show()
-
-
 
 
 def centroidpython(data):

@@ -6,6 +6,7 @@ import seaborn as sns
 import sys
 from anndata import AnnData
 
+
 def het_plot(
     adata: AnnData,
     het: pd.DataFrame,
@@ -16,10 +17,12 @@ def het_plot(
     plt.rcParams['figure.dpi'] = dpi
     fig, ax = plt.subplots()
     num_clusters = len(set(adata.obs[use_cluster])) + 1
-    ax.set_prop_cycle('color',plt.cm.gist_rainbow(np.linspace(0,1,num_clusters)))
+    ax.set_prop_cycle('color', plt.cm.gist_rainbow(
+        np.linspace(0, 1, num_clusters)))
     for item in set(adata.obs[use_cluster]):
-        ax.scatter(np.array(adata.obs[adata.obs[use_cluster]==item]['imagecol']), 
-                   -np.array(adata.obs[adata.obs[use_cluster]==item]['imagerow']), 
+        ax.scatter(np.array(adata.obs[adata.obs[use_cluster] == item]['imagecol']),
+                   -np.array(adata.obs[adata.obs[use_cluster]
+                                       == item]['imagerow']),
                    alpha=0.6, edgecolors='none')
     ax.legend(range(num_clusters))
     ax.grid(False)
@@ -50,6 +53,7 @@ def violin_plot(
     sns.violinplot(x='cci_cluster', y='LR_counts', data=violin, orient='v')
     plt.show()
 
+
 def stacked_bar_plot(
     adata: AnnData,
     use_annotation: str,
@@ -64,7 +68,8 @@ def stacked_bar_plot(
     try:
         label = adata.obs[use_annotation]
     except:
-        sys.exit('spot cell type not found in data.obs[' + use_annotation + ']')
+        sys.exit(
+            'spot cell type not found in data.obs[' + use_annotation + ']')
     df = pd.DataFrame(0, index=sorted(set(cci)), columns=set(label))
     for spot in cci.index:
         df.loc[cci[spot], label[spot]] += 1
