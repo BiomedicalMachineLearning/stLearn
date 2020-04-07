@@ -24,14 +24,17 @@ def tiling(
             imagerow_up = imagerow + crop_size / 2
             imagecol_left = imagecol - crop_size / 2
             imagecol_right = imagecol + crop_size / 2
-            tile = img_pillow.crop((imagecol_left, imagerow_down, imagecol_right, imagerow_up))
+            tile = img_pillow.crop(
+                (imagecol_left, imagerow_down, imagecol_right, imagerow_up))
             tile.thumbnail((target_size, target_size), Image.ANTIALIAS)
             tile.resize((target_size, target_size))
-            tile_name = str(imagecol) + '-' + str(imagerow) + '-' + str(crop_size)
+            tile_name = str(imagecol) + '-' + str(imagerow) + \
+                '-' + str(crop_size)
             out_tile = Path(out_path) / (tile_name + '.jpeg')
             tile_names.append(str(out_tile))
             if verbose:
-                print("generate tile at location ({}, {})".format(str(imagecol), str(imagerow)))
+                print("generate tile at location ({}, {})".format(
+                    str(imagecol), str(imagerow)))
             tile.save(out_tile, 'JPEG')
 
             pbar.update(1)

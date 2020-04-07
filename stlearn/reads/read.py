@@ -5,6 +5,7 @@ from typing import Union
 
 from anndata import AnnData
 
+
 def file_10x_h5(
     filename: Union[str, Path],
 ) -> AnnData:
@@ -15,7 +16,6 @@ def file_10x_h5(
     from stlearn.external.scanpy.readwrite import read_10x_h5
 
     adata = read_10x_h5(filename)
-    
 
     return adata
 

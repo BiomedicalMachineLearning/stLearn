@@ -14,10 +14,10 @@ def image(
 ) -> Optional[AnnData]:
     if imgpath is not None and os.path.isfile(imgpath):
         try:
-            img = plt.imread(imgpath,0)
+            img = plt.imread(imgpath, 0)
             adata.uns["tissue_img"] = img
             print("Added tissue image to the object!")
-            
+
             return adata if copy else None
         except:
             raise ValueError(f'''\

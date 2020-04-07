@@ -25,9 +25,11 @@ def adjust(
     point_tree = spatial.cKDTree(coor)
     img_embed = adata.obsm["X_morphology"]
     lag_coor = []
-    with tqdm(total=len(adata), desc="Adjusting data", bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:
+    with tqdm(total=len(adata), desc="Adjusting data",
+              bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:
         for i in range(len(coor)):
-            current_neightbor = point_tree.query_ball_point(coor.values[i], radius)  # Spatial weight
+            current_neightbor = point_tree.query_ball_point(
+                coor.values[i], radius)  # Spatial weight
             current_neightbor.remove(i)
 
             main_count = count_embed[i].reshape(1, -1)
@@ -52,22 +54,27 @@ def adjust(
                     similarity.append(eculidean)
                 elif similarity_matrix == "pearson":
                     from scipy.stats import pearsonr
-                    pearson_corr = abs(pearsonr(main_img.reshape(-1), i.reshape(-1))[0])
+                    pearson_corr = abs(
+                        pearsonr(main_img.reshape(-1), i.reshape(-1))[0])
                     similarity.append(pearson_corr)
                 elif similarity_matrix == "spearman":
                     from scipy.stats import spearmanr
-                    spearmanr_corr = abs(spearmanr(main_img.reshape(-1), i.reshape(-1))[0])
+                    spearmanr_corr = abs(
+                        spearmanr(main_img.reshape(-1), i.reshape(-1))[0])
                     similarity.append(spearmanr_corr)
 
             similarity = np.array(similarity).reshape((-1, 1))
-            surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
+            surrounding_count_adjusted = np.multiply(
+                surrounding_count, similarity)
 
             for i in range(0, rates):
                 if method == "median":
-                    main_count = np.append(main_count, np.median(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                    main_count = np.append(main_count,
+                                np.median(surrounding_count_adjusted, axis=0).reshape(1, -1),
                                            axis=0)
                 elif method == "mean":
-                    main_count = np.append(main_count, np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                    main_count = np.append(main_count,
+                                np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
                                            axis=0)
                 else:
                     raise ValueError("Only 'median' and 'mean' are aceptable")

@@ -3,6 +3,7 @@ from anndata import AnnData
 import numpy as np
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 
+
 def filter_genes(
     adata: AnnData,
     min_counts: Optional[int] = None,
@@ -13,7 +14,7 @@ def filter_genes(
 ) -> Union[AnnData, None, Tuple[np.ndarray, np.ndarray]]:
     """\
     Wrap function scanpy.pp.filter_genes
-    
+
     Filter genes based on number of cells or counts.
     Keep genes that have at least `min_counts` counts or are expressed in at
     least `min_cells` cells or have at most `max_counts` counts or are expressed
@@ -49,7 +50,5 @@ def filter_genes(
 
     from stlearn.external.scanpy.api.pp import filter_genes
 
-    filter_genes(adata,min_counts=min_counts, min_cells=min_cells,
-                max_counts=max_counts, max_cells=max_cells, inplace=inplace)
-
-
+    filter_genes(adata, min_counts=min_counts, min_cells=min_cells,
+                 max_counts=max_counts, max_cells=max_cells, inplace=inplace)

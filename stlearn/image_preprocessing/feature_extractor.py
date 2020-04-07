@@ -42,14 +42,12 @@ def extract_feature(
     adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
 
     from sklearn.decomposition import PCA
-    pca = PCA(n_components = n_components, random_state=seeds)
+    pca = PCA(n_components=n_components, random_state=seeds)
     pca.fit(feature_df.transpose().to_numpy())
 
-    adata.obsm["X_morphology"] = pca.transform(feature_df.transpose().to_numpy())
+    adata.obsm["X_morphology"] = pca.transform(
+        feature_df.transpose().to_numpy())
 
     print("The morphology feature is added to adata.obsm['X_morphology']!")
 
     return adata if copy else None
-
-
-
