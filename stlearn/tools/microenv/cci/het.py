@@ -6,7 +6,20 @@ def create_windows(
     adata: AnnData,
     num: int,   
 ):
-    
+    """ Generate screening windows across the tissue sample
+
+    Parameters
+    ----------
+    adata: AnnData          The data object to generate windows on
+    num: int                Number of windows on X- and Y- axes
+
+    Returns
+    -------
+    windows                 The individual windows defined by left and upper side
+    width                   Width of windows
+    height                  Height of windows
+
+    """    
     coor = adata.obs[['imagerow', 'imagecol']]
     max_x = max(coor['imagecol'])
     min_x = min(coor['imagecol'])
@@ -30,6 +43,20 @@ def count(
     use_clustering: str = 'louvain',
     use_clusters: list = [],
 ) -> pd.DataFrame:
+    """ Count the cell type densities
+
+    Parameters
+    ----------
+    adata: AnnData          The data object including the cell types to count
+    num: int                Number of windows on X- and Y-axes
+    use_clustering:         The cell type results to use in counting  
+    use_clusters:           Specify certain cluster(s) in counting 
+
+    Returns
+    -------
+    counts: pd.DataFrame    The counts of specified clusters in each window of the tissue
+
+    """
     if len(use_clusters) == 0:
         use_clusters = list(set(adata.obs[use_clustering]))
     coor = adata.obs[['imagerow', 'imagecol']]

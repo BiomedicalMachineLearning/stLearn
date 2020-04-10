@@ -19,6 +19,20 @@ def het_plot(
     dpi: int = 100,
     output: str = None,
 ):
+    """ Plot tissue clusters and cluster heterogeneity using heatmap
+
+    Parameters
+    ----------
+    adata: AnnData          The data object to plot
+    het: pd.DataFrame       Cluster heterogeneity count results from tl.cci.het
+    use_cluster: str        The clustering results to use
+    dpi: bool               Dots per inch
+
+    Returns
+    -------
+    N/A
+
+    """
     plt.rcParams['figure.dpi'] = dpi
     fig, ax = plt.subplots()
     num_clusters = len(set(adata.obs[use_cluster])) + 1
@@ -48,6 +62,20 @@ def violin_plot(
     dpi: int = 100,
     output: str = None,
 ):
+    """ Plot the distribution of CCI counts within spots of each CCI clusters
+
+    Parameters
+    ----------
+    adata: AnnData          The data object to plot
+    lr: str                 The specified Ligand-Receptor pair to plot
+    use_cluster: str        The clustering results to use
+    dpi: bool               Dots per inch
+
+    Returns
+    -------
+    N/A
+
+    """
     try:
         violin = adata.obsm['lr_neighbours'][[lr]]
     except:
@@ -65,6 +93,19 @@ def stacked_bar_plot(
     dpi: int = 100,
     output: str = None,
 ):
+    """ Plot the proportion of cell types in each CCI cluster
+
+    Parameters
+    ----------
+    adata: AnnData          The data object to plot
+    use_annotation: str     The cell type annotation to be used in plotting
+    dpi: bool               Dots per inch
+
+    Returns
+    -------
+    N/A
+
+    """
     sns.set()
     try:
         cci = adata.obs['lr_neighbours_louvain']

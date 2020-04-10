@@ -14,7 +14,20 @@ def lr(
     threshold: float = 0,
     distance: int = 10,
 ) -> AnnData:
+    """ cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots
 
+    Parameters
+    ----------
+    adata: AnnData          The data object to scan
+    use_data: str           Data to be used in L-R scanning
+    threshold: float        Threshold to determine the significant L-R expression in counting
+    distance: int           Distance to determine the nearest neighbour
+
+    Returns
+    -------
+    adata: AnnData          The data object including the lr_scan results
+
+    """
     data = adata.obsm[use_data]
     if not isinstance(data, pd.DataFrame):
         if sc.sparse.issparse(data):
