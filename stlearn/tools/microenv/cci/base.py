@@ -14,7 +14,18 @@ def lr(
     threshold: float = 0,
     distance: int = 10,
 ) -> AnnData:
-
+    """ cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots
+    Parameters
+    ----------
+    adata: AnnData          The data object to scan
+    use_data: str           Data to be used in L-R scanning
+    threshold: float        Threshold to determine the significant L-R expression in counting
+    distance: int           Distance to determine the nearest neighbour
+    
+    Returns
+    -------
+    adata: AnnData          The data object including the lr_scan results
+    """
     data = adata.obsm[use_data]
     if not isinstance(data, pd.DataFrame):
         if sc.sparse.issparse(data):
@@ -65,8 +76,8 @@ def lr(
     # locate the highest Ligand-Receptor expressing cluster
     st_lr_cluster = []
     for n in range(max([int(i) for i in adata.obs['lr_neighbours_louvain']]) + 1):
-        pair_idx = [i for i in range(len(adata.obs['lr_neighbours_louvain'])) if int(adata.obs['lr_neighbours_louvain'][i])==n]
-        st_lr_cluster.append(adata.obsm['lr_neighbours'].iloc[pair_idx, :].sum().sum() / len(pair_idx))
+        spot_idx = [i for i in range(len(adata.obs['lr_neighbours_louvain'])) if int(adata.obs['lr_neighbours_louvain'][i])==n]
+        st_lr_cluster.append(adata.obsm['lr_neighbours'].iloc[spot_idx, :].sum().sum() / len(spot_idx))
 
     adata.uns['lr_neighbours_louvain_max'] = str(st_lr_cluster.index(max(st_lr_cluster)))
     print("Spatial distribution of LR co-expression is written to adata.obsm['lr_neighbours']")
