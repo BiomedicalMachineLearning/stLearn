@@ -14,10 +14,27 @@ import warnings
 def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
-    dpi: int = 180,
-    output: str = None,
-    copy: bool = False,
+    dpi: int = 180
 ) -> Optional[AnnData]:
+    
+    """\
+    A wrap function to plot all the non-spatial plot from scanpy.
+
+    This function will produce 3 plots: PAGA graph, clustering plot in PAGA space and
+    DPT in PAGA space.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    dpi
+        Set dpi as the resolution for the plot.
+    Returns
+    -------
+    Nothing
+    """
 
     plt.rcParams['figure.dpi'] = dpi
 

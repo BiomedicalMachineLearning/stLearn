@@ -51,6 +51,12 @@ def run_umap(
         If `RandomState`, `random_state` is the random number generator;
         If `None`, the random number generator is the `RandomState` instance used
         by `np.random`.
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    `X_umap` : :class:`numpy.ndarray` (`adata.obsm`)
+        Independent Component Analysis representation of data.
+
     """
     from stlearn.external.scanpy.api.tl import umap
     umap(adata, min_dist=min_dist, spread=spread, n_components=n_components,

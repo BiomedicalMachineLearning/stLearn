@@ -6,7 +6,7 @@ import networkx as nx
 from scipy.spatial.distance import cdist
 
 
-def pseudotimespace(
+def pseudospacetime(
     adata: AnnData,
     use_labels: str = "louvain",
     list_cluster: list = [],
@@ -14,6 +14,28 @@ def pseudotimespace(
 
     copy: bool = False,
 ) -> Optional[AnnData]:
+
+    """\
+    Perform global sptial trajectory inference. It includes local clustering,
+    PAGA, DPT and adjusted DPT and mapping to tissue array.
+    This is the preparation step for pseudo-space-time.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    list_cluster
+        Setup a list of cluster to perform pseudo-space-time
+    use_label
+        Use label result of clustering method.
+    w
+        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Anndata
+    """
 
     assert w <= 1, "w should be in range 0 to 1"
     # Get global graph

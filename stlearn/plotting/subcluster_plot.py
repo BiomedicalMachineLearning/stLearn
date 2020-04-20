@@ -12,20 +12,55 @@ import warnings
 
 def subcluster_plot(
     adata: AnnData,
-    name: str = None,
     use_label: str = "louvain",
     cluster: int = 0,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "jet",
-    title: str = None,
     spot_size: Union[float, int] = 5,
     show_axis: bool = False,
     dpi: int = 192,
+    name: str = None,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+    """\
+    Sub-clustering plot for sptial transcriptomics data.
 
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    list_cluster
+        Choose set of clusters that will display in the plot.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    name
+        Name of the output figure file.
+    output
+        Save the figure as file or not.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
     plt.rcParams['figure.dpi'] = dpi
 
     if str(cluster) not in adata.obs[use_label].unique():

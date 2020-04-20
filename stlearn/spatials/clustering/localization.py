@@ -8,20 +8,44 @@ from natsort import natsorted
 
 def localization(
     adata: AnnData,
-    use_labels: str = "louvain",
+    use_label: str = "louvain",
     eps: int = 20,
     min_samples: int = 0,
     copy: bool = False,
 ) -> Optional[AnnData]:
+
+    """\
+    Perform local clustering by using DBSCAN.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    eps
+        The maximum distance between two samples for one to be considered as 
+        in the neighborhood of the other. This is not a maximum bound on the 
+        distances of points within a cluster. This is the most important DBSCAN 
+        parameter to choose appropriately for your data set and distance function.
+    min_samples
+        The number of samples (or total weight) in a neighborhood for a point to be
+        considered as a core point. This includes the point itself.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Anndata
+    """
 
     if "sub_cluster_labels" in adata.obs.columns:
         adata.obs = adata.obs.drop("sub_cluster_labels", axis=1)
 
     pd.set_option('mode.chained_assignment', None)
     subclusters = pd.Series()
-    for i in adata.obs[use_labels].unique():
+    for i in adata.obs[use_label].unique():
 
-        tmp = adata.obs[adata.obs[use_labels] == i]
+        tmp = adata.obs[adata.obs[use_label] == i]
 
         clustering = DBSCAN(eps=eps, min_samples=0, algorithm="kd_tree").fit(
             tmp[["imagerow", "imagecol"]])

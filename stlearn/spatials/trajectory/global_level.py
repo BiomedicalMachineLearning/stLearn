@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist
 
 def global_level(
     adata: AnnData,
-    use_labels: str = "louvain",
+    use_label: str = "louvain",
     eps: float = 20,
     threshold: float = 0.01,
     radius: int = 50,
@@ -16,13 +16,42 @@ def global_level(
     copy: bool = False,
 ) -> Optional[AnnData]:
 
+    """\
+    Perform global sptial trajectory inference. It includes local clustering,
+    PAGA, DPT and adjusted DPT and mapping to tissue array.
+    This is the preparation step for pseudo-space-time.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    eps
+        The maximum distance between two samples for one to be considered as 
+        in the neighborhood of the other. This is not a maximum bound on the 
+        distances of points within a cluster. This is the most important DBSCAN 
+        parameter to choose appropriately for your data set and distance function.
+    threshold
+        Threshold to find the significant connection for PAGA graph.
+    radius
+        radius to adjust data for diffusion map
+    method
+        method to adjust the data.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Anndata
+    """
+
     # Localize
     from stlearn.spatials.clustering import localization
-    localization(adata, use_labels=use_labels, eps=eps)
+    localization(adata, use_label=use_label, eps=eps)
 
     # Running paga
     from stlearn.external.scanpy.api.tl import paga
-    paga(adata, groups=use_labels)
+    paga(adata, groups=use_label)
 
     # Denoising the graph
     from stlearn.external.scanpy.api.tl import diffmap
@@ -42,9 +71,9 @@ def global_level(
 
     # Mapping louvain label to subcluster
     split_node = {}
-    for label in adata.obs[use_labels].unique():
+    for label in adata.obs[use_label].unique():
         split_node[int(label)] = list(
-            adata.obs[adata.obs[use_labels] == label]["sub_cluster_labels"].unique())
+            adata.obs[adata.obs[use_label] == label]["sub_cluster_labels"].unique())
 
     adata.uns["split_node"] = split_node
     # Replicate louvain label row to prepare for subcluster connection 
@@ -78,9 +107,6 @@ def global_level(
             adata.obs["sub_cluster_labels"])
     centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_))
     adata.uns["centroid_dict"] = centroid_dict
-
-    # Choose pseudo-root for the global level
-    #adata.uns["iroot"] = np.flatnonzero(adata.obs[use_labels]  == str(pseudo_root))[0]
 
     # Running diffusion pseudo-time
     from stlearn.external.scanpy.api.tl import dpt

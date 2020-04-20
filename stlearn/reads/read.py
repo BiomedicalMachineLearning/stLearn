@@ -11,6 +11,8 @@ def file_10x_h5(
 ) -> AnnData:
     """
     Wrap function scanpy.read_10x_h5
+    Read 10x-Genomics-formatted hdf5 file.
+
     """
 
     from stlearn.external.scanpy.readwrite import read_10x_h5
@@ -25,6 +27,7 @@ def file_10x_mtx(
 ) -> AnnData:
     """
     Wrap function scanpy.read_10x_mtx
+    Read .mtx file.
     """
 
     from stlearn.external.scanpy.readwrite import read_10x_mtx
@@ -39,6 +42,8 @@ def file_table(
 ) -> AnnData:
     """
     Wrap function scanpy.read
+    Read file and return AnnData object.
+
     """
 
     from stlearn.external.scanpy.readwrite import read

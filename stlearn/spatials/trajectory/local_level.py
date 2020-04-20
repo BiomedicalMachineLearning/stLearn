@@ -8,15 +8,37 @@ from scipy.spatial.distance import cdist
 
 def local_level(
     adata: AnnData,
-    use_labels: str = "louvain",
+    use_label: str = "louvain",
     cluster: int = 9,
     w: float = 0.5,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
+    """\
+    Perform local sptial trajectory inference (required run global_level first).
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    cluster
+        Choose cluster to perform local spatial trajectory inference.
+    threshold
+        Threshold to find the significant connection for PAGA graph.
+    w
+        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Anndata
+    """
+
     print("Start construct trajectory for subcluster " + str(cluster))
 
-    tmp = adata.obs[adata.obs[use_labels] == str(cluster)]
+    tmp = adata.obs[adata.obs[use_label] == str(cluster)]
     cluster_data = adata[list(tmp.index)]
 
     list_cluster = cluster_data.obs["sub_cluster_labels"].unique()
