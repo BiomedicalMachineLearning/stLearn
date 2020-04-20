@@ -13,22 +13,53 @@ from .utils import get_img_from_fig
 
 def microenv_plot(
     adata: AnnData,
-    name: str = None,
     use_data: str = None,
-    genes: Optional[Union[str, list]] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
-    title: str = None,
-    x_label: str = None,
-    y_label: str = None,
     spot_size: Union[float, int] = 6.5,
     show_color_bar: bool = True,
     show_axis: bool = False,
     dpi: int = 192,
+    name: str = None,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+    """\
+    Plotting microenvironment.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_data
+        Use dimensionality reduction result data.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    name
+        Name of the output figure file.
+    output
+        Save the figure as file or not.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
 
     colors = _microenv_plot(adata, use_data)
 
@@ -56,6 +87,8 @@ def microenv_plot(
         # Overlay the tissue image
         a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
 
+        if name is None:
+            name = method
         if output is not None:
             fig.savefig(output + "/factor_" + str(i+1) + ".png",
                         dpi=dpi, bbox_inches='tight', pad_inches=0)

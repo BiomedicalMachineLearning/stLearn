@@ -13,24 +13,61 @@ import warnings
 
 def gene_plot(
     adata: AnnData,
-    name: str = None,
     method: str = None,
     genes: Optional[Union[str, list]] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
-    title: str = None,
-    x_label: str = None,
-    y_label: str = None,
     spot_size: Union[float, int] = 6.5,
     show_legend: bool = False,
     show_color_bar: bool = True,
     show_axis: bool = False,
     dpi: int = 192,
+    name: str = None,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+    """\
+    Gene expression plot for sptial transcriptomics data.
 
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    method
+        Use method to count. We prorive: NaiveMean, NaiveSum, CumSum.
+    genes
+        Choose a gene or a list of genes.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    show_trajectory
+        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+    show_subcluster
+        Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
+    name
+        Name of the output figure file.
+    output
+        Save the figure as file or not.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
     plt.rcParams['figure.dpi'] = dpi
 
     if type(genes) == str:

@@ -13,6 +13,28 @@ def positions(
     copy: bool = False,
 ) -> Optional[AnnData]:
 
+    """\
+    Adding spatial information into the Anndata object
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    position_filepath
+        Path to tissue_positions_list file.
+    scale_filepath
+        Path to scalefactors_json file.
+    quality
+        Choosing low or high resolution image.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    **imagecol** and **imagerow** : `adata.obs` field
+        Spatial information of the tissue image.
+    """
+
     tissue_positions = pd.read_csv(position_filepath, header=None)
     tissue_positions.columns = ["barcode", "tissue",
                                 "row", "col", "imagerow", "imagecol"]

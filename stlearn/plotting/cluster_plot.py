@@ -13,7 +13,6 @@ import warnings
 
 def cluster_plot(
     adata: AnnData,
-    name: str = None,
     use_label: str = "louvain",
     list_cluster: list = None,
     data_alpha: float = 1.0,
@@ -27,14 +26,55 @@ def cluster_plot(
     dpi: int = 180,
     show_trajectory: bool = False,
     show_subcluster: bool = False,
+    name: str = None,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
+    """\
+    Clustering plot for sptial transcriptomics data. Also it has a function to display trajectory inference.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    list_cluster
+        Choose set of clusters that will display in the plot.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    show_trajectory
+        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+    show_subcluster
+        Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
+    name
+        Name of the output figure file.
+    output
+        Save the figure as file or not.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
+
     plt.rcParams['figure.dpi'] = dpi
 
-    #tmp = adata.obs
-    #tmp[use_data] = tmp[use_data].astype(int)
     n_clusters = len(adata.obs[use_label].unique())
 
     # Option for turning off showing figure

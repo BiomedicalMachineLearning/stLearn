@@ -12,6 +12,24 @@ def image(
     imgpath: Union[Path, str],
     copy: bool = False,
 ) -> Optional[AnnData]:
+    """\
+    Adding image data to the Anndata object
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    imgpath
+        Image path.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    **tissue_img** : `adata.uns` field
+        Array format of image, saving by Pillow package.
+    """
+
     if imgpath is not None and os.path.isfile(imgpath):
         try:
             img = plt.imread(imgpath, 0)
