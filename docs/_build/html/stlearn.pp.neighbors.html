@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>stlearn.pp.neighbors &mdash; stLearn 0.1.7 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="stlearn.pp.tiling" href="stlearn.pp.tiling.html" />
+    <link rel="prev" title="stlearn.pp.scale" href="stlearn.pp.scale.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.7
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">CONTENT:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.filter_genes.html">stlearn.pp.filter_genes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.log1p.html">stlearn.pp.log1p</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.normalize_total.html">stlearn.pp.normalize_total</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.scale.html">stlearn.pp.scale</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.pp.neighbors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.tiling.html">stlearn.pp.tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.extract_feature.html">stlearn.pp.extract_feature</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.em">Embedding: <cite>em</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.spatial">Spatial: <cite>spatial</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.tl">Tools: <cite>tl</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pl">Plot: <cite>pl</cite></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="api.html">API</a> &raquo;</li>
+        
+      <li>stlearn.pp.neighbors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/stlearn.pp.neighbors.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="stlearn-pp-neighbors">
+<h1>stlearn.pp.neighbors<a class="headerlink" href="#stlearn-pp-neighbors" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="stlearn.pp.neighbors">
+<code class="sig-prename descclassname">stlearn.pp.</code><code class="sig-name descname">neighbors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">n_neighbors</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">n_pcs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_rep</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">knn</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="p">:</span> <span class="n">Union[int, numpy.random.mtrand.RandomState, None]</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Literal<span class="p">[</span>umap<span class="p">, </span>gauss<span class="p">, </span>rapids<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'umap'</span></em>, <em class="sig-param"><span class="n">metric</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Literal<span class="p">[</span>cityblock<span class="p">, </span>cosine<span class="p">, </span>euclidean<span class="p">, </span>l1<span class="p">, </span>l2<span class="p">, </span>manhattan<span class="p">]</span><span class="p">, </span>Literal<span class="p">[</span>braycurtis<span class="p">, </span>canberra<span class="p">, </span>chebyshev<span class="p">, </span>correlation<span class="p">, </span>dice<span class="p">, </span>hamming<span class="p">, </span>jaccard<span class="p">, </span>kulsinski<span class="p">, </span>mahalanobis<span class="p">, </span>minkowski<span class="p">, </span>rogerstanimoto<span class="p">, </span>russellrao<span class="p">, </span>seuclidean<span class="p">, </span>sokalmichener<span class="p">, </span>sokalsneath<span class="p">, </span>sqeuclidean<span class="p">, </span>yule<span class="p">]</span><span class="p">, </span>Callable<span class="p">[</span><span class="p">[</span>numpy.ndarray<span class="p">, </span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">metric_kwds</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">mappingproxy({})</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/preprocessing/graph.html#neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pp.neighbors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute a neighborhood graph of observations <span id="id1">[McInnes18]</span>.
+The neighbor search efficiency of this heavily relies on UMAP <span id="id2">[McInnes18]</span>,
+which also provides a method for estimating connectivities of data points -
+the connectivity of the manifold (<cite>method==’umap’</cite>). If <cite>method==’gauss’</cite>,
+connectivities are computed according to <span id="id3">[Coifman05]</span>, in the adaption of
+<span id="id4">[Haghverdi16]</span>.
+:param adata: Annotated data matrix.
+:param n_neighbors: The size of local neighborhood (in terms of number of neighboring data</p>
+<blockquote>
+<div><p>points) used for manifold approximation. Larger values result in more
+global views of the manifold, while smaller values result in more local
+data being preserved. In general values should be in the range 2 to 100.
+If <cite>knn</cite> is <cite>True</cite>, number of nearest neighbors to be searched. If <cite>knn</cite>
+is <cite>False</cite>, a Gaussian kernel width is set to the distance of the
+<cite>n_neighbors</cite> neighbor.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>{n_pcs}</strong> – </p></li>
+<li><p><strong>{use_rep}</strong> – </p></li>
+<li><p><strong>knn</strong> – If <cite>True</cite>, use a hard threshold to restrict the number of neighbors to
+<cite>n_neighbors</cite>, that is, consider a knn graph. Otherwise, use a Gaussian
+Kernel to assign low weights to neighbors more distant than the
+<cite>n_neighbors</cite> nearest neighbor.</p></li>
+<li><p><strong>random_state</strong> – A numpy random seed.</p></li>
+<li><p><strong>method</strong> – Use ‘umap’ <span id="id5">[McInnes18]</span> or ‘gauss’ (Gauss kernel following <span id="id6">[Coifman05]</span>
+with adaptive width <span id="id7">[Haghverdi16]</span>) for computing connectivities.
+Use ‘rapids’ for the RAPIDS implementation of UMAP (experimental, GPU
+only).</p></li>
+<li><p><strong>metric</strong> – A known metric’s name or a callable that returns a distance.</p></li>
+<li><p><strong>metric_kwds</strong> – Options for the metric.</p></li>
+<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Depending on <cite>copy</cite>, updates or returns <cite>adata</cite> with the following</p></li>
+<li><p><strong>**connectivities**</strong> (sparse matrix (<cite>.uns[‘neighbors’]</cite>, dtype <cite>float32</cite>)) – Weighted adjacency matrix of the neighborhood graph of data
+points. Weights should be interpreted as connectivities.</p></li>
+<li><p><strong>**distances**</strong> (sparse matrix (<cite>.uns[‘neighbors’]</cite>, dtype <cite>float32</cite>)) – Instead of decaying weights, this stores distances for each pair of
+neighbors.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stlearn.pp.tiling.html" class="btn btn-neutral float-right" title="stlearn.pp.tiling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stlearn.pp.scale.html" class="btn btn-neutral float-left" title="stlearn.pp.scale" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -9,7 +9,7 @@ from .het import create_windows
 def merge(
     adata: AnnData,
     use_lr: str = 'lr_neighbours_louvain_max',
-    use_het: pd.DataFrame,
+    use_het: pd.DataFrame = None,
 ) -> AnnData:
     """ Merge results from cell type heterogeneity and L-R clustering
     Parameters

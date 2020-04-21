@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Genomics and Machine Learning lab <duy.pham@uqconnect.edu.au>
+* Genomics and Machine Learning lab
 
 Contributors
 ------------

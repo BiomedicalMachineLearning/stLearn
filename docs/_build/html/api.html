@@ -1,0 +1,515 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API &mdash; stLearn 0.1.7 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="stlearn.read.file_table" href="stlearn.read.file_table.html" />
+    <link rel="prev" title="SpatialDE tutorial" href="spatialDE.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.7
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">CONTENT:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.read">Reading: <cite>read</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_table.html">stlearn.read.file_table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_10x_mtx.html">stlearn.read.file_10x_mtx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_10x_h5.html">stlearn.read.file_10x_h5</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.add">Add: <cite>add</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.image.html">stlearn.add.image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.positions.html">stlearn.add.positions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.parsing.html">stlearn.add.parsing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.lr.html">stlearn.add.lr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.annotation.html">stlearn.add.annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.cpdb.html">stlearn.add.cpdb</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.pp">Preprocessing: <cite>pp</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.filter_genes.html">stlearn.pp.filter_genes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.log1p.html">stlearn.pp.log1p</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.normalize_total.html">stlearn.pp.normalize_total</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.scale.html">stlearn.pp.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.neighbors.html">stlearn.pp.neighbors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.tiling.html">stlearn.pp.tiling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pp.extract_feature.html">stlearn.pp.extract_feature</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.em">Embedding: <cite>em</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.em.run_pca.html">stlearn.em.run_pca</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.em.run_umap.html">stlearn.em.run_umap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.em.run_ica.html">stlearn.em.run_ica</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.em.run_fa.html">stlearn.em.run_fa</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.em.run_diffmap.html">stlearn.em.run_diffmap</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.spatial">Spatial: <cite>spatial</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.clustering.localization.html">stlearn.spatial.clustering.localization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.global_level.html">stlearn.spatial.trajectory.global_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.local_level.html">stlearn.spatial.trajectory.local_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.morphology.adjust.html">stlearn.spatial.morphology.adjust</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.tl">Tools: <cite>tl</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.tl.clustering.kmeans.html">stlearn.tl.clustering.kmeans</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.tl.clustering.louvain.html">stlearn.tl.clustering.louvain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.tl.cci.lr.html">stlearn.tl.cci.lr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.tl.cci.merge.html">stlearn.tl.cci.merge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.tl.SpatialDE.html">stlearn.tl.SpatialDE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.pl">Plot: <cite>pl</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.gene_plot.html">stlearn.pl.gene_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.cluster_plot.html">stlearn.pl.cluster_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.subcluster_plot.html">stlearn.pl.subcluster_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.microenv_plot.html">stlearn.pl.microenv_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.non_spatial_plot.html">stlearn.pl.non_spatial_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.QC_plot.html">stlearn.pl.QC_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.het_plot.html">stlearn.pl.het_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.violin_plot.html">stlearn.pl.violin_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.stacked_bar_plot.html">stlearn.pl.stacked_bar_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.trajectory.global_plot.html">stlearn.pl.trajectory.global_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.trajectory.local_plot.html">stlearn.pl.trajectory.local_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.trajectory.tree_plot.html">stlearn.pl.trajectory.tree_plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<span class="target" id="module-stlearn"></span><p>Top-level package for stLearn.</p>
+<div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Import stLearn as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
+</pre></div>
+</div>
+<div class="section" id="module-stlearn.read">
+<span id="reading-read"></span><h2>Reading: <cite>read</cite><a class="headerlink" href="#module-stlearn.read" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.read.file_table.html#stlearn.read.file_table" title="stlearn.read.file_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_table</span></code></a>(filename)</p></td>
+<td><p>Wrap function scanpy.read Read file and return AnnData object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.read.file_10x_mtx.html#stlearn.read.file_10x_mtx" title="stlearn.read.file_10x_mtx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_10x_mtx</span></code></a>(filename)</p></td>
+<td><p>Wrap function scanpy.read_10x_mtx Read .mtx file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.read.file_10x_h5.html#stlearn.read.file_10x_h5" title="stlearn.read.file_10x_h5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_10x_h5</span></code></a>(filename)</p></td>
+<td><p>Wrap function scanpy.read_10x_h5 Read 10x-Genomics-formatted hdf5 file.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.add">
+<span id="add-add"></span><h2>Add: <cite>add</cite><a class="headerlink" href="#module-stlearn.add" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.image.html#stlearn.add.image" title="stlearn.add.image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.image</span></code></a>(adata, imgpath[, copy])</p></td>
+<td><p>Adding image data to the Anndata object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.positions.html#stlearn.add.positions" title="stlearn.add.positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.positions</span></code></a>(adata[, position_filepath, …])</p></td>
+<td><p>Adding spatial information into the Anndata object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.parsing.html#stlearn.add.parsing" title="stlearn.add.parsing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.parsing</span></code></a>(adata, coordinates_file[, copy])</p></td>
+<td><p>Parsing the old spaital transcriptomics data</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.lr.html#stlearn.add.lr" title="stlearn.add.lr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.lr</span></code></a>(adata[, copy])</p></td>
+<td><p>Add significant Ligand-Receptor pairs into AnnData object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.annotation.html#stlearn.add.annotation" title="stlearn.add.annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.annotation</span></code></a>(adata, label_list[, …])</p></td>
+<td><p>Adding annotation for cluster</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.cpdb.html#stlearn.add.cpdb" title="stlearn.add.cpdb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.cpdb</span></code></a>(adata[, cpdb_filepath, sep, copy])</p></td>
+<td><p>Add CPDB results into AnnData object</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.pp">
+<span id="preprocessing-pp"></span><h2>Preprocessing: <cite>pp</cite><a class="headerlink" href="#module-stlearn.pp" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pp.filter_genes.html#stlearn.pp.filter_genes" title="stlearn.pp.filter_genes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.filter_genes</span></code></a>(adata[, min_counts, …])</p></td>
+<td><p>Wrap function scanpy.pp.filter_genes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pp.log1p.html#stlearn.pp.log1p" title="stlearn.pp.log1p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.log1p</span></code></a>(adata[, copy, chunked, chunk_size, …])</p></td>
+<td><p>Wrap function of scanpy.pp.log1p Copyright (c) 2017 F.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pp.normalize_total.html#stlearn.pp.normalize_total" title="stlearn.pp.normalize_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.normalize_total</span></code></a>(adata[, target_sum, …])</p></td>
+<td><p>Wrap function from scanpy.pp.log1p Normalize counts per cell.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pp.scale.html#stlearn.pp.scale" title="stlearn.pp.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.scale</span></code></a>(adata[, zero_center, max_value, copy])</p></td>
+<td><p>Wrap function of scanpy.pp.scale</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pp.neighbors.html#stlearn.pp.neighbors" title="stlearn.pp.neighbors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.neighbors</span></code></a>(adata[, n_neighbors, n_pcs, …])</p></td>
+<td><p>Compute a neighborhood graph of observations <span id="id1">[McInnes18]</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pp.tiling.html#stlearn.pp.tiling" title="stlearn.pp.tiling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.tiling</span></code></a>(adata[, out_path, crop_size, …])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pp.extract_feature.html#stlearn.pp.extract_feature" title="stlearn.pp.extract_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.extract_feature</span></code></a>(adata[, cnn_base, …])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.em">
+<span id="embedding-em"></span><h2>Embedding: <cite>em</cite><a class="headerlink" href="#module-stlearn.em" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.em.run_pca.html#stlearn.em.run_pca" title="stlearn.em.run_pca"><code class="xref py py-obj docutils literal notranslate"><span class="pre">em.run_pca</span></code></a>(data[, n_comps, zero_center, …])</p></td>
+<td><p>Wrap function scanpy.pp.pca Principal component analysis <span id="id2">[Pedregosa11]</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.em.run_umap.html#stlearn.em.run_umap" title="stlearn.em.run_umap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">em.run_umap</span></code></a>(adata[, min_dist, spread, …])</p></td>
+<td><p>Wrap function scanpy.pp.umap Embed the neighborhood graph using UMAP <span id="id3">[McInnes18]</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.em.run_ica.html#stlearn.em.run_ica" title="stlearn.em.run_ica"><code class="xref py py-obj docutils literal notranslate"><span class="pre">em.run_ica</span></code></a>(adata[, n_factors, fun, tol, …])</p></td>
+<td><p>FastICA: a fast algorithm for Independent Component Analysis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.em.run_fa.html#stlearn.em.run_fa" title="stlearn.em.run_fa"><code class="xref py py-obj docutils literal notranslate"><span class="pre">em.run_fa</span></code></a>(adata[, n_factors, tol, max_iter, …])</p></td>
+<td><p>Factor Analysis (FA) A simple linear generative model with Gaussian latent variables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.em.run_diffmap.html#stlearn.em.run_diffmap" title="stlearn.em.run_diffmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">em.run_diffmap</span></code></a>(adata[, n_comps, copy])</p></td>
+<td><p>Diffusion Maps <span id="id4">[Coifman05]</span> <span id="id5">[Haghverdi15]</span> <span id="id6">[Wolf18]</span>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.spatial">
+<span id="spatial-spatial"></span><h2>Spatial: <cite>spatial</cite><a class="headerlink" href="#module-stlearn.spatial" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.clustering.localization.html#stlearn.spatial.clustering.localization" title="stlearn.spatial.clustering.localization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.clustering.localization</span></code></a>(adata[, …])</p></td>
+<td><p>Perform local clustering by using DBSCAN.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.global_level.html#stlearn.spatial.trajectory.global_level" title="stlearn.spatial.trajectory.global_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.global_level</span></code></a>(adata[, …])</p></td>
+<td><p>Perform global sptial trajectory inference.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.local_level.html#stlearn.spatial.trajectory.local_level" title="stlearn.spatial.trajectory.local_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.local_level</span></code></a>(adata[, …])</p></td>
+<td><p>Perform local sptial trajectory inference (required run global_level first).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.morphology.adjust.html#stlearn.spatial.morphology.adjust" title="stlearn.spatial.morphology.adjust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.morphology.adjust</span></code></a>(adata[, use_data, …])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.tl">
+<span id="tools-tl"></span><h2>Tools: <cite>tl</cite><a class="headerlink" href="#module-stlearn.tl" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.tl.clustering.kmeans.html#stlearn.tl.clustering.kmeans" title="stlearn.tl.clustering.kmeans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tl.clustering.kmeans</span></code></a>(adata[, n_clusters, …])</p></td>
+<td><p>Perform kmeans clustering for spatial transcriptomics data</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.tl.clustering.louvain.html#stlearn.tl.clustering.louvain" title="stlearn.tl.clustering.louvain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tl.clustering.louvain</span></code></a>(adata[, resolution, …])</p></td>
+<td><p>Wrap function scanpy.tl.louvain Cluster cells into subgroups <span id="id7">[Blondel08]</span> <span id="id8">[Levine15]</span> <span id="id9">[Traag17]</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.tl.cci.lr.html#stlearn.tl.cci.lr" title="stlearn.tl.cci.lr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tl.cci.lr</span></code></a>(adata, use_data[, threshold, distance])</p></td>
+<td><p>cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots :param adata: :type adata: AnnData          The data object to scan :param use_data: :type use_data: str           Data to be used in L-R scanning :param threshold: :type threshold: float        Threshold to determine the significant L-R expression in counting :param distance: :type distance: int           Distance to determine the nearest neighbour</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.tl.cci.merge.html#stlearn.tl.cci.merge" title="stlearn.tl.cci.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tl.cci.merge</span></code></a>(adata[, use_lr, use_het])</p></td>
+<td><p>Merge results from cell type heterogeneity and L-R clustering :param adata: :type adata: AnnData          The data object including the cell types to count :param use_lr: :type use_lr: str             The largest expressed L-R cluster :param use_het: :type use_het: pd.DataFrame   The counts result of cell type heterogneity</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.tl.SpatialDE.html#stlearn.tl.SpatialDE" title="stlearn.tl.SpatialDE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tl.SpatialDE</span></code></a>(adata[, use_data, top_genes, …])</p></td>
+<td><p>Perform SpatialDE test</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-stlearn.pl">
+<span id="plot-pl"></span><h2>Plot: <cite>pl</cite><a class="headerlink" href="#module-stlearn.pl" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.gene_plot.html#stlearn.pl.gene_plot" title="stlearn.pl.gene_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.gene_plot</span></code></a>(adata[, method, genes, …])</p></td>
+<td><p>Gene expression plot for sptial transcriptomics data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.cluster_plot.html#stlearn.pl.cluster_plot" title="stlearn.pl.cluster_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.cluster_plot</span></code></a>(adata[, use_label, …])</p></td>
+<td><p>Clustering plot for sptial transcriptomics data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.subcluster_plot.html#stlearn.pl.subcluster_plot" title="stlearn.pl.subcluster_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.subcluster_plot</span></code></a>(adata[, use_label, …])</p></td>
+<td><p>Sub-clustering plot for sptial transcriptomics data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.microenv_plot.html#stlearn.pl.microenv_plot" title="stlearn.pl.microenv_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.microenv_plot</span></code></a>(adata[, use_data, …])</p></td>
+<td><p>Plotting microenvironment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.non_spatial_plot.html#stlearn.pl.non_spatial_plot" title="stlearn.pl.non_spatial_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.non_spatial_plot</span></code></a>(adata[, use_label, dpi])</p></td>
+<td><p>A wrap function to plot all the non-spatial plot from scanpy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.QC_plot.html#stlearn.pl.QC_plot" title="stlearn.pl.QC_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.QC_plot</span></code></a>(adata[, name, method, …])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.het_plot.html#stlearn.pl.het_plot" title="stlearn.pl.het_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.het_plot</span></code></a>(adata, het[, use_cluster, dpi, …])</p></td>
+<td><p>Plot tissue clusters and cluster heterogeneity using heatmap :param adata: :type adata: AnnData                  The data object to plot :param het: :type het: pd.DataFrame               Cluster heterogeneity count results from tl.cci.het :param use_cluster: :type use_cluster: str                The clustering results to use :param dpi: :type dpi: bool                       Dots per inch :param spot_size: :type spot_size: Union[float,int]     Spot size</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.violin_plot.html#stlearn.pl.violin_plot" title="stlearn.pl.violin_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.violin_plot</span></code></a>(adata, lr[, use_cluster, …])</p></td>
+<td><p>Plot the distribution of CCI counts within spots of each CCI clusters :param adata: :type adata: AnnData          The data object to plot :param lr: :type lr: str                 The specified Ligand-Receptor pair to plot :param use_cluster: :type use_cluster: str        The clustering results to use :param dpi: :type dpi: bool               Dots per inch :param name: :type name: str               Save as file name :param output: :type output: str             Save to directory</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.stacked_bar_plot.html#stlearn.pl.stacked_bar_plot" title="stlearn.pl.stacked_bar_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.stacked_bar_plot</span></code></a>(adata, use_annotation[, …])</p></td>
+<td><p>Plot the proportion of cell types in each CCI cluster :param adata: :type adata: AnnData          The data object to plot :param use_annotation: :type use_annotation: str     The cell type annotation to be used in plotting :param dpi: :type dpi: bool               Dots per inch :param name: :type name: str               Save as file name :param output: :type output: str             Save to directory</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.global_plot.html#stlearn.pl.trajectory.global_plot" title="stlearn.pl.trajectory.global_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.global_plot</span></code></a>(adata[, …])</p></td>
+<td><p>Global trajectory inference plot (Only DPT).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.local_plot.html#stlearn.pl.trajectory.local_plot" title="stlearn.pl.trajectory.local_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.local_plot</span></code></a>(adata[, use_label, …])</p></td>
+<td><p>Local spatial trajectory inference plot.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.tree_plot.html#stlearn.pl.trajectory.tree_plot" title="stlearn.pl.trajectory.tree_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.tree_plot</span></code></a>(adata[, figsize, …])</p></td>
+<td><p>Hierarchical tree plot represent for the global spatial trajectory inference.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Wrappers to external functionality are found in <code class="xref py py-mod docutils literal notranslate"><span class="pre">stlearn.external</span></code>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stlearn.read.file_table.html" class="btn btn-neutral float-right" title="stlearn.read.file_table" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="spatialDE.html" class="btn btn-neutral float-left" title="SpatialDE tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

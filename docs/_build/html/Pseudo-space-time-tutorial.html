@@ -1,0 +1,812 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spatial trajectory inference tutorial &mdash; stLearn 0.1.7 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cell-cell interaction analysis tutorial" href="cci.html" />
+    <link rel="prev" title="stMLE clustering" href="stMLE-clustering-tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.7
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">CONTENT:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stMLE clustering</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Spatial trajectory inference tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Preparation">Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Running-the-global-trajectory-inference">Running the global trajectory inference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Running-the-local-trajectory-inference">Running the local trajectory inference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC">Perform pseudo-space-time to reconstruct the progress of DCIS-IDC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cci.html">Cell-cell interaction analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
+        
+      <li>Spatial trajectory inference tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Pseudo-space-time-tutorial.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    min-width: 5ex;
+    padding-top: 0.3rem;
+    padding-right: 0.3rem;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 0.3rem;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Spatial-trajectory-inference-tutorial">
+<h1>Spatial trajectory inference tutorial<a class="headerlink" href="#Spatial-trajectory-inference-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we are using both spatial information and gene expression profile to perform spatial trajectory inference to explore the progression of Ductal Carcinoma in situ (DCIS) - Invasive Ductal Cancer (IDC)</p>
+<div class="section" id="Preparation">
+<h2>Preparation<a class="headerlink" href="#Preparation" title="Permalink to this headline">¶</a></h2>
+<p>We are trying to keep it focus on spatial trajectory inference then every step from reading data to clustering, we will give the code here to easier for user to use</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[78]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_h5</span><span class="p">(</span><span class="s2">&quot;/home/d.pham/Downloads/V1_Breast_Cancer_Block_A_Section_1_filtered_feature_bc_matrix.h5&quot;</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/tissue_hires_image.png&quot;</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/tissue_positions_list.csv&quot;</span><span class="p">,</span>
+                <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/scalefactors_json.json&quot;</span><span class="p">,</span>
+                <span class="n">quality</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">min_cells</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">em</span><span class="o">.</span><span class="n">run_pca</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_comps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">tiling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">out_path</span><span class="o">=</span><span class="s2">&quot;../tiling&quot;</span><span class="p">,</span><span class="n">crop_size</span> <span class="o">=</span> <span class="mi">40</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">extract_feature</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">adjust</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_data</span><span class="o">=</span><span class="s2">&quot;X_pca&quot;</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Added tissue image to the object!
+filtered out 12851 genes that are detected in less than 3 cells
+normalizing counts per cell
+Normalization step is finished in adata.X
+Log transformation step is finished in adata.X
+Scale step is finished in adata.X
+PCA is done! Generated in adata.obsm[&#39;X_pca&#39;], adata.uns[&#39;pca&#39;] and adata.varm[&#39;PCs&#39;]
+The morphology feature is added to adata.obsm[&#39;X_morphology&#39;]!
+The data adjusted by morphology is added to adata.obsm[&#39;X_pca_morphology&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[79]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">use_rep</span><span class="o">=</span><span class="s1">&#39;X_pca_morphology&#39;</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Created k-Nearest-Neighbor graph in adata.uns[&#39;neighbors&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">clustering</span><span class="o">.</span><span class="n">louvain</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Applying Louvain clustering ...
+Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[81]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">spot_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_7_0.png" src="_images/Pseudo-space-time-tutorial_7_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[82]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">label_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Fatty tissue,immune/lymphoid&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,fibrous tissue 1&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,fibrous tissue 2&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,fibrous tissue, fatty tissue&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Fibrous tissue&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,fibrous tissue (IDC)&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Fatty tissue, Fibrous tissue&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,immune/lymphoid&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,fatty tissue 3&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Fatty tissue&#39;</span><span class="p">],</span>
+                 <span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain_anno&quot;</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">spot_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The annotation is added to adata.obs[&#39;louvain_anno&#39;]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_8_1.png" src="_images/Pseudo-space-time-tutorial_8_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Running-the-global-trajectory-inference">
+<h2>Running the global trajectory inference<a class="headerlink" href="#Running-the-global-trajectory-inference" title="Permalink to this headline">¶</a></h2>
+<p>Here we called global trajectory because it does the same method of trajectory inference in single cell analysis.</p>
+<p>We used PAGA and DPT to perform this step. It also does the function of sub-clustering.</p>
+<p>To explore the progression of DCIS-IDC, we choose the root as cluster 6 (Ductal cells area). Also, We used high resolution image (2000x2000) the the eps parameter should be 100:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[83]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;iroot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;louvain&quot;</span><span class="p">]</span>  <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="mi">6</span><span class="p">))[</span><span class="mi">50</span><span class="p">]</span>
+<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The data adjusted by morphology is added to adata.obsm[&#39;X_diffmap_morphology&#39;]
+</pre></div></div>
+</div>
+<p>We wrap some plotting function from scanpy to show PAGA and DPT figures</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[84]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">non_spatial_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PAGA plot:
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_12_1.png" src="_images/Pseudo-space-time-tutorial_12_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Gene expression (reduced dimension) plot:
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_12_3.png" src="_images/Pseudo-space-time-tutorial_12_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Diffusion pseudotime plot:
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_12_5.png" src="_images/Pseudo-space-time-tutorial_12_5.png" />
+</div>
+</div>
+<p>This is the DPT visualization in tissue morphology</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[85]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span><span class="n">show_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">node_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edge_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_14_0.png" src="_images/Pseudo-space-time-tutorial_14_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Running-the-local-trajectory-inference">
+<h2>Running the local trajectory inference<a class="headerlink" href="#Running-the-local-trajectory-inference" title="Permalink to this headline">¶</a></h2>
+<p>Here, we want to check the intra-DCIS progression.</p>
+<p>First, the visualization of sub-clustering results of cluster 6 (DICS) would be showed by:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[86]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">subcluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_17_0.png" src="_images/Pseudo-space-time-tutorial_17_0.png" />
+</div>
+</div>
+<p>The local trajectory could be constructed by this function. It calculate the spatio-temporal distance between each pair-wise of sub-clusters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_labels</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Start construct trajectory for subcluster 6
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[88]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">branch_alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_20_0.png" src="_images/Pseudo-space-time-tutorial_20_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC">
+<h2>Perform pseudo-space-time to reconstruct the progress of DCIS-IDC<a class="headerlink" href="#Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[89]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudospacetime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_labels</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[90]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">show_trajectory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">show_subcluster</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_23_0.png" src="_images/Pseudo-space-time-tutorial_23_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[93]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">tree_plot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_24_0.png" src="_images/Pseudo-space-time-tutorial_24_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cci.html" class="btn btn-neutral float-right" title="Cell-cell interaction analysis tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stMLE-clustering-tutorial.html" class="btn btn-neutral float-left" title="stMLE clustering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -7,7 +7,7 @@ import pandas as pd
 import NaiveDE
 
 from .aeh import spatial_patterns
-from .base import run
+from .base import SpatialDE
 from .util import qvalue
 
 def spatialde_test(adata, coord_columns=['x', 'y'], regress_formula='np.log(total_counts)'):
@@ -43,7 +43,7 @@ def spatialde_test(adata, coord_columns=['x', 'y'], regress_formula='np.log(tota
                                          columns=adata.var.index,
                                          index=adata.obs.index)
 
-    results = run(X, expr_mat)
+    results = SpatialDE(X, expr_mat)
 
     # Clip 0 pvalues
     min_pval = results.query('pval > 0')['pval'].min() / 2

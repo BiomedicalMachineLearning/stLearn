@@ -12,6 +12,7 @@ def image(
     imgpath: Union[Path, str],
     copy: bool = False,
 ) -> Optional[AnnData]:
+
     """\
     Adding image data to the Anndata object
 

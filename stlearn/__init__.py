@@ -13,4 +13,3 @@ from . import tl
 from . import pl
 from . import view
 from . import spatial
-from . import external
