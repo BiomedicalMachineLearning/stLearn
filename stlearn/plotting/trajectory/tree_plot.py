@@ -18,16 +18,48 @@ def tree_plot(
     figsize: Union[float,int] = (10,4),
     data_alpha: float = 1.0,
     use_label: str = "louvain",
-    cmap: str = "vega_20_scanpy",
     spot_size: Union[float,int] = 50,
     fontsize: int = 6,
     piesize: float = 0.15,
     zoom: float = 0.1,
     dpi: int = 180,
     show_all: bool = False,
-    output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+
+    """\
+    Hierarchical tree plot represent for the global spatial trajectory inference.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    figsize
+        Change figure size.
+    data_alpha
+        Opacity of the spot.
+    fontsize
+        Choose font size.
+    piesize
+        Choose the size of cropped image.
+    zoom
+        Choose zoom factor.
+    show_all
+        Show all cropped image or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
+
+
     G = adata.uns["PTS_graph"]
 
     for node in G.nodes:

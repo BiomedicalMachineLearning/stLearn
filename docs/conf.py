@@ -31,8 +31,24 @@ import stlearn
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 
+            'sphinx.ext.viewcode', 
+            'recommonmark',
+            'sphinx.ext.napoleon',
+            'sphinx.ext.autosummary',
+            'nbsphinx']
 
+#Generate the API documentation when building
+autosummary_generate = True
+autodoc_member_order = 'bysource'
+# autodoc_default_flags = ['members']
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_use_rtype = True  # having a separate entry generally helps readability
+napoleon_use_param = True
+napoleon_custom_sections = [('Params', 'Parameters')]
+todo_include_todos = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -69,7 +85,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -83,7 +99,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
@@ -160,3 +176,9 @@ texinfo_documents = [
 
 
 
+import nbclean, glob
+
+for filename in glob.glob('**/*.ipynb', recursive=True):
+    ntbk = nbclean.NotebookCleaner(filename)
+    ntbk.clear('stderr')
+    ntbk.save(filename)

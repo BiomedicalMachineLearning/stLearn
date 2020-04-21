@@ -9,10 +9,18 @@ from anndata import AnnData
 def file_10x_h5(
     filename: Union[str, Path],
 ) -> AnnData:
-    """
+
+    """\
     Wrap function scanpy.read_10x_h5
     Read 10x-Genomics-formatted hdf5 file.
 
+    Parameters
+    ----------
+    filename
+        Path to the h5 file.
+    Returns
+    -------
+    AnnData
     """
 
     from stlearn.external.scanpy.readwrite import read_10x_h5
@@ -25,9 +33,17 @@ def file_10x_h5(
 def file_10x_mtx(
     filename: Union[str, Path],
 ) -> AnnData:
-    """
+    """\
     Wrap function scanpy.read_10x_mtx
     Read .mtx file.
+
+    Parameters
+    ----------
+    filename
+        Path to the h5 file.
+    Returns
+    -------
+    AnnData
     """
 
     from stlearn.external.scanpy.readwrite import read_10x_mtx
@@ -44,6 +60,13 @@ def file_table(
     Wrap function scanpy.read
     Read file and return AnnData object.
 
+    Parameters
+    ----------
+    filename
+        Path to the h5 file.
+    Returns
+    -------
+    AnnData
     """
 
     from stlearn.external.scanpy.readwrite import read

@@ -12,23 +12,66 @@ import warnings
 
 def global_plot(
     adata: AnnData,
-    name: str = None,
     use_label: str = "louvain",
     list_cluster: Union[str,list] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     edge_alpha: float = 0.8,
     node_alpha: float = 1.0,
-    title: str = None,
     spot_size: Union[float,int] = 6.5,
     node_size: float = 5,
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
     dpi: int = 180,
-    output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+
+    """\
+    Global trajectory inference plot (Only DPT).
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    list_cluster
+        Choose set of clusters that will display in the plot.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    edge_alpha
+        Opacity of edge in PAGA graph in the tissue.
+    node_alpha
+        Opacity of node in PAGA graph in the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    node_size
+        Size of node in PAGA graph in the tissue.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_graph
+        Show PAGA graph or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    show_trajectory
+        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+    show_subcluster
+        Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
     
     plt.rcParams['figure.dpi'] = dpi
 

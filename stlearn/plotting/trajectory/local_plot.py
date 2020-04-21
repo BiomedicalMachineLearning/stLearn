@@ -15,7 +15,6 @@ import warnings
 
 def local_plot(
     adata: AnnData,
-    name: str = None,
     use_label: str = "louvain",
     use_cluster: int = None,
     reverse: bool = False,
@@ -23,14 +22,50 @@ def local_plot(
     data_alpha: float = 1.0,
     arrow_alpha: float = 1.0,
     branch_alpha: float = 1.0,
-    title: str = None,
     spot_size: Union[float,int] = 1,
     show_color_bar: bool = True,
     show_axis: bool = False,
     dpi: int = 180,
-    output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
+    
+    """\
+    Local spatial trajectory inference plot.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    use_cluster
+        Choose a specific clusters that will display in the plot.
+    data_alpha
+        Opacity of the spot.
+    arrow_alpha
+        Opacity of the arrow.
+    branch_alpha
+        Opacity of the branch edge.
+    edge_alpha
+        Opacity of edge in PAGA graph in the tissue.
+    node_alpha
+        Opacity of node in PAGA graph in the tissue.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    copy
+        Return a copy instead of writing to adata.
+    Returns
+    -------
+    Nothing
+    """
 
     tmp=adata.obs[adata.obs[use_label]==str(use_cluster)]
     ref_cluster = adata[list(tmp.index)]

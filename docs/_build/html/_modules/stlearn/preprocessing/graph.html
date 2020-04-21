@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>stlearn.preprocessing.graph &mdash; stLearn 0.1.7 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.7
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">CONTENT:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>stlearn.preprocessing.graph</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for stlearn.preprocessing.graph</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MappingProxyType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">from</span> <span class="nn">anndata</span> <span class="kn">import</span> <span class="n">AnnData</span>
+<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">RandomState</span>
+<span class="kn">from</span> <span class="nn">.._compat</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+
+<span class="n">_Method</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;umap&#39;</span><span class="p">,</span> <span class="s1">&#39;gauss&#39;</span><span class="p">,</span> <span class="s1">&#39;rapids&#39;</span><span class="p">]</span>
+<span class="n">_MetricFn</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span>
+<span class="c1"># from sklearn.metrics.pairwise_distances.__doc__:</span>
+<span class="n">_MetricSparseCapable</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s1">&#39;cityblock&#39;</span><span class="p">,</span> <span class="s1">&#39;cosine&#39;</span><span class="p">,</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">,</span> <span class="s1">&#39;l1&#39;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="s1">&#39;manhattan&#39;</span>
+<span class="p">]</span>
+<span class="n">_MetricScipySpatial</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span>
+    <span class="s1">&#39;braycurtis&#39;</span><span class="p">,</span> <span class="s1">&#39;canberra&#39;</span><span class="p">,</span> <span class="s1">&#39;chebyshev&#39;</span><span class="p">,</span> <span class="s1">&#39;correlation&#39;</span><span class="p">,</span> <span class="s1">&#39;dice&#39;</span><span class="p">,</span> <span class="s1">&#39;hamming&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;jaccard&#39;</span><span class="p">,</span> <span class="s1">&#39;kulsinski&#39;</span><span class="p">,</span> <span class="s1">&#39;mahalanobis&#39;</span><span class="p">,</span> <span class="s1">&#39;minkowski&#39;</span><span class="p">,</span> <span class="s1">&#39;rogerstanimoto&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;russellrao&#39;</span><span class="p">,</span> <span class="s1">&#39;seuclidean&#39;</span><span class="p">,</span> <span class="s1">&#39;sokalmichener&#39;</span><span class="p">,</span> <span class="s1">&#39;sokalsneath&#39;</span><span class="p">,</span> <span class="s1">&#39;sqeuclidean&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;yule&#39;</span>
+<span class="p">]</span>
+<span class="n">_Metric</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">_MetricSparseCapable</span><span class="p">,</span> <span class="n">_MetricScipySpatial</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="neighbors"><a class="viewcode-back" href="../../../stlearn.pp.neighbors.html#stlearn.pp.neighbors">[docs]</a><span class="k">def</span> <span class="nf">neighbors</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
+    <span class="n">n_neighbors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">n_pcs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_rep</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">knn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">RandomState</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_Method</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;umap&#39;</span><span class="p">,</span>
+    <span class="n">metric</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">_Metric</span><span class="p">,</span> <span class="n">_MetricFn</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+    <span class="n">metric_kwds</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">({}),</span>
+    <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AnnData</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Compute a neighborhood graph of observations [McInnes18]_.</span>
+<span class="sd">    The neighbor search efficiency of this heavily relies on UMAP [McInnes18]_,</span>
+<span class="sd">    which also provides a method for estimating connectivities of data points -</span>
+<span class="sd">    the connectivity of the manifold (`method==&#39;umap&#39;`). If `method==&#39;gauss&#39;`,</span>
+<span class="sd">    connectivities are computed according to [Coifman05]_, in the adaption of</span>
+<span class="sd">    [Haghverdi16]_.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    n_neighbors</span>
+<span class="sd">        The size of local neighborhood (in terms of number of neighboring data</span>
+<span class="sd">        points) used for manifold approximation. Larger values result in more</span>
+<span class="sd">        global views of the manifold, while smaller values result in more local</span>
+<span class="sd">        data being preserved. In general values should be in the range 2 to 100.</span>
+<span class="sd">        If `knn` is `True`, number of nearest neighbors to be searched. If `knn`</span>
+<span class="sd">        is `False`, a Gaussian kernel width is set to the distance of the</span>
+<span class="sd">        `n_neighbors` neighbor.</span>
+<span class="sd">    {n_pcs}</span>
+<span class="sd">    {use_rep}</span>
+<span class="sd">    knn</span>
+<span class="sd">        If `True`, use a hard threshold to restrict the number of neighbors to</span>
+<span class="sd">        `n_neighbors`, that is, consider a knn graph. Otherwise, use a Gaussian</span>
+<span class="sd">        Kernel to assign low weights to neighbors more distant than the</span>
+<span class="sd">        `n_neighbors` nearest neighbor.</span>
+<span class="sd">    random_state</span>
+<span class="sd">        A numpy random seed.</span>
+<span class="sd">    method</span>
+<span class="sd">        Use &#39;umap&#39; [McInnes18]_ or &#39;gauss&#39; (Gauss kernel following [Coifman05]_</span>
+<span class="sd">        with adaptive width [Haghverdi16]_) for computing connectivities.</span>
+<span class="sd">        Use &#39;rapids&#39; for the RAPIDS implementation of UMAP (experimental, GPU</span>
+<span class="sd">        only).</span>
+<span class="sd">    metric</span>
+<span class="sd">        A known metric’s name or a callable that returns a distance.</span>
+<span class="sd">    metric_kwds</span>
+<span class="sd">        Options for the metric.</span>
+<span class="sd">    copy</span>
+<span class="sd">        Return a copy instead of writing to adata.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Depending on `copy`, updates or returns `adata` with the following:</span>
+<span class="sd">    **connectivities** : sparse matrix (`.uns[&#39;neighbors&#39;]`, dtype `float32`)</span>
+<span class="sd">        Weighted adjacency matrix of the neighborhood graph of data</span>
+<span class="sd">        points. Weights should be interpreted as connectivities.</span>
+<span class="sd">    **distances** : sparse matrix (`.uns[&#39;neighbors&#39;]`, dtype `float32`)</span>
+<span class="sd">        Instead of decaying weights, this stores distances for each pair of</span>
+<span class="sd">        neighbors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pp</span> <span class="kn">import</span> <span class="n">neighbors</span>
+
+    <span class="n">neighbors</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span> <span class="n">n_pcs</span><span class="o">=</span><span class="n">n_pcs</span><span class="p">,</span> <span class="n">use_rep</span><span class="o">=</span><span class="n">use_rep</span><span class="p">,</span>
+              <span class="n">knn</span><span class="o">=</span><span class="n">knn</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+              <span class="n">metric_kwds</span><span class="o">=</span><span class="n">metric_kwds</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created k-Nearest-Neighbor graph in adata.uns[&#39;neighbors&#39;] &quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
