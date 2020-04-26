@@ -104,15 +104,16 @@ def tree_plot(
         #a.set_aspect('equal')
         a.axis('off')
         a.imshow(G.nodes[n]['image'])
-        plt.rcParams.update(plt.rcParamsDefault)
+        #plt.rcParams.update(plt.rcParamsDefault)
 
 
 
 
 def _generate_image(adata,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1,show_all=False):
     
-    plt.rcParams['axes.linewidth'] = 4
-    plt.rcParams['axes.edgecolor'] = "#D1D1D1"
+    #plt.rcParams['axes.linewidth'] = 4
+
+    #plt.rcParams['axes.edgecolor'] = "#D1D1D1"
 
     subset = adata.obs[adata.obs["sub_cluster_labels"]==str(sub_cluster)]
     base = subset[["imagecol","imagerow"]].values
@@ -127,6 +128,10 @@ def _generate_image(adata,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,
     #plt.rcParams['figure.dpi'] = 300
 
     fig2, ax2 = plt.subplots()
+
+    for axis in ['top','bottom','left','right']:
+        ax2.spines[axis].set_linewidth(0.5)
+        ax2.spines[axis].set_color("#D1D1D1")
 
     color = adata.uns["tmp_color"][int(subset[use_label][0])]
 
