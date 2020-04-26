@@ -118,8 +118,7 @@ def subcluster_plot(
 
     a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
 
-    if title is not None:
-        a.set_title(title)
+
     if not show_axis:
         a.axis('off')
 
