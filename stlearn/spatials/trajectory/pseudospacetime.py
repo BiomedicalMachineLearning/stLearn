@@ -8,7 +8,7 @@ from scipy.spatial.distance import cdist
 
 def pseudospacetime(
     adata: AnnData,
-    use_labels: str = "louvain",
+    use_label: str = "louvain",
     list_cluster: list = [],
     w: float = 0.5,
 
@@ -52,7 +52,7 @@ def pseudospacetime(
 
     for i in query_nodes:
         order = 0
-        for j in adata.obs[adata.obs[use_labels] == str(i)]["sub_cluster_labels"].unique():
+        for j in adata.obs[adata.obs[use_label] == str(i)]["sub_cluster_labels"].unique():
             query_dict[int(j)] = int(i)
             order_dict[int(j)] = int(order)
 
@@ -72,10 +72,10 @@ def pseudospacetime(
 
         # Calculate DPT distance matrix
         dm_list.append(dpt_distance_matrix(
-            adata, query_nodes[i], query_nodes[i+1], use_labels=use_labels))
+            adata, query_nodes[i], query_nodes[i+1], use_label=use_label))
         # Calculate Spatial distance matrix
         sdm_list.append(spatial_distance_matrix(
-            adata, query_nodes[i], query_nodes[i+1], use_labels=use_labels))
+            adata, query_nodes[i], query_nodes[i+1], use_label=use_label))
 
     # Get centroid dictionary
     centroid_dict = adata.uns["centroid_dict"]
@@ -127,10 +127,10 @@ def ordering_nodes(node_list, adata):
     return list(np.array(node_list)[np.argsort(mean_dpt)])
 
 
-def dpt_distance_matrix(adata, cluster1, cluster2, use_labels):
-    tmp = adata.obs[adata.obs[use_labels] == str(cluster1)]
+def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
+    tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
     chosen_adata1 = adata[list(tmp.index)]
-    tmp = adata.obs[adata.obs[use_labels] == str(cluster2)]
+    tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
     chosen_adata2 = adata[list(tmp.index)]
 
     sub_dpt1 = []
@@ -154,11 +154,11 @@ def dpt_distance_matrix(adata, cluster1, cluster2, use_labels):
     return scale_dm
 
 
-def spatial_distance_matrix(adata, cluster1, cluster2, use_labels):
+def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
 
-    tmp = adata.obs[adata.obs[use_labels] == str(cluster1)]
+    tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
     chosen_adata1 = adata[list(tmp.index)]
-    tmp = adata.obs[adata.obs[use_labels] == str(cluster2)]
+    tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
     chosen_adata2 = adata[list(tmp.index)]
 
     centroid_dict = adata.uns["centroid_dict"]
