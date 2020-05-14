@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Cell-cell interaction analysis tutorial &mdash; stLearn 0.1.7 documentation</title>
+  <title>Spatial cell-cell interaction tutorial &mdash; stLearn 0.1.7 documentation</title>
   
 
   
@@ -40,7 +40,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="SpatialDE tutorial" href="spatialDE.html" />
-    <link rel="prev" title="Spatial trajectory inference tutorial" href="Pseudo-space-time-tutorial.html" /> 
+    <link rel="prev" title="Spatial trajectory inference analysis tutorial" href="Pseudo-space-time-tutorial.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,13 +93,13 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stMLE clustering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference tutorial</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Cell-cell interaction analysis tutorial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Prepare-data">Prepare data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">Add image, coordinates, and significant Ligand-Receptors from CPDB</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Preprocessing">Preprocessing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Cell-cell-interaction-analysis">Cell-cell interaction analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Spatial cell-cell interaction tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#0.-Prepare-data">0. Prepare data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">1. Add image, coordinates, and significant Ligand-Receptors from CPDB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#2-Preprocessing">2 Preprocessing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#3.-Cell-cell-interaction-analysis">3. Cell-cell interaction analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
@@ -157,7 +157,7 @@
         
           <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
         
-      <li>Cell-cell interaction analysis tutorial</li>
+      <li>Spatial cell-cell interaction tutorial</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -418,10 +418,10 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Cell-cell-interaction-analysis-tutorial">
-<h1>Cell-cell interaction analysis tutorial<a class="headerlink" href="#Cell-cell-interaction-analysis-tutorial" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="Prepare-data">
-<h2>Prepare data<a class="headerlink" href="#Prepare-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Spatial-cell-cell-interaction-tutorial">
+<h1>Spatial cell-cell interaction tutorial<a class="headerlink" href="#Spatial-cell-cell-interaction-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="0.-Prepare-data">
+<h2>0. Prepare data<a class="headerlink" href="#0.-Prepare-data" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -436,8 +436,8 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 </div>
-<div class="section" id="Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">
-<h2>Add image, coordinates, and significant Ligand-Receptors from CPDB<a class="headerlink" href="#Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">
+<h2>1. Add image, coordinates, and significant Ligand-Receptors from CPDB<a class="headerlink" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -474,8 +474,8 @@ AnnData object with n_obs × n_vars = 3813 × 33538
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="Preprocessing">
-<h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="2-Preprocessing">
+<h2>2 Preprocessing<a class="headerlink" href="#2-Preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="2.1.-filter,-normalize,-scale-&amp;-PCA">
 <h3>2.1. filter, normalize, scale &amp; PCA<a class="headerlink" href="#2.1.-filter,-normalize,-scale-&-PCA" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
@@ -535,8 +535,8 @@ Added tissue image to the object!
 </div>
 </div>
 </div>
-<div class="section" id="Cell-cell-interaction-analysis">
-<h2>Cell-cell interaction analysis<a class="headerlink" href="#Cell-cell-interaction-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="3.-Cell-cell-interaction-analysis">
+<h2>3. Cell-cell interaction analysis<a class="headerlink" href="#3.-Cell-cell-interaction-analysis" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="3.1-Cell-type-heterogeneity">
 <h3>3.1 Cell type heterogeneity<a class="headerlink" href="#3.1-Cell-type-heterogeneity" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
@@ -1132,7 +1132,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
         <a href="spatialDE.html" class="btn btn-neutral float-right" title="SpatialDE tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Pseudo-space-time-tutorial.html" class="btn btn-neutral float-left" title="Spatial trajectory inference tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Pseudo-space-time-tutorial.html" class="btn btn-neutral float-left" title="Spatial trajectory inference analysis tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
