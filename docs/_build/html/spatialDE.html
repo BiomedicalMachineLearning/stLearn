@@ -40,7 +40,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API" href="api.html" />
-    <link rel="prev" title="Cell-cell interaction analysis tutorial" href="cci.html" /> 
+    <link rel="prev" title="Spatial cell-cell interaction tutorial" href="cci.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,14 +93,13 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stMLE clustering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cci.html">Cell-cell interaction analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">SpatialDE tutorial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Read-data">Read data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Add-images-and-coordinates">Add images and coordinates</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Preprocessing">Preprocessing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Run-SpatialDE">Run SpatialDE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#1.-Dev:-read">1. Dev: read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#2.-Add-images-and-coordinates">2. Add images and coordinates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#3-Dev:-preprocessing">3 Dev: preprocessing</a></li>
 </ul>
 </li>
 </ul>
@@ -420,8 +419,10 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="SpatialDE-tutorial">
 <h1>SpatialDE tutorial<a class="headerlink" href="#SpatialDE-tutorial" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="Read-data">
-<h2>Read data<a class="headerlink" href="#Read-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.-Dev:-read">
+<h2>1. Dev: read<a class="headerlink" href="#1.-Dev:-read" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.2-stlearn.read.10x_mtx">
+<h3>1.2 stlearn.read.10x_mtx<a class="headerlink" href="#1.2-stlearn.read.10x_mtx" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -443,8 +444,9 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 </div>
-<div class="section" id="Add-images-and-coordinates">
-<h2>Add images and coordinates<a class="headerlink" href="#Add-images-and-coordinates" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="2.-Add-images-and-coordinates">
+<h2>2. Add images and coordinates<a class="headerlink" href="#2.-Add-images-and-coordinates" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -475,8 +477,10 @@ Added tissue image to the object!
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="Preprocessing">
-<h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="3-Dev:-preprocessing">
+<h2>3 Dev: preprocessing<a class="headerlink" href="#3-Dev:-preprocessing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="3.1.-filter,-normalize,-scale-&amp;-PCA">
+<h3>3.1. filter, normalize, scale &amp; PCA<a class="headerlink" href="#3.1.-filter,-normalize,-scale-&-PCA" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
@@ -499,8 +503,8 @@ Normalization step is finished in adata.X
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="Run-SpatialDE">
-<h2>Run SpatialDE<a class="headerlink" href="#Run-SpatialDE" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="3.2-SpatialDE">
+<h3>3.2 SpatialDE<a class="headerlink" href="#3.2-SpatialDE" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
@@ -586,7 +590,7 @@ SpatialDE results stored in adata.uns[&#39;SpatialDE_results&#39;] and adata.uns
 </pre></div></div>
 </div>
 <div class="section" id="Plot-top-spatially-differential-expressing-genes">
-<h3>Plot top spatially differential expressing genes<a class="headerlink" href="#Plot-top-spatially-differential-expressing-genes" title="Permalink to this headline">¶</a></h3>
+<h4>Plot top spatially differential expressing genes<a class="headerlink" href="#Plot-top-spatially-differential-expressing-genes" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
@@ -614,7 +618,7 @@ Pak6:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_1.png" src="_images/spatialDE_11_1.png" />
+<img alt="_images/spatialDE_12_1.png" src="_images/spatialDE_12_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -630,7 +634,7 @@ Fam189a1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_3.png" src="_images/spatialDE_11_3.png" />
+<img alt="_images/spatialDE_12_3.png" src="_images/spatialDE_12_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -646,7 +650,7 @@ Fam189a1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_5.png" src="_images/spatialDE_11_5.png" />
+<img alt="_images/spatialDE_12_5.png" src="_images/spatialDE_12_5.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -662,7 +666,7 @@ Kctd1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_7.png" src="_images/spatialDE_11_7.png" />
+<img alt="_images/spatialDE_12_7.png" src="_images/spatialDE_12_7.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -678,7 +682,7 @@ Actr2:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_9.png" src="_images/spatialDE_11_9.png" />
+<img alt="_images/spatialDE_12_9.png" src="_images/spatialDE_12_9.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -694,7 +698,7 @@ Cntnap1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_11.png" src="_images/spatialDE_11_11.png" />
+<img alt="_images/spatialDE_12_11.png" src="_images/spatialDE_12_11.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -710,7 +714,7 @@ Egr4:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_13.png" src="_images/spatialDE_11_13.png" />
+<img alt="_images/spatialDE_12_13.png" src="_images/spatialDE_12_13.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -726,7 +730,7 @@ Hapln4:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_15.png" src="_images/spatialDE_11_15.png" />
+<img alt="_images/spatialDE_12_15.png" src="_images/spatialDE_12_15.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -742,7 +746,7 @@ Atp1b3:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_17.png" src="_images/spatialDE_11_17.png" />
+<img alt="_images/spatialDE_12_17.png" src="_images/spatialDE_12_17.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -758,15 +762,15 @@ Usp54:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_11_19.png" src="_images/spatialDE_11_19.png" />
+<img alt="_images/spatialDE_12_19.png" src="_images/spatialDE_12_19.png" />
 </div>
 </div>
 </div>
 <div class="section" id="assuming-5-different-patterns-and-iterate-till-ELBO-converges">
-<h3>assuming 5 different patterns and iterate till ELBO converges<a class="headerlink" href="#assuming-5-different-patterns-and-iterate-till-ELBO-converges" title="Permalink to this headline">¶</a></h3>
+<h4>assuming 5 different patterns and iterate till ELBO converges<a class="headerlink" href="#assuming-5-different-patterns-and-iterate-till-ELBO-converges" title="Permalink to this headline">¶</a></h4>
 </div>
 <div class="section" id="(Careful!-This-step-could-take-very-long-time)">
-<h3>(Careful! This step could take very long time)<a class="headerlink" href="#(Careful!-This-step-could-take-very-long-time)" title="Permalink to this headline">¶</a></h3>
+<h4>(Careful! This step could take very long time)<a class="headerlink" href="#(Careful!-This-step-could-take-very-long-time)" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -778,7 +782,7 @@ Usp54:
 </div>
 </div>
 <div class="section" id="Plot-all-spatial-expression-patterns-with-genes-in-each-pattern">
-<h3>Plot all spatial expression patterns with genes in each pattern<a class="headerlink" href="#Plot-all-spatial-expression-patterns-with-genes-in-each-pattern" title="Permalink to this headline">¶</a></h3>
+<h4>Plot all spatial expression patterns with genes in each pattern<a class="headerlink" href="#Plot-all-spatial-expression-patterns-with-genes-in-each-pattern" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -815,6 +819,7 @@ Usp54:
 </div>
 </div>
 </div>
+</div>
 
 
            </div>
@@ -827,7 +832,7 @@ Usp54:
         <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="cci.html" class="btn btn-neutral float-left" title="Cell-cell interaction analysis tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cci.html" class="btn btn-neutral float-left" title="Spatial cell-cell interaction tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

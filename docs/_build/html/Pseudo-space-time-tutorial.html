@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Spatial trajectory inference tutorial &mdash; stLearn 0.1.7 documentation</title>
+  <title>Spatial trajectory inference analysis tutorial &mdash; stLearn 0.1.7 documentation</title>
   
 
   
@@ -39,8 +39,8 @@
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cell-cell interaction analysis tutorial" href="cci.html" />
-    <link rel="prev" title="stMLE clustering" href="stMLE-clustering-tutorial.html" /> 
+    <link rel="next" title="Spatial cell-cell interaction tutorial" href="cci.html" />
+    <link rel="prev" title="stSME clustering tutorial" href="stMLE-clustering-tutorial.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,15 +93,15 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stMLE clustering</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Spatial trajectory inference tutorial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Preparation">Preparation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Running-the-global-trajectory-inference">Running the global trajectory inference</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Running-the-local-trajectory-inference">Running the local trajectory inference</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC">Perform pseudo-space-time to reconstruct the progress of DCIS-IDC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Spatial trajectory inference analysis tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#1.-Preparation">1. Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#2.-Running-the-global-trajectory-inference">2. Running the global trajectory inference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#3.-Running-the-local-trajectory-inference">3. Running the local trajectory inference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">Perform pseudo-time-space to reconstruct the progress of DCIS-IDC</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="cci.html">Cell-cell interaction analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l3"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
 </ul>
 </li>
@@ -157,7 +157,7 @@
         
           <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
         
-      <li>Spatial trajectory inference tutorial</li>
+      <li>Spatial trajectory inference analysis tutorial</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -418,23 +418,23 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Spatial-trajectory-inference-tutorial">
-<h1>Spatial trajectory inference tutorial<a class="headerlink" href="#Spatial-trajectory-inference-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Spatial-trajectory-inference-analysis-tutorial">
+<h1>Spatial trajectory inference analysis tutorial<a class="headerlink" href="#Spatial-trajectory-inference-analysis-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we are using both spatial information and gene expression profile to perform spatial trajectory inference to explore the progression of Ductal Carcinoma in situ (DCIS) - Invasive Ductal Cancer (IDC)</p>
-<div class="section" id="Preparation">
-<h2>Preparation<a class="headerlink" href="#Preparation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.-Preparation">
+<h2>1. Preparation<a class="headerlink" href="#1.-Preparation" title="Permalink to this headline">¶</a></h2>
 <p>We are trying to keep it focus on spatial trajectory inference then every step from reading data to clustering, we will give the code here to easier for user to use</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[78]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_h5</span><span class="p">(</span><span class="s2">&quot;/home/d.pham/Downloads/V1_Breast_Cancer_Block_A_Section_1_filtered_feature_bc_matrix.h5&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_h5</span><span class="p">(</span><span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/filtered_feature_bc_matrix.h5&quot;</span><span class="p">)</span>
 <span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/tissue_hires_image.png&quot;</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/tissue_positions_list.csv&quot;</span><span class="p">,</span>
-                <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;/home/d.pham/10X/BCBA/spatial/scalefactors_json.json&quot;</span><span class="p">,</span>
+<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/tissue_hires_image.png&quot;</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/tissue_positions_list.csv&quot;</span><span class="p">,</span>
+                <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/scalefactors_json.json&quot;</span><span class="p">,</span>
                 <span class="n">quality</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">min_cells</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -466,7 +466,7 @@ The data adjusted by morphology is added to adata.obsm[&#39;X_pca_morphology&#39
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[79]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -483,7 +483,7 @@ Created k-Nearest-Neighbor graph in adata.uns[&#39;neighbors&#39;]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -501,7 +501,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[81]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -517,19 +517,19 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[82]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">label_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Fatty tissue,immune/lymphoid&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Invasive cancer,fibrous tissue 1&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Invasive cancer,fibrous tissue 2&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer, fatty tissue&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Invasive cancer,fibrous tissue, fatty tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Fibrous tissue&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Invasive cancer,fibrous tissue (IDC)&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Fatty tissue, Fibrous tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,immune/lymphoid&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;Invasive cancer,immune/lymphoid (DCIS)&#39;</span> <span class="p">,</span>
                                    <span class="s1">&#39;Invasive cancer,fatty tissue 3&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;Fatty tissue&#39;</span><span class="p">],</span>
                  <span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">)</span>
@@ -553,13 +553,13 @@ The annotation is added to adata.obs[&#39;louvain_anno&#39;]
 </div>
 </div>
 </div>
-<div class="section" id="Running-the-global-trajectory-inference">
-<h2>Running the global trajectory inference<a class="headerlink" href="#Running-the-global-trajectory-inference" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="2.-Running-the-global-trajectory-inference">
+<h2>2. Running the global trajectory inference<a class="headerlink" href="#2.-Running-the-global-trajectory-inference" title="Permalink to this headline">¶</a></h2>
 <p>Here we called global trajectory because it does the same method of trajectory inference in single cell analysis.</p>
 <p>We used PAGA and DPT to perform this step. It also does the function of sub-clustering.</p>
 <p>To explore the progression of DCIS-IDC, we choose the root as cluster 6 (Ductal cells area). Also, We used high resolution image (2000x2000) the the eps parameter should be 100:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[83]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -579,7 +579,7 @@ The data adjusted by morphology is added to adata.obsm[&#39;X_diffmap_morphology
 </div>
 <p>We wrap some plotting function from scanpy to show PAGA and DPT figures</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[84]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -634,7 +634,7 @@ Diffusion pseudotime plot:
 </div>
 <p>This is the DPT visualization in tissue morphology</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[85]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -650,12 +650,12 @@ Diffusion pseudotime plot:
 </div>
 </div>
 </div>
-<div class="section" id="Running-the-local-trajectory-inference">
-<h2>Running the local trajectory inference<a class="headerlink" href="#Running-the-local-trajectory-inference" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="3.-Running-the-local-trajectory-inference">
+<h2>3. Running the local trajectory inference<a class="headerlink" href="#3.-Running-the-local-trajectory-inference" title="Permalink to this headline">¶</a></h2>
 <p>Here, we want to check the intra-DCIS progression.</p>
 <p>First, the visualization of sub-clustering results of cluster 6 (DICS) would be showed by:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[86]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -672,11 +672,11 @@ Diffusion pseudotime plot:
 </div>
 <p>The local trajectory could be constructed by this function. It calculate the spatio-temporal distance between each pair-wise of sub-clusters.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_labels</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -689,7 +689,7 @@ Start construct trajectory for subcluster 6
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[88]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -705,19 +705,19 @@ Start construct trajectory for subcluster 6
 </div>
 </div>
 </div>
-<div class="section" id="Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC">
-<h2>Perform pseudo-space-time to reconstruct the progress of DCIS-IDC<a class="headerlink" href="#Perform-pseudo-space-time-to-reconstruct-the-progress-of-DCIS-IDC" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">
+<h2>Perform pseudo-time-space to reconstruct the progress of DCIS-IDC<a class="headerlink" href="#Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[89]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudospacetime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_labels</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudospacetime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[90]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -733,7 +733,7 @@ Start construct trajectory for subcluster 6
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[93]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -758,6 +758,24 @@ Start construct trajectory for subcluster 6
 </pre></div>
 </div>
 </div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -769,10 +787,10 @@ Start construct trajectory for subcluster 6
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cci.html" class="btn btn-neutral float-right" title="Cell-cell interaction analysis tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="cci.html" class="btn btn-neutral float-right" title="Spatial cell-cell interaction tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="stMLE-clustering-tutorial.html" class="btn btn-neutral float-left" title="stMLE clustering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="stMLE-clustering-tutorial.html" class="btn btn-neutral float-left" title="stSME clustering tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

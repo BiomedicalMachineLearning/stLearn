@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stMLE clustering &mdash; stLearn 0.1.7 documentation</title>
+  <title>stSME clustering tutorial &mdash; stLearn 0.1.7 documentation</title>
   
 
   
@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Spatial trajectory inference tutorial" href="Pseudo-space-time-tutorial.html" />
+    <link rel="next" title="Spatial trajectory inference analysis tutorial" href="Pseudo-space-time-tutorial.html" />
     <link rel="prev" title="Tutorials" href="tutorial.html" /> 
 </head>
 
@@ -93,16 +93,12 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">stMLE clustering</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Read-data">Read data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Preprocessing">Preprocessing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Image-processing">Image processing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Normalising-by-image-and-disk-smoothing">Normalising by image and disk smoothing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Perform-stMLE-clustering">Perform stMLE clustering</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">stSME clustering tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#1.-Preparation">1. Preparation</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cci.html">Cell-cell interaction analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l3"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
 </ul>
 </li>
@@ -158,7 +154,7 @@
         
           <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
         
-      <li>stMLE clustering</li>
+      <li>stSME clustering tutorial</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -419,16 +415,16 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="stMLE-clustering">
-<h1>stMLE clustering<a class="headerlink" href="#stMLE-clustering" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stSME-clustering-tutorial">
+<h1>stSME clustering tutorial<a class="headerlink" href="#stSME-clustering-tutorial" title="Permalink to this headline">¶</a></h1>
 <div class="line-block">
-<div class="line"><strong>stMLE</strong> is a novel normalisation method implemented in <em>stLearn</em> software.</div>
-<div class="line">It’s designed for <strong>s</strong>patial <strong>t</strong>ranscriptomics data and utilised tissue <strong>M</strong>orphology, spatial <strong>L</strong>ocation, and gene <strong>E</strong>xpression.</div>
+<div class="line"><strong>stSME</strong> is a novel normalisation method implemented in <em>stLearn</em> software.</div>
+<div class="line">It’s designed for <strong>s</strong>patial <strong>t</strong>ranscriptomics data and utilised tissue <strong>S</strong>patial location, <strong>M</strong>orphology, , and gene <strong>E</strong>xpression.</div>
 </div>
-<p>This tutorial demonstrates how to use <em>stLearn</em> to perform <strong>stMLE</strong> clustering for spatial transcriptomics data</p>
+<p>This tutorial demonstrates how to use <em>stLearn</em> to perform <strong>stSME</strong> clustering for spatial transcriptomics data</p>
 <p>In this tutorial we focus on <strong>Mouse Brain (Coronal)</strong> Visium dataset from <a class="reference external" href="https://support.10xgenomics.com/spatial-gene-expression/datasets/1.0.0/V1_Adult_Mouse_Brain">10x genomics website</a>.</p>
-<div class="section" id="Read-data">
-<h2>Read data<a class="headerlink" href="#Read-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.-Preparation">
+<h2>1. Preparation<a class="headerlink" href="#1.-Preparation" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -482,9 +478,6 @@ div.rendered_html tbody tr:hover {
 Added tissue image to the object!
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Preprocessing">
-<h2>Preprocessing<a class="headerlink" href="#Preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
@@ -510,9 +503,6 @@ Log transformation step is finished in adata.X
 Scale step is finished in adata.X
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Image-processing">
-<h2>Image processing<a class="headerlink" href="#Image-processing" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -553,9 +543,6 @@ The morphology feature is added to adata.obsm[&#39;X_morphology&#39;]!
 PCA is done! Generated in adata.obsm[&#39;X_pca&#39;], adata.uns[&#39;pca&#39;] and adata.varm[&#39;PCs&#39;]
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Normalising-by-image-and-disk-smoothing">
-<h2>Normalising by image and disk smoothing<a class="headerlink" href="#Normalising-by-image-and-disk-smoothing" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
@@ -600,12 +587,9 @@ Kmeans clustering is done! The labels are stored in adata.obs[&#34;kmeans&#34;]
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/stMLE-clustering-tutorial_15_1.png" src="_images/stMLE-clustering-tutorial_15_1.png" />
+<img alt="_images/stMLE-clustering-tutorial_12_1.png" src="_images/stMLE-clustering-tutorial_12_1.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Perform-stMLE-clustering">
-<h2>Perform stMLE clustering<a class="headerlink" href="#Perform-stMLE-clustering" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -632,7 +616,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/stMLE-clustering-tutorial_17_1.png" src="_images/stMLE-clustering-tutorial_17_1.png" />
+<img alt="_images/stMLE-clustering-tutorial_13_1.png" src="_images/stMLE-clustering-tutorial_13_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -673,7 +657,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Pseudo-space-time-tutorial.html" class="btn btn-neutral float-right" title="Spatial trajectory inference tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Pseudo-space-time-tutorial.html" class="btn btn-neutral float-right" title="Spatial trajectory inference analysis tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
