@@ -1,7 +1,9 @@
 stLearn - a downstream analysis toolkit for Spatial Transcriptomics data
 ============================================================================
 
-stLearn is specifically design for Spatial Transcriptomics data. Spatial Transcriptomics (ST) is an emerging technology that adds  spatial dimension and tissue morphology to the genome-wide transcriptional profile of cells in intact tissue. Integrating three types of data creates a vast potential for deciphering novel biology of cell types in their native morphological context. We have developed novel integrative analysis approaches to utilize all three data types to first find cell types, then scan for cell-to-cell interactions and reconstruct cell-type evolution within a tissue.
+stLearn is designed for analysing Spatial Transcriptomics data. Spatial Transcriptomics (ST) is emerging as the “next generation” of single-cell RNA sequencing because it adds spatial and morphological context to the transcriptional profile of cells in an intact tissue section. However, existing ST analysis methods typically use the captured spatial and/or morphological data as a visualisation tool rather than as informative features for model development. We have developed an analysis method that exploits all three data types: Spatial distance, tissue Morphology, and gene Expression measurements (SME) from ST data. This combinatorial approach allows us to more accurately model underlying tissue biology, and allows researchers to address key questions in three major research areas: cell type identification, cell trajectory reconstruction, and the study of cell-cell interactions within an undissociated tissue sample. 
+
+
 
 .. toctree::
    :maxdepth: 1
