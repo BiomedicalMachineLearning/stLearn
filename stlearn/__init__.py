@@ -16,4 +16,6 @@ from . import spatial
 
 # Wrapper
 
-from .wrapper.ReadSlideSeq import ReadSlideSeq
+from .wrapper.read import ReadSlideSeq
+from .wrapper.read import Read10X
+from .wrapper.read import ReadOldST
