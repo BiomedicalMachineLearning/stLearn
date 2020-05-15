@@ -39,7 +39,6 @@
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API" href="api.html" />
     <link rel="prev" title="Spatial cell-cell interaction tutorial" href="cci.html" /> 
 </head>
 
@@ -88,27 +87,37 @@
               
             
             
-              <p class="caption"><span class="caption-text">CONTENT:</span></p>
-<ul class="current">
+              <p class="caption"><span class="caption-text">Content:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">SpatialDE tutorial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#1.-Dev:-read">1. Dev: read</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#2.-Add-images-and-coordinates">2. Add images and coordinates</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#3-Dev:-preprocessing">3 Dev: preprocessing</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SpatialDE tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#1.-Dev:-read">1. Dev: read</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.2-stlearn.read.10x_mtx">1.2 stlearn.read.10x_mtx</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#2.-Add-images-and-coordinates">2. Add images and coordinates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3-Dev:-preprocessing">3 Dev: preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#3.1.-filter,-normalize,-scale-&amp;-PCA">3.1. filter, normalize, scale &amp; PCA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.2-SpatialDE">3.2 SpatialDE</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-top-spatially-differential-expressing-genes">Plot top spatially differential expressing genes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assuming-5-different-patterns-and-iterate-till-ELBO-converges">assuming 5 different patterns and iterate till ELBO converges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#(Careful!-This-step-could-take-very-long-time)">(Careful! This step could take very long time)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-all-spatial-expression-patterns-with-genes-in-each-pattern">Plot all spatial expression patterns with genes in each pattern</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             
@@ -153,8 +162,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
         
       <li>SpatialDE tutorial</li>
     
@@ -828,8 +835,6 @@ Usp54:
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="cci.html" class="btn btn-neutral float-left" title="Spatial cell-cell interaction tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
