@@ -88,28 +88,48 @@
               
             
             
-              <p class="caption"><span class="caption-text">CONTENT:</span></p>
-<ul class="current">
+              <p class="caption"><span class="caption-text">Content:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="tutorial.html#modules">Modules:</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Spatial cell-cell interaction tutorial</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#0.-Prepare-data">0. Prepare data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">1. Add image, coordinates, and significant Ligand-Receptors from CPDB</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#2-Preprocessing">2 Preprocessing</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#3.-Cell-cell-interaction-analysis">3. Cell-cell interaction analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Spatial cell-cell interaction tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#0.-Prepare-data">0. Prepare data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">1. Add image, coordinates, and significant Ligand-Receptors from CPDB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#2-Preprocessing">2 Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#2.1.-filter,-normalize,-scale-&amp;-PCA">2.1. filter, normalize, scale &amp; PCA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#2.2.-add-morphology-information">2.2. add morphology information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#3.-Cell-cell-interaction-analysis">3. Cell-cell interaction analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#3.1-Cell-type-heterogeneity">3.1 Cell type heterogeneity</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Count-the-density-of-cell-types-in-user-defined-number-of-windows-(e.g. num=30-means-30x30-windows-across-the-tissue)">Count the density of cell types in user defined number of windows (e.g. num=30 means 30x30 windows across the tissue)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#3.2-Cell-cell-interaction-based-on-spatial-Ligand-Receptor-(L-R)-expression">3.2 Cell-cell interaction based on spatial Ligand-Receptor (L-R) expression</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#label-transfer-from-a-published-breast-cancer-dataset-for-all-spots">label transfer from a published breast cancer dataset for all spots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plot-the-transferred-labels-for-each-spot">plot the transferred labels for each spot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cluster-spatial-spots-based-on-the-proportion-of-known-ligand-receptor-co-expression-among-the-neighbouring-spots">cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#plot-the-CCI-clustering-results-and-highlight-the-largest-expressed-cluster">plot the CCI clustering results and highlight the largest expressed cluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Compare-the-immune-cells-identified-by-the-label-transfer-and-the-CCI-clustering">Compare the immune cells identified by the label transfer and the CCI clustering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#List-the-top-15-differentiated-L-R-pairs-in-all-CCI-clusters">List the top 15 differentiated L-R pairs in all CCI clusters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Violin-plot-of-top-differentiated-L-R-pairs-neighbouring-counts-in-each-CCI-cluster">Violin plot of top differentiated L-R pairs neighbouring counts in each CCI cluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#barplot-to-show-the-cell-type-(according-to-label-transfer)-compositions-in-each-CCI-cluster">barplot to show the cell type (according to label transfer) compositions in each CCI cluster</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Merge-results-from-cci-clustering-and-cell-type-heterogeneity">Merge results from cci clustering and cell type heterogeneity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#L-R-expression-summary-across-all-spots">L-R expression summary across all spots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
 </ul>
 
             
@@ -154,8 +174,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="tutorial.html">Tutorials</a> &raquo;</li>
         
       <li>Spatial cell-cell interaction tutorial</li>
     
