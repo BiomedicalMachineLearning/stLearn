@@ -55,7 +55,7 @@ def QC_plot(
         legend_markers = [plt.scatter([], [], s=i, c="grey") for i in markers]
         labels = [str(int(scaler.inverse_transform(np.array(i).reshape(1, 1))))
                   for i in markers]
-        fig.legend(handles=legend_markers, labels=labels, loc='lower right', bbox_to_anchor=(0.82, 0.1),
+        fig.legend(handles=legend_markers, labels=labels, loc='lower right', bbox_to_anchor=(0.75, 0.1),
                    scatterpoints=1, frameon=False, handletextpad=0.1, title="Number of Reads")
 
     if not show_axis:

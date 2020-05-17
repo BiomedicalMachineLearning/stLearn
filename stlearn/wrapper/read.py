@@ -49,7 +49,7 @@ def ReadOldST(
     
 
     adata = stlearn.read.file_table(count_matrix_file)
-    stlearn.add.parsing(adata,
+    adata=stlearn.add.parsing(adata,
         coordinates_file = spatial_file)
     stlearn.add.image(adata, imgpath=image_file)
 
