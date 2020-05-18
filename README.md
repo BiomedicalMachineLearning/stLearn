@@ -21,6 +21,8 @@ Prepare conda environment for stlearn
 
 ``` conda create -n stlearn python=3.8 ```
 
+``` conda activate stlearn ```
+
 ### Step 1:
 
 ``` conda config --add channels conda-forge ```
