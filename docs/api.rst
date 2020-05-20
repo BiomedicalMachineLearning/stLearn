@@ -89,6 +89,7 @@ Spatial: `spatial`
    :toctree: .
 
    spatial.clustering.localization
+   spatial.trajectory.pseudotime
    spatial.trajectory.global_level
    spatial.trajectory.local_level
    spatial.morphology.adjust

@@ -117,7 +117,7 @@ def global_plot(
 
     n_clus = len(colors.unique())
     
-    from stlearn.external.scanpy.plotting import palettes
+    from scanpy.plotting import palettes
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",palettes.vega_20_scanpy)
 
     cmap = plt.get_cmap(cmaps)

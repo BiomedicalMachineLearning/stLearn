@@ -100,7 +100,7 @@ def cluster_plot(
         nx.draw_networkx_edges(G, pos=centroid_dict, node_size=1, alpha=1.0,
                                font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=5, arrowstyle='->', connectionstyle="arc3,rad=0.2")
 
-    from stlearn.external.scanpy.plotting import palettes
+    from scanpy.plotting import palettes
     if cmap == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
     elif cmap == "vega_20_scanpy":

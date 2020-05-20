@@ -58,8 +58,8 @@ def run_umap(
         Independent Component Analysis representation of data.
 
     """
-    from stlearn.external.scanpy.api.tl import umap
-    umap(adata, min_dist=min_dist, spread=spread, n_components=n_components,
+
+    scanpy.tl.umap(adata, min_dist=min_dist, spread=spread, n_components=n_components,
          maxiter=maxiter, alpha=alpha, gamma=gamma, negative_sample_rate=negative_sample_rate,
          init_pos=init_pos, random_state=random_state, a=a, b=b, copy=copy, method=method)
 
