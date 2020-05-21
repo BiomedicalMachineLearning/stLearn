@@ -18,3 +18,5 @@ Modules:
 	Pseudo-space-time-tutorial
 	cci
 	spatialDE
+	Working-with-Old-Spatial-Transcriptomics-data
+	Read_slideseq
