@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from pathlib import Path
 import os
 import sys
-
+import numpy as np
 
 def parsing(
     adata: AnnData,
@@ -78,5 +78,7 @@ def parsing(
 
     adata.obs["imagecol"] = imgcol
     adata.obs["imagerow"] = imgrow
+
+    adata.obsm["spatial"] = np.c_[[imgcol,imgrow]].reshape(-1,2)
 
     return adata if copy else None

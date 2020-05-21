@@ -425,12 +425,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_h5</span><span class="p">(</span><span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/filtered_feature_bc_matrix.h5&quot;</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/tissue_hires_image.png&quot;</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/tissue_positions_list.csv&quot;</span><span class="p">,</span>
-                <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/duy/UQ/10X/BCBA/spatial/scalefactors_json.json&quot;</span><span class="p">,</span>
-                <span class="n">quality</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;../UQ/10X/BCBA/&quot;</span><span class="p">)</span>
+
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">min_cells</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -449,9 +445,6 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Added tissue image to the object!
-filtered out 12851 genes that are detected in less than 3 cells
-normalizing counts per cell
 Normalization step is finished in adata.X
 Log transformation step is finished in adata.X
 Scale step is finished in adata.X
@@ -512,7 +505,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -553,24 +546,16 @@ The annotation is added to adata.obs[&#39;louvain_anno&#39;]
 <p>Here we called global trajectory because it does the same method of trajectory inference in single cell analysis.</p>
 <p>We used PAGA and DPT to perform this step. It also does the function of sub-clustering.</p>
 <p>To explore the progression of DCIS-IDC, we choose the root as cluster 6 (Ductal cells area). Also, We used high resolution image (2000x2000) the the eps parameter should be 100:</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;iroot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;louvain&quot;</span><span class="p">]</span>  <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="mi">6</span><span class="p">))[</span><span class="mi">50</span><span class="p">]</span>
-<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The data adjusted by morphology is added to adata.obsm[&#39;X_diffmap_morphology&#39;]
-</pre></div></div>
 </div>
 <p>We wrap some plotting function from scanpy to show PAGA and DPT figures</p>
 <div class="nbinput docutils container">
@@ -633,7 +618,7 @@ Diffusion pseudotime plot:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span><span class="n">show_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">node_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edge_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span><span class="n">show_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">node_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edge_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -707,7 +692,7 @@ Start construct trajectory for subcluster 6
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudospacetime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -742,33 +727,6 @@ Start construct trajectory for subcluster 6
 </div>
 <div class="output_area docutils container">
 <img alt="_images/Pseudo-space-time-tutorial_24_0.png" src="_images/Pseudo-space-time-tutorial_24_0.png" />
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
 </div>
 </div>
 </div>

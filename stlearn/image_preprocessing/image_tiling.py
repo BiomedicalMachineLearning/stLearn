@@ -5,17 +5,24 @@ from PIL import Image
 from pathlib import Path
 # Test progress bar
 from tqdm import tqdm
-
+import numpy as np
 
 def tiling(
         adata: AnnData,
         out_path: Union[Path, str] = "./",
+        library_id: str = None,
         crop_size: int = 40,
         target_size: int = 299,
         verbose: bool = False,
         copy: bool = False
 ) -> Optional[AnnData]:
-    img_pillow = Image.fromarray(adata.uns["tissue_img"])
+
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+
+    image = (adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]* 255).astype(np.uint8)
+
+    img_pillow = Image.fromarray(image)
     tile_names = []
 
     with tqdm(total=len(adata), desc="Tiling image", bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:

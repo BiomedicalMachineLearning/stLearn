@@ -177,6 +177,7 @@
     <span class="n">use_cluster</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;louvain&#39;</span><span class="p">,</span>
     <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="n">spot_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6.5</span><span class="p">,</span>
+    <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hires&quot;</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
@@ -193,6 +194,9 @@
 <span class="sd">    -------</span>
 <span class="sd">    N/A</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    
+
     <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.dpi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpi</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
     <span class="n">num_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">use_cluster</span><span class="p">]))</span> <span class="o">+</span> <span class="mi">1</span>
@@ -236,7 +240,6 @@
 <span class="sd">    dpi: bool               Dots per inch</span>
 <span class="sd">    name: str               Save as file name</span>
 <span class="sd">    output: str             Save to directory</span>
-
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    N/A</span>
@@ -270,7 +273,6 @@
 <span class="sd">    dpi: bool               Dots per inch</span>
 <span class="sd">    name: str               Save as file name</span>
 <span class="sd">    output: str             Save to directory</span>
-
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    N/A</span>

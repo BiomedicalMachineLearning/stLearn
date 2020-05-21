@@ -13,8 +13,9 @@ import warnings
 
 def gene_plot(
     adata: AnnData,
-    method: str = None,
+    method: str = "CumSum",
     genes: Optional[Union[str, list]] = None,
+    library_id: str = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
@@ -34,6 +35,8 @@ def gene_plot(
     ----------
     adata
         Annotated data matrix.
+    library_id
+        Library id stored in AnnData.
     method
         Use method to count. We prorive: NaiveMean, NaiveSum, CumSum.
     genes
@@ -95,8 +98,12 @@ def gene_plot(
     if not show_axis:
         a.axis('off')
 
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
     # Overlay the tissue image
-    a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
+    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
     if name is None:
         name = method

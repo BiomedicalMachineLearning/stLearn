@@ -14,6 +14,7 @@ from .utils import get_img_from_fig
 def microenv_plot(
     adata: AnnData,
     use_data: str = None,
+    library_id: str = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
@@ -34,6 +35,8 @@ def microenv_plot(
         Annotated data matrix.
     use_data
         Use dimensionality reduction result data.
+    library_id
+        Library id stored in AnnData.
     data_alpha
         Opacity of the spot.
     tissue_alpha
@@ -84,8 +87,12 @@ def microenv_plot(
         if not show_axis:
             a.axis('off')
 
+        if library_id is None:
+            library_id = list(adata.uns["spatial"].keys())[0]
+
+        image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
         # Overlay the tissue image
-        a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
+        a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
         if name is None:
             name = method

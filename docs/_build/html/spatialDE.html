@@ -100,14 +100,13 @@
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SpatialDE tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#1.-Dev:-read">1. Dev: read</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#1.2-stlearn.read.10x_mtx">1.2 stlearn.read.10x_mtx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#1.-Read">1. Read</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.2-stlearn.Read10X">1.2 stlearn.Read10X</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#2.-Add-images-and-coordinates">2. Add images and coordinates</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#3-Dev:-preprocessing">3 Dev: preprocessing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#3.1.-filter,-normalize,-scale-&amp;-PCA">3.1. filter, normalize, scale &amp; PCA</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#3.2-SpatialDE">3.2 SpatialDE</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#2-Preprocessing">2 Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#2.1.-Filter,-normalize,-scale-&amp;-PCA">2.1. Filter, normalize, scale &amp; PCA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#2.2-SpatialDE">2.2 SpatialDE</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Plot-top-spatially-differential-expressing-genes">Plot top spatially differential expressing genes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assuming-5-different-patterns-and-iterate-till-ELBO-converges">assuming 5 different patterns and iterate till ELBO converges</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#(Careful!-This-step-could-take-very-long-time)">(Careful! This step could take very long time)</a></li>
@@ -426,12 +425,12 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="SpatialDE-tutorial">
 <h1>SpatialDE tutorial<a class="headerlink" href="#SpatialDE-tutorial" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="1.-Dev:-read">
-<h2>1. Dev: read<a class="headerlink" href="#1.-Dev:-read" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="1.2-stlearn.read.10x_mtx">
-<h3>1.2 stlearn.read.10x_mtx<a class="headerlink" href="#1.2-stlearn.read.10x_mtx" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="1.-Read">
+<h2>1. Read<a class="headerlink" href="#1.-Read" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.2-stlearn.Read10X">
+<h3>1.2 stlearn.Read10X<a class="headerlink" href="#1.2-stlearn.Read10X" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -441,55 +440,44 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_mtx</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Mouse_Brain_Section_Coronal</span><span class="se">\\</span><span class="s2">filtered_feature_bc_matrix&quot;</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="2.-Add-images-and-coordinates">
-<h2>2. Add images and coordinates<a class="headerlink" href="#2.-Add-images-and-coordinates" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Mouse_Brain_Section_Coronal</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_positions_list.csv&quot;</span><span class="p">,</span>
-                        <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Mouse_Brain_Section_Coronal</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">scalefactors_json.json&quot;</span><span class="p">,</span>
-                        <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;low&quot;</span><span class="p">)</span>
-
+<span></span><span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;../UQ/10X/Brain_coronal/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Mouse_Brain_Section_Coronal</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_lowres_image.png&quot;</span><span class="p">)</span>
+<span></span><span class="n">data</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Added tissue image to the object!
+AnnData object with n_obs × n_vars = 2698 × 31053
+    obs: &#39;in_tissue&#39;, &#39;array_row&#39;, &#39;array_col&#39;, &#39;imagecol&#39;, &#39;imagerow&#39;
+    var: &#39;gene_ids&#39;, &#39;feature_types&#39;, &#39;genome&#39;
+    uns: &#39;spatial&#39;
+    obsm: &#39;spatial&#39;
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="3-Dev:-preprocessing">
-<h2>3 Dev: preprocessing<a class="headerlink" href="#3-Dev:-preprocessing" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="3.1.-filter,-normalize,-scale-&amp;-PCA">
-<h3>3.1. filter, normalize, scale &amp; PCA<a class="headerlink" href="#3.1.-filter,-normalize,-scale-&-PCA" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="2-Preprocessing">
+<h2>2 Preprocessing<a class="headerlink" href="#2-Preprocessing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="2.1.-Filter,-normalize,-scale-&amp;-PCA">
+<h3>2.1. Filter, normalize, scale &amp; PCA<a class="headerlink" href="#2.1.-Filter,-normalize,-scale-&-PCA" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -504,14 +492,12 @@ Added tissue image to the object!
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-filtered out 20012 genes that are detected in less than 310.53000000000003 cells
-normalizing counts per cell
 Normalization step is finished in adata.X
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="3.2-SpatialDE">
-<h3>3.2 SpatialDE<a class="headerlink" href="#3.2-SpatialDE" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="2.2-SpatialDE">
+<h3>2.2 SpatialDE<a class="headerlink" href="#2.2-SpatialDE" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
@@ -625,7 +611,7 @@ Pak6:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_1.png" src="_images/spatialDE_12_1.png" />
+<img alt="_images/spatialDE_10_1.png" src="_images/spatialDE_10_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -641,7 +627,7 @@ Fam189a1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_3.png" src="_images/spatialDE_12_3.png" />
+<img alt="_images/spatialDE_10_3.png" src="_images/spatialDE_10_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -657,7 +643,7 @@ Fam189a1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_5.png" src="_images/spatialDE_12_5.png" />
+<img alt="_images/spatialDE_10_5.png" src="_images/spatialDE_10_5.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -673,7 +659,7 @@ Kctd1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_7.png" src="_images/spatialDE_12_7.png" />
+<img alt="_images/spatialDE_10_7.png" src="_images/spatialDE_10_7.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -689,7 +675,7 @@ Actr2:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_9.png" src="_images/spatialDE_12_9.png" />
+<img alt="_images/spatialDE_10_9.png" src="_images/spatialDE_10_9.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -705,7 +691,7 @@ Cntnap1:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_11.png" src="_images/spatialDE_12_11.png" />
+<img alt="_images/spatialDE_10_11.png" src="_images/spatialDE_10_11.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -721,7 +707,7 @@ Egr4:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_13.png" src="_images/spatialDE_12_13.png" />
+<img alt="_images/spatialDE_10_13.png" src="_images/spatialDE_10_13.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -737,7 +723,7 @@ Hapln4:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_15.png" src="_images/spatialDE_12_15.png" />
+<img alt="_images/spatialDE_10_15.png" src="_images/spatialDE_10_15.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -753,7 +739,7 @@ Atp1b3:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_17.png" src="_images/spatialDE_12_17.png" />
+<img alt="_images/spatialDE_10_17.png" src="_images/spatialDE_10_17.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -769,7 +755,7 @@ Usp54:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/spatialDE_12_19.png" src="_images/spatialDE_12_19.png" />
+<img alt="_images/spatialDE_10_19.png" src="_images/spatialDE_10_19.png" />
 </div>
 </div>
 </div>

@@ -14,7 +14,7 @@ try:
 except ImportError:
     class MutableVertexPartition: pass
     MutableVertexPartition.__module__ = 'louvain.VertexPartition'
-
+import scanpy
 
 def louvain(
     adata: AnnData,

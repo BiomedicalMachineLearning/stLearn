@@ -6,13 +6,13 @@
    "source": [
     "# SpatialDE tutorial\n",
     "\n",
-    "## 1. Dev: read\n",
-    "### 1.2 stlearn.read.10x_mtx"
+    "## 1. Read\n",
+    "### 1.2 stlearn.Read10X"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 3,
    "metadata": {
     "scrolled": true
    },
@@ -24,74 +24,60 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [],
    "source": [
-    "data = st.read.file_10x_mtx(\"C:\\\\Users\\\\uqjxu8\\\\GIH\\\\Bioinformatics\\\\SPA\\\\Data\\\\visium\\\\Mouse_Brain_Section_Coronal\\\\filtered_feature_bc_matrix\")\n",
-    "data.var_names_make_unique()"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "## 2. Add images and coordinates"
+    "data = st.Read10X(path=\"../UQ/10X/Brain_coronal/\")"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "st.add.positions(data,position_filepath = \"C:\\\\Users\\\\uqjxu8\\\\GIH\\\\Bioinformatics\\\\SPA\\\\Data\\\\visium\\\\Mouse_Brain_Section_Coronal\\\\spatial\\\\tissue_positions_list.csv\",\n",
-    "                        scale_filepath = \"C:\\\\Users\\\\uqjxu8\\\\GIH\\\\Bioinformatics\\\\SPA\\\\Data\\\\visium\\\\Mouse_Brain_Section_Coronal\\\\spatial\\\\scalefactors_json.json\",\n",
-    "                        quality = \"low\")\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 14,
+   "execution_count": 7,
    "metadata": {},
    "outputs": [
     {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Added tissue image to the object!\n"
-     ]
+     "data": {
+      "text/plain": [
+       "AnnData object with n_obs × n_vars = 2698 × 31053 \n",
+       "    obs: 'in_tissue', 'array_row', 'array_col', 'imagecol', 'imagerow'\n",
+       "    var: 'gene_ids', 'feature_types', 'genome'\n",
+       "    uns: 'spatial'\n",
+       "    obsm: 'spatial'"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
     }
    ],
    "source": [
-    "st.add.image(data, imgpath=\"C:\\\\Users\\\\uqjxu8\\\\GIH\\\\Bioinformatics\\\\SPA\\\\Data\\\\visium\\\\Mouse_Brain_Section_Coronal\\\\spatial\\\\tissue_lowres_image.png\")"
+    "data"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## 3 Dev: preprocessing"
+    "## 2 Preprocessing"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### 3.1. filter, normalize, scale & PCA"
+    "### 2.1. Filter, normalize, scale & PCA"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 16,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "filtered out 20012 genes that are detected in less than 310.53000000000003 cells\n",
-      "normalizing counts per cell\n",
       "Normalization step is finished in adata.X\n"
      ]
     }
@@ -106,7 +92,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### 3.2 SpatialDE"
+    "### 2.2 SpatialDE"
    ]
   },
   {

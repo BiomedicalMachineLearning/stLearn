@@ -1,42 +1,40 @@
 """Reading and Writing
 """
 from pathlib import Path, PurePath
-from typing import Union
-
+from typing import Optional, Union
 from anndata import AnnData
 import numpy as np
 from PIL import Image
 import pandas as pd
 import stlearn
+import scanpy
 
 def Read10X(
-    count_matrix_file: Union[str, Path] = None,
-    spatial_folder: Union[str, Path] = None,
-    quality: str = "high",
-    data_type: str = "h5"
+    path: Union[str, Path],
+    genome: Optional[str] = None,
+    count_file: str = "filtered_feature_bc_matrix.h5",
+    library_id: str = None,
+    load_images: Optional[bool] = True,
+    use_quality: str = "hires"
     ) -> AnnData:
     
-    if data_type == "h5":
-        adata = stlearn.read.file_10x_h5(count_matrix_file)
-        adata.var_names_make_unique()
-    elif data_type == "mtx":
-        adata = stlearn.read.file_10x_mtx(count_matrix_file)
-    elif data_type == "table":
-        adata = stlearn.read.file_table(count_matrix_file)
-    else:
-        raise ValueError("Wrong data type!")
+    from scanpy import read_visium
+    adata = read_visium(path, genome=None,
+     count_file='filtered_feature_bc_matrix.h5',
+      library_id=None,
+       load_images=True)
+    adata.var_names_make_unique()
 
-    if quality == "low":
-        stlearn.add.image(adata=adata, 
-            imgpath=spatial_folder+"/tissue_lowres_image.png")
-    elif quality == "high":
-        stlearn.add.image(adata=adata, 
-            imgpath=spatial_folder+"/tissue_hires_image.png")
+    
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+        
+    scale = adata.uns["spatial"][library_id]["scalefactors"]["tissue_"+use_quality+"_scalef"]
+    image_coor = adata.obsm["spatial"]*scale
 
-    stlearn.add.positions(adata,
-        position_filepath = spatial_folder+"/tissue_positions_list.csv",
-        scale_filepath = spatial_folder+"/scalefactors_json.json",
-            quality=quality)
+    adata.obs["imagecol"] = image_coor[:,0]
+    adata.obs["imagerow"] = image_coor[:,1]
+    adata.uns["spatial"]["use_quality"] = use_quality
 
     return adata
 
@@ -60,6 +58,7 @@ def ReadSlideSeq(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
     scale_factor: float = 10,
+    library_id: str = None,
     ) -> AnnData:
 
     """\
@@ -92,8 +91,17 @@ def ReadSlideSeq(
     max_size = int(max_size + 0.1*max_size)
 
     image = Image.new('RGB', (max_size, max_size), (255, 255, 255))
-    imgarr = np.array(image) 
-    adata.uns["tissue_img"] = imgarr
+    imgarr = np.array(image)
+
+    adata.uns["spatial"] = {}
+    adata.uns["spatial"]["Slide-seq"] = {}
+    adata.uns["spatial"]["Slide-seq"]["images"] = {}
+    adata.uns["spatial"]["Slide-seq"]["images"]["hires"] = imgarr
+    adata.uns["spatial"]["use_quality"] = "hires"
+    adata.uns["spatial"]["Slide-seq"]["scalefactors"] = {}
+    adata.uns["spatial"]["Slide-seq"]["scalefactors"]["tissue_hires_scalef"] = 1
+
+    adata.obsm["spatial"] = meta[["x","y"]].values
 
     return adata
 

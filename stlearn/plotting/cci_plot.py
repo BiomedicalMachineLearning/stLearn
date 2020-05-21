@@ -13,6 +13,7 @@ def het_plot(
     use_cluster: str = 'louvain',
     dpi: int = 100,
     spot_size: Union[float,int] = 6.5,
+    quality: str = "hires",
     name: str = None,
     output: str = None,
 ):
@@ -29,6 +30,9 @@ def het_plot(
     -------
     N/A
     """
+
+    
+
     plt.rcParams['figure.dpi'] = dpi
     fig, ax = plt.subplots()
     num_clusters = len(set(adata.obs[use_cluster])) + 1
@@ -72,7 +76,6 @@ def violin_plot(
     dpi: bool               Dots per inch
     name: str               Save as file name
     output: str             Save to directory
-
     Returns
     -------
     N/A
@@ -106,7 +109,6 @@ def stacked_bar_plot(
     dpi: bool               Dots per inch
     name: str               Save as file name
     output: str             Save to directory
-
     Returns
     -------
     N/A

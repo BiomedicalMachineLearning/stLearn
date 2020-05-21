@@ -438,14 +438,9 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># specify PATH to data</span>
 <span class="n">BASE_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/90days/uqxtan9/10x_Visium/V1_Adult_Mouse_Brain&quot;</span><span class="p">)</span>
-<span class="n">CM_PATH</span> <span class="o">=</span> <span class="n">BASE_PATH</span> <span class="o">/</span> <span class="s2">&quot;V1_Adult_Mouse_Brain_filtered_feature_bc_matrix.h5&quot;</span>
-<span class="n">IMG_PATH</span> <span class="o">=</span> <span class="n">BASE_PATH</span> <span class="o">/</span> <span class="s2">&quot;spatial/tissue_hires_image.png&quot;</span>
-<span class="n">SPOT_PATH</span> <span class="o">=</span> <span class="n">BASE_PATH</span> <span class="o">/</span> <span class="s2">&quot;spatial/tissue_positions_list.csv&quot;</span>
-<span class="n">SCALE_PATH</span> <span class="o">=</span> <span class="n">BASE_PATH</span> <span class="o">/</span> <span class="s2">&quot;spatial/scalefactors_json.json&quot;</span>
 
 <span class="c1"># spot tile is the intermediate result of image pre-processing</span>
 <span class="n">TILE_PATH</span> <span class="o">=</span> <span class="n">BASE_PATH</span> <span class="o">/</span> <span class="s2">&quot;tiles&quot;</span>
-<span class="n">TILE_PATH</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -455,12 +450,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># load data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_h5</span><span class="p">(</span><span class="n">CM_PATH</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="n">IMG_PATH</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">position_filepath</span> <span class="o">=</span> <span class="n">SPOT_PATH</span><span class="p">,</span>
-                <span class="n">scale_filepath</span> <span class="o">=</span> <span class="n">SCALE_PATH</span><span class="p">,</span>
-                <span class="n">quality</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">)</span>
 
 </pre></div>
 </div>

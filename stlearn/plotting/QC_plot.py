@@ -6,6 +6,7 @@ from anndata import AnnData
 
 def QC_plot(
         adata: AnnData,
+        library_id: str = None,
         name: str = None,
         method: str = None,
         data_alpha: float = 0.8,
@@ -60,9 +61,12 @@ def QC_plot(
 
     if not show_axis:
         a.axis('off')
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
 
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
     # Overlay the tissue image
-    a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1, )
+    a.imshow(image, alpha=tissue_alpha, zorder=-1, )
 
     # fig.tight_layout()
     if name is None:

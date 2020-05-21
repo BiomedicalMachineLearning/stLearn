@@ -128,7 +128,7 @@ Plot: `pl`
    pl.het_plot
    pl.violin_plot
    pl.stacked_bar_plot
-   pl.trajectory.global_plot
+   pl.trajectory.pseudotime
    pl.trajectory.local_plot
    pl.trajectory.tree_plot
 

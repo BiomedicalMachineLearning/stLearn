@@ -30,11 +30,19 @@ def image(
     **tissue_img** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
+    
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
             img = plt.imread(imgpath, 0)
-            adata.uns["tissue_img"] = img
+            adata.uns["spatial"] = {}
+            adata.uns["spatial"]["Slide-seq"] = {}
+            adata.uns["spatial"]["Slide-seq"]["images"] = {}
+            adata.uns["spatial"]["Slide-seq"]["images"]["hires"] = img
+            adata.uns["spatial"]["use_quality"] = "hires"
+            adata.uns["spatial"]["Slide-seq"]["scalefactors"] = {}
+            adata.uns["spatial"]["Slide-seq"]["scalefactors"]["tissue_hires_scalef"] = 1
+
             print("Added tissue image to the object!")
 
             return adata if copy else None

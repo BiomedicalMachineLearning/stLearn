@@ -178,6 +178,7 @@
 <div class="viewcode-block" id="microenv_plot"><a class="viewcode-back" href="../../../stlearn.pl.microenv_plot.html#stlearn.pl.microenv_plot">[docs]</a><span class="k">def</span> <span class="nf">microenv_plot</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">use_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">library_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">data_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">tissue_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Spectral_r&quot;</span><span class="p">,</span>
@@ -198,6 +199,8 @@
 <span class="sd">        Annotated data matrix.</span>
 <span class="sd">    use_data</span>
 <span class="sd">        Use dimensionality reduction result data.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Library id stored in AnnData.</span>
 <span class="sd">    data_alpha</span>
 <span class="sd">        Opacity of the spot.</span>
 <span class="sd">    tissue_alpha</span>
@@ -248,8 +251,12 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">show_axis</span><span class="p">:</span>
             <span class="n">a</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">image</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">][</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]]</span>
         <span class="c1"># Overlay the tissue image</span>
-        <span class="n">a</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tissue_img&quot;</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">tissue_alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">tissue_alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">1</span><span class="p">,)</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">method</span>

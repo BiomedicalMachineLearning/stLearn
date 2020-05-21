@@ -38,9 +38,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="stlearn.pl.trajectory.local_plot" href="stlearn.pl.trajectory.local_plot.html" />
-    <link rel="prev" title="stlearn.pl.stacked_bar_plot" href="stlearn.pl.stacked_bar_plot.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -89,32 +87,9 @@
             
             
               <p class="caption"><span class="caption-text">Content:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.em">Embedding: <cite>em</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.spatial">Spatial: <cite>spatial</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.tl">Tools: <cite>tl</cite></a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.pl">Plot: <cite>pl</cite></a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.gene_plot.html">stlearn.pl.gene_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.cluster_plot.html">stlearn.pl.cluster_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.subcluster_plot.html">stlearn.pl.subcluster_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.microenv_plot.html">stlearn.pl.microenv_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.non_spatial_plot.html">stlearn.pl.non_spatial_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.QC_plot.html">stlearn.pl.QC_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.het_plot.html">stlearn.pl.het_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.violin_plot.html">stlearn.pl.violin_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.stacked_bar_plot.html">stlearn.pl.stacked_bar_plot</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.pl.trajectory.global_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.trajectory.local_plot.html">stlearn.pl.trajectory.local_plot</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.trajectory.tree_plot.html">stlearn.pl.trajectory.tree_plot</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
@@ -169,8 +144,6 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-          <li><a href="api.html">API</a> &raquo;</li>
-        
       <li>stlearn.pl.trajectory.global_plot</li>
     
     
@@ -216,42 +189,6 @@
 </style>
 <div class="section" id="stlearn-pl-trajectory-global-plot">
 <h1>stlearn.pl.trajectory.global_plot<a class="headerlink" href="#stlearn-pl-trajectory-global-plot" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="stlearn.pl.trajectory.global_plot">
-<code class="sig-prename descclassname">stlearn.pl.trajectory.</code><code class="sig-name descname">global_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">use_label</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'louvain'</span></em>, <em class="sig-param"><span class="n">list_cluster</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">tissue_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">edge_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">node_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">spot_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>float<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">6.5</span></em>, <em class="sig-param"><span class="n">node_size</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">5</span></em>, <em class="sig-param"><span class="n">show_color_bar</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_axis</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_graph</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">180</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.pl.trajectory.global_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Global trajectory inference plot (Only DPT).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
-<li><p><strong>use_label</strong> – Use label result of clustering method.</p></li>
-<li><p><strong>list_cluster</strong> – Choose set of clusters that will display in the plot.</p></li>
-<li><p><strong>data_alpha</strong> – Opacity of the spot.</p></li>
-<li><p><strong>tissue_alpha</strong> – Opacity of the tissue.</p></li>
-<li><p><strong>edge_alpha</strong> – Opacity of edge in PAGA graph in the tissue.</p></li>
-<li><p><strong>node_alpha</strong> – Opacity of node in PAGA graph in the tissue.</p></li>
-<li><p><strong>cmap</strong> – Color map to use.</p></li>
-<li><p><strong>spot_size</strong> – Size of the spot.</p></li>
-<li><p><strong>node_size</strong> – Size of node in PAGA graph in the tissue.</p></li>
-<li><p><strong>show_color_bar</strong> – Show color bar or not.</p></li>
-<li><p><strong>show_axis</strong> – Show axis or not.</p></li>
-<li><p><strong>show_graph</strong> – Show PAGA graph or not.</p></li>
-<li><p><strong>show_legend</strong> – Show legend or not.</p></li>
-<li><p><strong>dpi</strong> – Set dpi as the resolution for the plot.</p></li>
-<li><p><strong>show_trajectory</strong> – Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.</p></li>
-<li><p><strong>show_subcluster</strong> – Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.</p></li>
-<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Nothing</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 
@@ -259,15 +196,6 @@
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="stlearn.pl.trajectory.local_plot.html" class="btn btn-neutral float-right" title="stlearn.pl.trajectory.local_plot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="stlearn.pl.stacked_bar_plot.html" class="btn btn-neutral float-left" title="stlearn.pl.stacked_bar_plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
