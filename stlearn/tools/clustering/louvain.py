@@ -14,7 +14,7 @@ try:
 except ImportError:
     class MutableVertexPartition: pass
     MutableVertexPartition.__module__ = 'louvain.VertexPartition'
-
+import scanpy
 
 def louvain(
     adata: AnnData,
@@ -83,9 +83,8 @@ def louvain(
     :class:`~anndata.AnnData`
         When ``copy=True`` is set, a copy of ``adata`` with those fields is returned.
     """
-    from stlearn.external.scanpy.api.tl import louvain
 
-    louvain(adata, resolution=resolution, random_state=random_state, 
+    scanpy.tl.louvain(adata, resolution=resolution, random_state=random_state, 
             restrict_to=restrict_to, key_added=key_added, adjacency=adjacency,
             flavor=flavor, directed=directed, use_weights=use_weights, partition_type=partition_type,
             partition_kwargs=partition_kwargs, copy=copy)

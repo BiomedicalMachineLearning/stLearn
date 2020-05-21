@@ -4,12 +4,12 @@ from anndata import AnnData
 import numpy as np
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 from numpy.random.mtrand import RandomState
+import scanpy
 
-N_PCS=50
 
 def run_pca(
     data: Union[AnnData, np.ndarray, spmatrix],
-    n_comps: int = N_PCS,
+    n_comps: int = 50,
     zero_center: Optional[bool] = True,
     svd_solver: str = 'auto',
     random_state: Optional[Union[int, RandomState]] = 0,
@@ -84,8 +84,8 @@ def run_pca(
              Explained variance, equivalent to the eigenvalues of the
              covariance matrix.
     """
-    from stlearn.external.scanpy.api.pp import pca
-    pca(data, n_comps=n_comps, zero_center=zero_center, svd_solver=svd_solver,
+
+    scanpy.pp.pca(data, n_comps=n_comps, zero_center=zero_center, svd_solver=svd_solver,
             random_state=random_state, return_info=return_info,
             use_highly_variable=use_highly_variable,
             dtype=dtype, copy=copy, chunked=chunked, chunk_size=chunk_size)

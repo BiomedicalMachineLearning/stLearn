@@ -4,7 +4,7 @@ import numpy as np
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 from scipy import sparse
 from stlearn import logging as logg
-
+import scanpy
 
 def log1p(
     adata: Union[AnnData, np.ndarray, spmatrix],
@@ -40,9 +40,8 @@ def log1p(
     Returns or updates `data`, depending on `copy`.
     """
 
-    from stlearn.external.scanpy.api.pp import log1p
 
-    log1p(adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base)
+    scanpy.pp.log1p(adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base)
 
     print("Log transformation step is finished in adata.X")
 
@@ -79,8 +78,7 @@ def scale(
     Depending on `copy` returns or updates `adata` with a scaled `adata.X`.
     """
 
-    from stlearn.external.scanpy.api.pp import scale
 
-    scale(adata, zero_center=zero_center, max_value=max_value, copy=copy)
+    scanpy.pp.scale(adata, zero_center=zero_center, max_value=max_value, copy=copy)
 
     print("Scale step is finished in adata.X")

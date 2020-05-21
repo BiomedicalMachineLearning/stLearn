@@ -168,7 +168,7 @@
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <div class="viewcode-block" id="parsing"><a class="viewcode-back" href="../../../stlearn.add.parsing.html#stlearn.add.parsing">[docs]</a><span class="k">def</span> <span class="nf">parsing</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
@@ -242,6 +242,8 @@
 
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgcol</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgrow</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[[</span><span class="n">imgcol</span><span class="p">,</span><span class="n">imgrow</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">adata</span> <span class="k">if</span> <span class="n">copy</span> <span class="k">else</span> <span class="kc">None</span></div>
 </pre></div>

@@ -1,8 +1,8 @@
 """Top-level package for stLearn."""
 
 __author__ = """Genomics and Machine Learning lab"""
-__email__ = 'duy.pham@uqconnect.edu.au'
-__version__ = '0.1.7'
+__email__ = 'duy.pham@uq.edu.au'
+__version__ = '0.1.8'
 
 
 from . import read
@@ -19,3 +19,4 @@ from . import spatial
 from .wrapper.read import ReadSlideSeq
 from .wrapper.read import Read10X
 from .wrapper.read import ReadOldST
+from .wrapper.clustering import SMEclust

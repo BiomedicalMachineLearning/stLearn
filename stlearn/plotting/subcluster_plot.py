@@ -12,6 +12,7 @@ import warnings
 
 def subcluster_plot(
     adata: AnnData,
+    library_id: str = None,
     use_label: str = "louvain",
     cluster: int = 0,
     data_alpha: float = 1.0,
@@ -31,6 +32,8 @@ def subcluster_plot(
     ----------
     adata
         Annotated data matrix.
+    library_id
+        Library id stored in AnnData.
     use_label
         Use label result of clustering method.
     list_cluster
@@ -116,7 +119,12 @@ def subcluster_plot(
                bbox=dict(facecolor=matplotlib.colors.to_hex(m.to_rgba(mapping[label])),
                          boxstyle='round', alpha=0.5))
 
-    a.imshow(adata.uns["tissue_img"], alpha=tissue_alpha, zorder=-1,)
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    
+    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
 
     if not show_axis:

@@ -3,7 +3,7 @@ import numpy as np
 from anndata import AnnData
 from numpy.random.mtrand import RandomState
 from scipy.sparse import issparse
-
+import scanpy
 
 def run_diffmap(adata: AnnData, n_comps: int = 15, copy: bool = False):
     """\
@@ -37,9 +37,9 @@ def run_diffmap(adata: AnnData, n_comps: int = 15, copy: bool = False):
         Eigenvalues of transition matrix.
     """
 
-    from stlearn.external.scanpy.api.tl import diffmap
-
-    diffmap(adata, n_comps=n_comps, copy=copy)
+    scanpy.tl.diffmap(adata, n_comps=n_comps, copy=copy)
 
     print(
         "Diffusion Map is done! Generated in adata.obsm['X_diffmap'] nad adata.uns['diffmap_evals']")
+
+    return adata if copy else None

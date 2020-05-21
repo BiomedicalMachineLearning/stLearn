@@ -100,7 +100,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Spatial cell-cell interaction tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#0.-Prepare-data">0. Prepare data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">1. Add image, coordinates, and significant Ligand-Receptors from CPDB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#2-Preprocessing">2 Preprocessing</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#2.1.-filter,-normalize,-scale-&amp;-PCA">2.1. filter, normalize, scale &amp; PCA</a></li>
@@ -438,22 +437,6 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Spatial-cell-cell-interaction-tutorial">
 <h1>Spatial cell-cell interaction tutorial<a class="headerlink" href="#Spatial-cell-cell-interaction-tutorial" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="0.-Prepare-data">
-<h2>0. Prepare data<a class="headerlink" href="#0.-Prepare-data" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="c1"># read in visium dataset downloaded from: support.10xgenomics.com/spatial-gene-expression/datasets/1.0.0/V1_Breast_Cancer_Block_A_Section_1</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_mtx</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">filtered_feature_bc_matrix&quot;</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
 <div class="section" id="1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB">
 <h2>1. Add image, coordinates, and significant Ligand-Receptors from CPDB<a class="headerlink" href="#1.-Add-image,-coordinates,-and-significant-Ligand-Receptors-from-CPDB" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
@@ -461,10 +444,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_hires_image.png&quot;</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_positions_list.csv&quot;</span><span class="p">,</span>
-                        <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">scalefactors_json.json&quot;</span><span class="p">,</span>
-                        <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1"># read in visium dataset downloaded from: support.10xgenomics.com/spatial-gene-expression/datasets/1.0.0/V1_Breast_Cancer_Block_A_Section_1</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1&quot;</span><span class="p">)</span>
+
 <span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">cpdb</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">cpdb_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">cpdb</span><span class="se">\\</span><span class="s2">means.txt&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
 
 </pre></div>
@@ -599,14 +583,14 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_14_0.png" src="_images/cci_14_0.png" />
+<img alt="_images/cci_13_0.png" src="_images/cci_13_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_14_1.png" src="_images/cci_14_1.png" />
+<img alt="_images/cci_13_1.png" src="_images/cci_13_1.png" />
 </div>
 </div>
 </div>
@@ -640,7 +624,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_19_0.png" src="_images/cci_19_0.png" />
+<img alt="_images/cci_18_0.png" src="_images/cci_18_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -657,14 +641,14 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_20_0.png" src="_images/cci_20_0.png" />
+<img alt="_images/cci_19_0.png" src="_images/cci_19_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_20_1.png" src="_images/cci_20_1.png" />
+<img alt="_images/cci_19_1.png" src="_images/cci_19_1.png" />
 </div>
 </div>
 </div>
@@ -726,7 +710,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_24_0.png" src="_images/cci_24_0.png" />
+<img alt="_images/cci_23_0.png" src="_images/cci_23_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -742,7 +726,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_25_0.png" src="_images/cci_25_0.png" />
+<img alt="_images/cci_24_0.png" src="_images/cci_24_0.png" />
 </div>
 </div>
 </div>
@@ -995,7 +979,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_31_0.png" src="_images/cci_31_0.png" />
+<img alt="_images/cci_30_0.png" src="_images/cci_30_0.png" />
 </div>
 </div>
 </div>
@@ -1014,7 +998,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_33_0.png" src="_images/cci_33_0.png" />
+<img alt="_images/cci_32_0.png" src="_images/cci_32_0.png" />
 </div>
 </div>
 </div>
@@ -1064,14 +1048,14 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_36_0.png" src="_images/cci_36_0.png" />
+<img alt="_images/cci_35_0.png" src="_images/cci_35_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_36_1.png" src="_images/cci_36_1.png" />
+<img alt="_images/cci_35_1.png" src="_images/cci_35_1.png" />
 </div>
 </div>
 </div>
@@ -1090,7 +1074,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_38_0.png" src="_images/cci_38_0.png" />
+<img alt="_images/cci_37_0.png" src="_images/cci_37_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1106,7 +1090,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_39_0.png" src="_images/cci_39_0.png" />
+<img alt="_images/cci_38_0.png" src="_images/cci_38_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1122,7 +1106,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_40_0.png" src="_images/cci_40_0.png" />
+<img alt="_images/cci_39_0.png" src="_images/cci_39_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">

@@ -15,6 +15,7 @@ from copy import deepcopy
 
 def tree_plot(
     adata: AnnData,
+    library_id: str = None,
     figsize: Union[float,int] = (10,4),
     data_alpha: float = 1.0,
     use_label: str = "louvain",
@@ -34,6 +35,8 @@ def tree_plot(
     ----------
     adata
         Annotated data matrix.
+    library_id
+        Library id stored in AnnData.
     use_label
         Use label result of clustering method.
     figsize
@@ -62,10 +65,13 @@ def tree_plot(
 
     G = adata.uns["PTS_graph"]
 
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+
     for node in G.nodes:
         if node == 9999:
             break
-        tmp_img = _generate_image(adata,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize,show_all=show_all)
+        tmp_img = _generate_image(adata,library_id,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize,show_all=show_all)
 
         G.nodes[node]['image'] = tmp_img
 
@@ -109,7 +115,7 @@ def tree_plot(
 
 
 
-def _generate_image(adata,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1,show_all=False):
+def _generate_image(adata,library_id,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,use_label="louvain",data_alpha=1,show_all=False,):
     
     #plt.rcParams['axes.linewidth'] = 4
 
@@ -135,7 +141,11 @@ def _generate_image(adata,sub_cluster,zoom = 10,spot_size=100,fontsize=6,dpi=96,
 
     color = adata.uns["tmp_color"][int(subset[use_label][0])]
 
-    ax2.imshow(adata.uns["tissue_img"],alpha=1)
+    
+
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+
+    ax2.imshow(image,alpha=1)
     ax2.scatter(x,y,s=spot_size,alpha=data_alpha,edgecolor="none",c=color)
     
     #ax2.axis('off')

@@ -23,7 +23,7 @@ def file_10x_h5(
     AnnData
     """
 
-    from stlearn.external.scanpy.readwrite import read_10x_h5
+    from scanpy.readwrite import read_10x_h5
 
     adata = read_10x_h5(filename)
 
@@ -46,7 +46,7 @@ def file_10x_mtx(
     AnnData
     """
 
-    from stlearn.external.scanpy.readwrite import read_10x_mtx
+    from scanpy.readwrite import read_10x_mtx
 
     adata = read_10x_mtx(filename)
 
@@ -69,7 +69,7 @@ def file_table(
     AnnData
     """
 
-    from stlearn.external.scanpy.readwrite import read
+    from scanpy.readwrite import read
 
     adata = read(filename)
 

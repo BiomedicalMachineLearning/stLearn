@@ -2,7 +2,7 @@ from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
 from anndata import AnnData
 import numpy as np
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
-
+import scanpy
 
 def filter_genes(
     adata: AnnData,
@@ -48,7 +48,5 @@ def filter_genes(
         `n_counts` or `n_cells` per gene.
     """
 
-    from stlearn.external.scanpy.api.pp import filter_genes
-
-    filter_genes(adata, min_counts=min_counts, min_cells=min_cells,
+    scanpy.pp.filter_genes(adata, min_counts=min_counts, min_cells=min_cells,
                  max_counts=max_counts, max_cells=max_cells, inplace=inplace)

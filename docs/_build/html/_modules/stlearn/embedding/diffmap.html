@@ -167,7 +167,7 @@
 <span class="kn">from</span> <span class="nn">anndata</span> <span class="kn">import</span> <span class="n">AnnData</span>
 <span class="kn">from</span> <span class="nn">numpy.random.mtrand</span> <span class="kn">import</span> <span class="n">RandomState</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">issparse</span>
-
+<span class="kn">import</span> <span class="nn">scanpy</span>
 
 <div class="viewcode-block" id="run_diffmap"><a class="viewcode-back" href="../../../stlearn.em.run_diffmap.html#stlearn.em.run_diffmap">[docs]</a><span class="k">def</span> <span class="nf">run_diffmap</span><span class="p">(</span><span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span> <span class="n">n_comps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;\</span>
@@ -201,12 +201,12 @@
 <span class="sd">        Eigenvalues of transition matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.tl</span> <span class="kn">import</span> <span class="n">diffmap</span>
-
-    <span class="n">diffmap</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">n_comps</span><span class="o">=</span><span class="n">n_comps</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+    <span class="n">scanpy</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">diffmap</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">n_comps</span><span class="o">=</span><span class="n">n_comps</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span>
-        <span class="s2">&quot;Diffusion Map is done! Generated in adata.obsm[&#39;X_diffmap&#39;] nad adata.uns[&#39;diffmap_evals&#39;]&quot;</span><span class="p">)</span></div>
+        <span class="s2">&quot;Diffusion Map is done! Generated in adata.obsm[&#39;X_diffmap&#39;] nad adata.uns[&#39;diffmap_evals&#39;]&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span> <span class="k">if</span> <span class="n">copy</span> <span class="k">else</span> <span class="kc">None</span></div>
 </pre></div>
 
            </div>

@@ -168,7 +168,7 @@
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">issparse</span><span class="p">,</span> <span class="n">isspmatrix_csr</span><span class="p">,</span> <span class="n">csr_matrix</span><span class="p">,</span> <span class="n">spmatrix</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
 <span class="kn">from</span> <span class="nn">stlearn</span> <span class="kn">import</span> <span class="n">logging</span> <span class="k">as</span> <span class="n">logg</span>
-
+<span class="kn">import</span> <span class="nn">scanpy</span>
 
 <div class="viewcode-block" id="log1p"><a class="viewcode-back" href="../../../stlearn.pp.log1p.html#stlearn.pp.log1p">[docs]</a><span class="k">def</span> <span class="nf">log1p</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnnData</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spmatrix</span><span class="p">],</span>
@@ -204,9 +204,8 @@
 <span class="sd">    Returns or updates `data`, depending on `copy`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pp</span> <span class="kn">import</span> <span class="n">log1p</span>
 
-    <span class="n">log1p</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">chunked</span><span class="o">=</span><span class="n">chunked</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+    <span class="n">scanpy</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">chunked</span><span class="o">=</span><span class="n">chunked</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Log transformation step is finished in adata.X&quot;</span><span class="p">)</span></div>
 
@@ -243,9 +242,8 @@
 <span class="sd">    Depending on `copy` returns or updates `adata` with a scaled `adata.X`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pp</span> <span class="kn">import</span> <span class="n">scale</span>
 
-    <span class="n">scale</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">zero_center</span><span class="o">=</span><span class="n">zero_center</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="n">max_value</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+    <span class="n">scanpy</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">zero_center</span><span class="o">=</span><span class="n">zero_center</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="n">max_value</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scale step is finished in adata.X&quot;</span><span class="p">)</span></div>
 </pre></div>

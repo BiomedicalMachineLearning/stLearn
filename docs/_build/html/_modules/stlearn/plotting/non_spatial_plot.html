@@ -173,7 +173,7 @@
 <span class="kn">from</span> <span class="nn">anndata</span> <span class="kn">import</span> <span class="n">AnnData</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="c1">#from .utils import get_img_from_fig, checkType</span>
-
+<span class="kn">import</span> <span class="nn">scanpy</span>
 
 <div class="viewcode-block" id="non_spatial_plot"><a class="viewcode-back" href="../../../stlearn.pl.non_spatial_plot.html#stlearn.pl.non_spatial_plot">[docs]</a><span class="k">def</span> <span class="nf">non_spatial_plot</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
@@ -204,32 +204,28 @@
 
     <span class="k">if</span> <span class="s1">&#39;paga&#39;</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="n">use_label</span><span class="o">+</span><span class="s2">&quot;_colors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tmp_color&quot;</span><span class="p">]</span>
-        <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pl</span> <span class="kn">import</span> <span class="n">paga</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PAGA plot:&quot;</span><span class="p">)</span>
 
-        <span class="n">paga</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">)</span>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">paga</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.tl</span> <span class="kn">import</span> <span class="n">draw_graph</span>
 
-        <span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">init_pos</span><span class="o">=</span><span class="s1">&#39;paga&#39;</span><span class="p">)</span>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">init_pos</span><span class="o">=</span><span class="s1">&#39;paga&#39;</span><span class="p">)</span>
         <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="n">use_label</span><span class="o">+</span><span class="s2">&quot;_colors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tmp_color&quot;</span><span class="p">]</span>
 
-        <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pl</span> <span class="kn">import</span> <span class="n">draw_graph</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gene expression (reduced dimension) plot:&quot;</span><span class="p">)</span>
-        <span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;on data&#39;</span><span class="p">)</span>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;on data&#39;</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diffusion pseudotime plot:&quot;</span><span class="p">)</span>
-        <span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dpt_pseudotime&quot;</span><span class="p">)</span>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dpt_pseudotime&quot;</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.tl</span> <span class="kn">import</span> <span class="n">draw_graph</span>
 
-        <span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
         <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="n">use_label</span><span class="o">+</span><span class="s2">&quot;_colors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;tmp_color&quot;</span><span class="p">]</span>
 
-        <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pl</span> <span class="kn">import</span> <span class="n">draw_graph</span>
-        <span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;on data&#39;</span><span class="p">)</span></div>
+        <span class="n">scanpy</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">draw_graph</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">use_label</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;on data&#39;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

@@ -7,7 +7,7 @@ import scipy
 from anndata import AnnData
 from numpy.random import RandomState
 from .._compat import Literal
-
+import scanpy
 
 _Method = Literal['umap', 'gauss', 'rapids']
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
@@ -86,9 +86,7 @@ def neighbors(
         neighbors.
     """
 
-    from stlearn.external.scanpy.api.pp import neighbors
-
-    neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep,
+    scanpy.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep,
               knn=knn, random_state=random_state, method=method, metric=metric,
               metric_kwds=metric_kwds, copy=copy)
 

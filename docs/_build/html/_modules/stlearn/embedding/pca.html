@@ -168,12 +168,12 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">issparse</span><span class="p">,</span> <span class="n">isspmatrix_csr</span><span class="p">,</span> <span class="n">csr_matrix</span><span class="p">,</span> <span class="n">spmatrix</span>
 <span class="kn">from</span> <span class="nn">numpy.random.mtrand</span> <span class="kn">import</span> <span class="n">RandomState</span>
+<span class="kn">import</span> <span class="nn">scanpy</span>
 
-<span class="n">N_PCS</span><span class="o">=</span><span class="mi">50</span>
 
 <div class="viewcode-block" id="run_pca"><a class="viewcode-back" href="../../../stlearn.em.run_pca.html#stlearn.em.run_pca">[docs]</a><span class="k">def</span> <span class="nf">run_pca</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnnData</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">spmatrix</span><span class="p">],</span>
-    <span class="n">n_comps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">N_PCS</span><span class="p">,</span>
+    <span class="n">n_comps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
     <span class="n">zero_center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">svd_solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
     <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">RandomState</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -248,8 +248,8 @@
 <span class="sd">             Explained variance, equivalent to the eigenvalues of the</span>
 <span class="sd">             covariance matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">stlearn.external.scanpy.api.pp</span> <span class="kn">import</span> <span class="n">pca</span>
-    <span class="n">pca</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_comps</span><span class="o">=</span><span class="n">n_comps</span><span class="p">,</span> <span class="n">zero_center</span><span class="o">=</span><span class="n">zero_center</span><span class="p">,</span> <span class="n">svd_solver</span><span class="o">=</span><span class="n">svd_solver</span><span class="p">,</span>
+
+    <span class="n">scanpy</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_comps</span><span class="o">=</span><span class="n">n_comps</span><span class="p">,</span> <span class="n">zero_center</span><span class="o">=</span><span class="n">zero_center</span><span class="p">,</span> <span class="n">svd_solver</span><span class="o">=</span><span class="n">svd_solver</span><span class="p">,</span>
             <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">return_info</span><span class="o">=</span><span class="n">return_info</span><span class="p">,</span>
             <span class="n">use_highly_variable</span><span class="o">=</span><span class="n">use_highly_variable</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">chunked</span><span class="o">=</span><span class="n">chunked</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">)</span>
