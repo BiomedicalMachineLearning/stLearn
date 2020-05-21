@@ -24,3 +24,5 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
    Pseudo-space-time-tutorial
    cci
    spatialDE
+   Working-with-Old-Spatial-Transcriptomics-data
+   Read_slideseq
