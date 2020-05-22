@@ -18,6 +18,53 @@ def Read10X(
     use_quality: str = "hires"
     ) -> AnnData:
     
+    """\
+    Read Visium data from 10X (wrap read_visium from scanpy)
+
+    In addition to reading regular 10x output,
+    this looks for the `spatial` folder and loads images,
+    coordinates and scale factors.
+    Based on the `Space Ranger output docs`_.
+
+    .. _Space Ranger output docs: https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
+
+    Parameters
+    ----------
+    path
+        Path to directory for visium datafiles.
+    genome
+        Filter expression to genes within this genome.
+    count_file
+        Which file in the passed directory to use as the count file. Typically would be one of:
+        'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
+    library_id
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    Returns
+    -------
+    Annotated data matrix, where observations/cells are named by their
+    barcode and variables/genes by gene name. Stores the following information:
+    :attr:`~anndata.AnnData.X`
+        The data matrix is stored
+    :attr:`~anndata.AnnData.obs_names`
+        Cell names
+    :attr:`~anndata.AnnData.var_names`
+        Gene names
+    :attr:`~anndata.AnnData.var`\\ `['gene_ids']`
+        Gene IDs
+    :attr:`~anndata.AnnData.var`\\ `['feature_types']`
+        Feature types
+    :attr:`~anndata.AnnData.uns`\\ `['spatial']`
+        Dict of spaceranger output files with 'library_id' as key
+    :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['images']`
+        Dict of images (`'hires'` and `'lowres'`)
+    :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['scalefactors']`
+        Scale factors for the spots
+    :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['metadata']`
+        Files metadata: 'chemistry_description', 'software_version'
+    :attr:`~anndata.AnnData.obsm`\\ `['spatial']`
+        Spatial spot coordinates, usable as `basis` by :func:`~scanpy.pl.embedding`.
+    """
+    
     from scanpy import read_visium
     adata = read_visium(path, genome=None,
      count_file='filtered_feature_bc_matrix.h5',
@@ -44,7 +91,22 @@ def ReadOldST(
     spatial_file: Union[str, Path] = None,
     image_file: Union[str, Path] = None,
     ) -> AnnData:
-    
+
+    """\
+    Read Old Spatial Transcriptomics data
+
+    Parameters
+    ----------
+    count_matrix_file
+        Path to count matrix file.
+    spatial_file
+        Path to spatial location file.
+    image_file
+        Path to the tissue image file
+    Returns
+    -------
+    AnnData
+    """
 
     adata = stlearn.read.file_table(count_matrix_file)
     adata=stlearn.add.parsing(adata,
@@ -57,7 +119,6 @@ def ReadOldST(
 def ReadSlideSeq(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
-    scale_factor: float = 10,
     library_id: str = None,
     ) -> AnnData:
 
@@ -70,6 +131,8 @@ def ReadSlideSeq(
         Path to count matrix file.
     spatial_file
         Path to spatial location file.
+    library_id
+        Spatial data ID for storing related image data
     Returns
     -------
     AnnData
@@ -93,20 +156,70 @@ def ReadSlideSeq(
     image = Image.new('RGB', (max_size, max_size), (255, 255, 255))
     imgarr = np.array(image)
 
+    if library_id is None:
+        library_id = "Slide-seq"
+
     adata.uns["spatial"] = {}
-    adata.uns["spatial"]["Slide-seq"] = {}
-    adata.uns["spatial"]["Slide-seq"]["images"] = {}
-    adata.uns["spatial"]["Slide-seq"]["images"]["hires"] = imgarr
+    adata.uns["spatial"][library_id] = {}
+    adata.uns["spatial"][library_id]["images"] = {}
+    adata.uns["spatial"][library_id]["images"]["hires"] = imgarr
     adata.uns["spatial"]["use_quality"] = "hires"
-    adata.uns["spatial"]["Slide-seq"]["scalefactors"] = {}
-    adata.uns["spatial"]["Slide-seq"]["scalefactors"]["tissue_hires_scalef"] = 1
+    adata.uns["spatial"][library_id]["scalefactors"] = {}
+    adata.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"] = 1
 
     adata.obsm["spatial"] = meta[["x","y"]].values
 
     return adata
 
+def ReadMERFISH(
+    count_matrix_file: Union[str, Path],
+    spatial_file: Union[str, Path],
+    library_id: str = None,
+    ) -> AnnData:
+
+    """\
+    Read MERFISH data
+
+    Parameters
+    ----------
+    count_matrix_file
+        Path to count matrix file.
+    spatial_file
+        Path to spatial location file.
+    library_id
+        Spatial data ID for storing related image data
+    Returns
+    -------
+    AnnData
+    """
+
+    coordinates = pd.read_excel(spatial_file, index_col=0)
+    if coordinates.min().min() < 0:
+        coordinates = coordinates + np.abs(coordinates.min().min())+100
+    from scanpy import read_csv
+    counts = read_csv(count_matrix_file).transpose()
+
+    adata_merfish = counts[coordinates.index, :]
+    adata_merfish.obsm["spatial"] = coordinates.to_numpy()
+    adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:,0]
+    adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:,1]
+
+    # Create image
+    max_size = np.max([adata_merfish.obs["imagecol"].max(),adata_merfish.obs["imagerow"].max()])
+    max_size = int(max_size + 0.1*max_size)
+    image = Image.new('RGB', (max_size, max_size), (255, 255, 255))
+    imgarr = np.array(image)
 
 
+    if library_id is None:
+        library_id = "MERSEQ"
 
+    adata_merfish.uns["spatial"] = {}
+    adata_merfish.uns["spatial"][library_id] = {}
+    adata_merfish.uns["spatial"][library_id]["images"] = {}
+    adata_merfish.uns["spatial"][library_id]["images"]["hires"] = imgarr
+    adata_merfish.uns["spatial"]["use_quality"] = "hires"
+    adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
+    adata_merfish.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"] = 0.5
 
-
+    return adata_merfish

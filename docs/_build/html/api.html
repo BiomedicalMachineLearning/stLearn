@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="stlearn.read.file_table" href="stlearn.read.file_table.html" />
+    <link rel="next" title="stlearn.Read10X" href="stlearn.Read10X.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
@@ -92,6 +92,14 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#wrapper-functions-wrapper">Wrapper functions: <cite>wrapper</cite></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.Read10X.html">stlearn.Read10X</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadOldST.html">stlearn.ReadOldST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadSlideSeq.html">stlearn.ReadSlideSeq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadMERFISH.html">stlearn.ReadMERFISH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.SMEclust.html">stlearn.SMEclust</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-stlearn.read">Reading: <cite>read</cite></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_table.html">stlearn.read.file_table</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_10x_mtx.html">stlearn.read.file_10x_mtx</a></li>
@@ -167,6 +175,9 @@
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
 </ul>
 
             
@@ -261,6 +272,32 @@
 <p>Import stLearn as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
 </pre></div>
+</div>
+<div class="section" id="wrapper-functions-wrapper">
+<h2>Wrapper functions: <cite>wrapper</cite><a class="headerlink" href="#wrapper-functions-wrapper" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-stlearn.wrapper"></span><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.Read10X.html#stlearn.Read10X" title="stlearn.Read10X"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Read10X</span></code></a>(path[, genome, count_file, …])</p></td>
+<td><p>Read Visium data from 10X (wrap read_visium from scanpy)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.ReadOldST.html#stlearn.ReadOldST" title="stlearn.ReadOldST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadOldST</span></code></a>([count_matrix_file, spatial_file, …])</p></td>
+<td><p>Read Old Spatial Transcriptomics data</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.ReadSlideSeq.html#stlearn.ReadSlideSeq" title="stlearn.ReadSlideSeq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadSlideSeq</span></code></a>(count_matrix_file, spatial_file)</p></td>
+<td><p>Read Slide-seq data</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.ReadMERFISH.html#stlearn.ReadMERFISH" title="stlearn.ReadMERFISH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadMERFISH</span></code></a>(count_matrix_file, spatial_file)</p></td>
+<td><p>Read MERFISH data</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.SMEclust.html#stlearn.SMEclust" title="stlearn.SMEclust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SMEclust</span></code></a>(adata[, out_path, crop_size, …])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="module-stlearn.read">
 <span id="reading-read"></span><h2>Reading: <cite>read</cite><a class="headerlink" href="#module-stlearn.read" title="Permalink to this headline">¶</a></h2>
@@ -482,7 +519,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="stlearn.read.file_table.html" class="btn btn-neutral float-right" title="stlearn.read.file_table" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="stlearn.Read10X.html" class="btn btn-neutral float-right" title="stlearn.Read10X" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

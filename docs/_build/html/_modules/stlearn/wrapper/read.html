@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>stlearn.wrapper.read &mdash; stLearn 0.1.8 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.8
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cci.html">Spatial cell-cell interaction tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spatialDE.html">SpatialDE tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Read_slideseq.html">Working with slide-seq data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Read_MERFISH.html">Working with MERFISH data</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>stlearn.wrapper.read</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for stlearn.wrapper.read</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Reading and Writing</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span><span class="p">,</span> <span class="n">PurePath</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">anndata</span> <span class="kn">import</span> <span class="n">AnnData</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">stlearn</span>
+<span class="kn">import</span> <span class="nn">scanpy</span>
+
+<div class="viewcode-block" id="Read10X"><a class="viewcode-back" href="../../../stlearn.Read10X.html#stlearn.Read10X">[docs]</a><span class="k">def</span> <span class="nf">Read10X</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">genome</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">count_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;filtered_feature_bc_matrix.h5&quot;</span><span class="p">,</span>
+    <span class="n">library_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">load_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">use_quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hires&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
+    
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Read Visium data from 10X (wrap read_visium from scanpy)</span>
+
+<span class="sd">    In addition to reading regular 10x output,</span>
+<span class="sd">    this looks for the `spatial` folder and loads images,</span>
+<span class="sd">    coordinates and scale factors.</span>
+<span class="sd">    Based on the `Space Ranger output docs`_.</span>
+
+<span class="sd">    .. _Space Ranger output docs: https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path</span>
+<span class="sd">        Path to directory for visium datafiles.</span>
+<span class="sd">    genome</span>
+<span class="sd">        Filter expression to genes within this genome.</span>
+<span class="sd">    count_file</span>
+<span class="sd">        Which file in the passed directory to use as the count file. Typically would be one of:</span>
+<span class="sd">        &#39;filtered_feature_bc_matrix.h5&#39; or &#39;raw_feature_bc_matrix.h5&#39;.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Annotated data matrix, where observations/cells are named by their</span>
+<span class="sd">    barcode and variables/genes by gene name. Stores the following information:</span>
+<span class="sd">    :attr:`~anndata.AnnData.X`</span>
+<span class="sd">        The data matrix is stored</span>
+<span class="sd">    :attr:`~anndata.AnnData.obs_names`</span>
+<span class="sd">        Cell names</span>
+<span class="sd">    :attr:`~anndata.AnnData.var_names`</span>
+<span class="sd">        Gene names</span>
+<span class="sd">    :attr:`~anndata.AnnData.var`\\ `[&#39;gene_ids&#39;]`</span>
+<span class="sd">        Gene IDs</span>
+<span class="sd">    :attr:`~anndata.AnnData.var`\\ `[&#39;feature_types&#39;]`</span>
+<span class="sd">        Feature types</span>
+<span class="sd">    :attr:`~anndata.AnnData.uns`\\ `[&#39;spatial&#39;]`</span>
+<span class="sd">        Dict of spaceranger output files with &#39;library_id&#39; as key</span>
+<span class="sd">    :attr:`~anndata.AnnData.uns`\\ `[&#39;spatial&#39;][library_id][&#39;images&#39;]`</span>
+<span class="sd">        Dict of images (`&#39;hires&#39;` and `&#39;lowres&#39;`)</span>
+<span class="sd">    :attr:`~anndata.AnnData.uns`\\ `[&#39;spatial&#39;][library_id][&#39;scalefactors&#39;]`</span>
+<span class="sd">        Scale factors for the spots</span>
+<span class="sd">    :attr:`~anndata.AnnData.uns`\\ `[&#39;spatial&#39;][library_id][&#39;metadata&#39;]`</span>
+<span class="sd">        Files metadata: &#39;chemistry_description&#39;, &#39;software_version&#39;</span>
+<span class="sd">    :attr:`~anndata.AnnData.obsm`\\ `[&#39;spatial&#39;]`</span>
+<span class="sd">        Spatial spot coordinates, usable as `basis` by :func:`~scanpy.pl.embedding`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="kn">from</span> <span class="nn">scanpy</span> <span class="kn">import</span> <span class="n">read_visium</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">read_visium</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">genome</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+     <span class="n">count_file</span><span class="o">=</span><span class="s1">&#39;filtered_feature_bc_matrix.h5&#39;</span><span class="p">,</span>
+      <span class="n">library_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+       <span class="n">load_images</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+
+    
+    <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_&quot;</span><span class="o">+</span><span class="n">use_quality</span><span class="o">+</span><span class="s2">&quot;_scalef&quot;</span><span class="p">]</span>
+    <span class="n">image_coor</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coor</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coor</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">use_quality</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+<div class="viewcode-block" id="ReadOldST"><a class="viewcode-back" href="../../../stlearn.ReadOldST.html#stlearn.ReadOldST">[docs]</a><span class="k">def</span> <span class="nf">ReadOldST</span><span class="p">(</span>
+    <span class="n">count_matrix_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">spatial_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">image_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Read Old Spatial Transcriptomics data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    count_matrix_file</span>
+<span class="sd">        Path to count matrix file.</span>
+<span class="sd">    spatial_file</span>
+<span class="sd">        Path to spatial location file.</span>
+<span class="sd">    image_file</span>
+<span class="sd">        Path to the tissue image file</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">stlearn</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_table</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="p">)</span>
+    <span class="n">adata</span><span class="o">=</span><span class="n">stlearn</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">parsing</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">coordinates_file</span> <span class="o">=</span> <span class="n">spatial_file</span><span class="p">)</span>
+    <span class="n">stlearn</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="n">image_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+<div class="viewcode-block" id="ReadSlideSeq"><a class="viewcode-back" href="../../../stlearn.ReadSlideSeq.html#stlearn.ReadSlideSeq">[docs]</a><span class="k">def</span> <span class="nf">ReadSlideSeq</span><span class="p">(</span>
+    <span class="n">count_matrix_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">spatial_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">library_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Read Slide-seq data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    count_matrix_file</span>
+<span class="sd">        Path to count matrix file.</span>
+<span class="sd">    spatial_file</span>
+<span class="sd">        Path to spatial location file.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Spatial data ID for storing related image data</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="p">)</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">spatial_file</span><span class="p">)</span>
+
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">AnnData</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;gene&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;ENSEMBL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="s2">&quot;ENSEMBL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="n">scale_factor</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">/</span><span class="n">scale_factor</span>
+
+    <span class="c1"># Create image</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_size</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">max_size</span><span class="p">)</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">max_size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">))</span>
+    <span class="n">imgarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">library_id</span> <span class="o">=</span> <span class="s2">&quot;Slide-seq&quot;</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">][</span><span class="s2">&quot;hires&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgarr</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hires&quot;</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_hires_scalef&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+<div class="viewcode-block" id="ReadMERFISH"><a class="viewcode-back" href="../../../stlearn.ReadMERFISH.html#stlearn.ReadMERFISH">[docs]</a><span class="k">def</span> <span class="nf">ReadMERFISH</span><span class="p">(</span>
+    <span class="n">count_matrix_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">spatial_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">library_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Read MERFISH data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    count_matrix_file</span>
+<span class="sd">        Path to count matrix file.</span>
+<span class="sd">    spatial_file</span>
+<span class="sd">        Path to spatial location file.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Spatial data ID for storing related image data</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">spatial_file</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">coordinates</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="o">+</span><span class="mi">100</span>
+    <span class="kn">from</span> <span class="nn">scanpy</span> <span class="kn">import</span> <span class="n">read_csv</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="n">adata_merfish</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">coordinates</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Create image</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_size</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">max_size</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">max_size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">))</span>
+    <span class="n">imgarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">library_id</span> <span class="o">=</span> <span class="s2">&quot;MERSEQ&quot;</span>
+
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">][</span><span class="s2">&quot;hires&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgarr</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hires&quot;</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_hires_scalef&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">adata_merfish</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
