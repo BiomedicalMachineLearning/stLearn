@@ -180,7 +180,7 @@ texinfo_documents = [
 
 import nbclean, glob
 
-for filename in glob.glob('**/*.ipynb', recursive=True):
+for filename in glob.glob('*.ipynb', recursive=True):
     ntbk = nbclean.NotebookCleaner(filename)
     ntbk.clear('stderr')
     ntbk.save(filename)
