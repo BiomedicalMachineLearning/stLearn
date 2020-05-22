@@ -26,3 +26,4 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
    spatialDE
    Working-with-Old-Spatial-Transcriptomics-data
    Read_slideseq
+   Read_MERFISH

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; stLearn 0.1.8 documentation</title>
+  <title>stlearn.ReadSlideSeq &mdash; stLearn 0.1.8 documentation</title>
   
 
   
@@ -38,7 +38,9 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="stlearn.ReadMERFISH" href="stlearn.ReadMERFISH.html" />
+    <link rel="prev" title="stlearn.ReadOldST" href="stlearn.ReadOldST.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,9 +89,26 @@
             
             
               <p class="caption"><span class="caption-text">Content:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="api.html#wrapper-functions-wrapper">Wrapper functions: <cite>wrapper</cite></a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="stlearn.Read10X.html">stlearn.Read10X</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadOldST.html">stlearn.ReadOldST</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.ReadSlideSeq</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadMERFISH.html">stlearn.ReadMERFISH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.SMEclust.html">stlearn.SMEclust</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.em">Embedding: <cite>em</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.spatial">Spatial: <cite>spatial</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.tl">Tools: <cite>tl</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pl">Plot: <cite>pl</cite></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
@@ -101,6 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
 </ul>
 
             
@@ -146,13 +166,15 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Tutorials</li>
+          <li><a href="api.html">API</a> &raquo;</li>
+        
+      <li>stlearn.ReadSlideSeq</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/tutorial.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/stlearn.ReadSlideSeq.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -189,25 +211,29 @@
     text-align: unset;
 }
 </style>
-<span class="target" id="module-tutorials"></span><div class="section" id="tutorials">
-<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
-<p>To use stLearn in a project:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
-</pre></div>
-</div>
-<div class="section" id="modules">
-<h2>Modules:<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="stMLE-clustering-tutorial.html">stSME clustering tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
+<div class="section" id="stlearn-readslideseq">
+<h1>stlearn.ReadSlideSeq<a class="headerlink" href="#stlearn-readslideseq" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="stlearn.ReadSlideSeq">
+<code class="sig-prename descclassname">stlearn.</code><code class="sig-name descname">ReadSlideSeq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">count_matrix_file</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>pathlib.Path<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">spatial_file</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>pathlib.Path<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; anndata._core.anndata.AnnData<a class="reference internal" href="_modules/stlearn/wrapper/read.html#ReadSlideSeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.ReadSlideSeq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read Slide-seq data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count_matrix_file</strong> – Path to count matrix file.</p></li>
+<li><p><strong>spatial_file</strong> – Path to spatial location file.</p></li>
+<li><p><strong>library_id</strong> – Spatial data ID for storing related image data</p></li>
 </ul>
-</div>
-</div>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -215,6 +241,15 @@
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stlearn.ReadMERFISH.html" class="btn btn-neutral float-right" title="stlearn.ReadMERFISH" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stlearn.ReadOldST.html" class="btn btn-neutral float-left" title="stlearn.ReadOldST" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
