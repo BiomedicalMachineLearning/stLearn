@@ -23,21 +23,6 @@ Wrapper functions: `wrapper`
    ReadOldST
    ReadSlideSeq
    ReadMERFISH
-   SMEclust
-   
-Reading: `read`
--------------------
-
-.. module:: stlearn.read
-.. currentmodule:: stlearn
-
-.. autosummary::
-   :toctree: .
-
-   read.file_table
-   read.file_10x_mtx
-   read.file_10x_h5
-
 
 
 Add: `add`

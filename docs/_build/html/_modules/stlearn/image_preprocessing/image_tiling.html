@@ -183,6 +183,31 @@
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AnnData</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Tiling H&amp;E images to small tiles based on spot spatial location</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    out_path</span>
+<span class="sd">        Path to save spot image tiles</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Library id stored in AnnData.</span>
+<span class="sd">    crop_size</span>
+<span class="sd">        Size of tiles</span>
+<span class="sd">    verbose</span>
+<span class="sd">        Verbose output</span>
+<span class="sd">    copy</span>
+<span class="sd">        Return a copy instead of writing to adata.</span>
+<span class="sd">    target_size</span>
+<span class="sd">        Input size for convolutional neuron network</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Depending on `copy`, returns or updates `adata` with the following fields.</span>
+<span class="sd">    **tile_path** : `adata.obs` field</span>
+<span class="sd">        Saved path for each spot image tiles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>

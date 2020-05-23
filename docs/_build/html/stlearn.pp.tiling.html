@@ -93,7 +93,6 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="api.html#wrapper-functions-wrapper">Wrapper functions: <cite>wrapper</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pp.filter_genes.html">stlearn.pp.filter_genes</a></li>
@@ -218,7 +217,28 @@
 <dl class="py function">
 <dt id="stlearn.pp.tiling">
 <code class="sig-prename descclassname">stlearn.pp.</code><code class="sig-name descname">tiling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">out_path</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>pathlib.Path<span class="p">, </span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'./'</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">crop_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">40</span></em>, <em class="sig-param"><span class="n">target_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">299</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/image_preprocessing/image_tiling.html#tiling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pp.tiling" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Tiling H&amp;E images to small tiles based on spot spatial location</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>out_path</strong> – Path to save spot image tiles</p></li>
+<li><p><strong>library_id</strong> – Library id stored in AnnData.</p></li>
+<li><p><strong>crop_size</strong> – Size of tiles</p></li>
+<li><p><strong>verbose</strong> – Verbose output</p></li>
+<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
+<li><p><strong>target_size</strong> – Input size for convolutional neuron network</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Depending on <cite>copy</cite>, returns or updates <cite>adata</cite> with the following fields.</p></li>
+<li><p><strong>**tile_path**</strong> (<cite>adata.obs</cite> field) – Saved path for each spot image tiles</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

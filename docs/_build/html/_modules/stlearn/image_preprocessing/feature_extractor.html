@@ -188,6 +188,31 @@
         <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AnnData</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Extract latent morphological features from H&amp;E images using pre-trained</span>
+<span class="sd">    convolutional neural network base</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    cnn_base</span>
+<span class="sd">        Established convolutional neural network bases</span>
+<span class="sd">        choose one from [&#39;resnet50&#39;, &#39;vgg16&#39;, &#39;inception_v3&#39;, &#39;xception&#39;]</span>
+<span class="sd">    n_components</span>
+<span class="sd">        Number of principal components to compute for latent morphological features</span>
+<span class="sd">    verbose</span>
+<span class="sd">        Verbose output</span>
+<span class="sd">    copy</span>
+<span class="sd">        Return a copy instead of writing to adata.</span>
+<span class="sd">    seeds</span>
+<span class="sd">        Fix random state</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Depending on `copy`, returns or updates `adata` with the following fields.</span>
+<span class="sd">    **X_morphology** : `adata.obsm` field</span>
+<span class="sd">        Dimension reduced latent morphological features.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">feature_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">cnn_base</span><span class="p">)</span>
 

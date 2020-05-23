@@ -97,13 +97,6 @@
 <li class="toctree-l3"><a class="reference internal" href="stlearn.ReadOldST.html">stlearn.ReadOldST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.ReadSlideSeq.html">stlearn.ReadSlideSeq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.ReadMERFISH.html">stlearn.ReadMERFISH</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.SMEclust.html">stlearn.SMEclust</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#module-stlearn.read">Reading: <cite>read</cite></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_table.html">stlearn.read.file_table</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_10x_mtx.html">stlearn.read.file_10x_mtx</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.read.file_10x_h5.html">stlearn.read.file_10x_h5</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-stlearn.add">Add: <cite>add</cite></a><ul>
@@ -293,29 +286,6 @@
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.ReadMERFISH.html#stlearn.ReadMERFISH" title="stlearn.ReadMERFISH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadMERFISH</span></code></a>(count_matrix_file, spatial_file)</p></td>
 <td><p>Read MERFISH data</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.SMEclust.html#stlearn.SMEclust" title="stlearn.SMEclust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SMEclust</span></code></a>(adata[, out_path, crop_size, …])</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="module-stlearn.read">
-<span id="reading-read"></span><h2>Reading: <cite>read</cite><a class="headerlink" href="#module-stlearn.read" title="Permalink to this headline">¶</a></h2>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.read.file_table.html#stlearn.read.file_table" title="stlearn.read.file_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_table</span></code></a>(filename)</p></td>
-<td><p>Wrap function scanpy.read Read file and return AnnData object.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.read.file_10x_mtx.html#stlearn.read.file_10x_mtx" title="stlearn.read.file_10x_mtx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_10x_mtx</span></code></a>(filename)</p></td>
-<td><p>Wrap function scanpy.read_10x_mtx Read .mtx file.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.read.file_10x_h5.html#stlearn.read.file_10x_h5" title="stlearn.read.file_10x_h5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read.file_10x_h5</span></code></a>(filename)</p></td>
-<td><p>Wrap function scanpy.read_10x_h5 Read 10x-Genomics-formatted hdf5 file.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -372,10 +342,10 @@
 <td><p>Compute a neighborhood graph of observations <span id="id1">[McInnes18]</span>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.pp.tiling.html#stlearn.pp.tiling" title="stlearn.pp.tiling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.tiling</span></code></a>(adata[, out_path, library_id, …])</p></td>
-<td><p></p></td>
+<td><p>Tiling H&amp;E images to small tiles based on spot spatial location</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pp.extract_feature.html#stlearn.pp.extract_feature" title="stlearn.pp.extract_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pp.extract_feature</span></code></a>(adata[, cnn_base, …])</p></td>
-<td><p></p></td>
+<td><p>Extract latent morphological features from H&amp;E images using pre-trained convolutional neural network base</p></td>
 </tr>
 </tbody>
 </table>
@@ -418,16 +388,16 @@
 <td><p>Perform local clustering by using DBSCAN.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.pseudotime.html#stlearn.spatial.trajectory.pseudotime" title="stlearn.spatial.trajectory.pseudotime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.pseudotime</span></code></a>(adata[, …])</p></td>
-<td><p>Perform global sptial trajectory inference.</p></td>
+<td><p>Perform pseudotime analysis.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.global_level.html#stlearn.spatial.trajectory.global_level" title="stlearn.spatial.trajectory.global_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.global_level</span></code></a>(adata[, …])</p></td>
 <td><p>Perform global sptial trajectory inference.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.local_level.html#stlearn.spatial.trajectory.local_level" title="stlearn.spatial.trajectory.local_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.local_level</span></code></a>(adata[, …])</p></td>
-<td><p>Perform local sptial trajectory inference (required run global_level first).</p></td>
+<td><p>Perform local sptial trajectory inference (required run pseudotime first).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.morphology.adjust.html#stlearn.spatial.morphology.adjust" title="stlearn.spatial.morphology.adjust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.morphology.adjust</span></code></a>(adata[, use_data, …])</p></td>
-<td><p></p></td>
+<td><p>SME normalisation: Using spot location information and tissue morphological features to correct spot gene expression</p></td>
 </tr>
 </tbody>
 </table>
@@ -482,7 +452,7 @@
 <td><p>A wrap function to plot all the non-spatial plot from scanpy.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.QC_plot.html#stlearn.pl.QC_plot" title="stlearn.pl.QC_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.QC_plot</span></code></a>(adata[, library_id, name, …])</p></td>
-<td><p></p></td>
+<td><p>QC plot for sptial transcriptomics data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.het_plot.html#stlearn.pl.het_plot" title="stlearn.pl.het_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.het_plot</span></code></a>(adata, het[, use_cluster, dpi, …])</p></td>
 <td><p>Plot tissue clusters and cluster heterogeneity using heatmap :param adata: :type adata: AnnData                  The data object to plot :param het: :type het: pd.DataFrame               Cluster heterogeneity count results from tl.cci.het :param use_cluster: :type use_cluster: str                The clustering results to use :param dpi: :type dpi: bool                       Dots per inch :param spot_size: :type spot_size: Union[float,int]     Spot size</p></td>

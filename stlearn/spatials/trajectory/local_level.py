@@ -15,7 +15,7 @@ def local_level(
 ) -> Optional[AnnData]:
 
     """\
-    Perform local sptial trajectory inference (required run global_level first).
+    Perform local sptial trajectory inference (required run pseudotime first).
 
     Parameters
     ----------
