@@ -93,7 +93,6 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="api.html#wrapper-functions-wrapper">Wrapper functions: <cite>wrapper</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.em">Embedding: <cite>em</cite></a></li>
@@ -222,8 +221,34 @@
 <h1>stlearn.pl.QC_plot<a class="headerlink" href="#stlearn-pl-qc-plot" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="stlearn.pl.QC_plot">
-<code class="sig-prename descclassname">stlearn.pl.</code><code class="sig-name descname">QC_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">tissue_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'Spectral_r'</span></em>, <em class="sig-param"><span class="n">spot_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>float<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">40</span></em>, <em class="sig-param"><span class="n">show_color_bar</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_size_legend</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_axis</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">192</span></em>, <em class="sig-param"><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/plotting/QC_plot.html#QC_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pl.QC_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-prename descclassname">stlearn.pl.</code><code class="sig-name descname">QC_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">tissue_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'Spectral_r'</span></em>, <em class="sig-param"><span class="n">spot_size</span><span class="p">:</span> <span class="n">tuple</span> <span class="o">=</span> <span class="default_value">5, 40</span></em>, <em class="sig-param"><span class="n">show_color_bar</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_size_legend</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_axis</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">192</span></em>, <em class="sig-param"><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/plotting/QC_plot.html#QC_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pl.QC_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>QC plot for sptial transcriptomics data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>library_id</strong> – Library id stored in AnnData.</p></li>
+<li><p><strong>data_alpha</strong> – Opacity of the spot.</p></li>
+<li><p><strong>tissue_alpha</strong> – Opacity of the tissue.</p></li>
+<li><p><strong>cmap</strong> – Color map to use.</p></li>
+<li><p><strong>spot_size</strong> – Size of the spot (min, max).</p></li>
+<li><p><strong>show_color_bar</strong> – Show color bar or not.</p></li>
+<li><p><strong>show_axis</strong> – Show axis or not.</p></li>
+<li><p><strong>show_size_legend</strong> – Show size legend or not.</p></li>
+<li><p><strong>dpi</strong> – Set dpi as the resolution for the plot.</p></li>
+<li><p><strong>name</strong> – Name of the output figure file.</p></li>
+<li><p><strong>output</strong> – Save the figure as file or not.</p></li>
+<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Nothing</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

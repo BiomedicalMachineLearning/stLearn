@@ -91,7 +91,9 @@
               <p class="caption"><span class="caption-text">Content:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#anaconda">Anaconda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-linux-macos-users">For Linux/MacOS users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#for-windows-users">For Windows users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#popular-bugs">Popular bugs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
@@ -197,19 +199,37 @@
 </style>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="anaconda">
-<h2>Anaconda<a class="headerlink" href="#anaconda" title="Permalink to this headline">¶</a></h2>
-<p><strong>Step 0:</strong></p>
-<p>Prepare conda environment for stlearn</p>
+<div class="section" id="for-linux-macos-users">
+<h2>For Linux/MacOS users<a class="headerlink" href="#for-linux-macos-users" title="Permalink to this headline">¶</a></h2>
+<p><strong>Step 1:</strong></p>
+<p>Prepare conda environment for stLearn</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda create -n stlearn <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+conda activate stlearn
 </pre></div>
 </div>
-<p><strong>Step 1:</strong></p>
+<p><strong>Step 2:</strong></p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
 conda install jupyterlab louvain ipywidgets
 </pre></div>
 </div>
-<p><strong>Step 2 (For Windows user):</strong></p>
+<p><strong>Step 3:</strong></p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install stlearn
+</pre></div>
+</div>
+</div>
+<div class="section" id="for-windows-users">
+<h2>For Windows users<a class="headerlink" href="#for-windows-users" title="Permalink to this headline">¶</a></h2>
+<p><strong>Step 1:</strong></p>
+<p>Prepare conda environment for stLearn</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda create -n stlearn <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+conda activate stlearn
+</pre></div>
+</div>
+<p><strong>Step 2:</strong></p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda install jupyterlab ipywidgets
+</pre></div>
+</div>
+<p><strong>Step 3:</strong></p>
 <p>Access to:</p>
 <blockquote>
 <div><ul class="simple">
@@ -223,8 +243,19 @@ conda install jupyterlab louvain ipywidgets
 pip install louvain‑0.6.1‑cp37‑cp37m‑win_amd64.whl
 </pre></div>
 </div>
-<p><strong>Step 3:</strong></p>
+<p><strong>Step 4:</strong></p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install stlearn
+</pre></div>
+</div>
+</div>
+<div class="section" id="popular-bugs">
+<h2>Popular bugs<a class="headerlink" href="#popular-bugs" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><cite>DLL load failed while importing utilsextension: The specified module could not be found.</cite></p></li>
+</ul>
+<p>You need to uninstall package <cite>tables</cite> and install it again</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip uninstall tables
+pip install tables
 </pre></div>
 </div>
 </div>

@@ -16,9 +16,7 @@ def global_level(
 ) -> Optional[AnnData]:
 
     """\
-    Perform global sptial trajectory inference. It includes local clustering,
-    PAGA, DPT and adjusted DPT and mapping to tissue array.
-    This is the preparation step for pseudo-space-time.
+    Perform global sptial trajectory inference.
 
     Parameters
     ----------

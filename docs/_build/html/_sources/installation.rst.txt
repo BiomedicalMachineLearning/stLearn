@@ -5,23 +5,51 @@ Installation
 ============
 
 
-Anaconda
----------
 
-**Step 0:**
+For Linux/MacOS users
+-----------------------
 
-Prepare conda environment for stlearn
+**Step 1:**
+
+Prepare conda environment for stLearn
 ::
 
 	conda create -n stlearn python=3.8
+	conda activate stlearn
 
-**Step 1:**
+**Step 2:**
+
 ::
 
 	conda config --add channels conda-forge
 	conda install jupyterlab louvain ipywidgets
 
-**Step 2 (For Windows user):**
+**Step 3:**
+::
+
+	pip install stlearn
+
+
+
+
+For Windows users
+-----------------------
+
+**Step 1:**
+
+Prepare conda environment for stLearn
+::
+
+	conda create -n stlearn python=3.8
+	conda activate stlearn
+
+**Step 2:**
+
+::
+
+	conda install jupyterlab ipywidgets
+
+**Step 3:**
 
 Access to: 
 
@@ -37,9 +65,18 @@ You have to change to downloaded files directory and install it:
 	pip install python_igraph‑0.7.1.post6‑cp37‑cp37m‑win_amd64.whl
 	pip install louvain‑0.6.1‑cp37‑cp37m‑win_amd64.whl
 
-
-
-**Step 3:**
+**Step 4:**
 ::
 
 	pip install stlearn
+
+Popular bugs
+---------------
+
+- `DLL load failed while importing utilsextension: The specified module could not be found.`
+
+You need to uninstall package `tables` and install it again
+::
+
+	pip uninstall tables
+	pip install tables

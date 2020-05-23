@@ -93,7 +93,6 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="api.html#wrapper-functions-wrapper">Wrapper functions: <cite>wrapper</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.read">Reading: <cite>read</cite></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pp.filter_genes.html">stlearn.pp.filter_genes</a></li>
@@ -218,7 +217,29 @@
 <dl class="py function">
 <dt id="stlearn.pp.extract_feature">
 <code class="sig-prename descclassname">stlearn.pp.</code><code class="sig-name descname">extract_feature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">cnn_base</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>resnet50<span class="p">, </span>vgg16<span class="p">, </span>inception_v3<span class="p">, </span>xception<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'resnet50'</span></em>, <em class="sig-param"><span class="n">n_components</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">50</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">seeds</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/image_preprocessing/feature_extractor.html#extract_feature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pp.extract_feature" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Extract latent morphological features from H&amp;E images using pre-trained
+convolutional neural network base</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>cnn_base</strong> – Established convolutional neural network bases
+choose one from [‘resnet50’, ‘vgg16’, ‘inception_v3’, ‘xception’]</p></li>
+<li><p><strong>n_components</strong> – Number of principal components to compute for latent morphological features</p></li>
+<li><p><strong>verbose</strong> – Verbose output</p></li>
+<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
+<li><p><strong>seeds</strong> – Fix random state</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Depending on <cite>copy</cite>, returns or updates <cite>adata</cite> with the following fields.</p></li>
+<li><p><strong>**X_morphology**</strong> (<cite>adata.obsm</cite> field) – Dimension reduced latent morphological features.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 
