@@ -21,6 +21,31 @@ def extract_feature(
         copy: bool = False,
         seeds: int = 1
 ) -> Optional[AnnData]:
+    """\
+    Extract latent morphological features from H&E images using pre-trained
+    convolutional neural network base
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    cnn_base
+        Established convolutional neural network bases
+        choose one from ['resnet50', 'vgg16', 'inception_v3', 'xception']
+    n_components
+        Number of principal components to compute for latent morphological features
+    verbose
+        Verbose output
+    copy
+        Return a copy instead of writing to adata.
+    seeds
+        Fix random state
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    **X_morphology** : `adata.obsm` field
+        Dimension reduced latent morphological features.
+    """
     feature_df = pd.DataFrame()
     model = Model(cnn_base)
 

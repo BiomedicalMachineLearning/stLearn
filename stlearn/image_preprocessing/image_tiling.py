@@ -16,6 +16,31 @@ def tiling(
         verbose: bool = False,
         copy: bool = False
 ) -> Optional[AnnData]:
+    """\
+    Tiling H&E images to small tiles based on spot spatial location
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    out_path
+        Path to save spot image tiles
+    library_id
+        Library id stored in AnnData.
+    crop_size
+        Size of tiles
+    verbose
+        Verbose output
+    copy
+        Return a copy instead of writing to adata.
+    target_size
+        Input size for convolutional neuron network
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    **tile_path** : `adata.obs` field
+        Saved path for each spot image tiles
+    """
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
