@@ -5,7 +5,7 @@ from anndata import AnnData
 from numpy.random.mtrand import RandomState
 
 from .._compat import Literal
-
+import scanpy
 
 _InitPos = Literal['paga', 'spectral', 'random']
 
