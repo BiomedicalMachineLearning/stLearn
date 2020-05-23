@@ -18,6 +18,35 @@ def adjust(
         similarity_matrix: _SIMILARITY_MATRIX = "cosine"
 
 ) -> Optional[AnnData]:
+    """\
+    SME normalisation: Using spot location information and tissue morphological
+    features to correct spot gene expression
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_data
+        Input date to be adjusted by morphological features.
+        can be raw gene counts, pca or umap
+    radius
+        Radius to select neighbour spots.
+    rates
+        Strength for adjustment.
+    method
+        Method for disk smoothing.
+        choose one from ["means", "median"]
+    copy
+        Return a copy instead of writing to adata.
+    similarity_matrix
+        matrix to calculate morphological similarity of two spots
+        choose one from ["cosine", "euclidean", "pearson", "spearman"]
+    Returns
+    -------
+    Depending on `copy`, returns or updates `adata` with the following fields.
+    **[use_data]_morphology** : `adata.obsm` field
+        Add SME normalised gene expression matrix
+    """
     if "X_morphology" not in adata.obsm:
         raise ValueError("Please run the function stlearn.pp.extract_feature")
     coor = adata.obs[["imagecol", "imagerow"]]

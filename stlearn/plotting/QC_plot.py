@@ -8,20 +8,54 @@ def QC_plot(
         adata: AnnData,
         library_id: str = None,
         name: str = None,
-        method: str = None,
         data_alpha: float = 0.8,
         tissue_alpha: float = 1.0,
         cmap: str = "Spectral_r",
-        spot_size: Union[float, int] = 40,
+        spot_size: tuple = (5, 40),
         show_color_bar: bool = True,
         show_size_legend: bool = True,
         show_axis: bool = False,
         dpi: int = 192,
         output: str = None,
 ) -> Optional[AnnData]:
+    """\
+        QC plot for sptial transcriptomics data.
+
+        Parameters
+        ----------
+        adata
+            Annotated data matrix.
+        library_id
+            Library id stored in AnnData.
+        data_alpha
+            Opacity of the spot.
+        tissue_alpha
+            Opacity of the tissue.
+        cmap
+            Color map to use.
+        spot_size
+            Size of the spot (min, max).
+        show_color_bar
+            Show color bar or not.
+        show_axis
+            Show axis or not.
+        show_size_legend
+            Show size legend or not.
+        dpi
+            Set dpi as the resolution for the plot.
+        name
+            Name of the output figure file.
+        output
+            Save the figure as file or not.
+        copy
+            Return a copy instead of writing to adata.
+        Returns
+        -------
+        Nothing
+        """
     from sklearn.preprocessing import MinMaxScaler
     reads_per_spot = adata.to_df().sum(axis=1)
-    scaler = MinMaxScaler(feature_range=(5, spot_size))
+    scaler = MinMaxScaler(feature_range=spot_size)
     reads_per_spot_size = scaler.fit_transform(
         reads_per_spot.to_numpy().reshape(-1, 1))
     genes_per_spot = adata.to_df().astype(bool).sum(axis=1)
@@ -49,8 +83,7 @@ def QC_plot(
         cb.outline.set_visible(False)
 
     if show_size_legend:
-        size_min = 5
-        size_max = spot_size
+        size_min, size_max = spot_size
         markers = [size_min, size_min + 1 / 3 * (size_max - size_min),
                    size_min + 2 / 3 * (size_max - size_min), size_max]
         legend_markers = [plt.scatter([], [], s=i, c="grey") for i in markers]
@@ -69,8 +102,6 @@ def QC_plot(
     a.imshow(image, alpha=tissue_alpha, zorder=-1, )
 
     # fig.tight_layout()
-    if name is None:
-        name = method
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
