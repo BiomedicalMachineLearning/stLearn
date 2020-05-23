@@ -1,6 +1,7 @@
 from anndata import AnnData
 import stlearn
 import os
+import scanpy
 
 def Preprocessing(
     adata: AnnData,
@@ -17,6 +18,9 @@ def Preprocessing(
 
     ) -> AnnData:
 
-	
+    scanpy.pp.filter_genes()
+    scanpy.pp.filter_cells()
+    scanpy.pp.normalize_per_cell(adata, counts_per_cell_after=1e6)
+    scanpy.pp.log1p(adata)
 
-	return adata if copy else None
+    return adata if copy else None
