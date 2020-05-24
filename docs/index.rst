@@ -20,7 +20,7 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
    :maxdepth: 1
    :caption: Tutorials:
 
-   stMLE-clustering-tutorial
+   stSME_clustering
    Pseudo-space-time-tutorial
    cci
    spatialDE

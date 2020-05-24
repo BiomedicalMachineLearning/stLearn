@@ -11,7 +11,7 @@ Import stLearn as::
 
 
 Wrapper functions: `wrapper`
--------------------
+------------------------------
 
 .. module:: stlearn.wrapper
 .. currentmodule:: stlearn
