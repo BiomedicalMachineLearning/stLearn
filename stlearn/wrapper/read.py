@@ -40,6 +40,12 @@ def Read10X(
         'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
     library_id
         Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    load_images
+        Load image or not.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+
+
     Returns
     -------
     Annotated data matrix, where observations/cells are named by their
@@ -79,12 +85,12 @@ def Read10X(
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
         
-    scale = adata.uns["spatial"][library_id]["scalefactors"]["tissue_"+use_quality+"_scalef"]
+    scale = adata.uns["spatial"][library_id]["scalefactors"]["tissue_"+quality+"_scalef"]
     image_coor = adata.obsm["spatial"]*scale
 
     adata.obs["imagecol"] = image_coor[:,0]
     adata.obs["imagerow"] = image_coor[:,1]
-    adata.uns["spatial"]["use_quality"] = use_quality
+    adata.uns["spatial"]["use_quality"] = quality
 
     return adata
 
@@ -109,6 +115,12 @@ def ReadOldST(
         Path to spatial location file.
     image_file
         Path to the tissue image file
+    library_id
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
     Returns
     -------
     AnnData
@@ -142,7 +154,11 @@ def ReadSlideSeq(
     spatial_file
         Path to spatial location file.
     library_id
-        Spatial data ID for storing related image data
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
     Returns
     -------
     AnnData
@@ -202,7 +218,11 @@ def ReadMERFISH(
     spatial_file
         Path to spatial location file.
     library_id
-        Spatial data ID for storing related image data
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
     Returns
     -------
     AnnData
