@@ -240,6 +240,6 @@ def ReadMERFISH(
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:,0]*scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:,1]*scale
 
-    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
+    adata_merfish.obs['sum_counts'] = np.array(adata_merfish.X.sum(axis=1))
 
     return adata_merfish
