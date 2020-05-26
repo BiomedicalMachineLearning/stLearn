@@ -10,6 +10,10 @@ Image.MAX_IMAGE_PIXELS = None
 def image(
     adata: AnnData,
     imgpath: Union[Path, str],
+    library_id: str,
+    quality: str = "hires",
+    scale: float = 1.0,
+    visium: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -35,13 +39,17 @@ def image(
     if imgpath is not None and os.path.isfile(imgpath):
         try:
             img = plt.imread(imgpath, 0)
-            adata.uns["spatial"] = {}
-            adata.uns["spatial"]["Slide-seq"] = {}
-            adata.uns["spatial"]["Slide-seq"]["images"] = {}
-            adata.uns["spatial"]["Slide-seq"]["images"]["hires"] = img
-            adata.uns["spatial"]["use_quality"] = "hires"
-            adata.uns["spatial"]["Slide-seq"]["scalefactors"] = {}
-            adata.uns["spatial"]["Slide-seq"]["scalefactors"]["tissue_hires_scalef"] = 1
+
+            if visium:
+                adata.uns["spatial"][library_id]["images"][quality] = img
+            else:
+                adata.uns["spatial"] = {}
+                adata.uns["spatial"][library_id] = {}
+                adata.uns["spatial"][library_id]["images"] = {}
+                adata.uns["spatial"][library_id]["images"][quality] = img
+                adata.uns["spatial"]["use_quality"] = quality
+                adata.uns["spatial"][library_id]["scalefactors"] = {}
+                adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"] = scale
 
             print("Added tissue image to the object!")
 

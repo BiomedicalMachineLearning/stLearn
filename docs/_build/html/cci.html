@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Spatial cell-cell interaction tutorial &mdash; stLearn 0.1.9 documentation</title>
+  <title>Spatial cell-cell interaction tutorial &mdash; stLearn 0.2.0 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.9
+                0.2.0
               </div>
             
           
@@ -522,7 +522,8 @@ PCA is done! Generated in adata.obsm[&#39;X_pca&#39;], adata.uns[&#39;pca&#39;] 
 <span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">adjust</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_data</span><span class="o">=</span><span class="s1">&#39;X_pca&#39;</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">use_rep</span><span class="o">=</span><span class="s1">&#39;X_pca_morphology&#39;</span><span class="p">)</span>
 <span class="c1"># upload image without background for plotting</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_hires_nobg.png&quot;</span><span class="p">)</span>
+<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_hires_nobg.png&quot;</span><span class="p">,</span>
+            <span class="n">library_id</span><span class="o">=</span><span class="s2">&quot;V1_Breast_Cancer_Block_A_Section_1&quot;</span><span class="p">,</span><span class="n">visium</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
