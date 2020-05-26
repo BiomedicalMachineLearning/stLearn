@@ -26,6 +26,14 @@ def image(
         Annotated data matrix.
     imgpath
         Image path.
+    library_id
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow'].
+    visium
+        Is this anndata read from Visium platform or not.
     copy
         Return a copy instead of writing to adata.
     Returns
