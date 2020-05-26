@@ -90,6 +90,9 @@ def ReadOldST(
     count_matrix_file: Union[str, Path] = None,
     spatial_file: Union[str, Path] = None,
     image_file: Union[str, Path] = None,
+    library_id: str = "OldST",
+    scale: float = 1.0,
+    quality: str = "hires"
     ) -> AnnData:
 
     """\
@@ -111,7 +114,7 @@ def ReadOldST(
     adata = stlearn.read.file_table(count_matrix_file)
     adata=stlearn.add.parsing(adata,
         coordinates_file = spatial_file)
-    stlearn.add.image(adata, imgpath=image_file)
+    stlearn.add.image(adata, library_id=library_id, quality=quality,imgpath=image_file, scale=scale)
 
     return adata
 
@@ -120,6 +123,8 @@ def ReadSlideSeq(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
     library_id: str = None,
+    scale: float = 1.0,
+    quality: str = "hires"
     ) -> AnnData:
 
     """\
@@ -146,9 +151,10 @@ def ReadSlideSeq(
     adata.var["ENSEMBL"] = count["ENSEMBL"].values
 
     adata.obs["index"] = meta["index"].values
-    adata.obs["imagecol"] = meta["x"].values/scale_factor
-    adata.obs["imagerow"] = meta["y"].values/scale_factor
-
+    
+    adata.obs["imagecol"] = meta["x"].values*scale
+    adata.obs["imagerow"] = meta["y"].values*scale
+    
     # Create image
     max_size = np.max([adata.obs["imagecol"].max(),adata.obs["imagerow"].max()])
     max_size = int(max_size + 0.1*max_size)
@@ -162,12 +168,13 @@ def ReadSlideSeq(
     adata.uns["spatial"] = {}
     adata.uns["spatial"][library_id] = {}
     adata.uns["spatial"][library_id]["images"] = {}
-    adata.uns["spatial"][library_id]["images"]["hires"] = imgarr
-    adata.uns["spatial"]["use_quality"] = "hires"
+    adata.uns["spatial"][library_id]["images"][quality] = imgarr
+    adata.uns["spatial"]["use_quality"] = quality
     adata.uns["spatial"][library_id]["scalefactors"] = {}
-    adata.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"] = 1
-
+    adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"] = scale
     adata.obsm["spatial"] = meta[["x","y"]].values
+
+    
 
     return adata
 
@@ -175,6 +182,8 @@ def ReadMERFISH(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
     library_id: str = None,
+    scale: float = 1,
+    quality: str = "hires"
     ) -> AnnData:
 
     """\
@@ -217,9 +226,12 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"] = {}
     adata_merfish.uns["spatial"][library_id] = {}
     adata_merfish.uns["spatial"][library_id]["images"] = {}
-    adata_merfish.uns["spatial"][library_id]["images"]["hires"] = imgarr
-    adata_merfish.uns["spatial"]["use_quality"] = "hires"
+    adata_merfish.uns["spatial"][library_id]["images"][quality] = imgarr
+    adata_merfish.uns["spatial"]["use_quality"] = quality
     adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
-    adata_merfish.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"] = 0.5
+    adata_merfish.uns["spatial"][library_id]["scalefactors"]["tissue_"+quality+"_scalef"] = scale
+
+    adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:,0]*scale
+    adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:,1]*scale
 
     return adata_merfish
