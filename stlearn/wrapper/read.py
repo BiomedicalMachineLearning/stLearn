@@ -8,6 +8,7 @@ from PIL import Image
 import pandas as pd
 import stlearn
 import scanpy
+import scipy
 
 def Read10X(
     path: Union[str, Path],
@@ -72,6 +73,8 @@ def Read10X(
        load_images=True)
     adata.var_names_make_unique()
 
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
+
     
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
@@ -116,6 +119,8 @@ def ReadOldST(
         coordinates_file = spatial_file)
     stlearn.add.image(adata, library_id=library_id, quality=quality,imgpath=image_file, scale=scale)
 
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
+
     return adata
 
 
@@ -154,7 +159,7 @@ def ReadSlideSeq(
     
     adata.obs["imagecol"] = meta["x"].values*scale
     adata.obs["imagerow"] = meta["y"].values*scale
-    
+
     # Create image
     max_size = np.max([adata.obs["imagecol"].max(),adata.obs["imagerow"].max()])
     max_size = int(max_size + 0.1*max_size)
@@ -174,6 +179,7 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"] = scale
     adata.obsm["spatial"] = meta[["x","y"]].values
 
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
     
 
     return adata
@@ -233,5 +239,7 @@ def ReadMERFISH(
 
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:,0]*scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:,1]*scale
+
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
 
     return adata_merfish

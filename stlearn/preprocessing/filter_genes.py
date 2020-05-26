@@ -50,3 +50,6 @@ def filter_genes(
 
     scanpy.pp.filter_genes(adata, min_counts=min_counts, min_cells=min_cells,
                  max_counts=max_counts, max_cells=max_cells, inplace=inplace)
+
+    adata.obsm['filtered_counts'] = adata.to_df()
+
