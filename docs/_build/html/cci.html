@@ -116,7 +116,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#plot-the-transferred-labels-for-each-spot">plot the transferred labels for each spot</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cluster-spatial-spots-based-on-the-proportion-of-known-ligand-receptor-co-expression-among-the-neighbouring-spots">cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#plot-the-CCI-clustering-results-and-highlight-the-largest-expressed-cluster">plot the CCI clustering results and highlight the largest expressed cluster</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#Compare-the-immune-cells-identified-by-the-label-transfer-and-the-CCI-clustering">Compare the immune cells identified by the label transfer and the CCI clustering</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#List-the-top-15-differentiated-L-R-pairs-in-all-CCI-clusters">List the top 15 differentiated L-R pairs in all CCI clusters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Violin-plot-of-top-differentiated-L-R-pairs-neighbouring-counts-in-each-CCI-cluster">Violin plot of top differentiated L-R pairs neighbouring counts in each CCI cluster</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#barplot-to-show-the-cell-type-(according-to-label-transfer)-compositions-in-each-CCI-cluster">barplot to show the cell type (according to label transfer) compositions in each CCI cluster</a></li>
@@ -463,12 +462,8 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="c1"># read in visium dataset downloaded from: support.10xgenomics.com/spatial-gene-expression/datasets/1.0.0/V1_Breast_Cancer_Block_A_Section_1</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">file_10x_mtx</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">filtered_feature_bc_matrix&quot;</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">imgpath</span><span class="o">=</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_hires_image.png&quot;</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">position_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">tissue_positions_list.csv&quot;</span><span class="p">,</span>
-                        <span class="n">scale_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">spatial</span><span class="se">\\</span><span class="s2">scalefactors_json.json&quot;</span><span class="p">,</span>
-                        <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1&quot;</span><span class="p">)</span>
+
 <span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">cpdb</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">cpdb_filepath</span> <span class="o">=</span> <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Users</span><span class="se">\\</span><span class="s2">uqjxu8</span><span class="se">\\</span><span class="s2">GIH</span><span class="se">\\</span><span class="s2">Bioinformatics</span><span class="se">\\</span><span class="s2">SPA</span><span class="se">\\</span><span class="s2">Data</span><span class="se">\\</span><span class="s2">visium</span><span class="se">\\</span><span class="s2">Human_Breast_Cancer_Block_A_Section_1</span><span class="se">\\</span><span class="s2">cpdb</span><span class="se">\\</span><span class="s2">means.txt&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -738,36 +733,6 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 </div>
 </div>
 </div>
-<div class="section" id="Compare-the-immune-cells-identified-by-the-label-transfer-and-the-CCI-clustering">
-<h4>Compare the immune cells identified by the label transfer and the CCI clustering<a class="headerlink" href="#Compare-the-immune-cells-identified-by-the-label-transfer-and-the-CCI-clustering" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">immune_cci</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;lr_neighbours_louvain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">immune_cci</span> <span class="o">=</span> <span class="n">immune_cci</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">immune_cci</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="o">+</span><span class="p">[</span><span class="s1">&#39;immune&#39;</span><span class="p">,</span><span class="s1">&#39;non-immune&#39;</span><span class="p">])</span>
-<span class="n">immune_cci</span><span class="p">[</span><span class="n">immune_cci</span><span class="o">!=</span><span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s1">&#39;lr_neighbours_louvain_max&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;non-immune&#39;</span>
-<span class="n">immune_cci</span><span class="p">[</span><span class="n">immune_cci</span><span class="o">==</span><span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s1">&#39;lr_neighbours_louvain_max&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;immune&#39;</span>
-
-<span class="n">immune_label</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;predictions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">immune_label</span><span class="p">[</span><span class="n">immune_label</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;Bcell&#39;</span><span class="p">,</span> <span class="s1">&#39;Tcell&#39;</span><span class="p">,</span> <span class="s1">&#39;macrophage&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="s1">&#39;immune&#39;</span>
-<span class="n">immune_label</span><span class="p">[</span><span class="n">immune_label</span><span class="o">!=</span><span class="s1">&#39;immune&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;non-immune&#39;</span>
-
-<span class="kn">from</span> <span class="nn">sklearn.metrics.cluster</span> <span class="kn">import</span> <span class="n">adjusted_rand_score</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">adjusted_rand_score</span><span class="p">(</span><span class="n">immune_cci</span><span class="p">,</span> <span class="n">immune_label</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-0.4043270890677005
-</pre></div></div>
-</div>
-</div>
 <div class="section" id="List-the-top-15-differentiated-L-R-pairs-in-all-CCI-clusters">
 <h4>List the top 15 differentiated L-R pairs in all CCI clusters<a class="headerlink" href="#List-the-top-15-differentiated-L-R-pairs-in-all-CCI-clusters" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput docutils container">
@@ -987,7 +952,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_30_0.png" src="_images/cci_30_0.png" />
+<img alt="_images/cci_28_0.png" src="_images/cci_28_0.png" />
 </div>
 </div>
 </div>
@@ -1006,7 +971,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_32_0.png" src="_images/cci_32_0.png" />
+<img alt="_images/cci_30_0.png" src="_images/cci_30_0.png" />
 </div>
 </div>
 </div>
@@ -1056,14 +1021,14 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_35_0.png" src="_images/cci_35_0.png" />
+<img alt="_images/cci_33_0.png" src="_images/cci_33_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_35_1.png" src="_images/cci_35_1.png" />
+<img alt="_images/cci_33_1.png" src="_images/cci_33_1.png" />
 </div>
 </div>
 </div>
@@ -1082,7 +1047,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_37_0.png" src="_images/cci_37_0.png" />
+<img alt="_images/cci_35_0.png" src="_images/cci_35_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1098,7 +1063,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_38_0.png" src="_images/cci_38_0.png" />
+<img alt="_images/cci_36_0.png" src="_images/cci_36_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1114,7 +1079,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_39_0.png" src="_images/cci_39_0.png" />
+<img alt="_images/cci_37_0.png" src="_images/cci_37_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1130,7 +1095,7 @@ AnnData object with n_obs × n_vars = 3813 × 11690
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/cci_40_0.png" src="_images/cci_40_0.png" />
+<img alt="_images/cci_38_0.png" src="_images/cci_38_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
