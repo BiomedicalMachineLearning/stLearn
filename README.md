@@ -10,7 +10,7 @@
 
 For installation and implementation of stLearn functionalities, see the dedicated documentation page at: https://stlearn.readthedocs.io/en/latest/
 
-A collection of Jupyter notebooks are available in this repository in the **tutorial** folder 
+A collection of Jupyter notebooks are available in this GitHub repository in the **tutorials** folder 
 
 ## Brief installation instructions are below:
 
@@ -51,7 +51,7 @@ Prepare conda environment for stlearn
 
 ``` conda install jupyterlab ipywidgets```
 
-#### Step 4 (For Windows user):
+#### Step 3:
 
 Access to: 
 
