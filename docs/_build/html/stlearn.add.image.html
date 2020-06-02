@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.add.image &mdash; stLearn 0.2.0 documentation</title>
+  <title>stlearn.add.image &mdash; stLearn 0.2.1 documentation</title>
   
 
   
@@ -40,7 +40,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="stlearn.add.positions" href="stlearn.add.positions.html" />
-    <link rel="prev" title="stlearn.ReadMERFISH" href="stlearn.ReadMERFISH.html" /> 
+    <link rel="prev" title="stlearn.ReadSeqFish" href="stlearn.ReadSeqFish.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
             
           
@@ -121,6 +121,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
 </ul>
 
             
@@ -222,6 +223,10 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>adata</strong> – Annotated data matrix.</p></li>
 <li><p><strong>imgpath</strong> – Image path.</p></li>
+<li><p><strong>library_id</strong> – Identifier for the visium library. Can be modified when concatenating multiple adata objects.</p></li>
+<li><p><strong>scale</strong> – Set scale factor.</p></li>
+<li><p><strong>quality</strong> – Set quality that convert to stlearn to use. Store in anndata.obs[‘imagecol’ &amp; ‘imagerow’].</p></li>
+<li><p><strong>visium</strong> – Is this anndata read from Visium platform or not.</p></li>
 <li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
 </ul>
 </dd>
@@ -248,7 +253,7 @@
         <a href="stlearn.add.positions.html" class="btn btn-neutral float-right" title="stlearn.add.positions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="stlearn.ReadMERFISH.html" class="btn btn-neutral float-left" title="stlearn.ReadMERFISH" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="stlearn.ReadSeqFish.html" class="btn btn-neutral float-left" title="stlearn.ReadSeqFish" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

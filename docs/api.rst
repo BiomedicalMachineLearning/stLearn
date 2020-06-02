@@ -23,6 +23,7 @@ Wrapper functions: `wrapper`
    ReadOldST
    ReadSlideSeq
    ReadMERFISH
+   ReadSeqFish
 
 
 Add: `add`
