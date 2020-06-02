@@ -19,13 +19,22 @@
    ]
   },
   {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The data is downloaded from https://www.spatialomics.org/SpatialDB/download.php\n",
+    "\n",
+    "Read Slide-seq data"
+   ]
+  },
+  {
    "cell_type": "code",
    "execution_count": 2,
    "metadata": {},
    "outputs": [],
    "source": [
-    "data = st.ReadSlideSeq(count_matrix_file=\"../UQ/SlideSeq/slideseq_30923225/Puck_180413_7.count\",\n",
-    "               spatial_file=\"../UQ/SlideSeq/slideseq_30923225/Puck_180413_7.idx\")"
+    "data = st.ReadSlideSeq(count_matrix_file=\".SlideSeq/slideseq_30923225/Puck_180413_7.count\",\n",
+    "               spatial_file=\"SlideSeq/slideseq_30923225/Puck_180413_7.idx\")"
    ]
   },
   {

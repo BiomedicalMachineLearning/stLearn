@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.ReadOldST &mdash; stLearn 0.2.0 documentation</title>
+  <title>stlearn.ReadOldST &mdash; stLearn 0.2.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
             
           
@@ -97,6 +97,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.ReadOldST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.ReadSlideSeq.html">stlearn.ReadSlideSeq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.ReadMERFISH.html">stlearn.ReadMERFISH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.ReadSeqFish.html">stlearn.ReadSeqFish</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a></li>
@@ -119,6 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
 </ul>
 
             
@@ -221,6 +223,9 @@
 <li><p><strong>count_matrix_file</strong> – Path to count matrix file.</p></li>
 <li><p><strong>spatial_file</strong> – Path to spatial location file.</p></li>
 <li><p><strong>image_file</strong> – Path to the tissue image file</p></li>
+<li><p><strong>library_id</strong> – Identifier for the visium library. Can be modified when concatenating multiple adata objects.</p></li>
+<li><p><strong>scale</strong> – Set scale factor.</p></li>
+<li><p><strong>quality</strong> – Set quality that convert to stlearn to use. Store in anndata.obs[‘imagecol’ &amp; ‘imagerow’]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

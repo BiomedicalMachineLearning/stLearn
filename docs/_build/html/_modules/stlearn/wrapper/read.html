@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.wrapper.read &mdash; stLearn 0.2.0 documentation</title>
+  <title>stlearn.wrapper.read &mdash; stLearn 0.2.1 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Read_seqfish.html">Working with SeqFish data</a></li>
 </ul>
 
             
@@ -175,6 +176,7 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">stlearn</span>
 <span class="kn">import</span> <span class="nn">scanpy</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
 
 <div class="viewcode-block" id="Read10X"><a class="viewcode-back" href="../../../stlearn.Read10X.html#stlearn.Read10X">[docs]</a><span class="k">def</span> <span class="nf">Read10X</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -206,6 +208,12 @@
 <span class="sd">        &#39;filtered_feature_bc_matrix.h5&#39; or &#39;raw_feature_bc_matrix.h5&#39;.</span>
 <span class="sd">    library_id</span>
 <span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    load_images</span>
+<span class="sd">        Load image or not.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;]</span>
+
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    Annotated data matrix, where observations/cells are named by their</span>
@@ -239,16 +247,18 @@
        <span class="n">load_images</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
 
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;sum_counts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
     
     <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
         
-    <span class="n">scale</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_&quot;</span><span class="o">+</span><span class="n">use_quality</span><span class="o">+</span><span class="s2">&quot;_scalef&quot;</span><span class="p">]</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_&quot;</span><span class="o">+</span><span class="n">quality</span><span class="o">+</span><span class="s2">&quot;_scalef&quot;</span><span class="p">]</span>
     <span class="n">image_coor</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span>
 
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coor</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coor</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">use_quality</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quality</span>
 
     <span class="k">return</span> <span class="n">adata</span></div>
 
@@ -273,6 +283,12 @@
 <span class="sd">        Path to spatial location file.</span>
 <span class="sd">    image_file</span>
 <span class="sd">        Path to the tissue image file</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    scale</span>
+<span class="sd">        Set scale factor.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;]</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AnnData</span>
@@ -282,6 +298,8 @@
     <span class="n">adata</span><span class="o">=</span><span class="n">stlearn</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">parsing</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span>
         <span class="n">coordinates_file</span> <span class="o">=</span> <span class="n">spatial_file</span><span class="p">)</span>
     <span class="n">stlearn</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">library_id</span><span class="o">=</span><span class="n">library_id</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="n">quality</span><span class="p">,</span><span class="n">imgpath</span><span class="o">=</span><span class="n">image_file</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;sum_counts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">adata</span></div>
 
@@ -304,7 +322,11 @@
 <span class="sd">    spatial_file</span>
 <span class="sd">        Path to spatial location file.</span>
 <span class="sd">    library_id</span>
-<span class="sd">        Spatial data ID for storing related image data</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    scale</span>
+<span class="sd">        Set scale factor.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;]</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AnnData</span>
@@ -321,7 +343,7 @@
     
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="n">scale</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="n">scale</span>
-    
+
     <span class="c1"># Create image</span>
     <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
     <span class="n">max_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_size</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">max_size</span><span class="p">)</span>
@@ -341,6 +363,7 @@
     <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_&quot;</span> <span class="o">+</span> <span class="n">quality</span> <span class="o">+</span> <span class="s2">&quot;_scalef&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
 
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;sum_counts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
     
 
     <span class="k">return</span> <span class="n">adata</span></div>
@@ -363,7 +386,11 @@
 <span class="sd">    spatial_file</span>
 <span class="sd">        Path to spatial location file.</span>
 <span class="sd">    library_id</span>
-<span class="sd">        Spatial data ID for storing related image data</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    scale</span>
+<span class="sd">        Set scale factor.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;]</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    AnnData</span>
@@ -401,7 +428,79 @@
     <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span>
     <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][:,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span>
 
+    <span class="n">adata_merfish</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;sum_counts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adata_merfish</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="n">adata_merfish</span></div>
+
+<div class="viewcode-block" id="ReadSeqFish"><a class="viewcode-back" href="../../../stlearn.ReadSeqFish.html#stlearn.ReadSeqFish">[docs]</a><span class="k">def</span> <span class="nf">ReadSeqFish</span><span class="p">(</span>
+    <span class="n">count_matrix_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">spatial_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">library_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hires&quot;</span><span class="p">,</span>
+    <span class="n">field</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">    Read SeqFish data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    count_matrix_file</span>
+<span class="sd">        Path to count matrix file.</span>
+<span class="sd">    spatial_file</span>
+<span class="sd">        Path to spatial location file.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    scale</span>
+<span class="sd">        Set scale factor.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;]</span>
+<span class="sd">    field</span>
+<span class="sd">        Set field of view for SeqFish data</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">spatial</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">spatial_file</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">count</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">count</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="n">count</span><span class="p">[</span><span class="s2">&quot;Field_of_View&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">columns</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">spatial</span> <span class="o">=</span> <span class="n">spatial</span><span class="p">[</span><span class="n">spatial</span><span class="p">[</span><span class="s2">&quot;Field_of_View&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">field</span><span class="p">]</span>
+    
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">AnnData</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+    
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="n">scale</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="n">scale</span>
+
+    <span class="c1"># Create image</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+    <span class="n">max_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_size</span> <span class="o">+</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">max_size</span><span class="p">)</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">max_size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">))</span>
+    <span class="n">imgarr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">library_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">library_id</span> <span class="o">=</span> <span class="s2">&quot;Slide-seq&quot;</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">][</span><span class="n">quality</span><span class="p">]</span> <span class="o">=</span> <span class="n">imgarr</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="s2">&quot;use_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quality</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_&quot;</span> <span class="o">+</span> <span class="n">quality</span> <span class="o">+</span> <span class="s2">&quot;_scalef&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spatial</span><span class="p">[[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="s2">&quot;Y&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;sum_counts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    
+
+    <span class="k">return</span> <span class="n">adata</span></div>
 </pre></div>
 
            </div>

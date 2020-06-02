@@ -43,7 +43,7 @@ def global_level(
 
     # Query cluster
     query_nodes = list_cluster
-    query_nodes = ordering_nodes(query_nodes, adata)
+    query_nodes = ordering_nodes(query_nodes, use_label,adata)
 
     query_dict = {}
     order_dict = {}
@@ -116,10 +116,10 @@ def get_node(node_list, split_node):
     return result.astype(int)
 
 
-def ordering_nodes(node_list, adata):
+def ordering_nodes(node_list,use_label, adata):
     mean_dpt = []
     for node in node_list:
-        mean_dpt.append(adata.obs[adata.obs["louvain"]
+        mean_dpt.append(adata.obs[adata.obs[use_label]
                                   == str(node)]["dpt_pseudotime"].mean())
 
     return list(np.array(node_list)[np.argsort(mean_dpt)])

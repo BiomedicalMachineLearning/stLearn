@@ -263,3 +263,73 @@ def ReadMERFISH(
     adata_merfish.obs['sum_counts'] = np.array(adata_merfish.X.sum(axis=1))
 
     return adata_merfish
+
+def ReadSeqFish(
+    count_matrix_file: Union[str, Path],
+    spatial_file: Union[str, Path],
+    library_id: str = None,
+    scale: float = 1.0,
+    quality: str = "hires",
+    field: int = 0
+    ) -> AnnData:
+
+    """\
+    Read SeqFish data
+
+    Parameters
+    ----------
+    count_matrix_file
+        Path to count matrix file.
+    spatial_file
+        Path to spatial location file.
+    library_id
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+    field
+        Set field of view for SeqFish data
+    Returns
+    -------
+    AnnData
+    """
+
+    count = pd.read_table(count_matrix_file,header=None)
+    spatial = pd.read_table(spatial_file,index_col=False)
+    
+    count = count.T
+    count.columns = count.iloc[0]
+    count = count.drop(count.index[0]).reset_index(drop=True)
+    count = count[count["Field_of_View"] == field].drop(count.columns[[0,1]],axis=1)
+    
+    spatial = spatial[spatial["Field_of_View"] == field]
+    
+    adata = AnnData(count)
+    
+    adata.obs["imagecol"] = spatial["X"].values*scale
+    adata.obs["imagerow"] = spatial["Y"].values*scale
+
+    # Create image
+    max_size = np.max([adata.obs["imagecol"].max(),adata.obs["imagerow"].max()])
+    max_size = int(max_size + 0.1*max_size)
+
+    image = Image.new('RGB', (max_size, max_size), (255, 255, 255))
+    imgarr = np.array(image)
+
+    if library_id is None:
+        library_id = "Slide-seq"
+
+    adata.uns["spatial"] = {}
+    adata.uns["spatial"][library_id] = {}
+    adata.uns["spatial"][library_id]["images"] = {}
+    adata.uns["spatial"][library_id]["images"][quality] = imgarr
+    adata.uns["spatial"]["use_quality"] = quality
+    adata.uns["spatial"][library_id]["scalefactors"] = {}
+    adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"] = scale
+    adata.obsm["spatial"] = spatial[["X","Y"]].values
+
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
+    
+
+    return adata

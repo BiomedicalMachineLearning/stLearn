@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.adds.add_image &mdash; stLearn 0.2.0 documentation</title>
+  <title>stlearn.adds.add_image &mdash; stLearn 0.2.1 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Read_seqfish.html">Working with SeqFish data</a></li>
 </ul>
 
             
@@ -193,6 +194,14 @@
 <span class="sd">        Annotated data matrix.</span>
 <span class="sd">    imgpath</span>
 <span class="sd">        Image path.</span>
+<span class="sd">    library_id</span>
+<span class="sd">        Identifier for the visium library. Can be modified when concatenating multiple adata objects.</span>
+<span class="sd">    scale</span>
+<span class="sd">        Set scale factor.</span>
+<span class="sd">    quality</span>
+<span class="sd">        Set quality that convert to stlearn to use. Store in anndata.obs[&#39;imagecol&#39; &amp; &#39;imagerow&#39;].</span>
+<span class="sd">    visium</span>
+<span class="sd">        Is this anndata read from Visium platform or not.</span>
 <span class="sd">    copy</span>
 <span class="sd">        Return a copy instead of writing to adata.</span>
 <span class="sd">    Returns</span>

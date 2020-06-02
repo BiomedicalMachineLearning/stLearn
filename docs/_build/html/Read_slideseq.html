@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Working with slide-seq data &mdash; stLearn 0.2.0 documentation</title>
+  <title>Working with slide-seq data &mdash; stLearn 0.2.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
             
           
@@ -104,6 +104,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
 </ul>
 
             
@@ -436,13 +437,15 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<p>The data is downloaded from <a class="reference external" href="https://www.spatialomics.org/SpatialDB/download.php">https://www.spatialomics.org/SpatialDB/download.php</a></p>
+<p>Read Slide-seq data</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">ReadSlideSeq</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="o">=</span><span class="s2">&quot;../UQ/SlideSeq/slideseq_30923225/Puck_180413_7.count&quot;</span><span class="p">,</span>
-               <span class="n">spatial_file</span><span class="o">=</span><span class="s2">&quot;../UQ/SlideSeq/slideseq_30923225/Puck_180413_7.idx&quot;</span><span class="p">)</span>
+<span></span><span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">ReadSlideSeq</span><span class="p">(</span><span class="n">count_matrix_file</span><span class="o">=</span><span class="s2">&quot;.SlideSeq/slideseq_30923225/Puck_180413_7.count&quot;</span><span class="p">,</span>
+               <span class="n">spatial_file</span><span class="o">=</span><span class="s2">&quot;SlideSeq/slideseq_30923225/Puck_180413_7.idx&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -482,7 +485,7 @@ AnnData object with n_obs × n_vars = 12282 × 3235
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Read_slideseq_5_0.png" src="_images/Read_slideseq_5_0.png" />
+<img alt="_images/Read_slideseq_6_0.png" src="_images/Read_slideseq_6_0.png" />
 </div>
 </div>
 <p>Preprocessing data</p>
@@ -575,7 +578,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Read_slideseq_13_0.png" src="_images/Read_slideseq_13_0.png" />
+<img alt="_images/Read_slideseq_14_0.png" src="_images/Read_slideseq_14_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
