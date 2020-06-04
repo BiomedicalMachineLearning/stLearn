@@ -16,7 +16,7 @@ def Read10X(
     count_file: str = "filtered_feature_bc_matrix.h5",
     library_id: str = None,
     load_images: Optional[bool] = True,
-    use_quality: str = "hires"
+    quality: str = "hires"
     ) -> AnnData:
     
     """\
