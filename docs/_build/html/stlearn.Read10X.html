@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.Read10X &mdash; stLearn 0.2.1 documentation</title>
+  <title>stlearn.Read10X &mdash; stLearn 0.2.4 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.2.1
+                0.2.4
               </div>
             
           
@@ -114,6 +114,7 @@
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
@@ -215,7 +216,7 @@
 <h1>stlearn.Read10X<a class="headerlink" href="#stlearn-read10x" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="stlearn.Read10X">
-<code class="sig-prename descclassname">stlearn.</code><code class="sig-name descname">Read10X</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>pathlib.Path<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">genome</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">count_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'filtered_feature_bc_matrix.h5'</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">load_images</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">use_quality</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'hires'</span></em><span class="sig-paren">)</span> &#x2192; anndata._core.anndata.AnnData<a class="reference internal" href="_modules/stlearn/wrapper/read.html#Read10X"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.Read10X" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">stlearn.</code><code class="sig-name descname">Read10X</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>pathlib.Path<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">genome</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">count_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'filtered_feature_bc_matrix.h5'</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">load_images</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quality</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'hires'</span></em><span class="sig-paren">)</span> &#x2192; anndata._core.anndata.AnnData<a class="reference internal" href="_modules/stlearn/wrapper/read.html#Read10X"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.Read10X" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read Visium data from 10X (wrap read_visium from scanpy)</p>
 <p>In addition to reading regular 10x output,
 this looks for the <cite>spatial</cite> folder and loads images,
