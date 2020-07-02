@@ -13,7 +13,8 @@ def het_plot(
     use_cluster: str = 'louvain',
     dpi: int = 100,
     spot_size: Union[float,int] = 6.5,
-    quality: str = "hires",
+    vmin: int = None,
+    vmax: int = None,
     name: str = None,
     output: str = None,
 ):
@@ -52,7 +53,7 @@ def het_plot(
 
     plt.rcParams['figure.dpi'] = dpi * 0.8
     plt.subplots()
-    sns.heatmap(het)
+    sns.heatmap(het, vmin=vmin, vmax=vmax)
     plt.axis('equal')
 
     if output is not None:

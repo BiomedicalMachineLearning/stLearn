@@ -55,11 +55,17 @@ def lr(
     # count the co-expressed ligand-recptor pairs between neighbours
     def count_receptors(x):
         nbs = spot_receptors.loc[neighbours[data.index.tolist().index(x.name)], :]
-        return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+        if nbs.shape[0] > 0:
+            return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+        else:
+            return 0
 
     def count_ligands(x):
         nbs = spot_ligands.loc[neighbours[data.index.tolist().index(x.name)], :]
-        return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+        if nbs.shape[0] > 0:
+            return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+        else:
+            return 0
 
     nb_receptors = spot_receptors.apply(count_receptors, axis=1)   # proportion of neighbour spots which has receptor expression > threshold
     nb_ligands = spot_ligands.apply(count_ligands, axis=1)   # proportion of neighbour spots which has receptor expression > threshold
