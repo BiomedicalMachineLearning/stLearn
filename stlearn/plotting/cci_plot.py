@@ -58,7 +58,8 @@ def het_plot(
 
     if output is not None:
         plt.savefig(output + "/" + name + "_heatmap.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
-
+    plt.show()
+    
 
 def violin_plot(
     adata: AnnData,
@@ -94,7 +95,9 @@ def violin_plot(
 
     if output is not None:
         plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+    plt.show()
 
+    
 def stacked_bar_plot(
     adata: AnnData,
     use_annotation: str,
@@ -137,3 +140,4 @@ def stacked_bar_plot(
 
     if output is not None:
         plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+    plt.show()
