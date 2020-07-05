@@ -24,6 +24,7 @@ def pseudotime_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
+    output: str = None,
     dpi: int = 180,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -65,10 +66,8 @@ def pseudotime_plot(
         Show legend or not.
     dpi
         Set dpi as the resolution for the plot.
-    show_trajectory
-        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
-    show_subcluster
-        Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
+    output
+        Save the figure as file or not.
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -154,7 +153,11 @@ def pseudotime_plot(
 
     if not show_axis:
         a.axis('off')
-    a.set_title
+
+    if output is not None:
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
+
     plt.show()
 
 # get name of cluster by subcluster

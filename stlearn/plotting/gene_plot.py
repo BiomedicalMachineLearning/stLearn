@@ -15,6 +15,7 @@ def gene_plot(
     adata: AnnData,
     method: str = "CumSum",
     genes: Optional[Union[str, list]] = None,
+    threshold: float = None,
     library_id: str = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
@@ -41,6 +42,8 @@ def gene_plot(
         Use method to count. We prorive: NaiveMean, NaiveSum, CumSum.
     genes
         Choose a gene or a list of genes.
+    threshold
+        Threshold to filter genes
     data_alpha
         Opacity of the spot.
     tissue_alpha
@@ -71,11 +74,22 @@ def gene_plot(
     -------
     Nothing
     """
+
     plt.rcParams['figure.dpi'] = dpi
 
     if type(genes) == str:
         genes = [genes]
     colors = _gene_plot(adata, method, genes)
+
+    if threshold is not None:
+        colors = colors[colors>threshold]
+
+    index_filter = colors.index
+
+    filter_obs  = adata.obs.loc[index_filter]
+    imagecol = filter_obs["imagecol"]
+    imagerow = filter_obs["imagerow"]
+
 
     # Option for turning off showing figure
     plt.ioff()
@@ -86,7 +100,7 @@ def gene_plot(
     vmin = min(colors)
     vmax = max(colors)
     # Plot scatter plot based on pixel of spots
-    plot = a.scatter(adata.obs["imagecol"], adata.obs["imagerow"], edgecolor="none", alpha=data_alpha, s=spot_size, marker="o",
+    plot = a.scatter(imagecol, imagerow, edgecolor="none", alpha=data_alpha, s=spot_size, marker="o",
                      vmin=vmin, vmax=vmax, cmap=plt.get_cmap(cmap), c=colors)
 
     if show_color_bar:
@@ -135,7 +149,7 @@ def _gene_plot(adata, method, genes):
             raise ValueError(
                 genes[0] + ' is not exist in the data, please try another gene')
 
-        colors = list(adata[:, genes].X.toarray().reshape(1, -1)[0])
+        colors = adata[:, genes].to_df().iloc[:, -1]
 
         return colors
     else:

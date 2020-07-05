@@ -41,6 +41,8 @@ Add: `add`
    add.lr
    add.annotation
    add.cpdb
+   add.add_loupe_clusters
+   add.auto_annotate
 
 
 Preprocessing: `pp`
@@ -123,6 +125,7 @@ Plot: `pl`
    pl.subcluster_plot
    pl.microenv_plot
    pl.non_spatial_plot
+   pl.deconvolution_plot
    pl.QC_plot
    pl.het_plot
    pl.violin_plot
@@ -130,6 +133,7 @@ Plot: `pl`
    pl.trajectory.pseudotime_plot
    pl.trajectory.local_plot
    pl.trajectory.tree_plot
+
 
 .. note::
    Wrappers to external functionality are found in :mod:`stlearn.external`.

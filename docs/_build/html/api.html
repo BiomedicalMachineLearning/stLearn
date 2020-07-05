@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API &mdash; stLearn 0.2.4 documentation</title>
+  <title>API &mdash; stLearn 0.2.5 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.2.4
+                0.2.5
               </div>
             
           
@@ -107,6 +107,8 @@
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.lr.html">stlearn.add.lr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.annotation.html">stlearn.add.annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.cpdb.html">stlearn.add.cpdb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.add_loupe_clusters.html">stlearn.add.add_loupe_clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.auto_annotate.html">stlearn.add.auto_annotate</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-stlearn.pp">Preprocessing: <cite>pp</cite></a><ul>
@@ -149,6 +151,7 @@
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.subcluster_plot.html">stlearn.pl.subcluster_plot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.microenv_plot.html">stlearn.pl.microenv_plot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.non_spatial_plot.html">stlearn.pl.non_spatial_plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.pl.deconvolution_plot.html">stlearn.pl.deconvolution_plot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.QC_plot.html">stlearn.pl.QC_plot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.het_plot.html">stlearn.pl.het_plot</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.pl.violin_plot.html">stlearn.pl.violin_plot</a></li>
@@ -321,6 +324,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.cpdb.html#stlearn.add.cpdb" title="stlearn.add.cpdb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.cpdb</span></code></a>(adata[, cpdb_filepath, sep, copy])</p></td>
 <td><p>Add CPDB results into AnnData object</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.add_loupe_clusters.html#stlearn.add.add_loupe_clusters" title="stlearn.add.add_loupe_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.add_loupe_clusters</span></code></a>(adata, loupe_path[, …])</p></td>
+<td><p>Adding label transfered from Seurat</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.auto_annotate.html#stlearn.add.auto_annotate" title="stlearn.add.auto_annotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.auto_annotate</span></code></a>(adata, annotation_path[, …])</p></td>
+<td><p>Adding label transfered from Seurat</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -457,25 +466,28 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.non_spatial_plot.html#stlearn.pl.non_spatial_plot" title="stlearn.pl.non_spatial_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.non_spatial_plot</span></code></a>(adata[, use_label, dpi])</p></td>
 <td><p>A wrap function to plot all the non-spatial plot from scanpy.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.QC_plot.html#stlearn.pl.QC_plot" title="stlearn.pl.QC_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.QC_plot</span></code></a>(adata[, library_id, name, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.deconvolution_plot.html#stlearn.pl.deconvolution_plot" title="stlearn.pl.deconvolution_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.deconvolution_plot</span></code></a>(adata[, library_id, …])</p></td>
+<td><p>Deconvolutio plot for sptial transcriptomics data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.QC_plot.html#stlearn.pl.QC_plot" title="stlearn.pl.QC_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.QC_plot</span></code></a>(adata[, library_id, name, …])</p></td>
 <td><p>QC plot for sptial transcriptomics data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.het_plot.html#stlearn.pl.het_plot" title="stlearn.pl.het_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.het_plot</span></code></a>(adata, het[, use_cluster, dpi, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.het_plot.html#stlearn.pl.het_plot" title="stlearn.pl.het_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.het_plot</span></code></a>(adata, het[, use_cluster, dpi, …])</p></td>
 <td><p>Plot tissue clusters and cluster heterogeneity using heatmap :param adata: :type adata: AnnData                  The data object to plot :param het: :type het: pd.DataFrame               Cluster heterogeneity count results from tl.cci.het :param use_cluster: :type use_cluster: str                The clustering results to use :param dpi: :type dpi: bool                       Dots per inch :param spot_size: :type spot_size: Union[float,int]     Spot size</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.violin_plot.html#stlearn.pl.violin_plot" title="stlearn.pl.violin_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.violin_plot</span></code></a>(adata, lr[, use_cluster, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.violin_plot.html#stlearn.pl.violin_plot" title="stlearn.pl.violin_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.violin_plot</span></code></a>(adata, lr[, use_cluster, …])</p></td>
 <td><p>Plot the distribution of CCI counts within spots of each CCI clusters :param adata: :type adata: AnnData          The data object to plot :param lr: :type lr: str                 The specified Ligand-Receptor pair to plot :param use_cluster: :type use_cluster: str        The clustering results to use :param dpi: :type dpi: bool               Dots per inch :param name: :type name: str               Save as file name :param output: :type output: str             Save to directory</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.stacked_bar_plot.html#stlearn.pl.stacked_bar_plot" title="stlearn.pl.stacked_bar_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.stacked_bar_plot</span></code></a>(adata, use_annotation[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.stacked_bar_plot.html#stlearn.pl.stacked_bar_plot" title="stlearn.pl.stacked_bar_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.stacked_bar_plot</span></code></a>(adata, use_annotation[, …])</p></td>
 <td><p>Plot the proportion of cell types in each CCI cluster :param adata: :type adata: AnnData          The data object to plot :param use_annotation: :type use_annotation: str     The cell type annotation to be used in plotting :param dpi: :type dpi: bool               Dots per inch :param name: :type name: str               Save as file name :param output: :type output: str             Save to directory</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.pseudotime_plot.html#stlearn.pl.trajectory.pseudotime_plot" title="stlearn.pl.trajectory.pseudotime_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.pseudotime_plot</span></code></a>(adata[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.pseudotime_plot.html#stlearn.pl.trajectory.pseudotime_plot" title="stlearn.pl.trajectory.pseudotime_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.pseudotime_plot</span></code></a>(adata[, …])</p></td>
 <td><p>Global trajectory inference plot (Only DPT).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.local_plot.html#stlearn.pl.trajectory.local_plot" title="stlearn.pl.trajectory.local_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.local_plot</span></code></a>(adata[, use_label, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.local_plot.html#stlearn.pl.trajectory.local_plot" title="stlearn.pl.trajectory.local_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.local_plot</span></code></a>(adata[, use_label, …])</p></td>
 <td><p>Local spatial trajectory inference plot.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.tree_plot.html#stlearn.pl.trajectory.tree_plot" title="stlearn.pl.trajectory.tree_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.tree_plot</span></code></a>(adata[, library_id, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.tree_plot.html#stlearn.pl.trajectory.tree_plot" title="stlearn.pl.trajectory.tree_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.tree_plot</span></code></a>(adata[, library_id, …])</p></td>
 <td><p>Hierarchical tree plot represent for the global spatial trajectory inference.</p></td>
 </tr>
 </tbody>
