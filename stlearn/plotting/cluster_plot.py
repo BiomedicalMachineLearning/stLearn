@@ -21,7 +21,6 @@ def cluster_plot(
     tissue_alpha: float = 1.0,
     title: str = None,
     spot_size: Union[float, int] = 6.5,
-    show_color_bar: bool = True,
     show_axis: bool = False,
     show_legend: bool = True,
     dpi: int = 180,
@@ -53,8 +52,6 @@ def cluster_plot(
         Color map to use.
     spot_size
         Size of the spot.
-    show_color_bar
-        Show color bar or not.
     show_axis
         Show axis or not.
     show_legend
