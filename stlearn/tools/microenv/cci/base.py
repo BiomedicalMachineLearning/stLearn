@@ -74,7 +74,7 @@ def lr(
     # receptors on the spots
     st_lr_neighbour_receptors = pd.DataFrame((spot_receptors > threshold).values * nb_ligands.values, index=data.index, columns=[lr_pairs[i] for i in avail])
     adata.obsm['lr_neighbours'] = st_lr_neighbour_ligands + st_lr_neighbour_receptors
-    print('L-R interactions with neighbours are counted and stored into adata[\'lr_neighbours\']')
+    print('L-R interactions with neighbours are counted and stored into adata\.obsm[\'lr_neighbours\']')
 
     neighbors(adata,n_neighbors=25,use_rep='lr_neighbours')
     louvain(adata, key_added='lr_neighbours_louvain')
