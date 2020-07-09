@@ -9,8 +9,8 @@ from typing import Optional, Union
 
 def het_plot(
     adata: AnnData,
-    het: pd.DataFrame,
     use_cluster: str = 'louvain',
+    use_het: str = 'het',
     dpi: int = 100,
     spot_size: Union[float,int] = 6.5,
     vmin: int = None,
@@ -22,8 +22,8 @@ def het_plot(
     Parameters
     ----------
     adata: AnnData                  The data object to plot
-    het: pd.DataFrame               Cluster heterogeneity count results from tl.cci.het
     use_cluster: str                The clustering results to use
+    use_het: str                    Cluster heterogeneity count results from tl.cci.het
     dpi: bool                       Dots per inch
     spot_size: Union[float,int]     Spot size
     
@@ -31,8 +31,6 @@ def het_plot(
     -------
     N/A
     """
-
-    
 
     plt.rcParams['figure.dpi'] = dpi
     fig, ax = plt.subplots()
@@ -53,11 +51,13 @@ def het_plot(
 
     plt.rcParams['figure.dpi'] = dpi * 0.8
     plt.subplots()
-    sns.heatmap(het, vmin=vmin, vmax=vmax)
+    sns.heatmap(adata.uns[use_het], vmin=vmin, vmax=vmax)
     plt.axis('equal')
 
     if output is not None:
         plt.savefig(output + "/" + name + "_heatmap.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+
+    plt.show()
 
 
 def violin_plot(
@@ -94,6 +94,9 @@ def violin_plot(
 
     if output is not None:
         plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+
+    plt.show()
+    
 
 def stacked_bar_plot(
     adata: AnnData,
@@ -137,3 +140,5 @@ def stacked_bar_plot(
 
     if output is not None:
         plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+
+    plt.show()
