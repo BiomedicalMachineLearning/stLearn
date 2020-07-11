@@ -20,6 +20,7 @@ def subcluster_plot(
     cmap: str = "jet",
     spot_size: Union[float, int] = 5,
     show_axis: bool = False,
+    show_plot: bool = True,
     dpi: int = 192,
     name: str = None,
     output: str = None,
@@ -130,7 +131,8 @@ def subcluster_plot(
     if not show_axis:
         a.axis('off')
 
-    plt.show()
+    if show_plot:
+        plt.show()
 
     if output is not None:
         if name is None:

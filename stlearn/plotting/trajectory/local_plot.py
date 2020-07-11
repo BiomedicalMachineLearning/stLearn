@@ -25,7 +25,10 @@ def local_plot(
     spot_size: Union[float,int] = 1,
     show_color_bar: bool = True,
     show_axis: bool = False,
+    show_plot: bool = True,
     dpi: int = 180,
+    name: str = None,
+    output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
     
@@ -150,8 +153,18 @@ def local_plot(
 
     ax.invert_zaxis()
     ax.patch.set_visible(False) 
-    plt.show()
+    if show_plot:
+        plt.show()
+
     plt.rcParams['figure.figsize'] = 6, 4
+
+    if output is not None:
+        if name is None:
+            print("The file name is not defined!")
+            name = use_label
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
+    
 
 def calculate_y(m):
     import math

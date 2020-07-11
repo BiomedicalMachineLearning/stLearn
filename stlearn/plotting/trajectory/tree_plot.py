@@ -23,6 +23,8 @@ def tree_plot(
     fontsize: int = 6,
     piesize: float = 0.15,
     zoom: float = 0.1,
+    name: str = None,
+    output: str = None,
     dpi: int = 180,
     show_all: bool = False,
     copy: bool = False,
@@ -111,6 +113,13 @@ def tree_plot(
         a.axis('off')
         a.imshow(G.nodes[n]['image'])
         #plt.rcParams.update(plt.rcParamsDefault)
+
+    if name is None:
+        name = use_label
+
+    if output is not None:
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
 
 
 

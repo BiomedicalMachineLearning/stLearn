@@ -24,7 +24,9 @@ def pseudotime_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
+    show_plot: bool = True,
     output: str = None,
+    name: str = None,
     dpi: int = 180,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -64,6 +66,8 @@ def pseudotime_plot(
         Show PAGA graph or not.
     show_legend
         Show legend or not.
+    show_plot
+        Show plot or not
     dpi
         Set dpi as the resolution for the plot.
     output
@@ -157,8 +161,8 @@ def pseudotime_plot(
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
-
-    plt.show()
+    if show_plot == True:
+        plt.show()
 
 # get name of cluster by subcluster
 def get_cluster(search,dictionary):
