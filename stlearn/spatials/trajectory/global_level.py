@@ -11,6 +11,7 @@ def global_level(
     use_label: str = "louvain",
     list_cluster: list = [],
     w: float = 0.5,
+    threshold_spots = 5,
 
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -51,10 +52,15 @@ def global_level(
     for i in query_nodes:
         order = 0
         for j in adata.obs[adata.obs[use_label] == str(i)]["sub_cluster_labels"].unique():
-            query_dict[int(j)] = int(i)
-            order_dict[int(j)] = int(order)
-
-            order += 1
+            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(j)]) > threshold_spots:
+                query_dict[int(j)] = int(i)
+                order_dict[int(j)] = int(order)
+                order += 1
+    print(query_nodes)
+    
+    print("-------------------")
+    
+    
 
     dm_list = []
     sdm_list = []
@@ -74,6 +80,7 @@ def global_level(
         # Calculate Spatial distance matrix
         sdm_list.append(spatial_distance_matrix(
             adata, query_nodes[i], query_nodes[i+1], use_label=use_label))
+    
 
     # Get centroid dictionary
     centroid_dict = adata.uns["centroid_dict"]
@@ -92,6 +99,7 @@ def global_level(
 
     labels = nx.get_edge_attributes(H_sub, 'weight')
 
+    
     for edge, _ in labels.items():
 
         dm = dm_list[order_big_dict[query_dict[edge[0]]]]

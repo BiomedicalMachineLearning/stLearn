@@ -19,6 +19,7 @@ def cluster_plot(
     data_alpha: float = 1.0,
     cmap: str = "vega_20_scanpy",
     tissue_alpha: float = 1.0,
+    threshold_spots: int = 0,
     title: str = None,
     spot_size: Union[float, int] = 6.5,
     show_axis: bool = False,
@@ -181,14 +182,15 @@ def cluster_plot(
                 classes = clf.classes_
 
             for i, label in enumerate(classes):
-                if centroids[i][0] < 1500:
-                    x = -100
-                    y = 50
-                else:
-                    x = 100
-                    y = -50
-                a.text(centroids[i][0]+x, centroids[i][1]+y, label, color='black', fontsize=5, zorder=3,
-                       bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)], boxstyle='round', alpha=1.0))
+                if len(adata.obs[adata.obs["sub_cluster_labels"] == label]) > threshold_spots:
+                    if centroids[i][0] < 1500:
+                        x = -100
+                        y = 50
+                    else:
+                        x = 100
+                        y = -50
+                    a.text(centroids[i][0]+x, centroids[i][1]+y, label, color='black', fontsize=5, zorder=3,
+                           bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)], boxstyle='round', alpha=1.0))
 
     plt.show()
 

@@ -13,6 +13,7 @@ def pseudotime(
     threshold: float = 0.01,
     radius: int = 50,
     method: str = "mean",
+    threshold_spots: int = 5,
     use_sme: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -46,6 +47,15 @@ def pseudotime(
     Anndata
     """
 
+    try:
+        del adata.obsm["X_diffmap"]
+    except:
+        pass
+    try:
+        del adata.obsm["X_draw_graph_fr"]
+    except:
+        pass
+
     # Localize
     from stlearn.spatials.clustering import localization
     localization(adata, use_label=use_label, eps=eps)
@@ -74,8 +84,13 @@ def pseudotime(
     # Mapping louvain label to subcluster
     split_node = {}
     for label in adata.obs[use_label].unique():
-        split_node[int(label)] = list(
-            adata.obs[adata.obs[use_label] == label]["sub_cluster_labels"].unique())
+        meaningful_sub = []
+        for i in adata.obs[adata.obs[use_label] == label]["sub_cluster_labels"].unique():
+            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)]) > threshold_spots:
+                meaningful_sub.append(i)
+
+        split_node[int(label)] = meaningful_sub
+            
 
     adata.uns["split_node"] = split_node
     # Replicate louvain label row to prepare for subcluster connection 
