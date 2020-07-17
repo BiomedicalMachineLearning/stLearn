@@ -15,6 +15,8 @@ def QC_plot(
         show_color_bar: bool = True,
         show_size_legend: bool = True,
         show_axis: bool = False,
+        cropped: bool = True,
+        margin: int = 100,
         dpi: int = 192,
         output: str = None,
 ) -> Optional[AnnData]:
@@ -53,6 +55,9 @@ def QC_plot(
         -------
         Nothing
         """
+
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
     from sklearn.preprocessing import MinMaxScaler
     reads_per_spot = adata.to_df().sum(axis=1)
     scaler = MinMaxScaler(feature_range=spot_size)
@@ -100,6 +105,16 @@ def QC_plot(
     image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
     # Overlay the tissue image
     a.imshow(image, alpha=tissue_alpha, zorder=-1, )
+
+    if cropped:
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
 
     # fig.tight_layout()
     if output is not None:

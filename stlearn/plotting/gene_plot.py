@@ -24,6 +24,8 @@ def gene_plot(
     show_legend: bool = False,
     show_color_bar: bool = True,
     show_axis: bool = False,
+    cropped: bool = True,
+    margin: int = 100,
     dpi: int = 192,
     name: str = None,
     output: str = None,
@@ -87,10 +89,10 @@ def gene_plot(
     index_filter = colors.index
 
     filter_obs  = adata.obs.loc[index_filter]
+
     imagecol = filter_obs["imagecol"]
     imagerow = filter_obs["imagerow"]
-
-
+    
     # Option for turning off showing figure
     plt.ioff()
 
@@ -124,6 +126,19 @@ def gene_plot(
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
+        
+    if cropped:
+        imagecol = adata.obs["imagecol"]
+        imagerow = adata.obs["imagerow"]
+
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
 
     plt.show()
     # Store figure

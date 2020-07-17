@@ -22,6 +22,8 @@ def deconvolution_plot(
     dpi: int = 180,
     show_trajectory: bool = False,
     show_subcluster: bool = False,
+    cropped: bool = True,
+    margin: int = 100,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -70,6 +72,9 @@ def deconvolution_plot(
     """
 
     plt.rcParams['figure.dpi'] = dpi
+
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
 
     fig, ax = plt.subplots()
 
@@ -128,11 +133,23 @@ def deconvolution_plot(
 
     ax.axis('off')
 
+    if cropped:
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
+
     if name is None:
             name = use_label
 
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
+
+    
 
     plt.show()

@@ -25,6 +25,8 @@ def pseudotime_plot(
     show_axis: bool = False,
     show_graph: bool = True,
     show_plot: bool = True,
+    cropped: bool = True,
+    margin: int = 100,
     output: str = None,
     name: str = None,
     dpi: int = 180,
@@ -80,6 +82,9 @@ def pseudotime_plot(
     """
     
     plt.rcParams['figure.dpi'] = dpi
+
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
 
     if list_cluster == "all":
         list_cluster = list(range(0,len(adata.obs[use_label].unique())))
@@ -157,6 +162,16 @@ def pseudotime_plot(
 
     if not show_axis:
         a.axis('off')
+
+    if cropped:
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
 
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,
