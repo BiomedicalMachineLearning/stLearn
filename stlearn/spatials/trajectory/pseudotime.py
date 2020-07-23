@@ -113,7 +113,7 @@ def pseudotime(
                                 selection_sort(np.array(cnt_matrix.index))]
 
     # Create a connection graph of subclusters
-    G = nx.from_numpy_matrix(cnt_matrix.values)
+    G = nx.from_pandas_adjacency(cnt_matrix)
 
     adata.uns['global_graph'] = G
 
