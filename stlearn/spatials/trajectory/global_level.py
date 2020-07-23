@@ -10,9 +10,7 @@ def global_level(
     adata: AnnData,
     use_label: str = "louvain",
     list_cluster: list = [],
-    w: float = 0.5,
-    threshold_spots = 5,
-
+    w: float = 0.0,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -52,13 +50,10 @@ def global_level(
     for i in query_nodes:
         order = 0
         for j in adata.obs[adata.obs[use_label] == str(i)]["sub_cluster_labels"].unique():
-            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(j)]) > threshold_spots:
+            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(j)]) > adata.uns["threshold_spots"]:
                 query_dict[int(j)] = int(i)
                 order_dict[int(j)] = int(order)
                 order += 1
-    print(query_nodes)
-    
-    print("-------------------")
     
     
 

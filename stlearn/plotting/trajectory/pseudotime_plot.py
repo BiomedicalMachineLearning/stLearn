@@ -14,6 +14,7 @@ def pseudotime_plot(
     adata: AnnData,
     library_id: str = None,
     use_label: str = "louvain",
+    use_pseudotime: str = "dpt_pseudotime",
     list_cluster: Union[str,list] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
@@ -113,7 +114,7 @@ def pseudotime_plot(
 
     fig, a = plt.subplots()
     centroid_dict = adata.uns["centroid_dict"]
-    dpt = adata.obs["dpt_pseudotime"]
+    dpt = adata.obs[use_pseudotime]
 
     colors = adata.obs[use_label].astype(int)
     vmin = min(dpt)
@@ -121,7 +122,7 @@ def pseudotime_plot(
     # Plot scatter plot based on pixel of spots
     from sklearn.preprocessing import MinMaxScaler
     scaler = MinMaxScaler()
-    scale = scaler.fit_transform(tmp['dpt_pseudotime'].values.reshape(-1,1)).reshape(-1,1)
+    scale = scaler.fit_transform(tmp[use_pseudotime].values.reshape(-1,1)).reshape(-1,1)
 
     plot = a.scatter(tmp["imagecol"], tmp["imagerow"], edgecolor="none", alpha=data_alpha,s=spot_size,marker="o",
                vmin=vmin, vmax=vmax,cmap=plt.get_cmap("viridis"),c=scale.reshape(1,-1)[0])

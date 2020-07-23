@@ -91,7 +91,7 @@ def pseudotime(
 
         split_node[int(label)] = meaningful_sub
             
-
+    adata.uns["threshold_spots"] = threshold_spots
     adata.uns["split_node"] = split_node
     # Replicate louvain label row to prepare for subcluster connection 
     # matrix construction
@@ -123,6 +123,17 @@ def pseudotime(
     clf.fit(adata.obs[["imagecol", "imagerow"]].values,
             adata.obs["sub_cluster_labels"])
     centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_))
+
+    def closest_node(node, nodes):
+        nodes = np.asarray(nodes)
+        dist_2 = np.sum((nodes - node)**2, axis=1)
+        return np.argmin(dist_2)
+
+    for cl in data.obs["sub_cluster_labels"].unique():
+        cl_points = data.obs[data.obs["sub_cluster_labels"] == cl][["imagecol","imagerow"]].values
+        new_centroid = cl_points[closest_node(centroid_dict[int(cl)],cl_points)]
+        centroid_dict[int(cl)] = new_centroid
+
     adata.uns["centroid_dict"] = centroid_dict
 
     # Running diffusion pseudo-time
