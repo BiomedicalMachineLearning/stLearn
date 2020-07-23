@@ -129,8 +129,8 @@ def pseudotime(
         dist_2 = np.sum((nodes - node)**2, axis=1)
         return np.argmin(dist_2)
 
-    for cl in data.obs["sub_cluster_labels"].unique():
-        cl_points = data.obs[data.obs["sub_cluster_labels"] == cl][["imagecol","imagerow"]].values
+    for cl in adata.obs["sub_cluster_labels"].unique():
+        cl_points = adata.obs[adata.obs["sub_cluster_labels"] == cl][["imagecol","imagerow"]].values
         new_centroid = cl_points[closest_node(centroid_dict[int(cl)],cl_points)]
         centroid_dict[int(cl)] = new_centroid
 
