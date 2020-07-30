@@ -180,7 +180,7 @@ def ReadSlideSeq(
     max_size = np.max([adata.obs["imagecol"].max(),adata.obs["imagerow"].max()])
     max_size = int(max_size + 0.1*max_size)
 
-    image = Image.new('RGB', (max_size, max_size), (255, 255, 255))
+    image = Image.new('RGB', (max_size, max_size), (0, 0, 0))
     imgarr = np.array(image)
 
     if library_id is None:

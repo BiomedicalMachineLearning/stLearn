@@ -120,12 +120,12 @@ def get_node(node_list, split_node):
 
 
 def ordering_nodes(node_list,use_label, adata):
-    mean_dpt = []
+    max_dpt = []
     for node in node_list:
-        mean_dpt.append(adata.obs[adata.obs[use_label]
-                                  == str(node)]["dpt_pseudotime"].mean())
+        max_dpt.append(adata.obs[adata.obs[use_label]
+                                  == str(node)]["dpt_pseudotime"].max())
 
-    return list(np.array(node_list)[np.argsort(mean_dpt)])
+    return list(np.array(node_list)[np.argsort(max_dpt)])
 
 
 def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
