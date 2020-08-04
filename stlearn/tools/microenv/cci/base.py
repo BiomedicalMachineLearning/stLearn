@@ -11,27 +11,34 @@ from ....preprocessing.graph import neighbors
 def lr(
     adata: AnnData,
     use_data: str,
-    threshold: float = 0,
-    distance: int = 10,
+    distance: float = None,
+    res: float = 1.0,
 ) -> AnnData:
     """ cluster spatial spots based on the proportion of known ligand-receptor co-expression among the neighbouring spots
     Parameters
     ----------
     adata: AnnData          The data object to scan
     use_data: str           Data to be used in L-R scanning
-    threshold: float        Threshold to determine the significant L-R expression in counting
-    distance: int           Distance to determine the nearest neighbour
+    distance: int           Distance to determine the neighbours (default: nearest), distance=0 means within spot
+    res: float              resolution for clustering (default: 1)
     
     Returns
     -------
     adata: AnnData          The data object including the lr_scan results
     """
-    data = adata.obsm[use_data]
-    if not isinstance(data, pd.DataFrame):
-        if sc.sparse.issparse(data):
-            data = pd.DataFrame(data.toarray(), index=adata.obs_names, columns=adata.var_names)
+    
+    threshold = 0
+    
+    if not distance and distance != 0:
+        scalefactors = next(iter(adata.uns['spatial'].values()))['scalefactors']
+        distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial']['use_quality']+'_scalef'] * 2
+
+    df = adata.obsm[use_data]
+    if not isinstance(df, pd.DataFrame):
+        if sc.sparse.issparse(df):
+            df = pd.DataFrame(df.toarray(), index=adata.obs_names, columns=adata.var_names)
         else:
-            data = pd.DataFrame(data, index=adata.obs_names, columns=adata.var_names)
+            df = pd.DataFrame(df, index=adata.obs_names, columns=adata.var_names)
 
     lr_pairs = adata.uns['lr'].copy()
     lr_pairs += [item.split('_')[1]+'_'+item.split('_')[0] for item in lr_pairs]
@@ -42,47 +49,42 @@ def lr(
     neighbours = []
     for spot in adata.obs_names:
         n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
-        neighbours.append([item for item in data.index[n_index] if item != spot])
+        if distance == 0:
+            neighbours.append([spot])
+        else:
+            neighbours.append([item for item in df.index[n_index]])
     
     # filter out those LR not existing in the dataset
     ligands = [item.split('_')[0] for item in lr_pairs]
     receptors = [item.split('_')[1] for item in lr_pairs]
-    avail = [i for i, x in enumerate(ligands) if ligands[i] in data.columns and receptors[i] in data.columns]   
-    spot_ligands = data.loc[:, [ligands[i] for i in avail]]
-    spot_receptors = data.loc[:, [receptors[i] for i in avail]]
+    avail = [i for i, x in enumerate(ligands) if ligands[i] in df.columns and receptors[i] in df.columns]   
+    spot_ligands = df.loc[:, [ligands[i] for i in avail]]
+    spot_receptors = df.loc[:, [receptors[i] for i in avail]]
     print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
 
-    # count the co-expressed ligand-recptor pairs between neighbours
+    # function to count one co-expressed ligand-recptor pairs between neighbours for each spot
     def count_receptors(x):
-        nbs = spot_receptors.loc[neighbours[data.index.tolist().index(x.name)], :]
+        nbs = spot_receptors.loc[neighbours[df.index.tolist().index(x.name)], :]
         if nbs.shape[0] > 0:
-            return (nbs > threshold).sum(axis=0) / nbs.shape[0]
+            return (nbs > threshold).sum() / nbs.shape[0]
         else:
             return 0
-
-    def count_ligands(x):
-        nbs = spot_ligands.loc[neighbours[data.index.tolist().index(x.name)], :]
-        if nbs.shape[0] > 0:
-            return (nbs > threshold).sum(axis=0) / nbs.shape[0]
-        else:
-            return 0
-
+    
     nb_receptors = spot_receptors.apply(count_receptors, axis=1)   # proportion of neighbour spots which has receptor expression > threshold
-    nb_ligands = spot_ligands.apply(count_ligands, axis=1)   # proportion of neighbour spots which has receptor expression > threshold
-    # ligands on the spots
-    st_lr_neighbour_ligands = pd.DataFrame((spot_ligands > threshold).values * nb_receptors.values, index=data.index, columns=[lr_pairs[i] for i in avail])
-    # receptors on the spots
-    st_lr_neighbour_receptors = pd.DataFrame((spot_receptors > threshold).values * nb_ligands.values, index=data.index, columns=[lr_pairs[i] for i in avail])
-    adata.obsm['lr_neighbours'] = st_lr_neighbour_ligands + st_lr_neighbour_receptors
+
+    # keep value of nb_receptors only if there's ligands on the spots
+    st_lr_neighbour_ligands = pd.DataFrame((spot_ligands > threshold).values * nb_receptors.values, index=df.index, columns=[lr_pairs[i] for i in avail])
+
+    adata.obsm['lr_neighbours'] = st_lr_neighbour_ligands #+ st_lr_neighbour_receptors
     print('L-R interactions with neighbours are counted and stored into adata\.obsm[\'lr_neighbours\']')
 
     neighbors(adata,n_neighbors=25,use_rep='lr_neighbours')
-    louvain(adata, key_added='lr_neighbours_louvain')
+    louvain(adata, key_added='lr_neighbours_louvain', resolution=res)
     
-    # locate the highest Ligand-Receptor expressing cluster
+    # locate the highest counted Ligand-Receptor pairing cluster
     st_lr_cluster = []
-    for n in range(max([int(i) for i in adata.obs['lr_neighbours_louvain']]) + 1):
-        spot_idx = [i for i in range(len(adata.obs['lr_neighbours_louvain'])) if int(adata.obs['lr_neighbours_louvain'][i])==n]
+    for n in adata.obs['lr_neighbours_louvain'].cat.categories:
+        spot_idx = [i for i in range(len(adata.obs['lr_neighbours_louvain'])) if int(adata.obs['lr_neighbours_louvain'][i])==int(n)]
         st_lr_cluster.append(adata.obsm['lr_neighbours'].iloc[spot_idx, :].sum().sum() / len(spot_idx))
 
     adata.uns['lr_neighbours_louvain_max'] = str(st_lr_cluster.index(max(st_lr_cluster)))
