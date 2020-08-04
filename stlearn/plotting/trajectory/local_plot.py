@@ -83,10 +83,11 @@ def local_plot(
     order_dict = {}
     order = 0
     for i in ref_cluster.obs["sub_cluster_labels"].unique():
-        classes_.append(i)
-        centroids_.append(adata.uns["centroid_dict"][int(i)])
-        order_dict[int(i)] = int(order)
-        order += 1
+        if len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)]) > adata.uns["threshold_spots"]:
+            classes_.append(i)
+            centroids_.append(adata.uns["centroid_dict"][int(i)])
+            order_dict[int(i)] = int(order)
+            order += 1
 
     stdm = adata.uns["ST_distance_matrix"]
     non_abs_dpt = adata.uns["nonabs_dpt_distance_matrix"]

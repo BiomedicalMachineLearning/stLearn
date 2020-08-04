@@ -21,6 +21,8 @@ def microenv_plot(
     spot_size: Union[float, int] = 6.5,
     show_color_bar: bool = True,
     show_axis: bool = False,
+    cropped: bool = True,
+    margin: int = 100,
     dpi: int = 192,
     name: str = None,
     output: str = None,
@@ -74,6 +76,9 @@ def microenv_plot(
 
     adata.uns['plots'].update({use_data: {}})
 
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
+
     for i in range(0, n_factor):
         fig, a = plt.subplots()
         vmin = min(colors[i])
@@ -93,6 +98,17 @@ def microenv_plot(
         image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
         # Overlay the tissue image
         a.imshow(image, alpha=tissue_alpha, zorder=-1,)
+
+
+        if cropped:
+            a.set_xlim(imagecol.min() - margin,
+                    imagecol.max() + margin)
+
+            a.set_ylim(imagerow.min() - margin,
+                    imagerow.max() + margin)
+            
+            a.set_ylim(a.get_ylim()[::-1])
+            #plt.gca().invert_yaxis()
 
         if name is None:
             name = method

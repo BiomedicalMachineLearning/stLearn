@@ -14,6 +14,7 @@ def pseudotime_plot(
     adata: AnnData,
     library_id: str = None,
     use_label: str = "louvain",
+    use_pseudotime: str = "dpt_pseudotime",
     list_cluster: Union[str,list] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
@@ -25,6 +26,8 @@ def pseudotime_plot(
     show_axis: bool = False,
     show_graph: bool = True,
     show_plot: bool = True,
+    cropped: bool = True,
+    margin: int = 100,
     output: str = None,
     name: str = None,
     dpi: int = 180,
@@ -81,6 +84,9 @@ def pseudotime_plot(
     
     plt.rcParams['figure.dpi'] = dpi
 
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
+
     if list_cluster == "all":
         list_cluster = list(range(0,len(adata.obs[use_label].unique())))
     # Get query clusters
@@ -108,7 +114,7 @@ def pseudotime_plot(
 
     fig, a = plt.subplots()
     centroid_dict = adata.uns["centroid_dict"]
-    dpt = adata.obs["dpt_pseudotime"]
+    dpt = adata.obs[use_pseudotime]
 
     colors = adata.obs[use_label].astype(int)
     vmin = min(dpt)
@@ -116,7 +122,7 @@ def pseudotime_plot(
     # Plot scatter plot based on pixel of spots
     from sklearn.preprocessing import MinMaxScaler
     scaler = MinMaxScaler()
-    scale = scaler.fit_transform(tmp['dpt_pseudotime'].values.reshape(-1,1)).reshape(-1,1)
+    scale = scaler.fit_transform(tmp[use_pseudotime].values.reshape(-1,1)).reshape(-1,1)
 
     plot = a.scatter(tmp["imagecol"], tmp["imagerow"], edgecolor="none", alpha=data_alpha,s=spot_size,marker="o",
                vmin=vmin, vmax=vmax,cmap=plt.get_cmap("viridis"),c=scale.reshape(1,-1)[0])
@@ -157,6 +163,16 @@ def pseudotime_plot(
 
     if not show_axis:
         a.axis('off')
+
+    if cropped:
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
 
     if output is not None:
         fig.savefig(output + "/" + name + ".png", dpi=dpi,

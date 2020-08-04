@@ -10,8 +10,7 @@ def global_level(
     adata: AnnData,
     use_label: str = "louvain",
     list_cluster: list = [],
-    w: float = 0.5,
-
+    w: float = 0.0,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -51,10 +50,12 @@ def global_level(
     for i in query_nodes:
         order = 0
         for j in adata.obs[adata.obs[use_label] == str(i)]["sub_cluster_labels"].unique():
-            query_dict[int(j)] = int(i)
-            order_dict[int(j)] = int(order)
-
-            order += 1
+            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(j)]) > adata.uns["threshold_spots"]:
+                query_dict[int(j)] = int(i)
+                order_dict[int(j)] = int(order)
+                order += 1
+    
+    
 
     dm_list = []
     sdm_list = []
@@ -74,6 +75,7 @@ def global_level(
         # Calculate Spatial distance matrix
         sdm_list.append(spatial_distance_matrix(
             adata, query_nodes[i], query_nodes[i+1], use_label=use_label))
+    
 
     # Get centroid dictionary
     centroid_dict = adata.uns["centroid_dict"]
@@ -92,6 +94,7 @@ def global_level(
 
     labels = nx.get_edge_attributes(H_sub, 'weight')
 
+    
     for edge, _ in labels.items():
 
         dm = dm_list[order_big_dict[query_dict[edge[0]]]]
@@ -117,12 +120,12 @@ def get_node(node_list, split_node):
 
 
 def ordering_nodes(node_list,use_label, adata):
-    mean_dpt = []
+    max_dpt = []
     for node in node_list:
-        mean_dpt.append(adata.obs[adata.obs[use_label]
-                                  == str(node)]["dpt_pseudotime"].mean())
+        max_dpt.append(adata.obs[adata.obs[use_label]
+                                  == str(node)]["dpt_pseudotime"].max())
 
-    return list(np.array(node_list)[np.argsort(mean_dpt)])
+    return list(np.array(node_list)[np.argsort(max_dpt)])
 
 
 def dpt_distance_matrix(adata, cluster1, cluster2, use_label):

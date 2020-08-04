@@ -19,6 +19,7 @@ def cluster_plot(
     data_alpha: float = 1.0,
     cmap: str = "vega_20_scanpy",
     tissue_alpha: float = 1.0,
+    threshold_spots: int = 0,
     title: str = None,
     spot_size: Union[float, int] = 6.5,
     show_axis: bool = False,
@@ -26,6 +27,9 @@ def cluster_plot(
     dpi: int = 180,
     show_trajectory: bool = False,
     show_subcluster: bool = False,
+    cropped: bool = True,
+    margin: int = 100,
+    show_plot: bool = True,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -76,6 +80,9 @@ def cluster_plot(
     plt.rcParams['figure.dpi'] = dpi
 
     n_clusters = len(adata.obs[use_label].unique())
+
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
 
     # Option for turning off showing figure
     plt.ioff()
@@ -135,7 +142,7 @@ def cluster_plot(
             matplotlib.colors.to_hex(cmap_(int(i)/19)))
 
     if show_legend:
-        lgnd = a.legend(bbox_to_anchor=(1.2, 1.0), labelspacing=0.05,
+        lgnd = a.legend(bbox_to_anchor=(1.3, 1.0), labelspacing=0.05,
                         fontsize=8, handleheight=1., edgecolor='white')
         for handle in lgnd.legendHandles:
             handle.set_sizes([20.0])
@@ -152,13 +159,6 @@ def cluster_plot(
 
     # Overlay the tissue image
     a.imshow(image, alpha=tissue_alpha, zorder=-1,)
-
-    if name is None:
-        name = use_label
-
-    if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
-                    bbox_inches='tight', pad_inches=0)
 
     if show_subcluster:
         if "sub_cluster_labels" not in adata.obs.columns:
@@ -181,16 +181,38 @@ def cluster_plot(
                 classes = clf.classes_
 
             for i, label in enumerate(classes):
-                if centroids[i][0] < 1500:
-                    x = -100
-                    y = 50
-                else:
-                    x = 100
-                    y = -50
-                a.text(centroids[i][0]+x, centroids[i][1]+y, label, color='black', fontsize=5, zorder=3,
-                       bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)], boxstyle='round', alpha=1.0))
+                if len(adata.obs[adata.obs["sub_cluster_labels"] == label]) > threshold_spots:
+                    if centroids[i][0] < 1500:
+                        x = -100
+                        y = 50
+                    else:
+                        x = 100
+                        y = -50
+                    a.text(centroids[i][0]+x, centroids[i][1]+y, label, color='black', fontsize=5, zorder=3,
+                           bbox=dict(facecolor=adata.uns["tmp_color"][int(cluster)], boxstyle='round', alpha=1.0))
 
-    plt.show()
+    if cropped:
+        a.set_xlim(imagecol.min() - margin,
+                imagecol.max() + margin)
+
+        a.set_ylim(imagerow.min() - margin,
+                imagerow.max() + margin)
+        
+        a.set_ylim(a.get_ylim()[::-1])
+        #plt.gca().invert_yaxis()
+
+    if name is None:
+        name = use_label
+
+    if output is not None:
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
+
+    
+    
+
+    if show_plot == True:
+        plt.show()
 
 
 def centroidpython(data):
