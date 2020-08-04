@@ -42,16 +42,18 @@ def count(
     num_col: int = 10,
     use_clustering: str = 'louvain',
     use_clusters: list = [],
+    use_het: str = 'het'
+
 ) -> AnnData:
     """ Count the cell type densities
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count
-    num_row: int              Number of windows on height
-    num_col: int              Number of windows on width
+    num_row: int            Number of windows on height
+    num_col: int            Number of windows on width
     use_clustering:         The cell type results to use in counting  
     use_clusters:           Specify certain cluster(s) in counting
-     
+    use_het:                The stoarge place for result
     Returns
     -------
     adata: AnnData          With the counts of specified clusters in each window of the tissue stored as adata.uns['het']
@@ -67,7 +69,7 @@ def count(
                     & (coor['imagerow'] < window[1]) & (coor['imagerow'] > window[1] - height)]
         counts.iloc[num_row-1-n%num_row, n//num_row] = len(set([i for i in cluster[spots.index.tolist()] if i in use_clusters]))
 
-    adata.uns['het'] = counts
+    adata.uns[use_het] = counts
 
     print("Counts for cluster (cell type) diversity stored into data.uns['het']")
     

@@ -33,13 +33,15 @@ def merge(
             counts.iloc[num_row-1-n%num_row, n//num_row] = sum(adata.obs[use_lr.split('_max')[0]][spots.index.tolist()] == adata.uns[use_lr]) / len(spots)
         except:
             counts.iloc[num_row-1-n%num_row, n//num_row] = 0
+            
     # z-score for counts and adata.uns[use_het]
     delta = counts.subtract(counts.mean().mean())
-    std = (delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1])
+    std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
     counts = delta.div(std)
 
     delta = adata.uns[use_het].subtract(adata.uns[use_het].mean().mean())
-    std = (delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1])
+    std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
+    
     adata.uns['merged'] = (counts + delta.div(std)).div(2)
 
     print("Results of spatial interaction analysis has been written to adata.uns['merged']")
