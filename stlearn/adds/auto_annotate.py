@@ -34,22 +34,5 @@ def auto_annotate(
 
     """
     label = pd.read_csv(annotation_path,index_col=0)
-
-    annotation = []
-    for i in np.sort(data.obs[use_label].unique().astype(int)):
-        c_index = data.obs[data.obs[use_label] == str(i)].index
-        tmp = label[c_index].sum(axis=1)
-        tmp = tmp/np.sum(tmp)
-        annotation.append(", ".join(tmp[tmp > np.quantile(tmp,threshold)].index + " " + np.round(np.array(tmp[tmp > np.quantile(tmp,threshold)])*100,2).astype(str) + "%"))
-        
-    if len(annotation) > len(set(annotation)):
-        duplicated = list(set([x for x in annotation if annotation.count(x) > 1]))
-        for name in duplicated:
-            indices = [i for i, x in enumerate(annotation) if x == name]
-            for i in range(0,len(indices)):
-                annotation[indices[i]] = annotation[indices[i]] + " " + str(i+1)
-
-    stlearn.add.annotation(data,label_list=annotation,
-                 use_label=use_label)
-
-
+    
+    adata.obsm["deconvolution"] = label[adata.obs.index].T

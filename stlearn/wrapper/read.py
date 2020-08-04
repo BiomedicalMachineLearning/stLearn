@@ -74,7 +74,7 @@ def Read10X(
     
     from scanpy import read_visium
     adata = read_visium(path, genome=None,
-     count_file='filtered_feature_bc_matrix.h5',
+     count_file=count_file,
       library_id=None,
        load_images=True)
     adata.var_names_make_unique()

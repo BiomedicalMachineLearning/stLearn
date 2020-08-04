@@ -29,6 +29,7 @@ def cluster_plot(
     show_subcluster: bool = False,
     cropped: bool = True,
     margin: int = 100,
+    show_plot: bool = True,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -210,8 +211,8 @@ def cluster_plot(
     
     
 
-
-    plt.show()
+    if show_plot == True:
+        plt.show()
 
 
 def centroidpython(data):

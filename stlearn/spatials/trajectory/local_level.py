@@ -46,9 +46,10 @@ def local_level(
     sd = []
     centroid_dict = cluster_data.uns["centroid_dict"]
     for i in list_cluster:
-        dpt.append(
-            cluster_data.obs[cluster_data.obs["sub_cluster_labels"] == i]["dpt_pseudotime"].max())
-        sd.append(centroid_dict[int(i)])
+        if len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)]) > adata.uns["threshold_spots"]:
+            dpt.append(
+                cluster_data.obs[cluster_data.obs["sub_cluster_labels"] == i]["dpt_pseudotime"].max())
+            sd.append(centroid_dict[int(i)])
     dm = cdist(np.array(dpt).reshape(-1, 1),
                np.array(dpt).reshape(-1, 1), lambda u, v: np.abs(u-v))
 
