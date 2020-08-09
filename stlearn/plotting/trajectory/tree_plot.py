@@ -73,7 +73,7 @@ def tree_plot(
     for node in G.nodes:
         if node == 9999:
             break
-        tmp_img = _generate_image(adata,library_id,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize,show_all=show_all)
+        tmp_img = _generate_image(adata,library_id,sub_cluster=node,zoom=zoom, spot_size=spot_size,fontsize=fontsize,show_all=show_all,use_label=use_label)
 
         G.nodes[node]['image'] = tmp_img
 
