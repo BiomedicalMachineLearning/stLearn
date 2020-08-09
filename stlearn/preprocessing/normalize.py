@@ -77,6 +77,6 @@ def normalize_total(
                     max_fraction=max_fraction, key_added=key_added,
                     layers=layers, layer_norm=layer_norm, inplace=inplace)
 
-    adata.obsm["normalized_total"] = adata.X
+    adata.obsm["normalized_total"] = adata.to_df()
 
     print("Normalization step is finished in adata.X")
