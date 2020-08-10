@@ -29,7 +29,7 @@ def lr(
     
     threshold = 0
     
-    if not distance and distance != 0:
+    if not distance and distance != 0:      # automatically calculate distance if not given, won't overwrite distance=0 which is within-spot
         scalefactors = next(iter(adata.uns['spatial'].values()))['scalefactors']
         distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial']['use_quality']+'_scalef'] * 2
 
@@ -48,10 +48,10 @@ def lr(
     point_tree = spatial.cKDTree(coor)
     neighbours = []
     for spot in adata.obs_names:
-        n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
         if distance == 0:
             neighbours.append([spot])
         else:
+            n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
             neighbours.append([item for item in df.index[n_index]])
     
     # filter out those LR not existing in the dataset

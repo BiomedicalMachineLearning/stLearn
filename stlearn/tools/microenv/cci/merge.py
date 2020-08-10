@@ -34,15 +34,20 @@ def merge(
         except:
             counts.iloc[num_row-1-n%num_row, n//num_row] = 0
             
-    # z-score for counts and adata.uns[use_het]
-    delta = counts.subtract(counts.mean().mean())
-    std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
-    counts = delta.div(std)
+    # z-score normalisation
+    #delta = counts.subtract(counts.mean().mean())
+    #std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
+    #counts = delta.div(std)
+    #delta = adata.uns[use_het].subtract(adata.uns[use_het].mean().mean())
+    #std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
+    #adata.uns['merged'] = (counts + delta.div(std)).div(2)
 
-    delta = adata.uns[use_het].subtract(adata.uns[use_het].mean().mean())
-    std = np.sqrt((delta ** 2).sum().sum() / (delta.shape[0] * delta.shape[1]))
-    
-    adata.uns['merged'] = (counts + delta.div(std)).div(2)
+    # min-max normalisation
+    #counts_n = (counts - counts.min().min()) / (counts.max().max() - counts.min().min())
+    #het_n = (adata.uns[use_het] - adata.uns[use_het].min().min()) / (adata.uns[use_het].max().max() - adata.uns[use_het].min().min())
+    #adata.uns['merged'] = (counts_n + het_n).div(2)
+
+    adata.uns['merged'] = (counts/counts.sum().sum() + adata.uns[use_het]/adata.uns[use_het].sum().sum()).div(2)
 
     print("Results of spatial interaction analysis has been written to adata.uns['merged']")
 

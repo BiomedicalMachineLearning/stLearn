@@ -11,7 +11,7 @@ from .merge import merge
 def permutation(
     adata: AnnData,
     n_pairs: int = 1000,
-    distance: int = 30,
+    distance: int = None,
     use_data: str = 'normalized',
     use_lr: str = 'lr_neighbours_louvain_max',
     use_het: str = 'het'
@@ -71,14 +71,14 @@ def permutation(
     for i, item in enumerate(pairs):
         if i > 0:
             adata.uns['lr'] = [item]
-            lr(adata, use_data=use_data);
+            lr(adata, use_data=use_data, distance=distance);
             merge(adata, use_lr=use_lr, use_het=use_het);
         else:
             pass
 
         scores.append(adata.uns['merged'])
 
-    # testing
+    # MU testing
         num_row, num_col = adata.uns['merged'].shape[0], adata.uns['merged'].shape[1]
         temp = []
         result = adata.uns['merged']
@@ -91,7 +91,7 @@ def permutation(
     adata.uns['permutation'] = pd.DataFrame(list(zip(*test)))  
     
     
-    # testing
+    # t-test by window
     num_row, num_col = adata.uns['merged'].shape[0], adata.uns['merged'].shape[1]
     permutation = pd.DataFrame(0, range(num_row), range(num_col))
     for i in range(num_row):
@@ -102,15 +102,15 @@ def permutation(
                 distribution.append(scores[k].iloc[i,j])
             # t-test for result of target and randomly selected pairs on every spot
             ttest = scipy.stats.ttest_1samp(distribution, scores[0].iloc[i,j])
-            #MU_test = scipy.stats.mannwhitneyu(distribution,scores[0].iloc[i,j], use_continuity=True, alternative="less")
             if ttest.statistic < 0:
                 permutation.iloc[i,j] = -np.log10(ttest.pvalue+1e-300) + np.log10(num_row*num_col)
             else: permutation.iloc[i,j] = 0
 
     adata.uns['merged'] = original
     adata.uns['merged_pvalues'] = permutation
-    adata.uns['merged_sign'] = adata.uns['merged'].mul((permutation > 2).values)  # p-value < 0.01
-    
+    adata.uns['merged_sign'] = adata.uns['merged'].mul((permutation > 2).values)  # p-value < 0.01   
+
+    adata.uns['scores'] = scores 
 
     enablePrint()
     print("Results of permutation test has been kept in adata.uns['merged_pvalues']")
