@@ -89,7 +89,7 @@ def deconvolution_plot(
     else:   
         base =  adata.obs[["imagecol","imagerow"]]
 
-    if label is not None:
+    if celltype is not None:
         base = base.loc[adata.obs_names[adata.obsm["deconvolution"][celltype]>celltype_threshold]]
     
     label_filter_ = label_filter[base.index]
