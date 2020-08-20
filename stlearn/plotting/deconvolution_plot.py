@@ -10,6 +10,8 @@ def deconvolution_plot(
     library_id: str = None,
     use_label: str = "louvain",
     cluster: [int,str] = None,
+    celltype: str = None,
+    celltype_threshold: float = 0,
     data_alpha: float = 1.0,
     threshold: float = 0.5,
     cmap: str = "tab20",
@@ -86,6 +88,9 @@ def deconvolution_plot(
         base = adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]]
     else:   
         base =  adata.obs[["imagecol","imagerow"]]
+
+    if label is not None:
+        base = base.loc[adata.obs_names[adata.obsm["deconvolution"][celltype]>celltype_threshold]]
     
     label_filter_ = label_filter[base.index]
 
