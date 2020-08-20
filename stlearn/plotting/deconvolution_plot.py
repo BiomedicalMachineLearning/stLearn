@@ -79,7 +79,8 @@ def deconvolution_plot(
 
     tmp = label.sum(axis=1)
 
-    label_filter = label.loc[tmp[tmp>np.quantile(tmp,threshold)].index]
+    label_filter = label.loc[tmp[tmp>=np.quantile(tmp,threshold)].index]
+
     
     if cluster is not None:
         base = adata.obs[adata.obs[use_label]==str(cluster)][["imagecol","imagerow"]]

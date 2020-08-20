@@ -34,5 +34,6 @@ def auto_annotate(
 
     """
     label = pd.read_csv(annotation_path,index_col=0)
+    label = label[adata.obs_names]
     
     adata.obsm["deconvolution"] = label[adata.obs.index].T

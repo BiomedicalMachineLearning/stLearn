@@ -10,11 +10,14 @@ def pseudotime(
     adata: AnnData,
     use_label: str = "louvain",
     eps: float = 20,
+    n_neighbors: int = 25,
+    use_rep: str = "X_pca_morphology",
     threshold: float = 0.01,
     radius: int = 50,
     method: str = "mean",
     threshold_spots: int = 5,
     use_sme: bool = False,
+    reverse: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -60,6 +63,10 @@ def pseudotime(
     from stlearn.spatials.clustering import localization
     localization(adata, use_label=use_label, eps=eps)
 
+    # Running knn
+    from stlearn.pp import neighbors
+    neighbors(data,n_neighbors=n_neighbors,use_rep=use_rep,random_state=0)
+
     # Running paga
     scanpy.tl.paga(adata, groups=use_label)
 
@@ -72,6 +79,8 @@ def pseudotime(
         adata.obsm["X_diffmap"] = adata.obsm["X_diffmap_morphology"]
 
 
+    
+    
     # Get connection matrix
     cnt_matrix = adata.uns["paga"]["connectivities"].toarray()
 
@@ -138,6 +147,9 @@ def pseudotime(
 
     # Running diffusion pseudo-time
     scanpy.tl.dpt(adata)
+
+    if reverse:
+        adata.obs["dpt_pseudotime"] = 1 - adata.obs["dpt_pseudotime"]
 
     return adata if copy else None
 
