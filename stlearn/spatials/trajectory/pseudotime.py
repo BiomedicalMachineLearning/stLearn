@@ -65,7 +65,7 @@ def pseudotime(
 
     # Running knn
     from stlearn.pp import neighbors
-    neighbors(data,n_neighbors=n_neighbors,use_rep=use_rep,random_state=0)
+    neighbors(adata,n_neighbors=n_neighbors,use_rep=use_rep,random_state=0)
 
     # Running paga
     scanpy.tl.paga(adata, groups=use_label)
@@ -125,6 +125,7 @@ def pseudotime(
     G = nx.from_pandas_adjacency(cnt_matrix)
 
     adata.uns['global_graph'] = G
+    
 
     # Create centroid dict for subclusters
     from sklearn.neighbors import NearestCentroid

@@ -5,12 +5,12 @@ import pandas as pd
 import networkx as nx
 from scipy.spatial.distance import cdist
 
-
 def global_level(
     adata: AnnData,
     use_label: str = "louvain",
     list_cluster: list = [],
-    w: float = 0.0,
+    return_graph: bool = False,
+    w: float = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -25,6 +25,8 @@ def global_level(
         Setup a list of cluster to perform pseudo-space-time
     use_label
         Use label result of clustering method.
+    return_graph
+        Return PTS graph
     w
         Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     copy
@@ -50,12 +52,10 @@ def global_level(
     for i in query_nodes:
         order = 0
         for j in adata.obs[adata.obs[use_label] == str(i)]["sub_cluster_labels"].unique():
-            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(j)]) > adata.uns["threshold_spots"]:
-                query_dict[int(j)] = int(i)
-                order_dict[int(j)] = int(order)
-                order += 1
-    
-    
+            query_dict[int(j)] = int(i)
+            order_dict[int(j)] = int(order)
+
+            order += 1
 
     dm_list = []
     sdm_list = []
@@ -75,7 +75,6 @@ def global_level(
         # Calculate Spatial distance matrix
         sdm_list.append(spatial_distance_matrix(
             adata, query_nodes[i], query_nodes[i+1], use_label=use_label))
-    
 
     # Get centroid dictionary
     centroid_dict = adata.uns["centroid_dict"]
@@ -94,7 +93,6 @@ def global_level(
 
     labels = nx.get_edge_attributes(H_sub, 'weight')
 
-    
     for edge, _ in labels.items():
 
         dm = dm_list[order_big_dict[query_dict[edge[0]]]]
@@ -103,14 +101,21 @@ def global_level(
         weight = dm[order_dict[edge[0]], order_dict[edge[1]]] * \
             w + sdm[order_dict[edge[0]], order_dict[edge[1]]]*(1-w)
         H_sub[edge[0]][edge[1]]['weight'] = weight
-
+    #tmp = H_sub 
     H_sub = nx.algorithms.tree.minimum_spanning_arborescence(H_sub)
     #remove = [edge for edge in H_sub.edges if 9999 in edge]
     # H_sub.remove_edges_from(remove)
     # remove.remove_node(9999)
 
     adata.uns["PTS_graph"] = H_sub
+    
+    if return_graph:
+        return H_sub
 
+
+########################
+## Global level PTS ##
+########################
 
 def get_node(node_list, split_node):
     result = np.array([])
@@ -120,12 +125,12 @@ def get_node(node_list, split_node):
 
 
 def ordering_nodes(node_list,use_label, adata):
-    max_dpt = []
+    mean_dpt = []
     for node in node_list:
-        max_dpt.append(adata.obs[adata.obs[use_label]
-                                  == str(node)]["dpt_pseudotime"].max())
+        mean_dpt.append(adata.obs[adata.obs[use_label]
+                                  == str(node)]["dpt_pseudotime"].mean())
 
-    return list(np.array(node_list)[np.argsort(max_dpt)])
+    return list(np.array(node_list)[np.argsort(mean_dpt)])
 
 
 def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
