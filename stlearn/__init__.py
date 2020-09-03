@@ -22,3 +22,4 @@ from .wrapper.read import ReadOldST
 from .wrapper.read import ReadMERFISH
 from .wrapper.read import ReadSeqFish
 from .wrapper.clustering import SMEclust
+from ._settings import settings

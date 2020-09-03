@@ -82,7 +82,7 @@ def pseudotime_plot(
     Nothing
     """
     
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]

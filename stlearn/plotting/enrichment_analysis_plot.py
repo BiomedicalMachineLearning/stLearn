@@ -23,7 +23,7 @@ def enrichment_analysis_plot(
     copy: bool = False,
 ) -> Optional[AnnData]:
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
     tmp = adata.uns["factor_sig"][method]["Factor_" +
                                           str(factor)][gene_sets]["result"]
     objects = tmp.Term[::-1]

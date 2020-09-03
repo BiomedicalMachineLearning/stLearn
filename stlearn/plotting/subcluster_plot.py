@@ -67,7 +67,7 @@ def subcluster_plot(
     -------
     Nothing
     """
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
@@ -79,7 +79,7 @@ def subcluster_plot(
     if use_label not in adata.obs.columns:
         raise ValueError(
             "This label is non-exist, please choose another label!")
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     colors = adata.obs[adata.obs[use_label]
                        == str(cluster)]["sub_cluster_labels"]

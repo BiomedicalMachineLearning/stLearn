@@ -77,7 +77,7 @@ def gene_plot(
     Nothing
     """
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     if type(genes) == str:
         genes = [genes]
