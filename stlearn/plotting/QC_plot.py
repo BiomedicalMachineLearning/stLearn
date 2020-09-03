@@ -17,7 +17,6 @@ def QC_plot(
         show_axis: bool = False,
         cropped: bool = True,
         margin: int = 100,
-        dpi: int = 192,
         output: str = None,
 ) -> Optional[AnnData]:
     """\
@@ -43,8 +42,6 @@ def QC_plot(
             Show axis or not.
         show_size_legend
             Show size legend or not.
-        dpi
-            Set dpi as the resolution for the plot.
         name
             Name of the output figure file.
         output
@@ -65,7 +62,7 @@ def QC_plot(
         reads_per_spot.to_numpy().reshape(-1, 1))
     genes_per_spot = adata.to_df().astype(bool).sum(axis=1)
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     # Option for turning off showing figure
     plt.ioff()
@@ -118,7 +115,7 @@ def QC_plot(
 
     # fig.tight_layout()
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     plt.show()

@@ -11,6 +11,8 @@ def local_level(
     use_label: str = "louvain",
     cluster: int = 9,
     w: float = 0.5,
+    return_matrix: bool = False,
+    verbose: bool = True,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -29,14 +31,16 @@ def local_level(
         Threshold to find the significant connection for PAGA graph.
     w
         Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
+    return_matrix
+        Return PTS matrix for local level
     copy
         Return a copy instead of writing to adata.
     Returns
     -------
     Anndata
     """
-
-    print("Start construct trajectory for subcluster " + str(cluster))
+    if verbose:
+        print("Start construct trajectory for subcluster " + str(cluster))
 
     tmp = adata.obs[adata.obs[use_label] == str(cluster)]
     cluster_data = adata[list(tmp.index)]
@@ -63,5 +67,8 @@ def local_level(
 
     stdm = scale_dm*w + scale_sdm*(1-w)
     adata.uns["ST_distance_matrix"] = stdm
+
+    if return_matrix:
+        return stdm
 
     return adata if copy else None

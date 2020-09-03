@@ -26,7 +26,6 @@ def gene_plot(
     show_axis: bool = False,
     cropped: bool = True,
     margin: int = 100,
-    dpi: int = 192,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -60,8 +59,6 @@ def gene_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -77,7 +74,7 @@ def gene_plot(
     Nothing
     """
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     if type(genes) == str:
         genes = [genes]
@@ -121,12 +118,6 @@ def gene_plot(
     # Overlay the tissue image
     a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
-    if name is None:
-        name = method
-    if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
-                    bbox_inches='tight', pad_inches=0)
-        
     if cropped:
         imagecol = adata.obs["imagecol"]
         imagerow = adata.obs["imagerow"]
@@ -138,17 +129,18 @@ def gene_plot(
                 imagerow.max() + margin)
         
         a.set_ylim(a.get_ylim()[::-1])
-        #plt.gca().invert_yaxis()
+
+    if name is None:
+        name = method
+    if output is not None:
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+                    bbox_inches='tight', pad_inches=0)
+        
+    
+
 
     plt.show()
-    # Store figure
-    #fig_np = get_img_from_fig(fig,dpi)
-    # plt.close(fig)
-    # if "plots" not in adata.uns:
-    #    adata.uns['plots'] = {}
-    #adata.uns['plots'].update({str(', '.join(genes)):fig_np})
-    # print("The plot stored in adata.uns['plot']['" +
-    #    str(', '.join(genes)) + "']")
+
 
 
 def _gene_plot(adata, method, genes):

@@ -14,7 +14,6 @@ import scanpy
 def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
-    dpi: int = 180
 ) -> Optional[AnnData]:
     
     """\
@@ -36,7 +35,7 @@ def non_spatial_plot(
     Nothing
     """
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     if 'paga' in adata.uns.keys():
         adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
