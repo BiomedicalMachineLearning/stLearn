@@ -10,13 +10,13 @@ from .merge import merge
 
 def permutation(
     adata: AnnData,
-    n_pairs: int = 1000,
-    distance: int = 30,
-    use_data: str = 'normalized',
-    use_lr: str = 'lr_neighbours_louvain_max',
-    use_het: str = 'het'
+    n_pairs: int = 200,
+    distance: int = None,
+    use_data: str = 'normalized_total',
+    use_lr: str = 'cci_lr',
+    use_het: str = 'cci_het'
 ) -> AnnData:
-    """ Merge results from cell type heterogeneity and L-R clustering
+    """ Merge cell type diversity and L-R counting scores
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count
@@ -71,46 +71,29 @@ def permutation(
     for i, item in enumerate(pairs):
         if i > 0:
             adata.uns['lr'] = [item]
-            lr(adata, use_data=use_data);
+            lr(adata, use_data=use_data, distance=distance);
             merge(adata, use_lr=use_lr, use_het=use_het);
         else:
             pass
 
         scores.append(adata.uns['merged'])
-
-    # testing
-        num_row, num_col = adata.uns['merged'].shape[0], adata.uns['merged'].shape[1]
-        temp = []
-        result = adata.uns['merged']
-        for m in range(num_row):
-            for n in range(num_col):
-                temp.append(result.iloc[m, n])
-        test.append(temp)
-    MU_test = scipy.stats.mannwhitneyu([np.mean(x) for x in zip(*test[1:len(pairs)])],test[0], use_continuity=True, alternative="less")
-    adata.uns['pvalue'] = MU_test.pvalue
-    adata.uns['permutation'] = pd.DataFrame(list(zip(*test)))  
     
-    
-    # testing
-    num_row, num_col = adata.uns['merged'].shape[0], adata.uns['merged'].shape[1]
-    permutation = pd.DataFrame(0, range(num_row), range(num_col))
-    for i in range(num_row):
-        for j in range(num_col):
-            distribution = []
-            for k in range(1, len(scores)):
-                # build the list for merged score of spot [i,j] for each of the randomly selected pairs
-                distribution.append(scores[k].iloc[i,j])
-            # t-test for result of target and randomly selected pairs on every spot
-            ttest = scipy.stats.ttest_1samp(distribution, scores[0].iloc[i,j])
-            #MU_test = scipy.stats.mannwhitneyu(distribution,scores[0].iloc[i,j], use_continuity=True, alternative="less")
-            if ttest.statistic < 0:
-                permutation.iloc[i,j] = -np.log10(ttest.pvalue+1e-300) + np.log10(num_row*num_col)
-            else: permutation.iloc[i,j] = 0
+    # t-test for each spot across all runs
+    permutation = pd.DataFrame(0, adata.obs_names, ['pval'])
+    for i in adata.obs_names:
+        distribution = []
+        for j in range(1, len(scores)):
+            # build the list for merged score of spot [i,j] for each of the randomly selected pairs
+            distribution.append(scores[j].loc[i])
+        # t-test for result of target and randomly selected pairs on every spot
+        ttest = scipy.stats.ttest_1samp(distribution, scores[0].loc[i])
+        if ttest.statistic < 0:
+            permutation.loc[i] = -np.log10(ttest.pvalue+1e-300) + np.log10(len(adata.obs_names))
+        else: permutation.loc[i] = 0
 
     adata.uns['merged'] = original
-    adata.uns['merged_pvalues'] = permutation
-    adata.uns['merged_sign'] = adata.uns['merged'].mul((permutation > 2).values)  # p-value < 0.01
-    
+    adata.uns['merged_pvalues'] = permutation['pval']
+    adata.uns['merged_sign'] = adata.uns['merged'] * (permutation > 2)['pval']  # p-value < 0.01   
 
     enablePrint()
     print("Results of permutation test has been kept in adata.uns['merged_pvalues']")

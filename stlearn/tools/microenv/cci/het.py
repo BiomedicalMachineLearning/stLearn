@@ -1,76 +1,61 @@
 import numpy as np
 import pandas as pd
 from anndata import AnnData
-
-def create_windows(
-    adata: AnnData,
-    num_row: int,   
-    num_col: int,
-):
-    """ Generate screening windows across the tissue sample
-    Parameters
-    ----------
-    adata: AnnData          The data object to generate windows on
-    num_row: int            Number of rows
-    num_col: int            Number of columns
-    Returns
-    -------
-    windows                 The individual windows defined by left and upper side
-    width                   Width of windows
-    height                  Height of windows
-    """   
-    coor = adata.obs[['imagerow', 'imagecol']]
-    max_x = max(coor['imagecol'])
-    min_x = min(coor['imagecol'])
-    max_y = max(coor['imagerow'])
-    min_y = min(coor['imagerow'])
-    width = (max_x - min_x) / num_col
-    height = (max_y - min_y) / num_row
-    windows = []
-    # generate windows from top to bottom and left to right
-    for i in range(num_row * num_col):
-        x = min_x + i // num_row * width  # left side
-        y = max_y - i % num_row * height  # upper side
-        windows.append([x, y])
-
-    return windows, width, height
-
+import scipy.spatial as spatial
 
 def count(
     adata: AnnData,
-    num_row: int = 10,
-    num_col: int = 10,
     use_clustering: str = 'louvain',
     use_clusters: list = [],
-    use_het: str = 'het'
+    use_het: str = 'cci_het',
+    distance: float = None,
 
 ) -> AnnData:
     """ Count the cell type densities
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count
-    num_row: int            Number of windows on height
-    num_col: int            Number of windows on width
     use_clustering:         The cell type results to use in counting  
     use_clusters:           Specify certain cluster(s) in counting
     use_het:                The stoarge place for result
+    distance: int           Distance to determine the neighbours (default: nearest), distance=0 means within spot
+    file: str               Result file from label transfer
+
     Returns
     -------
     adata: AnnData          With the counts of specified clusters in each window of the tissue stored as adata.uns['het']
     """
-    if len(use_clusters) == 0:
-        use_clusters = list(set(adata.obs[use_clustering]))
-    coor = adata.obs[['imagerow', 'imagecol']]
-    cluster = adata.obs[use_clustering]
-    windows, width, height = create_windows(adata, num_row, num_col)
-    counts = pd.DataFrame(0, range(num_row), range(num_col))
-    for n, window in enumerate(windows):
-        spots = coor[(coor['imagecol'] > window[0]) & (coor['imagecol'] < window[0] + width) \
-                    & (coor['imagerow'] < window[1]) & (coor['imagerow'] > window[1] - height)]
-        counts.iloc[num_row-1-n%num_row, n//num_row] = len(set([i for i in cluster[spots.index.tolist()] if i in use_clusters]))
 
-    adata.uns[use_het] = counts
+    # between spot
+    if distance != 0:
+        # automatically calculate distance if not given, won't overwrite distance=0 which is within-spot
+        if not distance:
+            # calculate default neighbour distance and number of windows
+            scalefactors = next(iter(adata.uns['spatial'].values()))['scalefactors']
+            distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial']['use_quality']+'_scalef'] * 2
 
-    print("Counts for cluster (cell type) diversity stored into data.uns['het']")
+        if len(use_clusters) == 0:
+            use_clusters = list(set(adata.obs[use_clustering]))
+        cluster = adata.obs[use_clustering]
+        counts_ct = pd.DataFrame(0, adata.obs_names, ['CT'])
+
+        # get neighbour spots for each spot
+        coor = adata.obs[['imagerow', 'imagecol']]
+        point_tree = spatial.cKDTree(coor)
+        neighbours = []
+        for spot in adata.obs_names:
+            n_index = point_tree.query_ball_point(np.array([adata.obs['imagerow'].loc[spot], adata.obs['imagecol'].loc[spot]]), distance)
+            neighbours = [item for item in adata.obs_names[n_index]]
+            counts_ct.loc[spot] = len(set(cluster[neighbours]))
+        counts_ct = counts_ct['CT']
+    
+    # within spot
+    else:
+        # count the cell types with prob > 0.2 in result of label transfer
+        counts_ct = (adata.uns['label_transfer'] > 0.2).sum(axis=1)
+
+    adata.uns[use_het] = counts_ct
+
+    print("Counts for cluster (cell type) diversity stored into adata.uns[\'" + use_het + "\']")
     
     return adata

@@ -9,52 +9,105 @@ from typing import Optional, Union
 
 def het_plot(
     adata: AnnData,
-    use_cluster: str = 'louvain',
     use_het: str = 'het',
+    library_id: str = None,
+    data_alpha: float = 1.0,
+    tissue_alpha: float = 1.0,
+    cmap: str = "Spectral_r",
+    spot_size: Union[float, int] = 6.5,
+    show_legend: bool = False,
+    show_color_bar: bool = True,
+    show_axis: bool = False,
+    dpi: int = 192,
     spot_size: Union[float,int] = 6.5,
     vmin: int = None,
     vmax: int = None,
     name: str = None,
     output: str = None,
-):
-    """ Plot tissue clusters and cluster heterogeneity using heatmap
+    copy: bool = False,
+) -> Optional[AnnData]:
+
+    """
+    Cell diversity plot for sptial transcriptomics data.
+
     Parameters
     ----------
-    adata: AnnData                  The data object to plot
-    use_cluster: str                The clustering results to use
-    use_het: str                    Cluster heterogeneity count results from tl.cci.het
-    dpi: bool                       Dots per inch
-    spot_size: Union[float,int]     Spot size
-    
+    adata
+        Annotated data matrix.
+    use_het:
+        Cluster heterogeneity count results from tl.cci.het
+    library_id
+        Library id stored in AnnData.
+    method
+        Use method to count. We prorive: NaiveMean, NaiveSum, CumSum.
+    data_alpha
+        Opacity of the spot.
+    tissue_alpha
+        Opacity of the tissue.
+    cmap
+        Color map to use.
+    spot_size
+        Size of the spot.
+    show_color_bar
+        Show color bar or not.
+    show_axis
+        Show axis or not.
+    show_legend
+        Show legend or not.
+    dpi
+        Set dpi as the resolution for the plot.
+    show_trajectory
+        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+    show_subcluster
+        Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
+    name
+        Name of the output figure file.
+    output
+        Save the figure as file or not.
+    copy
+        Return a copy instead of writing to adata.
     Returns
     -------
-    N/A
+    Nothing
     """
 
     plt.rcParams['figure.dpi'] = dpi
-    fig, ax = plt.subplots()
-    num_clusters = len(set(adata.obs[use_cluster])) + 1
-    ax.set_prop_cycle('color',plt.cm.rainbow(np.linspace(0,1,num_clusters)))
-    for item in set(adata.obs[use_cluster]):
-        ax.scatter(np.array(adata.obs[adata.obs[use_cluster]==item]['imagecol']), 
-                   -np.array(adata.obs[adata.obs[use_cluster]==item]['imagerow']), 
-                   alpha=0.6, s=spot_size, edgecolors='none')
-    ax.legend(range(num_clusters))
-    ax.grid(False)
-    plt.axis('equal')
+
+    colors = adata.uns[use_het].tolist()
+
+    # Option for turning off showing figure
+    plt.ioff()
+
+    # Initialize matplotlib
+    fig, a = plt.subplots()
+
+    vmin = min(colors)
+    vmax = max(colors)
+    # Plot scatter plot based on pixel of spots
+    plot = a.scatter(adata.obs["imagecol"], adata.obs["imagerow"], edgecolor="none", alpha=data_alpha, s=spot_size, marker="o",
+                     vmin=vmin, vmax=vmax, cmap=plt.get_cmap(cmap), c=colors)
+
+    if show_color_bar:
+
+        cb = plt.colorbar(plot, cax=fig.add_axes(
+            [0.78, 0.3, 0.03, 0.38]), cmap=cmap)
+        cb.outline.set_visible(False)
+
+    if not show_axis:
+        a.axis('off')
+
+    if library_id is None:
+        library_id = list(adata.uns["spatial"].keys())[0]
+
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    # Overlay the tissue image
+    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
     if name is None:
-        name = use_cluster
+        name = method
     if output is not None:
-        fig.savefig(output + "/" + name + "_scatter.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
-
-    plt.rcParams['figure.dpi'] = dpi * 0.8
-    plt.subplots()
-    sns.heatmap(adata.uns[use_het], vmin=vmin, vmax=vmax)
-    plt.axis('equal')
-
-    if output is not None:
-        plt.savefig(output + "/" + name + "_heatmap.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
 
     plt.show()
 
