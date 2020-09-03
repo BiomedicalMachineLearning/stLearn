@@ -106,7 +106,7 @@ def het_plot(
     if name is None:
         name = method
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     plt.show()
@@ -145,8 +145,7 @@ def violin_plot(
         name = use_cluster
 
     if output is not None:
-        plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
-
+        plt.savefig(output + "/" + name, dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
     plt.show()
     
 
@@ -191,6 +190,6 @@ def stacked_bar_plot(
         name = use_annotation
 
     if output is not None:
-        plt.savefig(output + "/" + name + ".pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+        plt.savefig(output + "/" + name, dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
 
     plt.show()
