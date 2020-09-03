@@ -14,11 +14,9 @@ def het_plot(
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
-    spot_size: Union[float, int] = 6.5,
     show_legend: bool = False,
     show_color_bar: bool = True,
     show_axis: bool = False,
-    dpi: int = 192,
     spot_size: Union[float,int] = 6.5,
     vmin: int = None,
     vmax: int = None,
@@ -54,8 +52,6 @@ def het_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -70,8 +66,6 @@ def het_plot(
     -------
     Nothing
     """
-
-    plt.rcParams['figure.dpi'] = dpi
 
     colors = adata.uns[use_het].tolist()
 
@@ -116,7 +110,6 @@ def violin_plot(
     adata: AnnData,
     lr: str,
     use_cluster: str = 'louvain',
-    dpi: int = 100,
     name: str = None,
     output: str = None,
 ):
@@ -126,7 +119,6 @@ def violin_plot(
     adata: AnnData          The data object to plot
     lr: str                 The specified Ligand-Receptor pair to plot
     use_cluster: str        The clustering results to use
-    dpi: bool               Dots per inch
     name: str               Save as file name
     output: str             Save to directory
     Returns
@@ -139,7 +131,7 @@ def violin_plot(
         sys.exit('Please run cci counting and clustering first.')
     violin.columns = ['LR_counts']
     violin['cci_cluster'] = adata.obs['lr_neighbours_' + use_cluster]
-    plt.rcParams['figure.dpi'] = dpi
+
     sns.violinplot(x='cci_cluster', y='LR_counts', data=violin, orient='v')
     if name is None:
         name = use_cluster
@@ -152,7 +144,6 @@ def violin_plot(
 def stacked_bar_plot(
     adata: AnnData,
     use_annotation: str,
-    dpi: int = 100,
     name: str = None,
     output: str = None,
 ):
@@ -161,7 +152,6 @@ def stacked_bar_plot(
     ----------
     adata: AnnData          The data object to plot
     use_annotation: str     The cell type annotation to be used in plotting
-    dpi: bool               Dots per inch
     name: str               Save as file name
     output: str             Save to directory
     Returns
@@ -183,7 +173,6 @@ def stacked_bar_plot(
 
     # From raw value to percentage
     df2 = df.div(df.sum(axis=1), axis=0)
-    plt.rcParams['figure.dpi'] = dpi
     df2.plot(kind='bar', stacked='True', legend=False)
     plt.legend(loc='upper right', bbox_to_anchor=(1.5, 1), ncol=1)
     if name is None:
