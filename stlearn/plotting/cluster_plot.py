@@ -24,7 +24,6 @@ def cluster_plot(
     spot_size: Union[float, int] = 6.5,
     show_axis: bool = False,
     show_legend: bool = True,
-    dpi: int = 180,
     show_trajectory: bool = False,
     reverse: bool = False,
     show_subcluster: bool = False,
@@ -61,8 +60,6 @@ def cluster_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -210,7 +207,7 @@ def cluster_plot(
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     

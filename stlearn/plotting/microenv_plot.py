@@ -23,7 +23,6 @@ def microenv_plot(
     show_axis: bool = False,
     cropped: bool = True,
     margin: int = 100,
-    dpi: int = 192,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -53,8 +52,6 @@ def microenv_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     name
         Name of the output figure file.
     output
@@ -114,7 +111,7 @@ def microenv_plot(
             name = method
         if output is not None:
             fig.savefig(output + "/factor_" + str(i+1) + ".png",
-                        dpi=dpi, bbox_inches='tight', pad_inches=0)
+                        dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
 
         fig_np = get_img_from_fig(fig, dpi)
 

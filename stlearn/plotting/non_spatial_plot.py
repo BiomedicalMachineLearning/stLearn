@@ -14,7 +14,6 @@ import scanpy
 def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
-    dpi: int = 180
 ) -> Optional[AnnData]:
     
     """\

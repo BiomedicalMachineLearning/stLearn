@@ -30,7 +30,6 @@ def pseudotime_plot(
     margin: int = 100,
     output: str = None,
     name: str = None,
-    dpi: int = 180,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -71,8 +70,6 @@ def pseudotime_plot(
         Show legend or not.
     show_plot
         Show plot or not
-    dpi
-        Set dpi as the resolution for the plot.
     output
         Save the figure as file or not.
     copy
@@ -175,7 +172,7 @@ def pseudotime_plot(
         #plt.gca().invert_yaxis()
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
     if show_plot == True:
         plt.show()

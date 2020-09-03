@@ -11,7 +11,6 @@ def het_plot(
     adata: AnnData,
     use_cluster: str = 'louvain',
     use_het: str = 'het',
-    dpi: int = 100,
     spot_size: Union[float,int] = 6.5,
     vmin: int = None,
     vmax: int = None,

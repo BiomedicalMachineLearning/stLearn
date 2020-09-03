@@ -26,7 +26,6 @@ def local_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_plot: bool = True,
-    dpi: int = 180,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -163,7 +162,7 @@ def local_plot(
         if name is None:
             print("The file name is not defined!")
             name = use_label
-        fig.savefig(output + "/" + name, dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=matplotlib.pyplot.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
     
 

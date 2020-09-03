@@ -23,7 +23,6 @@ def subcluster_plot(
     show_plot: bool = True,
     cropped: bool = True,
     margin: int = 100,
-    dpi: int = 192,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -55,8 +54,6 @@ def subcluster_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     name
         Name of the output figure file.
     output
@@ -153,7 +150,7 @@ def subcluster_plot(
         if name is None:
             print("The file name is not defined!")
             name = use_label
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     # plt.close(fig)

@@ -20,7 +20,6 @@ def deconvolution_plot(
     spot_size: Union[float, int] = 10,
     show_axis: bool = False,
     show_legend: bool = True,
-    dpi: int = 180,
     cropped: bool = True,
     margin: int = 100,
     name: str = None,
@@ -53,8 +52,6 @@ def deconvolution_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -151,7 +148,7 @@ def deconvolution_plot(
             name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     

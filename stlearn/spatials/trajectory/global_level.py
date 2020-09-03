@@ -11,6 +11,7 @@ def global_level(
     list_cluster: list = [],
     return_graph: bool = False,
     w: float = None,
+    verbose: bool = True,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -36,6 +37,8 @@ def global_level(
     Anndata
     """
 
+    
+
     assert w <= 1, "w should be in range 0 to 1"
     # Get global graph
     G = adata.uns["global_graph"]
@@ -45,6 +48,9 @@ def global_level(
     # Query cluster
     query_nodes = list_cluster
     query_nodes = ordering_nodes(query_nodes, use_label,adata)
+
+    if verbose:
+        print("Start to construct the trajectory: " +  " -> ".join(np.array(query_nodes).astype(str)))
 
     query_dict = {}
     order_dict = {}
