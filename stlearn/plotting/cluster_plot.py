@@ -24,8 +24,8 @@ def cluster_plot(
     spot_size: Union[float, int] = 6.5,
     show_axis: bool = False,
     show_legend: bool = True,
-    dpi: int = 180,
     show_trajectory: bool = False,
+    reverse: bool = False,
     show_subcluster: bool = False,
     cropped: bool = True,
     margin: int = 100,
@@ -60,8 +60,6 @@ def cluster_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -77,7 +75,7 @@ def cluster_plot(
     Nothing
     """
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     n_clusters = len(adata.obs[use_label].unique())
 
@@ -104,8 +102,12 @@ def cluster_plot(
         G.remove_edges_from(remove)
         G.remove_node(9999)
         centroid_dict = adata.uns["centroid_dict"]
-        nx.draw_networkx_edges(G, pos=centroid_dict, node_size=1, alpha=1.0,
-                               font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=5, arrowstyle='->', connectionstyle="arc3,rad=0.2")
+        if reverse:
+            nx.draw_networkx_edges(G, pos=centroid_dict, node_size=1, alpha=1.0,
+                               font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=8, arrowstyle='<-', connectionstyle="arc3,rad=0.2")
+        else:
+            nx.draw_networkx_edges(G, pos=centroid_dict, node_size=1, alpha=1.0,
+                               font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=8, arrowstyle='->', connectionstyle="arc3,rad=0.2")
 
     from scanpy.plotting import palettes
     if cmap == "vega_10_scanpy":
@@ -205,7 +207,7 @@ def cluster_plot(
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     

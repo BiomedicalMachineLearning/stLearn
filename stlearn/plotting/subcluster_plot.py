@@ -23,7 +23,6 @@ def subcluster_plot(
     show_plot: bool = True,
     cropped: bool = True,
     margin: int = 100,
-    dpi: int = 192,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -55,8 +54,6 @@ def subcluster_plot(
         Show axis or not.
     show_legend
         Show legend or not.
-    dpi
-        Set dpi as the resolution for the plot.
     name
         Name of the output figure file.
     output
@@ -67,7 +64,7 @@ def subcluster_plot(
     -------
     Nothing
     """
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
@@ -79,7 +76,7 @@ def subcluster_plot(
     if use_label not in adata.obs.columns:
         raise ValueError(
             "This label is non-exist, please choose another label!")
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
 
     colors = adata.obs[adata.obs[use_label]
                        == str(cluster)]["sub_cluster_labels"]
@@ -153,7 +150,7 @@ def subcluster_plot(
         if name is None:
             print("The file name is not defined!")
             name = use_label
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
     # plt.close(fig)

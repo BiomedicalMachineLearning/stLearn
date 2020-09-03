@@ -12,6 +12,9 @@ from . import logging
 from .logging import _set_log_level, _set_log_file, _RootLogger
 from ._compat import Literal
 
+# All the code here migrated from scanpy
+# It help to work with scanpy package
+
 _VERBOSITY_TO_LOGLEVEL = {
     'error': 'ERROR',
     'warning': 'WARNING',
@@ -60,7 +63,7 @@ def _type_check(var: Any, varname: str, types: Union[type, Tuple[type, ...]]):
     raise TypeError(f"{varname} must be of type {possible_types_str}")
 
 
-class ScanpyConfig:
+class stLearnConfig:
     """\
     Config manager for scanpy.
     """
@@ -206,7 +209,7 @@ class ScanpyConfig:
     @property
     def autosave(self) -> bool:
         """\
-        Automatically save figures in :attr:`~scanpy._settings.ScanpyConfig.figdir` (default `False`).
+        Automatically save figures in :attr:`~stlearn._settings.stLearnConfig.figdir` (default `False`).
 
         Do not show plots/figures interactively.
         """
@@ -388,7 +391,6 @@ class ScanpyConfig:
 
     def set_figure_params(
         self,
-        scanpy: bool = True,
         dpi: int = 80,
         dpi_save: int = 150,
         frameon: bool = True,
@@ -404,8 +406,6 @@ class ScanpyConfig:
 
         Parameters
         ----------
-        scanpy
-            Init default values for :obj:`matplotlib.rcParams` suited for Scanpy.
         dpi
             Resolution of rendered figures – this influences the size of figures in notebooks.
         dpi_save
@@ -444,9 +444,6 @@ class ScanpyConfig:
             rcParams["savefig.dpi"] = dpi_save
         if transparent is not None:
             rcParams["savefig.transparent"] = transparent
-        if scanpy:
-            from .plotting._rcmod import set_rcParams_scanpy
-            set_rcParams_scanpy(fontsize=fontsize, color_map=color_map)
         self._frameon = frameon
 
     @staticmethod
@@ -469,4 +466,4 @@ class ScanpyConfig:
         )
 
 
-settings = ScanpyConfig()
+settings = stLearnConfig()

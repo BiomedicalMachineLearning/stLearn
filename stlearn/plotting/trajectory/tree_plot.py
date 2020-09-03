@@ -77,7 +77,7 @@ def tree_plot(
 
         G.nodes[node]['image'] = tmp_img
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
     pos = hierarchy_pos(G,9999) 
     fig=plt.figure(figsize=figsize)
     a= plt.subplot(111)
@@ -118,7 +118,7 @@ def tree_plot(
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
 
 

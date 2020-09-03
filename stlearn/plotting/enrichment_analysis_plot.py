@@ -17,13 +17,12 @@ def enrichment_analysis_plot(
     save_plot: str = None,
     cmap: str = "plasma",
     title: str = None,
-    dpi: int = 192,
     store: bool = True,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
-    plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.dpi'] = dpi
     tmp = adata.uns["factor_sig"][method]["Factor_" +
                                           str(factor)][gene_sets]["result"]
     objects = tmp.Term[::-1]
@@ -51,11 +50,11 @@ def enrichment_analysis_plot(
 
     if output is not None:
         fig.savefig(output + "/enrich_plot_factor_" + str(factor) + "_" +
-                    gene_sets + ".png", dpi=dpi, bbox_inches='tight', pad_inches=0)
+                    gene_sets + ".png", dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
 
     if store:
 
-        fig_np = get_img_from_fig(fig, dpi)
+        fig_np = get_img_from_fig(fig, plt.figure().dpi)
 
         plt.close(fig)
 

@@ -21,12 +21,11 @@ def local_plot(
     cluster: int = 0,
     data_alpha: float = 1.0,
     arrow_alpha: float = 1.0,
-    branch_alpha: float = 1.0,
+    branch_alpha: float = 0.2,
     spot_size: Union[float,int] = 1,
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_plot: bool = True,
-    dpi: int = 180,
     name: str = None,
     output: str = None,
     copy: bool = False,
@@ -73,9 +72,9 @@ def local_plot(
     tmp=adata.obs[adata.obs[use_label]==str(use_cluster)]
     ref_cluster = adata[list(tmp.index)]
 
-    plt.rcParams['figure.dpi'] = dpi
-    plt.rcParams['figure.figsize'] = 5, 5
-    fig = plt.figure()
+    #plt.rcParams['figure.dpi'] = dpi
+    #plt.rcParams['figure.figsize'] = 5, 5
+    fig = plt.figure(figsize=(5, 5))
     ax = fig.gca(projection='3d')
 
     centroids_ = []
@@ -116,8 +115,8 @@ def local_plot(
             else:
                 xyz = ([x[520],x[500]],[y[520],y[500]],[z[520],z[500]])
             
-            arrow = Arrow3D(xyz[0],xyz[1],xyz[2],zorder=10,mutation_scale=5, 
-                   lw=1, arrowstyle="simple", color="r",alpha=arrow_alpha,)
+            arrow = Arrow3D(xyz[0],xyz[1],xyz[2],zorder=10,mutation_scale=7, 
+                   lw=1, arrowstyle="->", color="r",alpha=arrow_alpha,)
             ax.add_artist(arrow)
             
             ax.text(x[500], y[500]-0.15, z[500], np.round(np.abs(m),3), color='black',size=5,zorder=100)
@@ -157,13 +156,13 @@ def local_plot(
     if show_plot:
         plt.show()
 
-    plt.rcParams['figure.figsize'] = 6, 4
+    #plt.rcParams['figure.figsize'] = 6, 4
 
     if output is not None:
         if name is None:
             print("The file name is not defined!")
             name = use_label
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
+        fig.savefig(output + "/" + name, dpi=matplotlib.pyplot.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
     
 
