@@ -27,6 +27,7 @@ def tree_plot(
     output: str = None,
     dpi: int = 180,
     show_all: bool = False,
+    show_plot: bool = True,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -120,6 +121,10 @@ def tree_plot(
     if output is not None:
         fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
                     bbox_inches='tight', pad_inches=0)
+
+    if show_plot == True:
+        plt.show()
+
 
 
 
