@@ -1,3 +1,5 @@
 from .pseudotime_plot import pseudotime_plot
 from .local_plot import local_plot
 from .tree_plot import tree_plot
+from .traisition_markers_plot import traisition_markers_plot
+from .DE_transition_plot import DE_transition_plot
