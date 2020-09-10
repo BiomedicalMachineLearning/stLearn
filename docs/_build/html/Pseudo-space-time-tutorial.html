@@ -1,15 +1,19 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Spatial trajectory inference analysis tutorial &mdash; stLearn 0.2.5 documentation</title>
+  <title>Spatial trajectory inference analysis tutorial &mdash; stLearn 0.2.6 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
 
   
   
@@ -17,7 +21,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -26,21 +32,16 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spatial cell-cell interaction tutorial" href="cci.html" />
-    <link rel="prev" title="stSME comparison" href="stSME_comparison.html" /> 
+    <link rel="prev" title="This tutorial compares clustering performance of three scenarios:" href="stSME_comparison.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -54,7 +55,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> stLearn
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> stLearn
           
 
           
@@ -64,7 +65,7 @@
             
             
               <div class="version">
-                0.2.5
+                0.2.6
               </div>
             
           
@@ -81,6 +82,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -98,25 +100,31 @@
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">This tutorial compares clustering performance of three scenarios:</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Spatial trajectory inference analysis tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#1.-Preparation">1. Preparation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#2.-Running-the-global-trajectory-inference">2. Running the global trajectory inference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#3.-Running-the-local-trajectory-inference">3. Running the local trajectory inference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">Perform pseudo-time-space to reconstruct the progress of DCIS-IDC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#4.-Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">4. Perform pseudo-time-space to reconstruct the progress of DCIS-IDC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#5.-Detect-transition-markers-of-clades-and-branches">5. Detect transition markers of clades and branches</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_single_lr.html">Scenario 1: Cell-cell interaction analysis (single L-R pair, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_cpdb_lrs.html">Scenario 2: Cell-cell interaction analysis (CPDB LR pairs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_single_lr.html">Scenario 3: Cell-cell interaction analysis (single L-R pair, between-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_cpdb_lrs.html">Scenario 4: Cell-cell interaction analysis (CPDB L-R pairs, between-spot)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ST_deconvolution_visualization.html">Spatial transcriptomics deconvolution visualization</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -155,7 +163,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Spatial trajectory inference analysis tutorial</li>
     
@@ -434,26 +442,30 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Spatial-trajectory-inference-analysis-tutorial">
 <h1>Spatial trajectory inference analysis tutorial<a class="headerlink" href="#Spatial-trajectory-inference-analysis-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we are using both spatial information and gene expression profile to perform spatial trajectory inference to explore the progression of Ductal Carcinoma in situ (DCIS) - Invasive Ductal Cancer (IDC)</p>
+<p>Source: <a class="reference external" href="https://support.10xgenomics.com/spatial-gene-expression/datasets">https://support.10xgenomics.com/spatial-gene-expression/datasets</a></p>
 <div class="section" id="1.-Preparation">
 <h2>1. Preparation<a class="headerlink" href="#1.-Preparation" title="Permalink to this headline">¶</a></h2>
 <p>We are trying to keep it focus on spatial trajectory inference then every step from reading data to clustering, we will give the code here to easier for user to use</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">stlearn</span> <span class="k">as</span> <span class="nn">st</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;../UQ/10X/BCBA/&quot;</span><span class="p">)</span>
-
+<span class="n">st</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">set_figure_params</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+<span class="c1"># Reading data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">Read10X</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/home/d.pham/10X/BCBA/&quot;</span><span class="p">)</span>
+<span class="c1"># Save raw_count</span>
+<span class="n">data</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;raw_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">X</span>
+<span class="c1"># Preprocessing</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">min_cells</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="c1"># Keep raw data</span>
+<span class="n">data</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">data</span>
 <span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="c1"># Run PCA</span>
 <span class="n">st</span><span class="o">.</span><span class="n">em</span><span class="o">.</span><span class="n">run_pca</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_comps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">tiling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">out_path</span><span class="o">=</span><span class="s2">&quot;../tiling&quot;</span><span class="p">,</span><span class="n">crop_size</span> <span class="o">=</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">extract_feature</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">morphology</span><span class="o">.</span><span class="n">adjust</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_data</span><span class="o">=</span><span class="s2">&quot;X_pca&quot;</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
-
 
 </pre></div>
 </div>
@@ -467,16 +479,23 @@ Normalization step is finished in adata.X
 Log transformation step is finished in adata.X
 Scale step is finished in adata.X
 PCA is done! Generated in adata.obsm[&#39;X_pca&#39;], adata.uns[&#39;pca&#39;] and adata.varm[&#39;PCs&#39;]
-The morphology feature is added to adata.obsm[&#39;X_morphology&#39;]!
-The data adjusted by morphology is added to adata.obsm[&#39;X_pca_morphology&#39;]
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">use_rep</span><span class="o">=</span><span class="s1">&#39;X_pca_morphology&#39;</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">use_rep</span><span class="o">=</span><span class="s1">&#39;X_pca&#39;</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -489,7 +508,7 @@ Created k-Nearest-Neighbor graph in adata.uns[&#39;neighbors&#39;]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -507,11 +526,11 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">spot_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">spot_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -519,69 +538,40 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_7_0.png" src="_images/Pseudo-space-time-tutorial_7_0.png" />
+<img alt="_images/Pseudo-space-time-tutorial_8_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_8_0.png" style="width: 443px; height: 386px;" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">annotation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">label_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Fatty tissue,immune/lymphoid&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,fibrous tissue 1&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,fibrous tissue 2&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer, fatty tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,fibrous tissue, fatty tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Fibrous tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,fibrous tissue (IDC)&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Fatty tissue, Fibrous tissue&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,immune/lymphoid (DCIS)&#39;</span> <span class="p">,</span>
-                                   <span class="s1">&#39;Invasive cancer,fatty tissue 3&#39;</span><span class="p">,</span>
-                                   <span class="s1">&#39;Fatty tissue&#39;</span><span class="p">],</span>
-                 <span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">)</span>
-<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain_anno&quot;</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">spot_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;iroot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;louvain&quot;</span><span class="p">]</span>  <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="mi">6</span><span class="p">))[</span><span class="mi">50</span><span class="p">]</span>
+<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">use_rep</span><span class="o">=</span><span class="s2">&quot;X_pca&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The annotation is added to adata.obs[&#39;louvain_anno&#39;]
+Created k-Nearest-Neighbor graph in adata.uns[&#39;neighbors&#39;]
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_8_1.png" src="_images/Pseudo-space-time-tutorial_8_1.png" />
-</div>
 </div>
 </div>
 <div class="section" id="2.-Running-the-global-trajectory-inference">
 <h2>2. Running the global trajectory inference<a class="headerlink" href="#2.-Running-the-global-trajectory-inference" title="Permalink to this headline">¶</a></h2>
 <p>Here we called global trajectory because it does the same method of trajectory inference in single cell analysis.</p>
 <p>We used PAGA and DPT to perform this step. It also does the function of sub-clustering.</p>
-<p>To explore the progression of DCIS-IDC, we choose the root as cluster 6 (Ductal cells area). Also, We used high resolution image (2000x2000) the the eps parameter should be 100:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;iroot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;louvain&quot;</span><span class="p">]</span>  <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="mi">6</span><span class="p">))[</span><span class="mi">50</span><span class="p">]</span>
-<span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>We wrap some plotting function from scanpy to show PAGA and DPT figures</p>
+<p>To explore the progression of DCIS-IDC, we choose the root as cluster 6 (Ductal cells area). Also, We used high resolution image (2000x2000) the the eps parameter should be 50:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">non_spatial_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">non_spatial_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -597,7 +587,7 @@ PAGA plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_12_1.png" src="_images/Pseudo-space-time-tutorial_12_1.png" />
+<img alt="_images/Pseudo-space-time-tutorial_11_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_1.png" style="width: 639px; height: 413px;" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -612,7 +602,7 @@ Gene expression (reduced dimension) plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_12_3.png" src="_images/Pseudo-space-time-tutorial_12_3.png" />
+<img alt="_images/Pseudo-space-time-tutorial_11_3.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_3.png" style="width: 605px; height: 435px;" />
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -627,16 +617,16 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_12_5.png" src="_images/Pseudo-space-time-tutorial_12_5.png" />
+<img alt="_images/Pseudo-space-time-tutorial_11_5.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_5.png" style="width: 610px; height: 435px;" />
 </div>
 </div>
 <p>This is the DPT visualization in tissue morphology</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span><span class="n">show_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">node_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edge_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotime_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span><span class="n">show_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">node_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edge_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -644,7 +634,7 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_14_0.png" src="_images/Pseudo-space-time-tutorial_14_0.png" />
+<img alt="_images/Pseudo-space-time-tutorial_13_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_13_0.png" style="width: 436px; height: 402px;" />
 </div>
 </div>
 </div>
@@ -653,11 +643,11 @@ Diffusion pseudotime plot:
 <p>Here, we want to check the intra-DCIS progression.</p>
 <p>First, the visualization of sub-clustering results of cluster 6 (DICS) would be showed by:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">subcluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">subcluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">tissue_alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -665,16 +655,95 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_17_0.png" src="_images/Pseudo-space-time-tutorial_17_0.png" />
+<img alt="_images/Pseudo-space-time-tutorial_16_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_16_0.png" style="width: 352px; height: 386px;" />
 </div>
 </div>
 <p>The local trajectory could be constructed by this function. It calculate the spatio-temporal distance between each pair-wise of sub-clusters.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotimespace_local</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">branch_alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Screening PTS local graph...
+Calculate the graph dissimilarity using Resistance distance...
+The optimized weighting is: 0.55
+Start construct trajectory for subcluster 6
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_18_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_18_1.png" style="width: 503px; height: 477px;" />
+</div>
+</div>
+</div>
+<div class="section" id="4.-Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">
+<h2>4. Perform pseudo-time-space to reconstruct the progress of DCIS-IDC<a class="headerlink" href="#4.-Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">pseudotimespace_global</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">show_trajectory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span><span class="n">show_subcluster</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Screening PTS global graph...
+Calculate the graph dissimilarity using Laplacian matrix...
+The optimized weighting is: 0.73
+Start to construct the trajectory: 6 -&gt; 7
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_20_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_20_1.png" style="width: 443px; height: 386px;" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">tree_plot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_21_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_21_0.png" style="width: 953px; height: 396px;" />
+</div>
+</div>
+</div>
+<div class="section" id="5.-Detect-transition-markers-of-clades-and-branches">
+<h2>5. Detect transition markers of clades and branches<a class="headerlink" href="#5.-Detect-transition-markers-of-clades-and-branches" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">detect_transition_markers_clades</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">clade</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">use_raw_count</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -683,15 +752,16 @@ Diffusion pseudotime plot:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Start construct trajectory for subcluster 6
+Detecting the transition markers of clade_6...
+Transition markers result is stored in adata.uns[&#39;clade_6&#39;]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">local_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_cluster</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">branch_alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">detect_transition_markers_clades</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">clade</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span><span class="n">use_raw_count</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -699,52 +769,116 @@ Start construct trajectory for subcluster 6
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_20_0.png" src="_images/Pseudo-space-time-tutorial_20_0.png" />
+<div class="highlight"><pre>
+Detecting the transition markers of clade_13...
+Transition markers result is stored in adata.uns[&#39;clade_13&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">transition_markers_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">top_genes</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">trajectory</span><span class="o">=</span><span class="s2">&quot;clade_13&quot;</span><span class="p">)</span>
+</pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
 </div>
-<div class="section" id="Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC">
-<h2>Perform pseudo-time-space to reconstruct the progress of DCIS-IDC<a class="headerlink" href="#Perform-pseudo-time-space-to-reconstruct-the-progress-of-DCIS-IDC" title="Permalink to this headline">¶</a></h2>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_25_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_25_0.png" style="width: 667px; height: 457px;" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">transition_markers_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">top_genes</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">trajectory</span><span class="o">=</span><span class="s2">&quot;clade_6&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_26_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_26_0.png" style="width: 614px; height: 457px;" />
+</div>
+</div>
+<p>We also can compare between 2 clades or branches</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">compare_transitions</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">trajectories</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;clade_6&quot;</span><span class="p">,</span><span class="s2">&quot;clade_13&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&#39;compare_result&#39;]&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">DE_transition_plot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_29_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_29_0.png" style="width: 639px; height: 454px;" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">gene_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">genes</span><span class="o">=</span><span class="s2">&quot;ALB&quot;</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">use_raw_count</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">list_clusters</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_30_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_30_0.png" style="width: 471px; height: 386px;" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">gene_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">genes</span><span class="o">=</span><span class="s2">&quot;HLA-A&quot;</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">use_raw_count</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">list_clusters</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/Pseudo-space-time-tutorial_31_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_31_0.png" style="width: 471px; height: 386px;" />
+</div>
+</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">global_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">w</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span></span>
 </pre></div>
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">cluster_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">use_label</span><span class="o">=</span><span class="s2">&quot;louvain&quot;</span><span class="p">,</span><span class="n">show_trajectory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">list_cluster</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">show_subcluster</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_23_0.png" src="_images/Pseudo-space-time-tutorial_23_0.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="n">st</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">tree_plot</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_24_0.png" src="_images/Pseudo-space-time-tutorial_24_0.png" />
 </div>
 </div>
 </div>
@@ -761,7 +895,7 @@ Start construct trajectory for subcluster 6
         <a href="cci.html" class="btn btn-neutral float-right" title="Spatial cell-cell interaction tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="stSME_comparison.html" class="btn btn-neutral float-left" title="stSME comparison" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="stSME_comparison.html" class="btn btn-neutral float-left" title="This tutorial compares clustering performance of three scenarios:" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -770,11 +904,19 @@ Start construct trajectory for subcluster 6
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Genomics and Machine Learning lab
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -785,7 +927,6 @@ Start construct trajectory for subcluster 6
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

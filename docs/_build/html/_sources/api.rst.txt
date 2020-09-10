@@ -91,8 +91,11 @@ Spatial: `spatial`
 
    spatial.clustering.localization
    spatial.trajectory.pseudotime
-   spatial.trajectory.global_level
-   spatial.trajectory.local_level
+   spatial.trajectory.pseudotimespace_global
+   spatial.trajectory.pseudotimespace_local
+   spatial.trajectory.compare_transitions
+   spatial.trajectory.detect_transition_markers_clades
+   spatial.trajectory.detect_transition_markers_branches
    spatial.morphology.adjust
 
 Tools: `tl`
@@ -133,7 +136,6 @@ Plot: `pl`
    pl.trajectory.pseudotime_plot
    pl.trajectory.local_plot
    pl.trajectory.tree_plot
+   pl.trajectory.transition_markers_plot
+   pl.trajectory.DE_transition_plot
 
-
-.. note::
-   Wrappers to external functionality are found in :mod:`stlearn.external`.

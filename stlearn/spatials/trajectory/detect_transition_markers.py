@@ -4,7 +4,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
-def detect_transition_markers_clades(adata, clade,cutoff_spearman=0.4,cutoff_pvalue=0.05,screening_genes=None,use_raw=False):
+def detect_transition_markers_clades(adata, clade,cutoff_spearman=0.4,cutoff_pvalue=0.05,screening_genes=None,use_raw_count=False):
 
     print ("Detecting the transition markers of clade_" + str(clade) + "...")
     
@@ -26,7 +26,7 @@ def detect_transition_markers_clades(adata, clade,cutoff_spearman=0.4,cutoff_pva
     
     query_adata = adata[adata.obs.query(create_query(nodes)).index]
     
-    spearman_result = get_rank_cor(query_adata,screening_genes=screening_genes,use_raw=use_raw)
+    spearman_result = get_rank_cor(query_adata,screening_genes=screening_genes,use_raw_count=use_raw_count)
     
     spearman_result = spearman_result[spearman_result['p-value'] < cutoff_pvalue]
     positive = spearman_result[spearman_result['score'] >= cutoff_spearman].sort_values("score",ascending=False)
@@ -39,13 +39,13 @@ def detect_transition_markers_clades(adata, clade,cutoff_spearman=0.4,cutoff_pva
     print("Transition markers result is stored in adata.uns['clade_" + str(clade) +  "']")
     
 
-def detect_transition_markers_branches(adata, branch,cutoff_spearman=0.4,cutoff_pvalue=0.05):
+def detect_transition_markers_branches(adata, branch,cutoff_spearman=0.4,cutoff_pvalue=0.05,screening_genes=None,use_raw_count=False):
 
-    print ("Detecting the transition markers of branch_" + str(branch) + "...")
+    print ("Detecting the transition markers of branch_" + "_".join(np.array(branch).astype(str)))
 
     query_adata = adata[adata.obs.query(create_query(branch)).index]
     
-    spearman_result = get_rank_cor(query_adata,screening_genes=screening_genes,use_raw=use_raw)
+    spearman_result = get_rank_cor(query_adata,screening_genes=screening_genes,use_raw_count=use_raw_count)
     
     spearman_result = spearman_result[spearman_result['p-value'] < cutoff_pvalue]
     positive = spearman_result[spearman_result['score'] >= cutoff_spearman].sort_values("score",ascending=False)
@@ -65,9 +65,11 @@ def create_query(list_sub_clusters):
         ini = ini + 'sub_cluster_labels == "' + str(sub) + '" | '
     return ini[:-2]
 
-def get_rank_cor(adata,screening_genes=None,use_raw=True):
-    if use_raw:
-        tmp = adata.raw.to_adata().to_df()
+def get_rank_cor(adata,screening_genes=None,use_raw_count=True):
+    if use_raw_count:
+        tmp = adata.copy()
+        tmp.X = adata.layers["raw_count"]
+        tmp = tmp.to_df()
     else:
         tmp = adata.to_df()
     if screening_genes != None:

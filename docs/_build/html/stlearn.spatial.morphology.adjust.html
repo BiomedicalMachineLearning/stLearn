@@ -1,15 +1,19 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.spatial.morphology.adjust &mdash; stLearn 0.2.5 documentation</title>
+  <title>stlearn.spatial.morphology.adjust &mdash; stLearn 0.2.6 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
 
   
   
@@ -17,7 +21,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -26,21 +32,16 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="stlearn.tl.clustering.kmeans" href="stlearn.tl.clustering.kmeans.html" />
-    <link rel="prev" title="stlearn.spatial.trajectory.local_level" href="stlearn.spatial.trajectory.local_level.html" /> 
+    <link rel="prev" title="stlearn.spatial.trajectory.detect_transition_markers_branches" href="stlearn.spatial.trajectory.detect_transition_markers_branches.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -54,7 +55,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> stLearn
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> stLearn
           
 
           
@@ -64,7 +65,7 @@
             
             
               <div class="version">
-                0.2.5
+                0.2.6
               </div>
             
           
@@ -81,6 +82,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -99,8 +101,11 @@
 <li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.spatial">Spatial: <cite>spatial</cite></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.clustering.localization.html">stlearn.spatial.clustering.localization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.pseudotime.html">stlearn.spatial.trajectory.pseudotime</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.global_level.html">stlearn.spatial.trajectory.global_level</a></li>
-<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.local_level.html">stlearn.spatial.trajectory.local_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.pseudotimespace_global.html">stlearn.spatial.trajectory.pseudotimespace_global</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.pseudotimespace_local.html">stlearn.spatial.trajectory.pseudotimespace_local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.compare_transitions.html">stlearn.spatial.trajectory.compare_transitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.detect_transition_markers_clades.html">stlearn.spatial.trajectory.detect_transition_markers_clades</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.spatial.trajectory.detect_transition_markers_branches.html">stlearn.spatial.trajectory.detect_transition_markers_branches</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.spatial.morphology.adjust</a></li>
 </ul>
 </li>
@@ -114,19 +119,24 @@
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">This tutorial compares clustering performance of three scenarios:</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_single_lr.html">Scenario 1: Cell-cell interaction analysis (single L-R pair, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_cpdb_lrs.html">Scenario 2: Cell-cell interaction analysis (CPDB LR pairs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_single_lr.html">Scenario 3: Cell-cell interaction analysis (single L-R pair, between-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_cpdb_lrs.html">Scenario 4: Cell-cell interaction analysis (CPDB L-R pairs, between-spot)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ST_deconvolution_visualization.html">Spatial transcriptomics deconvolution visualization</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -165,7 +175,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="api.html">API</a> &raquo;</li>
         
@@ -214,36 +224,6 @@
 </style>
 <div class="section" id="stlearn-spatial-morphology-adjust">
 <h1>stlearn.spatial.morphology.adjust<a class="headerlink" href="#stlearn-spatial-morphology-adjust" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="stlearn.spatial.morphology.adjust">
-<code class="sig-prename descclassname">stlearn.spatial.morphology.</code><code class="sig-name descname">adjust</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">use_data</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'X_pca'</span></em>, <em class="sig-param"><span class="n">radius</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">50.0</span></em>, <em class="sig-param"><span class="n">rates</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">similarity_matrix</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>cosine<span class="p">, </span>euclidean<span class="p">, </span>pearson<span class="p">, </span>spearman<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'cosine'</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.spatial.morphology.adjust" title="Permalink to this definition">¶</a></dt>
-<dd><p>SME normalisation: Using spot location information and tissue morphological
-features to correct spot gene expression</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
-<li><p><strong>use_data</strong> – Input date to be adjusted by morphological features.
-choose one from [“raw”, “X_pca”, “X_umap”]</p></li>
-<li><p><strong>radius</strong> – Radius to select neighbour spots.</p></li>
-<li><p><strong>rates</strong> – Strength for adjustment.</p></li>
-<li><p><strong>method</strong> – Method for disk smoothing.
-choose one from [“means”, “median”]</p></li>
-<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
-<li><p><strong>similarity_matrix</strong> – Matrix to calculate morphological similarity of two spots
-choose one from [“cosine”, “euclidean”, “pearson”, “spearman”]</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p>Depending on <cite>copy</cite>, returns or updates <cite>adata</cite> with the following fields.</p></li>
-<li><p><strong>**[use_data]_morphology**</strong> (<cite>adata.obsm</cite> field) – Add SME normalised gene expression matrix</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 
@@ -257,7 +237,7 @@ choose one from [“cosine”, “euclidean”, “pearson”, “spearman”]</
         <a href="stlearn.tl.clustering.kmeans.html" class="btn btn-neutral float-right" title="stlearn.tl.clustering.kmeans" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="stlearn.spatial.trajectory.local_level.html" class="btn btn-neutral float-left" title="stlearn.spatial.trajectory.local_level" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="stlearn.spatial.trajectory.detect_transition_markers_branches.html" class="btn btn-neutral float-left" title="stlearn.spatial.trajectory.detect_transition_markers_branches" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -266,11 +246,19 @@ choose one from [“cosine”, “euclidean”, “pearson”, “spearman”]</
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Genomics and Machine Learning lab
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -281,7 +269,6 @@ choose one from [“cosine”, “euclidean”, “pearson”, “spearman”]</
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

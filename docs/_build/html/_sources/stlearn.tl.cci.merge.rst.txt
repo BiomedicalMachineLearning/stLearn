@@ -1,7 +1,7 @@
-
+﻿
 stlearn.tl.cci.merge
 ====================
 
-.. currentmodule:: stlearn.tl.cci
+.. currentmodule:: stlearn.tl
 
-.. autofunction:: merge
+.. autofunction:: cci.merge
