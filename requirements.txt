@@ -5,3 +5,4 @@ gseapy>=0.9.*
 NaiveDE==1.2
 xlrd == 1.0.0
 fa2 == 0.3.5 
+NetComp == 0.2.3
