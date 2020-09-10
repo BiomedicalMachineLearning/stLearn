@@ -134,7 +134,7 @@ def ordering_nodes(node_list,use_label, adata):
     mean_dpt = []
     for node in node_list:
         mean_dpt.append(adata.obs[adata.obs[use_label]
-                                  == str(node)]["dpt_pseudotime"].mean())
+                                  == str(node)]["dpt_pseudotime"].min())
 
     return list(np.array(node_list)[np.argsort(mean_dpt)])
 
@@ -158,11 +158,11 @@ def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
             chosen_adata2.obs[chosen_adata2.obs["sub_cluster_labels"] == chosen_sub2[i]]["dpt_pseudotime"].max())
 
     dm = cdist(np.array(sub_dpt1).reshape(-1, 1),
-               np.array(sub_dpt2).reshape(-1, 1), lambda u, v: np.abs(u-v))
+               np.array(sub_dpt2).reshape(-1, 1), lambda u, v: v-u)
     #from sklearn.preprocessing import MinMaxScaler
     #scaler = MinMaxScaler()
     #scale_dm = scaler.fit_transform(dm)
-    scale_dm = dm/np.max(dm)
+    scale_dm = (dm+(-np.min(dm)))/np.max(dm)
     return scale_dm
 
 
