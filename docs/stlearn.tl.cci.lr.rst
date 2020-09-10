@@ -1,7 +1,7 @@
-
+﻿
 stlearn.tl.cci.lr
 =================
 
-.. currentmodule:: stlearn.tl.cci
+.. currentmodule:: stlearn.tl
 
-.. autofunction:: lr
+.. autofunction:: cci.lr

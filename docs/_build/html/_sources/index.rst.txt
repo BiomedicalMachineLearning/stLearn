@@ -24,8 +24,12 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
    stSME_comparison
    Pseudo-space-time-tutorial
    cci
-   spatialDE
+   cci_within-spot_single_lr
+   cci_within-spot_cpdb_lrs
+   cci_between-spot_single_lr
+   cci_between-spot_cpdb_lrs
    Working-with-Old-Spatial-Transcriptomics-data
    Read_slideseq
    Read_MERFISH
    Read_seqfish
+   ST_deconvolution_visualization

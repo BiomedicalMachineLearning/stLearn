@@ -38,13 +38,13 @@ def DE_transition_plot(adata,top_genes=10):
     for i,x in enumerate([x1,x2,x3,x4]):
         if all(value == 0 for value in x):
             if i==0:
-                axes[0][1].get_xaxis().set_ticks([])
+                axes[0][0].get_xaxis().set_ticks([])
             if i==1:
                 axes[0][1].get_xaxis().set_ticks([])
             if i==2:
-                axes[0][1].get_xaxis().set_ticks([])
+                axes[1][0].get_xaxis().set_ticks([])
             if i==3:
-                axes[0][1].get_xaxis().set_ticks([])
+                axes[1][1].get_xaxis().set_ticks([])
 
     axes[0][0].spines['left'].set_visible(False) 
     axes[0][0].spines['right'].set_visible(False)

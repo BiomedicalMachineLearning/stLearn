@@ -1,15 +1,19 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.tl.clustering.louvain &mdash; stLearn 0.2.5 documentation</title>
+  <title>stlearn.tl.clustering.louvain &mdash; stLearn 0.2.6 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
 
   
   
@@ -17,7 +21,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -26,17 +32,12 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="stlearn.tl.cci.lr" href="stlearn.tl.cci.lr.html" />
@@ -54,7 +55,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> stLearn
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> stLearn
           
 
           
@@ -64,7 +65,7 @@
             
             
               <div class="version">
-                0.2.5
+                0.2.6
               </div>
             
           
@@ -81,6 +82,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,19 +116,24 @@
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">This tutorial compares clustering performance of three scenarios:</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cci.html">Spatial cell-cell interaction tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spatialDE.html">SpatialDE tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_single_lr.html">Scenario 1: Cell-cell interaction analysis (single L-R pair, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_within-spot_cpdb_lrs.html">Scenario 2: Cell-cell interaction analysis (CPDB LR pairs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_single_lr.html">Scenario 3: Cell-cell interaction analysis (single L-R pair, between-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cci_between-spot_cpdb_lrs.html">Scenario 4: Cell-cell interaction analysis (CPDB L-R pairs, between-spot)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_seqfish.html">Working with SeqFish data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ST_deconvolution_visualization.html">Spatial transcriptomics deconvolution visualization</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -165,7 +172,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="api.html">API</a> &raquo;</li>
         
@@ -214,60 +221,6 @@
 </style>
 <div class="section" id="stlearn-tl-clustering-louvain">
 <h1>stlearn.tl.clustering.louvain<a class="headerlink" href="#stlearn-tl-clustering-louvain" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="stlearn.tl.clustering.louvain">
-<code class="sig-prename descclassname">stlearn.tl.clustering.</code><code class="sig-name descname">louvain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">resolution</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="p">:</span> <span class="n">Union[int, numpy.random.mtrand.RandomState, None]</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">restrict_to</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Tuple<span class="p">[</span>str<span class="p">, </span>Sequence<span class="p">[</span>str<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key_added</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'louvain'</span></em>, <em class="sig-param"><span class="n">adjacency</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>scipy.sparse.base.spmatrix<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">flavor</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>vtraag<span class="p">, </span>igraph<span class="p">, </span>rapids<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'vtraag'</span></em>, <em class="sig-param"><span class="n">directed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">use_weights</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">partition_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Type<span class="p">[</span>louvain.VertexPartition.MutableVertexPartition<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">partition_kwargs</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">mappingproxy({})</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.tl.clustering.louvain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrap function scanpy.tl.louvain
-Cluster cells into subgroups <span id="id1">[Blondel08]</span> <span id="id2">[Levine15]</span> <span id="id3">[Traag17]</span>.
-Cluster cells using the Louvain algorithm <span id="id4">[Blondel08]</span> in the implementation
-of <span id="id5">[Traag17]</span>. The Louvain algorithm has been proposed for single-cell
-analysis by <span id="id6">[Levine15]</span>.
-This requires having ran <code class="xref py py-func docutils literal notranslate"><span class="pre">neighbors()</span></code> or
-<code class="xref py py-func docutils literal notranslate"><span class="pre">bbknn()</span></code> first,
-or explicitly passing a <code class="docutils literal notranslate"><span class="pre">adjacency</span></code> matrix.
-:param adata: The annotated data matrix.
-:param resolution: For the default flavor (<code class="docutils literal notranslate"><span class="pre">'vtraag'</span></code>), you can provide a resolution</p>
-<blockquote>
-<div><p>(higher resolution means finding more and smaller clusters),
-which defaults to 1.0.
-See “Time as a resolution parameter” in <span id="id7">[Lambiotte09]</span>.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>random_state</strong> – Change the initialization of the optimization.</p></li>
-<li><p><strong>restrict_to</strong> – Restrict the clustering to the categories within the key for sample
-annotation, tuple needs to contain <code class="docutils literal notranslate"><span class="pre">(obs_key,</span> <span class="pre">list_of_categories)</span></code>.</p></li>
-<li><p><strong>key_added</strong> – Key under which to add the cluster labels. (default: <code class="docutils literal notranslate"><span class="pre">'louvain'</span></code>)</p></li>
-<li><p><strong>adjacency</strong> – Sparse adjacency matrix of the graph, defaults to
-<code class="docutils literal notranslate"><span class="pre">adata.uns['neighbors']['connectivities']</span></code>.</p></li>
-<li><p><strong>flavor</strong> – Choose between to packages for computing the clustering.
-<code class="docutils literal notranslate"><span class="pre">'vtraag'</span></code> is much more powerful, and the default.</p></li>
-<li><p><strong>directed</strong> – Interpret the <code class="docutils literal notranslate"><span class="pre">adjacency</span></code> matrix as directed graph?</p></li>
-<li><p><strong>use_weights</strong> – Use weights from knn graph.</p></li>
-<li><p><strong>partition_type</strong> – Type of partition to use.
-Only a valid argument if <code class="docutils literal notranslate"><span class="pre">flavor</span></code> is <code class="docutils literal notranslate"><span class="pre">'vtraag'</span></code>.</p></li>
-<li><p><strong>partition_kwargs</strong> – Key word arguments to pass to partitioning,
-if <code class="docutils literal notranslate"><span class="pre">vtraag</span></code> method is being used.</p></li>
-<li><p><strong>copy</strong> – Copy adata or modify it inplace.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> – By default (<code class="docutils literal notranslate"><span class="pre">copy=False</span></code>), updates <code class="docutils literal notranslate"><span class="pre">adata</span></code> with the following fields:
-<code class="docutils literal notranslate"><span class="pre">adata.obs['louvain']</span></code> (<code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code>, dtype <code class="docutils literal notranslate"><span class="pre">category</span></code>)</p>
-<blockquote>
-<div><p>Array of dim (number of samples) that stores the subgroup id
-(<code class="docutils literal notranslate"><span class="pre">'0'</span></code>, <code class="docutils literal notranslate"><span class="pre">'1'</span></code>, …) for each cell.</p>
-</div></blockquote>
-</li>
-<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AnnData</span></code> – When <code class="docutils literal notranslate"><span class="pre">copy=True</span></code> is set, a copy of <code class="docutils literal notranslate"><span class="pre">adata</span></code> with those fields is returned.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 
@@ -290,11 +243,19 @@ if <code class="docutils literal notranslate"><span class="pre">vtraag</span></c
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Genomics and Machine Learning lab
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -305,7 +266,6 @@ if <code class="docutils literal notranslate"><span class="pre">vtraag</span></c
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -15,6 +15,9 @@ def gene_plot(
     adata: AnnData,
     method: str = "CumSum",
     genes: Optional[Union[str, list]] = None,
+    list_clusters: list = None,
+    use_raw_count: bool = False,
+    use_label: str = "louvain",
     threshold: float = None,
     library_id: str = None,
     data_alpha: float = 1.0,
@@ -76,16 +79,33 @@ def gene_plot(
 
     #plt.rcParams['figure.dpi'] = dpi
 
+
+
+    def create_query(list_clusters,use_label):
+        ini = ''
+        for sub in list_clusters:
+            ini = ini + use_label + ' == "' + str(sub) + '" | '
+        return ini[:-2]
+
+    if list_clusters is not None:
+        query_adata = adata[adata.obs.query(create_query(list_clusters,use_label)).index].copy()
+    else:
+        query_adata = adata.copy()
+
+
+    if use_raw_count:
+        query_adata.X = query_adata.layers["raw_count"]
+
     if type(genes) == str:
         genes = [genes]
-    colors = _gene_plot(adata, method, genes)
+    colors = _gene_plot(query_adata, method, genes)
 
     if threshold is not None:
         colors = colors[colors>threshold]
 
     index_filter = colors.index
 
-    filter_obs  = adata.obs.loc[index_filter]
+    filter_obs  = query_adata.obs.loc[index_filter]
 
     imagecol = filter_obs["imagecol"]
     imagerow = filter_obs["imagerow"]
@@ -104,23 +124,22 @@ def gene_plot(
 
     if show_color_bar:
 
-        cb = plt.colorbar(plot, cax=fig.add_axes(
-            [0.78, 0.3, 0.03, 0.38]), cmap=cmap)
+        cb = plt.colorbar(plot, aspect=10,shrink=0.5, cmap=cmap)
         cb.outline.set_visible(False)
 
     if not show_axis:
         a.axis('off')
 
     if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = list(query_adata.uns["spatial"].keys())[0]
 
-    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    image = query_adata.uns["spatial"][library_id]["images"][query_adata.uns["spatial"]["use_quality"]]
     # Overlay the tissue image
     a.imshow(image, alpha=tissue_alpha, zorder=-1,)
 
     if cropped:
-        imagecol = adata.obs["imagecol"]
-        imagerow = adata.obs["imagerow"]
+        imagecol = query_adata.obs["imagecol"]
+        imagerow = query_adata.obs["imagerow"]
 
         a.set_xlim(imagecol.min() - margin,
                 imagecol.max() + margin)

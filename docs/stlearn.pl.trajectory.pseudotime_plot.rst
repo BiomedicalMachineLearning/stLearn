@@ -1,7 +1,7 @@
-
+﻿
 stlearn.pl.trajectory.pseudotime\_plot
 ======================================
 
-.. currentmodule:: stlearn.pl.trajectory
+.. currentmodule:: stlearn.pl
 
-.. autofunction:: pseudotime_plot
+.. autofunction:: trajectory.pseudotime_plot

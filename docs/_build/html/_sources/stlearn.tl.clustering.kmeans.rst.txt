@@ -1,7 +1,7 @@
-
+﻿
 stlearn.tl.clustering.kmeans
 ============================
 
-.. currentmodule:: stlearn.tl.clustering
+.. currentmodule:: stlearn.tl
 
-.. autofunction:: kmeans
+.. autofunction:: clustering.kmeans
