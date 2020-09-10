@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>This tutorial compares clustering performance of three scenarios: &mdash; stLearn 0.2.6 documentation</title>
+  <title>StSME comparison &mdash; stLearn 0.2.6 documentation</title>
   
 
   
@@ -100,11 +100,14 @@
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">This tutorial compares clustering performance of three scenarios:</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#We-ues-Human-Brain-dorsolateral-prefrontal-cortex-(DLPFC)-Visium-dataset-from-here">We ues Human Brain dorsolateral prefrontal cortex (DLPFC) Visium dataset from here</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#(1)-normal-(without-stSME)">(1) normal (without stSME)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#(2)-stSME-applied-on-dimension-reduced-spaces-(PCA)-as-normalization">(2) stSME applied on dimension reduced spaces (PCA) as normalization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#(3)-stSME-applied-on-raw-gene-counts-as-imputation">(3) stSME applied on raw gene counts as imputation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">StSME comparison</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#This-tutorial-compares-clustering-performance-of-three-scenarios:">This tutorial compares clustering performance of three scenarios:</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#We-ues-Human-Brain-dorsolateral-prefrontal-cortex-(DLPFC)-Visium-dataset-from-here">We ues Human Brain dorsolateral prefrontal cortex (DLPFC) Visium dataset from here</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#(1)-normal-(without-stSME)">(1) normal (without stSME)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#(2)-stSME-applied-on-dimension-reduced-spaces-(PCA)-as-normalization">(2) stSME applied on dimension reduced spaces (PCA) as normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#(3)-stSME-applied-on-raw-gene-counts-as-imputation">(3) stSME applied on raw gene counts as imputation</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
@@ -164,7 +167,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>This tutorial compares clustering performance of three scenarios:</li>
+      <li>StSME comparison</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -438,15 +441,17 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
+<div class="section" id="StSME-comparison">
+<h1>StSME comparison<a class="headerlink" href="#StSME-comparison" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="This-tutorial-compares-clustering-performance-of-three-scenarios:">
-<h1>This tutorial compares clustering performance of three scenarios:<a class="headerlink" href="#This-tutorial-compares-clustering-performance-of-three-scenarios:" title="Permalink to this headline">¶</a></h1>
+<h2>This tutorial compares clustering performance of three scenarios:<a class="headerlink" href="#This-tutorial-compares-clustering-performance-of-three-scenarios:" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li><p>normal (without stSME)</p></li>
 <li><p>stSME applied on dimension reduced spaces (PCA) as normalization and</p></li>
 <li><p>stSME applied on raw gene counts as imputation</p></li>
 </ol>
 <div class="section" id="We-ues-Human-Brain-dorsolateral-prefrontal-cortex-(DLPFC)-Visium-dataset-from-here">
-<h2>We ues Human Brain dorsolateral prefrontal cortex (DLPFC) Visium dataset from <a class="reference external" href="https://github.com/LieberInstitute/HumanPilot">here</a><a class="headerlink" href="#We-ues-Human-Brain-dorsolateral-prefrontal-cortex-(DLPFC)-Visium-dataset-from-here" title="Permalink to this headline">¶</a></h2>
+<h3>We ues Human Brain dorsolateral prefrontal cortex (DLPFC) Visium dataset from <a class="reference external" href="https://github.com/LieberInstitute/HumanPilot">here</a><a class="headerlink" href="#We-ues-Human-Brain-dorsolateral-prefrontal-cortex-(DLPFC)-Visium-dataset-from-here" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -568,7 +573,7 @@ Scale step is finished in adata.X
 </div>
 </div>
 <div class="section" id="(1)-normal-(without-stSME)">
-<h2>(1) normal (without stSME)<a class="headerlink" href="#(1)-normal-(without-stSME)" title="Permalink to this headline">¶</a></h2>
+<h3>(1) normal (without stSME)<a class="headerlink" href="#(1)-normal-(without-stSME)" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
@@ -647,7 +652,7 @@ Kmeans clustering is done! The labels are stored in adata.obs[&#34;kmeans&#34;]
 </div>
 </div>
 <div class="section" id="(2)-stSME-applied-on-dimension-reduced-spaces-(PCA)-as-normalization">
-<h2>(2) stSME applied on dimension reduced spaces (PCA) as normalization<a class="headerlink" href="#(2)-stSME-applied-on-dimension-reduced-spaces-(PCA)-as-normalization" title="Permalink to this headline">¶</a></h2>
+<h3>(2) stSME applied on dimension reduced spaces (PCA) as normalization<a class="headerlink" href="#(2)-stSME-applied-on-dimension-reduced-spaces-(PCA)-as-normalization" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -737,7 +742,7 @@ Kmeans clustering is done! The labels are stored in adata.obs[&#34;kmeans&#34;]
 </div>
 </div>
 <div class="section" id="(3)-stSME-applied-on-raw-gene-counts-as-imputation">
-<h2>(3) stSME applied on raw gene counts as imputation<a class="headerlink" href="#(3)-stSME-applied-on-raw-gene-counts-as-imputation" title="Permalink to this headline">¶</a></h2>
+<h3>(3) stSME applied on raw gene counts as imputation<a class="headerlink" href="#(3)-stSME-applied-on-raw-gene-counts-as-imputation" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -839,6 +844,7 @@ Kmeans clustering is done! The labels are stored in adata.obs[&#34;kmeans&#34;]
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>
