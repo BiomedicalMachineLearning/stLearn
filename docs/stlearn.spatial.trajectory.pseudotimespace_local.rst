@@ -1,7 +1,7 @@
-﻿
+
 stlearn.spatial.trajectory.pseudotimespace\_local
 =================================================
 
-.. currentmodule:: stlearn.spatial
+.. currentmodule:: stlearn.spatial.trajectory
 
-.. autofunction:: trajectory.pseudotimespace_local
+.. autofunction:: pseudotimespace_local

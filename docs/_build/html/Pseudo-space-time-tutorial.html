@@ -1,19 +1,15 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Spatial trajectory inference analysis tutorial &mdash; stLearn 0.2.6 documentation</title>
+  <title>Spatial trajectory inference analysis tutorial &mdash; stLearn 0.2.7 documentation</title>
   
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
 
   
   
@@ -21,9 +17,7 @@
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,12 +26,17 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spatial cell-cell interaction tutorial" href="cci.html" />
@@ -55,7 +54,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> stLearn
+            <a href="index.html" class="icon icon-home"> stLearn
           
 
           
@@ -65,7 +64,7 @@
             
             
               <div class="version">
-                0.2.6
+                0.2.7
               </div>
             
           
@@ -82,7 +81,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -99,6 +97,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="stlearn-interactive-tutorial.html">stLearn interactive web app tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">StSME comparison</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Spatial trajectory inference analysis tutorial</a><ul>
@@ -124,7 +123,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -163,7 +161,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Spatial trajectory inference analysis tutorial</li>
     
@@ -538,7 +536,7 @@ Louvain clustering is done! The labels are stored in adata.obs[&#39;louvain&#39;
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_8_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_8_0.png" style="width: 443px; height: 386px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_8_0.png"><img alt="_images/Pseudo-space-time-tutorial_8_0.png" src="_images/Pseudo-space-time-tutorial_8_0.png" style="width: 443px; height: 386px;" /></a>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -587,7 +585,7 @@ PAGA plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_11_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_1.png" style="width: 639px; height: 413px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_11_1.png"><img alt="_images/Pseudo-space-time-tutorial_11_1.png" src="_images/Pseudo-space-time-tutorial_11_1.png" style="width: 639px; height: 413px;" /></a>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -602,7 +600,7 @@ Gene expression (reduced dimension) plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_11_3.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_3.png" style="width: 605px; height: 435px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_11_3.png"><img alt="_images/Pseudo-space-time-tutorial_11_3.png" src="_images/Pseudo-space-time-tutorial_11_3.png" style="width: 605px; height: 435px;" /></a>
 </div>
 </div>
 <div class="nboutput docutils container">
@@ -617,7 +615,7 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_11_5.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_11_5.png" style="width: 610px; height: 435px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_11_5.png"><img alt="_images/Pseudo-space-time-tutorial_11_5.png" src="_images/Pseudo-space-time-tutorial_11_5.png" style="width: 610px; height: 435px;" /></a>
 </div>
 </div>
 <p>This is the DPT visualization in tissue morphology</p>
@@ -634,7 +632,7 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_13_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_13_0.png" style="width: 436px; height: 402px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_13_0.png"><img alt="_images/Pseudo-space-time-tutorial_13_0.png" src="_images/Pseudo-space-time-tutorial_13_0.png" style="width: 436px; height: 402px;" /></a>
 </div>
 </div>
 </div>
@@ -655,7 +653,7 @@ Diffusion pseudotime plot:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_16_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_16_0.png" style="width: 352px; height: 386px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_16_0.png"><img alt="_images/Pseudo-space-time-tutorial_16_0.png" src="_images/Pseudo-space-time-tutorial_16_0.png" style="width: 352px; height: 386px;" /></a>
 </div>
 </div>
 <p>The local trajectory could be constructed by this function. It calculate the spatio-temporal distance between each pair-wise of sub-clusters.</p>
@@ -685,7 +683,7 @@ Start construct trajectory for subcluster 6
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_18_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_18_1.png" style="width: 503px; height: 477px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_18_1.png"><img alt="_images/Pseudo-space-time-tutorial_18_1.png" src="_images/Pseudo-space-time-tutorial_18_1.png" style="width: 503px; height: 477px;" /></a>
 </div>
 </div>
 </div>
@@ -716,7 +714,7 @@ Start to construct the trajectory: 6 -&gt; 7
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_20_1.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_20_1.png" style="width: 443px; height: 386px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_20_1.png"><img alt="_images/Pseudo-space-time-tutorial_20_1.png" src="_images/Pseudo-space-time-tutorial_20_1.png" style="width: 443px; height: 386px;" /></a>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -732,7 +730,7 @@ Start to construct the trajectory: 6 -&gt; 7
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_21_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_21_0.png" style="width: 953px; height: 396px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_21_0.png"><img alt="_images/Pseudo-space-time-tutorial_21_0.png" src="_images/Pseudo-space-time-tutorial_21_0.png" style="width: 953px; height: 396px;" /></a>
 </div>
 </div>
 </div>
@@ -787,7 +785,7 @@ Transition markers result is stored in adata.uns[&#39;clade_13&#39;]
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_25_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_25_0.png" style="width: 667px; height: 457px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_25_0.png"><img alt="_images/Pseudo-space-time-tutorial_25_0.png" src="_images/Pseudo-space-time-tutorial_25_0.png" style="width: 667px; height: 457px;" /></a>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -803,7 +801,7 @@ Transition markers result is stored in adata.uns[&#39;clade_13&#39;]
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_26_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_26_0.png" style="width: 614px; height: 457px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_26_0.png"><img alt="_images/Pseudo-space-time-tutorial_26_0.png" src="_images/Pseudo-space-time-tutorial_26_0.png" style="width: 614px; height: 457px;" /></a>
 </div>
 </div>
 <p>We also can compare between 2 clades or branches</p>
@@ -837,7 +835,7 @@ The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_29_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_29_0.png" style="width: 639px; height: 454px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_29_0.png"><img alt="_images/Pseudo-space-time-tutorial_29_0.png" src="_images/Pseudo-space-time-tutorial_29_0.png" style="width: 639px; height: 454px;" /></a>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -853,7 +851,7 @@ The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_30_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_30_0.png" style="width: 471px; height: 386px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_30_0.png"><img alt="_images/Pseudo-space-time-tutorial_30_0.png" src="_images/Pseudo-space-time-tutorial_30_0.png" style="width: 471px; height: 386px;" /></a>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -869,7 +867,7 @@ The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/Pseudo-space-time-tutorial_31_0.png" class="no-scaled-link" src="_images/Pseudo-space-time-tutorial_31_0.png" style="width: 471px; height: 386px;" />
+<a class="reference internal image-reference" href="_images/Pseudo-space-time-tutorial_31_0.png"><img alt="_images/Pseudo-space-time-tutorial_31_0.png" src="_images/Pseudo-space-time-tutorial_31_0.png" style="width: 471px; height: 386px;" /></a>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -904,19 +902,11 @@ The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&
 
   <div role="contentinfo">
     <p>
-        
         &copy; Copyright 2020, Genomics and Machine Learning lab
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -927,6 +917,7 @@ The result of comparison between clade_6 and clade_13 stored in &#39;adata.uns[&
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

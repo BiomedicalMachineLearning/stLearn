@@ -308,6 +308,16 @@ def laplacian_matrix(A,normalized=False):
 
 """
 **********
+Exceptions
+**********
+Custom exceptions for NetComp.
+"""
+
+class UndefinedException(Exception):
+    """Raised when matrix to be returned is undefined"""
+
+"""
+**********
 Resistance
 **********
 Resistance matrix. Renormalized version, as well as conductance and commute matrices.
@@ -319,8 +329,8 @@ from scipy import linalg as spla
 import numpy as np
 from scipy.sparse import issparse
 
-from netcomp.linalg.matrices import laplacian_matrix
-from netcomp.exception import UndefinedException
+#from netcomp.linalg.matrices import laplacian_matrix
+#from netcomp.exception import UndefinedException
 
 
 def resistance_matrix(A,check_connected=True):

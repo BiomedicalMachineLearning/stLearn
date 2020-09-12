@@ -1,7 +1,7 @@
-﻿
+
 stlearn.pl.trajectory.tree\_plot
 ================================
 
-.. currentmodule:: stlearn.pl
+.. currentmodule:: stlearn.pl.trajectory
 
-.. autofunction:: trajectory.tree_plot
+.. autofunction:: tree_plot

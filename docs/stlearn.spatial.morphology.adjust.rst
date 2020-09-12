@@ -1,7 +1,7 @@
-﻿
+
 stlearn.spatial.morphology.adjust
 =================================
 
-.. currentmodule:: stlearn.spatial
+.. currentmodule:: stlearn.spatial.morphology
 
-.. autofunction:: morphology.adjust
+.. autofunction:: adjust

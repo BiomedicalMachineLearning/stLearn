@@ -1,7 +1,7 @@
-﻿
+
 stlearn.tl.clustering.louvain
 =============================
 
-.. currentmodule:: stlearn.tl
+.. currentmodule:: stlearn.tl.clustering
 
-.. autofunction:: clustering.louvain
+.. autofunction:: louvain

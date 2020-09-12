@@ -1,8 +1,7 @@
 scanpy==1.5.1
 tensorflow==2.2.0
 Pillow==7.1.2
-gseapy>=0.9.*
+gseapy>=0.10
 NaiveDE==1.2
 xlrd == 1.0.0
 fa2 == 0.3.5 
-NetComp == 0.2.3

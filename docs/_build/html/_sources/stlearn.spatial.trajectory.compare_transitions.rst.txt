@@ -1,7 +1,7 @@
-﻿
+
 stlearn.spatial.trajectory.compare\_transitions
 ===============================================
 
-.. currentmodule:: stlearn.spatial
+.. currentmodule:: stlearn.spatial.trajectory
 
-.. autofunction:: trajectory.compare_transitions
+.. autofunction:: compare_transitions

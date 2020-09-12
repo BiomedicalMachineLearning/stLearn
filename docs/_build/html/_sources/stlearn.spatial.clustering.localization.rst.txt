@@ -1,7 +1,7 @@
-﻿
+
 stlearn.spatial.clustering.localization
 =======================================
 
-.. currentmodule:: stlearn.spatial
+.. currentmodule:: stlearn.spatial.clustering
 
-.. autofunction:: clustering.localization
+.. autofunction:: localization

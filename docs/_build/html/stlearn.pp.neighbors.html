@@ -1,19 +1,15 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.pp.neighbors &mdash; stLearn 0.2.6 documentation</title>
+  <title>stlearn.pp.neighbors &mdash; stLearn 0.2.7 documentation</title>
   
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
 
   
   
@@ -21,9 +17,7 @@
   
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,12 +26,17 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="stlearn.pp.tiling" href="stlearn.pp.tiling.html" />
@@ -55,7 +54,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> stLearn
+            <a href="index.html" class="icon icon-home"> stLearn
           
 
           
@@ -65,7 +64,7 @@
             
             
               <div class="version">
-                0.2.6
+                0.2.7
               </div>
             
           
@@ -82,7 +81,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -117,6 +115,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="stlearn-interactive-tutorial.html">stLearn interactive web app tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">StSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-space-time-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
@@ -135,7 +134,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -174,7 +172,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
           <li><a href="api.html">API</a> &raquo;</li>
         
@@ -225,7 +223,7 @@
 <h1>stlearn.pp.neighbors<a class="headerlink" href="#stlearn-pp-neighbors" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="stlearn.pp.neighbors">
-<code class="sig-prename descclassname">stlearn.pp.</code><code class="sig-name descname">neighbors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">n_neighbors</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">n_pcs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_rep</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">knn</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>int<span class="p">, </span>numpy.random.mtrand.RandomState<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>typing_extensions.Literal<span class="p">[</span>umap<span class="p">, </span>gauss<span class="p">, </span>rapids<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'umap'</span></em>, <em class="sig-param"><span class="n">metric</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>typing_extensions.Literal<span class="p">[</span>cityblock<span class="p">, </span>cosine<span class="p">, </span>euclidean<span class="p">, </span>l1<span class="p">, </span>l2<span class="p">, </span>manhattan<span class="p">]</span><span class="p">, </span>typing_extensions.Literal<span class="p">[</span>braycurtis<span class="p">, </span>canberra<span class="p">, </span>chebyshev<span class="p">, </span>correlation<span class="p">, </span>dice<span class="p">, </span>hamming<span class="p">, </span>jaccard<span class="p">, </span>kulsinski<span class="p">, </span>mahalanobis<span class="p">, </span>minkowski<span class="p">, </span>rogerstanimoto<span class="p">, </span>russellrao<span class="p">, </span>seuclidean<span class="p">, </span>sokalmichener<span class="p">, </span>sokalsneath<span class="p">, </span>sqeuclidean<span class="p">, </span>yule<span class="p">]</span><span class="p">, </span>Callable<span class="p">[</span><span class="p">[</span>numpy.ndarray<span class="p">, </span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">metric_kwds</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">mappingproxy({})</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/preprocessing/graph.html#neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pp.neighbors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">stlearn.pp.</code><code class="sig-name descname">neighbors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">n_neighbors</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">n_pcs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_rep</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">knn</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">random_state</span><span class="p">:</span> <span class="n">Union[int, numpy.random.mtrand.RandomState, None]</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Literal<span class="p">[</span>umap<span class="p">, </span>gauss<span class="p">, </span>rapids<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'umap'</span></em>, <em class="sig-param"><span class="n">metric</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Literal<span class="p">[</span>cityblock<span class="p">, </span>cosine<span class="p">, </span>euclidean<span class="p">, </span>l1<span class="p">, </span>l2<span class="p">, </span>manhattan<span class="p">]</span><span class="p">, </span>Literal<span class="p">[</span>braycurtis<span class="p">, </span>canberra<span class="p">, </span>chebyshev<span class="p">, </span>correlation<span class="p">, </span>dice<span class="p">, </span>hamming<span class="p">, </span>jaccard<span class="p">, </span>kulsinski<span class="p">, </span>mahalanobis<span class="p">, </span>minkowski<span class="p">, </span>rogerstanimoto<span class="p">, </span>russellrao<span class="p">, </span>seuclidean<span class="p">, </span>sokalmichener<span class="p">, </span>sokalsneath<span class="p">, </span>sqeuclidean<span class="p">, </span>yule<span class="p">]</span><span class="p">, </span>Callable<span class="p">[</span><span class="p">[</span>numpy.ndarray<span class="p">, </span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">metric_kwds</span><span class="p">:</span> <span class="n">Mapping<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">mappingproxy({})</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/preprocessing/graph.html#neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.pp.neighbors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute a neighborhood graph of observations <span id="id1">[McInnes18]</span>.
 The neighbor search efficiency of this heavily relies on UMAP <span id="id2">[McInnes18]</span>,
 which also provides a method for estimating connectivities of data points -
@@ -296,19 +294,11 @@ neighbors.</p></li>
 
   <div role="contentinfo">
     <p>
-        
         &copy; Copyright 2020, Genomics and Machine Learning lab
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -319,6 +309,7 @@ neighbors.</p></li>
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {

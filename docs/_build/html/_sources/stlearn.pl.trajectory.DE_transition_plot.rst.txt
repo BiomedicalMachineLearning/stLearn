@@ -1,7 +1,7 @@
-﻿
+
 stlearn.pl.trajectory.DE\_transition\_plot
 ==========================================
 
-.. currentmodule:: stlearn.pl
+.. currentmodule:: stlearn.pl.trajectory
 
-.. autofunction:: trajectory.DE_transition_plot
+.. autofunction:: DE_transition_plot

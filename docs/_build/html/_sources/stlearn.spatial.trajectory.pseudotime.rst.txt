@@ -1,7 +1,7 @@
-﻿
+
 stlearn.spatial.trajectory.pseudotime
 =====================================
 
-.. currentmodule:: stlearn.spatial
+.. currentmodule:: stlearn.spatial.trajectory
 
-.. autofunction:: trajectory.pseudotime
+.. autofunction:: pseudotime

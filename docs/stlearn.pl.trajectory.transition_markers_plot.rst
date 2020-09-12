@@ -1,7 +1,7 @@
-﻿
+
 stlearn.pl.trajectory.transition\_markers\_plot
 ===============================================
 
-.. currentmodule:: stlearn.pl
+.. currentmodule:: stlearn.pl.trajectory
 
-.. autofunction:: trajectory.transition_markers_plot
+.. autofunction:: transition_markers_plot

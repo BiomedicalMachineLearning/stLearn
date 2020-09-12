@@ -1,7 +1,7 @@
-﻿
+
 stlearn.pl.trajectory.local\_plot
 =================================
 
-.. currentmodule:: stlearn.pl
+.. currentmodule:: stlearn.pl.trajectory
 
-.. autofunction:: trajectory.local_plot
+.. autofunction:: local_plot

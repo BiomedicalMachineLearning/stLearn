@@ -28,6 +28,7 @@ stLearn-interactive tutorial: `Wiki page <https://github.com/BiomedicalMachineLe
    :maxdepth: 1
    :caption: Tutorials:
 
+   stlearn-interactive-tutorial
    stSME_clustering
    stSME_comparison
    Pseudo-space-time-tutorial
