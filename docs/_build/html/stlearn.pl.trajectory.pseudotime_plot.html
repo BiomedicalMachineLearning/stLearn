@@ -26,7 +26,7 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
@@ -229,42 +229,6 @@
 </style>
 <div class="section" id="stlearn-pl-trajectory-pseudotime-plot">
 <h1>stlearn.pl.trajectory.pseudotime_plot<a class="headerlink" href="#stlearn-pl-trajectory-pseudotime-plot" title="Permalink to this headline">¶</a></h1>
-<dl class="py function">
-<dt id="stlearn.pl.trajectory.pseudotime_plot">
-<code class="sig-prename descclassname">stlearn.pl.trajectory.</code><code class="sig-name descname">pseudotime_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">library_id</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_label</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'louvain'</span></em>, <em class="sig-param"><span class="n">use_pseudotime</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'dpt_pseudotime'</span></em>, <em class="sig-param"><span class="n">list_cluster</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">tissue_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">edge_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">node_alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">spot_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>float<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">6.5</span></em>, <em class="sig-param"><span class="n">node_size</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">5</span></em>, <em class="sig-param"><span class="n">show_color_bar</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_axis</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_graph</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_plot</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">cropped</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">margin</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em>, <em class="sig-param"><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.pl.trajectory.pseudotime_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Global trajectory inference plot (Only DPT).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
-<li><p><strong>library_id</strong> – Library id stored in AnnData.</p></li>
-<li><p><strong>use_label</strong> – Use label result of clustering method.</p></li>
-<li><p><strong>list_cluster</strong> – Choose set of clusters that will display in the plot.</p></li>
-<li><p><strong>data_alpha</strong> – Opacity of the spot.</p></li>
-<li><p><strong>tissue_alpha</strong> – Opacity of the tissue.</p></li>
-<li><p><strong>edge_alpha</strong> – Opacity of edge in PAGA graph in the tissue.</p></li>
-<li><p><strong>node_alpha</strong> – Opacity of node in PAGA graph in the tissue.</p></li>
-<li><p><strong>cmap</strong> – Color map to use.</p></li>
-<li><p><strong>spot_size</strong> – Size of the spot.</p></li>
-<li><p><strong>node_size</strong> – Size of node in PAGA graph in the tissue.</p></li>
-<li><p><strong>show_color_bar</strong> – Show color bar or not.</p></li>
-<li><p><strong>show_axis</strong> – Show axis or not.</p></li>
-<li><p><strong>show_graph</strong> – Show PAGA graph or not.</p></li>
-<li><p><strong>show_legend</strong> – Show legend or not.</p></li>
-<li><p><strong>show_plot</strong> – Show plot or not</p></li>
-<li><p><strong>output</strong> – Save the figure as file or not.</p></li>
-<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Nothing</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
 
 

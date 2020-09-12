@@ -1,7 +1,7 @@
-
+﻿
 stlearn.spatial.trajectory.detect\_transition\_markers\_branches
 ================================================================
 
-.. currentmodule:: stlearn.spatial.trajectory
+.. currentmodule:: stlearn.spatial
 
-.. autofunction:: detect_transition_markers_branches
+.. autofunction:: trajectory.detect_transition_markers_branches
