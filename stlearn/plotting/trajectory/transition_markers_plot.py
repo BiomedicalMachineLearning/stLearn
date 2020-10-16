@@ -1,26 +1,32 @@
 import matplotlib.pyplot as plt
 from decimal import Decimal
 
-def transition_markers_plot(adata,top_genes=10,trajectory=None):
+def transition_markers_plot(adata,top_genes=10,trajectory=None,name=None,output=None):
 
     if trajectory == None:
         raise ValueError("Please input the trajectory name!")
     if trajectory not in adata.uns:
         raise ValueError("Please input the right trajectory name!")
 
-    pos = adata.uns[trajectory][adata.uns[trajectory]['score'] >= 0].sort_values("score").reset_index(drop=True)[:top_genes]
-    neg = adata.uns[trajectory][adata.uns[trajectory]['score'] < 0].sort_values("score",ascending=False).reset_index(drop=True)[:top_genes]
+    pos = adata.uns[trajectory][adata.uns[trajectory]['score'] >= 0].sort_values("score",ascending=False).reset_index(drop=True)[:top_genes]
+    neg = adata.uns[trajectory][adata.uns[trajectory]['score'] < 0].sort_values("score").reset_index(drop=True)[:top_genes]
 
     y = range(top_genes)
-    x1 = list(neg["score"])
-    x2 = list(pos["score"])
-    
+    x1 = list(neg["score"])[::-1]
+    x2 = list(pos["score"])[::-1]
+
+    pos = pos[::-1]
+    neg = neg[::-1]
+
     if len(x1) < top_genes:
         for i in range(len(x1),top_genes):
             x1.append(0)
     if len(x2) < top_genes:
         for i in range(len(x2),top_genes):
             x2.append(0)
+    
+
+
     fig, axes = plt.subplots(ncols=2, sharey=True)
     axes[0].barh(y, x1, align='center', color='#fb687a')
     axes[1].barh(y, x2, align='center', color='#31a2fb')
@@ -46,8 +52,8 @@ def transition_markers_plot(adata,top_genes=10,trajectory=None):
     rects = axes[1].patches
     for i,rect in enumerate(rects):
         try:
-            gene_name=pos["gene"][i]
-            p_value = "{:.2E}".format(Decimal(str(pos["p-value"][i])))
+            gene_name=list(pos["gene"])[i]
+            p_value = "{:.2E}".format(Decimal(str(list(pos["p-value"])[i])))
         except:
             gene_name = ""
             p_value = ''
@@ -61,8 +67,8 @@ def transition_markers_plot(adata,top_genes=10,trajectory=None):
     rects = axes[0].patches
     for i,rect in enumerate(rects):
         try:
-            gene_name=neg["gene"][i]
-            p_value = "{:.2E}".format(Decimal(str(neg["p-value"][i])))
+            gene_name=list(neg["gene"])[i]
+            p_value = "{:.2E}".format(Decimal(str(list(neg["p-value"])[i])))
         except:
             gene_name = ""
             p_value = ''
@@ -76,5 +82,12 @@ def transition_markers_plot(adata,top_genes=10,trajectory=None):
     plt.figtext(0.5, 0.9, trajectory, ha='center', va='center')
     axes[0].set_xlabel('Spearman correlation coefficient')
     axes[0].xaxis.set_label_coords(1, -0.1)
+
+    if name is None:
+            name = trajectory
+
+    if output is not None:
+        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+                    bbox_inches='tight', pad_inches=0)
 
     plt.show()
