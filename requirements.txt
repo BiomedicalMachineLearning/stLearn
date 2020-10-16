@@ -1,5 +1,5 @@
 scanpy==1.5.1
-tensorflow==2.2.0
+tensorflow==2.2.1
 Pillow==7.1.2
 gseapy>=0.10
 NaiveDE==1.2
