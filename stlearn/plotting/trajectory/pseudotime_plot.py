@@ -126,8 +126,8 @@ def pseudotime_plot(
 
     n_clus = len(colors.unique())
     
-    from scanpy.plotting import palettes
-    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",palettes.vega_20_scanpy)
+    used_colors = adata.uns[use_label+"_colors"]
+    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",used_colors)
 
     cmap = plt.get_cmap(cmaps)
     bounds=np.linspace(0, n_clus, n_clus+1)
@@ -146,7 +146,7 @@ def pseudotime_plot(
 
             if(x in get_node(list_cluster,adata.uns["split_node"])):
                 a.text(y[0],y[1],get_cluster(str(x),adata.uns["split_node"]),color='white',fontsize = node_size,zorder=100,
-                       bbox=dict(facecolor=cmap(int(get_cluster(str(x),adata.uns["split_node"]))/19),boxstyle='circle',alpha=node_alpha))
+                       bbox=dict(facecolor=cmap(int(get_cluster(str(x),adata.uns["split_node"]))/(len(used_colors)-1)),boxstyle='circle',alpha=node_alpha))
     if show_color_bar:
         cb = plt.colorbar(plot,cmap="viridis")
         cb.outline.set_visible(False)

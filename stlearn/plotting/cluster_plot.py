@@ -17,7 +17,7 @@ def cluster_plot(
     use_label: str = "louvain",
     list_cluster: list = None,
     data_alpha: float = 1.0,
-    cmap: str = "vega_20_scanpy",
+    cmap: str = "default",
     tissue_alpha: float = 1.0,
     threshold_spots: int = 0,
     title: str = None,
@@ -110,6 +110,7 @@ def cluster_plot(
                                font_size=5, linewidths=1, edge_color='#f4efd3', arrowsize=8, arrowstyle='->', connectionstyle="arc3,rad=0.2")
 
     from scanpy.plotting import palettes
+    from stlearn.plotting import palettes_st
     if cmap == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
     elif cmap == "vega_20_scanpy":
@@ -118,9 +119,14 @@ def cluster_plot(
         cmap = palettes.default_102
     elif cmap == "default_28":
         cmap = palettes.default_28
+    elif cmap == "jana_40":
+        cmap = palettes_st.jana_40
+    elif cmap == "default":
+        cmap = palettes_st.default
     else:
         raise ValueError(
             "We only support vega_10_scanpy, vega_20_scanpy, default_28, default_102")
+
 
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
 
@@ -132,16 +138,17 @@ def cluster_plot(
     else:
         tmp = adata.obs
 
+
     # Plot scatter plot based on pixel of spots
     adata.uns["tmp_color"] = []
 
     for i, cluster in enumerate(tmp.groupby(use_label)):
 
-        _ = a.scatter(cluster[1]['imagecol'], cluster[1]['imagerow'], c=[cmap_(int(i)/19)], label=cluster[0],
+        _ = a.scatter(cluster[1]['imagecol'], cluster[1]['imagerow'], c=[cmap_(int(i)/(len(cmap)-1))], label=cluster[0],
                       edgecolor="none", alpha=data_alpha, s=spot_size, marker="o")
 
         adata.uns["tmp_color"].append(
-            matplotlib.colors.to_hex(cmap_(int(i)/19)))
+            matplotlib.colors.to_hex(cmap_(int(i)/(len(cmap)-1))))
 
     if show_legend:
         lgnd = a.legend(bbox_to_anchor=(1.3, 1.0), labelspacing=0.05,
