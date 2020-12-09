@@ -80,10 +80,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'left', 'verticalalignment': 'center'}
         axes[0][1].text(rect.get_x()+rect.get_width()+0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=6)
+                gene_name,**alignment,size=10)
         axes[0][1].text(rect.get_x()+0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=6)
+               color='w',**alignment,size=10)
 
     rects = axes[0][0].patches
     for i,rect in enumerate(rects):
@@ -95,10 +95,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'right', 'verticalalignment': 'center'}
         axes[0][0].text(rect.get_x()+rect.get_width()-0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=6)
+                gene_name,**alignment,size=10)
         axes[0][0].text(rect.get_x()-0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=6)
+               color='w',**alignment,size=10)
 
     rects = axes[1][1].patches
     for i,rect in enumerate(rects):
@@ -110,10 +110,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'left', 'verticalalignment': 'center'}
         axes[1][1].text(rect.get_x()+rect.get_width()+0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=6)
+                gene_name,**alignment,size=10)
         axes[1][1].text(rect.get_x()+0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=6)
+               color='w',**alignment,size=10)
 
     rects = axes[1][0].patches
     for i,rect in enumerate(rects):
@@ -125,10 +125,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'right', 'verticalalignment': 'center'}
         axes[1][0].text(rect.get_x()+rect.get_width()-0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=6)
+                gene_name,**alignment,size=10)
         axes[1][0].text(rect.get_x()-0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=6)
+               color='w',**alignment,size=10)
 
 
 

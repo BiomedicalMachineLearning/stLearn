@@ -2,7 +2,6 @@ from typing import Optional, Union
 from anndata import AnnData
 import pandas as pd 
 import numpy as np 
-import stlearn
 from pathlib import Path
 
 def auto_annotate(

@@ -83,6 +83,9 @@ def transition_markers_plot(adata,top_genes=10,trajectory=None,name=None,output=
     axes[0].set_xlabel('Spearman correlation coefficient')
     axes[0].xaxis.set_label_coords(1, -0.1)
 
+    axes[0].grid(False)
+    axes[1].grid(False)
+
     if name is None:
             name = trajectory
 

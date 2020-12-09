@@ -38,7 +38,7 @@ def non_spatial_plot(
     #plt.rcParams['figure.dpi'] = dpi
 
     if 'paga' in adata.uns.keys():
-        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
+        #adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         print("PAGA plot:")
 
@@ -46,7 +46,7 @@ def non_spatial_plot(
 
 
         scanpy.tl.draw_graph(adata, init_pos='paga')
-        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
+        #adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
 
         print("Gene expression (reduced dimension) plot:")
@@ -58,6 +58,6 @@ def non_spatial_plot(
     else:
 
         scanpy.pl.draw_graph(adata)
-        adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
+        #adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         scanpy.pl.draw_graph(adata, color=use_label, legend_loc='on data')
