@@ -84,7 +84,7 @@ def tree_plot(
     a= plt.subplot(111)
 
     a.axis('off')
-    nx.draw_networkx_edges(G,pos,a=a,arrowstyle="-",with_labels=True,edge_color="#ADABAF",connectionstyle="angle3,angleA=0,angleB=90")
+    nx.draw_networkx_edges(G,pos,ax=a,arrowstyle="-",edge_color="#ADABAF",connectionstyle="angle3,angleA=0,angleB=90")
     trans=a.transData.transform
     trans2=fig.transFigure.inverted().transform
 
@@ -105,7 +105,7 @@ def tree_plot(
         a = plt.axes([xa-p2,ya-p2, piesize, piesize])
 
         subset = adata.obs[adata.obs["sub_cluster_labels"]==str(n)]
-        color = adata.uns["tmp_color"][int(subset[use_label][0])]
+        color = adata.uns[use_label+"_colors"][int(subset[use_label][0])]
 
         a.text(0.5,1.2,str(n),horizontalalignment='center',verticalalignment='center', 
             transform=a.transAxes,color='black',fontsize = fontsize,zorder=3,
@@ -153,7 +153,7 @@ def _generate_image(adata,library_id,sub_cluster,zoom = 10,spot_size=100,fontsiz
         ax2.spines[axis].set_linewidth(0.5)
         ax2.spines[axis].set_color("#D1D1D1")
 
-    color = adata.uns["tmp_color"][int(subset[use_label][0])]
+    color = adata.uns[use_label+"_colors"][int(subset[use_label][0])]
 
     
 

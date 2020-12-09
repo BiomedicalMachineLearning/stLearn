@@ -25,6 +25,9 @@ def pseudotime_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
+    show_trajectory: bool = False,
+    reverse: bool = False,
+    show_node: bool = True,
     show_plot: bool = True,
     cropped: bool = True,
     margin: int = 100,
@@ -88,10 +91,10 @@ def pseudotime_plot(
         list_cluster = list(range(0,len(adata.obs[use_label].unique())))
     # Get query clusters
     command = []
-    for i in list_cluster:
-        command.append(use_label + ' == "' + str(i) + '"')
-    tmp = adata.obs.query(" or ".join(command))
-
+    #for i in list_cluster:
+    #    command.append(use_label + ' == "' + str(i) + '"')
+    #tmp = adata.obs.query(" or ".join(command))
+    tmp = adata.obs
     G=adata.uns["global_graph"]
 
     labels = nx.get_edge_attributes(G,'weight')
@@ -139,7 +142,7 @@ def pseudotime_plot(
     m = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
 
     if show_graph:
-        nx.draw_networkx_edges(G, pos=centroid_dict,node_size=1,font_size=0,linewidths=2,edgelist=result,
+        nx.draw_networkx(G, pos=centroid_dict,node_size=1,font_size=0,linewidths=2,edgelist=result,
                                 width=result2,alpha=edge_alpha,edge_color='#333333',)
 
         for x,y in centroid_dict.items():
@@ -147,6 +150,40 @@ def pseudotime_plot(
             if(x in get_node(list_cluster,adata.uns["split_node"])):
                 a.text(y[0],y[1],get_cluster(str(x),adata.uns["split_node"]),color='white',fontsize = node_size,zorder=100,
                        bbox=dict(facecolor=cmap(int(get_cluster(str(x),adata.uns["split_node"]))/(len(used_colors)-1)),boxstyle='circle',alpha=node_alpha))
+
+    if show_trajectory:
+        
+        used_colors = adata.uns[use_label+"_colors"]
+        cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("",used_colors)
+
+        cmap = plt.get_cmap(cmaps)
+        
+        if not adata.uns["PTS_graph"]:
+            raise ValueError(
+                "Please run stlearn.spatial.trajectory.pseudotimespace!")
+
+        tmp = adata.uns["PTS_graph"]
+
+        G = tmp.copy()
+
+        remove = [edge for edge in G.edges if 9999 in edge]
+        G.remove_edges_from(remove)
+        G.remove_node(9999)
+        centroid_dict = adata.uns["centroid_dict"]
+        if reverse:
+            nx.draw_networkx_edges(G, pos=centroid_dict, node_size=10, alpha=1.0,
+                                width=2.5, edge_color='#f4efd3', arrowsize=17, arrowstyle='<|-', connectionstyle="arc3,rad=0.2")
+        else:
+            nx.draw_networkx_edges(G, pos=centroid_dict, node_size=10, alpha=1.0,
+                                width=2.5, edge_color='#f4efd3', arrowsize=17, arrowstyle='-|>', connectionstyle="arc3,rad=0.2")
+        
+        if show_node:
+            for x,y in centroid_dict.items():
+
+                if(x in get_node(list_cluster,adata.uns["split_node"])):
+                    a.text(y[0],y[1],get_cluster(str(x),adata.uns["split_node"]),color='black',fontsize = 8,zorder=100,
+                           bbox=dict(facecolor=cmap(int(get_cluster(str(x),adata.uns["split_node"]))/(len(used_colors)-1)),boxstyle='circle',alpha=1))
+
     if show_color_bar:
         cb = plt.colorbar(plot,cmap="viridis")
         cb.outline.set_visible(False)
@@ -179,7 +216,7 @@ def pseudotime_plot(
 
 # get name of cluster by subcluster
 def get_cluster(search,dictionary):
-    for cl, sub in dictionary.items():    # for name, age in dictionary.iteritems():  (for Python 2.x)
+    for cl, sub in dictionary.items():  
         if search in sub:
             return(cl)
         
