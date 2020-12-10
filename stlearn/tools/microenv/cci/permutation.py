@@ -11,7 +11,6 @@ def permutation(
     adata: AnnData,
     n_pairs: int = 200,
     distance: int = None,
-    use_data: str = 'normalized_total',
     use_lr: str = 'cci_lr',
     use_het: str = 'cci_het'
 ) -> AnnData:
@@ -22,7 +21,6 @@ def permutation(
     adata: AnnData          The data object including the cell types to count
     n_pairs: int            Number of gene pairs to run permutation test (default: 1000)
     distance: int           Distance between spots (default: 30)
-    use_data: str           Data used for lr clustering (default: 'normalized')
     use_lr: str             LR cluster used for permutation test (default: 'lr_neighbours_louvain_max')
     use_het: str            cell type diversity counts used for permutation test (default 'het')
     Returns
@@ -41,7 +39,7 @@ def permutation(
         raise ValueError('Permutation test only supported for one LR pair scenario.')
     else:
         # sort the mean of each gene expression 
-        means = adata.obsm[use_data][genes].mean().sort_values()
+        means = adata.to_df()[genes].mean().sort_values()
         lr1 = adata.uns['lr'][0].split('_')[0]
         lr2 = adata.uns['lr'][0].split('_')[1]
         i1, i2 = means.index.get_loc(lr1), means.index.get_loc(lr2)
@@ -68,27 +66,14 @@ def permutation(
     '''
 
     scores = adata.uns['merged']
-    background, distribution, distributions, adata.uns['distributions'] = [], [], [], []
+    background = []
 
     # for each randomly selected pair, run through cci analysis and keep the scores
     for item in pairs:
         adata.uns['lr'] = [item]
-        lr(adata, use_data=use_data, use_lr=use_lr, distance=distance);
+        lr(adata, use_lr=use_lr, distance=distance);
         merge(adata, use_lr=use_lr, use_het=use_het);
         background += adata.uns['merged'].tolist()
-        distribution.append(adata.uns['merged'])
-
-    for i in adata.obs_names:
-        distributions = []
-        for j in range(1, len(distribution)):
-            # build the list for merged score of spot [i,j] for each of the randomly selected pairs
-            distributions.append(distribution[j].loc[i])
-        adata.uns['distributions'].append(distributions)
-
-    ### temp
-    adata.uns['background'] = background
-    for i, item in enumerate(distribution):
-        distributions.append(distribution)
 
     # Permutation test for each spot across all runs
     permutation = pd.DataFrame(0, adata.obs_names, ['pval'])
@@ -104,8 +89,6 @@ def permutation(
     Q = 0
     size = 1. / alpha * mu**Q
     prob = size / (size + mu)
-    ### temp
-    adata.uns['nb'] = (size, prob)
     
     # Calculate probability for all spots
     permutation['pval'] = [item - np.log10(len(adata.obs_names)) for item in -np.log10(1 - scipy.stats.nbinom.cdf(scores-pmin, size, prob))]

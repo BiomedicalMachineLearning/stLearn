@@ -7,5 +7,4 @@ from .plotting.deconvolution_plot import deconvolution_plot
 from .plotting import trajectory
 from .plotting.QC_plot import QC_plot
 from .plotting.cci_plot import het_plot
-from .plotting.cci_plot import violin_plot
 from .plotting.cci_plot import grid_plot

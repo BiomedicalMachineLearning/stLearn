@@ -8,7 +8,6 @@ from .het import create_grids
 
 def lr(
     adata: AnnData,
-    use_data: str,
     use_lr: str = 'cci_lr',
     distance: float = None,
 ) -> AnnData:
@@ -17,7 +16,6 @@ def lr(
     Parameters
     ----------
     adata: AnnData          The data object to scan
-    use_data: str           Data to be used in L-R scanning
     use_lr: str             object to keep the result (default: adata.uns['cci_lr'])
     distance: float         Distance to determine the neighbours (default: closest), distance=0 means within spot
 
@@ -32,14 +30,7 @@ def lr(
         scalefactors = next(iter(adata.uns['spatial'].values()))['scalefactors']
         distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial']['use_quality']+'_scalef'] * 2
 
-    df = adata.obsm[use_data]
-
-    # prepare data as pd.dataframe
-    if not isinstance(df, pd.DataFrame):
-        if sc.sparse.issparse(df):
-            df = pd.DataFrame(df.toarray(), index=adata.obs_names, columns=adata.var_names)
-        else:
-            df = pd.DataFrame(df, index=adata.obs_names, columns=adata.var_names)
+    df = adata.to_df()
 
     # expand the LR pairs list by swapping ligand-receptor positions
     lr_pairs = adata.uns['lr'].copy()
@@ -85,14 +76,13 @@ def lr(
                            index=df.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
     adata.uns[use_lr] = spot_lr
 
-    print("L-R interactions with neighbours are counted and stored into adata\.uns[\'" + use_lr + "\']")
+    print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
 
     return adata
 
 
 def lr_grid(
     adata: AnnData,
-    use_data: str,
     num_row: int = 10,
     num_col: int = 10,
     use_lr: str = 'cci_lr_grid',
@@ -103,7 +93,6 @@ def lr_grid(
     Parameters
     ----------
     adata: AnnData          The data object to scan
-    use_data: str           Data to be used in L-R scanning
     num_row: int            Number of grids on height
     num_col: int            Number of grids on width
     use_lr: str             object to keep the result (default: adata.uns['cci_lr'])
@@ -116,7 +105,7 @@ def lr_grid(
     
 
     # prepare data as pd.dataframe
-    df = adata.obsm[use_data]
+    df = adata.to_df()
     if not isinstance(df, pd.DataFrame):
         if sc.sparse.issparse(df):
             df = pd.DataFrame(df.toarray(), index=adata.obs_names, columns=adata.var_names)
@@ -163,6 +152,6 @@ def lr_grid(
                            index=df_grid.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
     adata.uns[use_lr] = grid_lr
 
-    print("L-R interactions with neighbours are counted and stored into adata\.uns[\'" + use_lr + "\']")
+    print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
 
     return adata
