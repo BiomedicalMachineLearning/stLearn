@@ -30,6 +30,7 @@ def gene_plot(
     cropped: bool = True,
     margin: int = 100,
     name: str = None,
+    dpi: int = 150,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -68,6 +69,8 @@ def gene_plot(
         Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
     name
         Name of the output figure file.
+    dpi
+        DPI of the output figure.
     output
         Save the figure as file or not.
     copy
@@ -152,7 +155,7 @@ def gene_plot(
     if name is None:
         name = method
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+        fig.savefig(output + "/" + name, dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
         
     

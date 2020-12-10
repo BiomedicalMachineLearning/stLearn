@@ -18,6 +18,7 @@ def enrichment_analysis_plot(
     cmap: str = "plasma",
     title: str = None,
     store: bool = True,
+    dpi: int = 150,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -50,7 +51,7 @@ def enrichment_analysis_plot(
 
     if output is not None:
         fig.savefig(output + "/enrich_plot_factor_" + str(factor) + "_" +
-                    gene_sets + ".png", dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
+                    gene_sets + ".png", dpi=dpi, bbox_inches='tight', pad_inches=0)
 
     if store:
 

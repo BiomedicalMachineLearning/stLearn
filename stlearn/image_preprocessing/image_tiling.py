@@ -6,10 +6,11 @@ from pathlib import Path
 # Test progress bar
 from tqdm import tqdm
 import numpy as np
+import os
 
 def tiling(
         adata: AnnData,
-        out_path: Union[Path, str] = "./",
+        out_path: Union[Path, str] = "./tiling",
         library_id: str = None,
         crop_size: int = 40,
         target_size: int = 299,
@@ -44,6 +45,10 @@ def tiling(
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
+
+    # Check the exist of out_path
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
 
     image = (adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]* 255).astype(np.uint8)
 

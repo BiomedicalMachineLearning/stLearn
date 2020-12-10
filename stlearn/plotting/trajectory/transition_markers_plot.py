@@ -1,7 +1,14 @@
 import matplotlib.pyplot as plt
 from decimal import Decimal
 
-def transition_markers_plot(adata,top_genes=10,trajectory=None,name=None,output=None):
+def transition_markers_plot(
+    adata: AnnData,
+    top_genes:int = 10,
+    trajectory: str = None,
+    dpi: int = 150,
+    output: str = None,
+    name: str = None,
+) -> Optional[AnnData]:
 
     if trajectory == None:
         raise ValueError("Please input the trajectory name!")
@@ -90,7 +97,7 @@ def transition_markers_plot(adata,top_genes=10,trajectory=None,name=None,output=
             name = trajectory
 
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+        fig.savefig(output + "/" + name, dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
 
     plt.show()

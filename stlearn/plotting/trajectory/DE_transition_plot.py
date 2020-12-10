@@ -1,7 +1,38 @@
 import matplotlib.pyplot as plt
 from decimal import Decimal
+from typing import Optional, Union
+from anndata import AnnData
 
-def DE_transition_plot(adata,top_genes=10):
+def DE_transition_plot(
+    adata: AnnData,
+    top_genes: int = 10,
+    font_size: int = 6,
+    name: str = None,
+    dpi: int = 150,
+    output: str = None
+    ) -> Optional[AnnData]:
+
+    """\
+    Differential expression between transition markers.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    top_genes
+        Number of genes using to plot.
+    font_size
+        Size of the font.
+    name
+        Name of the output figure file.
+    dpi
+        DPI of the output figure.
+    output
+        Save the figure as file or not.
+    Returns
+    -------
+    Figure object
+    """
 
     trajectories=adata.uns["compare_result"]["trajectories"]
     pos_1 = adata.uns[trajectories[0]].set_index("gene").loc[adata.uns["compare_result"]["pos_1"][:top_genes]].iloc[::-1]
@@ -80,10 +111,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'left', 'verticalalignment': 'center'}
         axes[0][1].text(rect.get_x()+rect.get_width()+0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=10)
+                gene_name,**alignment,size=font_size)
         axes[0][1].text(rect.get_x()+0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=10)
+               color='w',**alignment,size=font_size)
 
     rects = axes[0][0].patches
     for i,rect in enumerate(rects):
@@ -95,10 +126,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'right', 'verticalalignment': 'center'}
         axes[0][0].text(rect.get_x()+rect.get_width()-0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=10)
+                gene_name,**alignment,size=font_size)
         axes[0][0].text(rect.get_x()-0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=10)
+               color='w',**alignment,size=font_size)
 
     rects = axes[1][1].patches
     for i,rect in enumerate(rects):
@@ -110,10 +141,10 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'left', 'verticalalignment': 'center'}
         axes[1][1].text(rect.get_x()+rect.get_width()+0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=10)
+                gene_name,**alignment,size=font_size)
         axes[1][1].text(rect.get_x()+0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=10)
+               color='w',**alignment,size=font_size)
 
     rects = axes[1][0].patches
     for i,rect in enumerate(rects):
@@ -125,13 +156,15 @@ def DE_transition_plot(adata,top_genes=10):
             p_value = ''
         alignment = {'horizontalalignment': 'right', 'verticalalignment': 'center'}
         axes[1][0].text(rect.get_x()+rect.get_width()-0.01, rect.get_y() + rect.get_height()/2.0, \
-                gene_name,**alignment,size=10)
+                gene_name,**alignment,size=font_size)
         axes[1][0].text(rect.get_x()-0.01, rect.get_y()+rect.get_height()/2.0,
                 p_value,
-               color='w',**alignment,size=10)
+               color='w',**alignment,size=font_size)
 
 
 
     plt.figtext(0.5, 0.5, "Markers of "+trajectories[0]+" compared to "+trajectories[1], ha='center', va='center')
     plt.figtext(0.5, 0.0, "Markers of "+trajectories[1]+" compared to "+trajectories[0], ha='center', va='center')
     plt.show()
+    plt.savefig(output + "/" + name, dpi=dpi,
+                    bbox_inches='tight', pad_inches=0)
