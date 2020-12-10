@@ -119,7 +119,7 @@ def tree_plot(
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+        fig.savefig(output + "/" + name, dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
 
     if show_plot == True:

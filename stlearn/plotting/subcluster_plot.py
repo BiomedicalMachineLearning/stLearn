@@ -24,6 +24,7 @@ def subcluster_plot(
     cropped: bool = True,
     margin: int = 100,
     name: str = None,
+    dpi: int = 150,
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -56,6 +57,8 @@ def subcluster_plot(
         Show legend or not.
     name
         Name of the output figure file.
+    dpi
+        DPI of the output figure.
     output
         Save the figure as file or not.
     copy

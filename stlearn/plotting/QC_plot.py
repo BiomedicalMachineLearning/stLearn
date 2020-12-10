@@ -17,6 +17,7 @@ def QC_plot(
         show_axis: bool = False,
         cropped: bool = True,
         margin: int = 100,
+        dpi: int = 150,
         output: str = None,
 ) -> Optional[AnnData]:
     """\
@@ -115,7 +116,7 @@ def QC_plot(
 
     # fig.tight_layout()
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+        fig.savefig(output + "/" + name, dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
 
     plt.show()

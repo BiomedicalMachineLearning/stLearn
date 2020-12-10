@@ -31,6 +31,7 @@ def pseudotime_plot(
     show_plot: bool = True,
     cropped: bool = True,
     margin: int = 100,
+    dpi: int = 150,
     output: str = None,
     name: str = None,
     copy: bool = False,
@@ -73,6 +74,8 @@ def pseudotime_plot(
         Show legend or not.
     show_plot
         Show plot or not
+    dpi
+        DPI of the output figure.
     output
         Save the figure as file or not.
     copy
@@ -209,7 +212,7 @@ def pseudotime_plot(
         #plt.gca().invert_yaxis()
 
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
+        fig.savefig(output + "/" + name, dpi=dpi,
                     bbox_inches='tight', pad_inches=0)
     if show_plot == True:
         plt.show()
