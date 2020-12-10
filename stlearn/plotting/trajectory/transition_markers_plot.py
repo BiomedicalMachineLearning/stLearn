@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 from decimal import Decimal
+from anndata import AnnData
+from typing import Optional, Union
 
 def transition_markers_plot(
     adata: AnnData,
