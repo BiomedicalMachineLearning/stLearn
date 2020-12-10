@@ -1,12 +1,11 @@
 import sys, os, random, scipy
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from anndata import AnnData
 from .base import lr
 from .merge import merge
 
-
-# Permutation test for merged result
 
 def permutation(
     adata: AnnData,
@@ -16,7 +15,8 @@ def permutation(
     use_lr: str = 'cci_lr',
     use_het: str = 'cci_het'
 ) -> AnnData:
-    """ Merge cell type diversity and L-R counting scores
+
+    """ Permutation test for merged result
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count
@@ -32,75 +32,93 @@ def permutation(
     """
     
     blockPrint()
-
+    
     #  select n_pair*2 closely expressed genes from the data
-    genes = [item for item in adata.obsm[use_data].columns.tolist() if not (item.startswith('MT-') or item.startswith('MT_'))]
+    genes = [item for item in adata.var_names.tolist() if not (item.startswith('MT-') or item.startswith('MT_') )]
     if n_pairs >= len(genes) / 2:
         raise ValueError('Too many genes pairs selected, please reduce to a smaller number.')
     elif len(adata.uns['lr']) > 1:
         raise ValueError('Permutation test only supported for one LR pair scenario.')
     else:
+        # sort the mean of each gene expression 
         means = adata.obsm[use_data][genes].mean().sort_values()
         lr1 = adata.uns['lr'][0].split('_')[0]
         lr2 = adata.uns['lr'][0].split('_')[1]
         i1, i2 = means.index.get_loc(lr1), means.index.get_loc(lr2)
         if means[lr1] > means[lr2]:
             it = i1; i1 = i2; i2 = it
-        im = np.argmin(abs(means.values - means.iloc[i1:i2].median()))
-        new1 = means.iloc[im-n_pairs:im].sample(frac=1)
-        new2 = means.iloc[im:im+n_pairs].sample(frac=1)
-        try:
-            new1 = new1.drop(i0)
-        except:
-            pass
-        try:
-            new2 = new2.drop(i1)
-        except:
-            pass
-        
-        # form gene pairs
-        pairs = list(new1.index + '_' + new2.index)
-        
-        # add LR being tested into the list
-        pairs += adata.uns['lr']
 
-    original = adata.uns['merged']
+        # get the position of the median of the means between the two genes
+        im = np.argmin(abs(means.values - means.iloc[i1:i2].median()))
+
+        # get n_pair genes sorted by distance to im
+        selected = abs(means - means.iloc[im]).sort_values().drop([lr1, lr2])[:n_pairs*2].index.tolist()
+        adata.uns['selected'] = selected
+        # form gene pairs from selected randomly
+        random.shuffle(selected)
+        pairs = [i + '_' + j for i, j in zip(selected[:n_pairs], selected[-n_pairs:])]
+
+    '''
+    # generate random pairs
+    lr1 = adata.uns['lr'][0].split('_')[0]
+    lr2 = adata.uns['lr'][0].split('_')[1]
+    genes = [item for item in adata.var_names.tolist() if not (item.startswith('MT-') or item.startswith('MT_') or item==lr1 or item==lr2)]
+    random.shuffle(genes)
+    pairs = [i + '_' + j for i, j in zip(genes[:n_pairs], genes[-n_pairs:])]
+    '''
+
+    scores = adata.uns['merged']
+    background, distribution, distributions, adata.uns['distributions'] = [], [], [], []
 
     # for each randomly selected pair, run through cci analysis and keep the scores
-    scores, test = [], []
-    for i, item in enumerate(pairs):
-        if i > 0:
-            adata.uns['lr'] = [item]
-            lr(adata, use_data=use_data, distance=distance);
-            merge(adata, use_lr=use_lr, use_het=use_het);
-        else:
-            pass
+    for item in pairs:
+        adata.uns['lr'] = [item]
+        lr(adata, use_data=use_data, use_lr=use_lr, distance=distance);
+        merge(adata, use_lr=use_lr, use_het=use_het);
+        background += adata.uns['merged'].tolist()
+        distribution.append(adata.uns['merged'])
 
-        scores.append(adata.uns['merged'])
-    
-    # t-test for each spot across all runs
-    permutation = pd.DataFrame(0, adata.obs_names, ['pval'])
     for i in adata.obs_names:
-        distribution = []
-        for j in range(1, len(scores)):
+        distributions = []
+        for j in range(1, len(distribution)):
             # build the list for merged score of spot [i,j] for each of the randomly selected pairs
-            distribution.append(scores[j].loc[i])
-        # t-test for result of target and randomly selected pairs on every spot
-        ttest = scipy.stats.ttest_1samp(distribution, scores[0].loc[i])
-        if ttest.statistic < 0:
-            permutation.loc[i] = -np.log10(ttest.pvalue+1e-300) + np.log10(len(adata.obs_names))
-        else: permutation.loc[i] = 0
+            distributions.append(distribution[j].loc[i])
+        adata.uns['distributions'].append(distributions)
 
-    adata.uns['merged'] = original
+    ### temp
+    adata.uns['background'] = background
+    for i, item in enumerate(distribution):
+        distributions.append(distribution)
+
+    # Permutation test for each spot across all runs
+    permutation = pd.DataFrame(0, adata.obs_names, ['pval'])
+
+    # Negative Binomial fit
+    pmin, pmax = min(background), max(background)
+    background2=[item-pmin for item in background]
+    x = np.linspace(pmin, pmax, 1000)
+    res = sm.NegativeBinomial(background2, np.ones(len(background2)), loglike_method='nb2').fit(start_params=[0.1, 0.3])
+    mu = res.predict()   # use if not constant
+    mu = np.exp(res.params[0])
+    alpha = res.params[1]
+    Q = 0
+    size = 1. / alpha * mu**Q
+    prob = size / (size + mu)
+    ### temp
+    adata.uns['nb'] = (size, prob)
+    
+    # Calculate probability for all spots
+    permutation['pval'] = [item - np.log10(len(adata.obs_names)) for item in -np.log10(1 - scipy.stats.nbinom.cdf(scores-pmin, size, prob))]
+
+    adata.uns['merged'] = scores
     adata.uns['merged_pvalues'] = permutation['pval']
-    adata.uns['merged_sign'] = adata.uns['merged'] * (permutation > 2)['pval']  # p-value < 0.01   
+    adata.uns['merged_sign'] = adata.uns['merged'] * (permutation > -np.log10(0.05))['pval']  # p-value < 0.05
 
     enablePrint()
     print("Results of permutation test has been kept in adata.uns['merged_pvalues']")
     print("Significant merged result has been kept in adata.uns['merged_sign']")
 
     return adata
-
 
 # Disable printing
 def blockPrint():
@@ -109,3 +127,4 @@ def blockPrint():
 # Restore printing
 def enablePrint():
     sys.stdout = sys.__stdout__
+

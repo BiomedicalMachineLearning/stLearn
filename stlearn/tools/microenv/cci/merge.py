@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from anndata import AnnData
 
-# Merge the L-R interaction results with cell type heterogeneity results to locate highly interacting sites
 
 def merge(
     adata: AnnData,
