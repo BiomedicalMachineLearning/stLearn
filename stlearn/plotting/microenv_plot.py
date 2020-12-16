@@ -69,9 +69,9 @@ def microenv_plot(
     plt.ioff()
 
     if "plots" not in adata.uns:
-        adata.uns['plots'] = {}
+        adata.uns["plots"] = {}
 
-    adata.uns['plots'].update({use_data: {}})
+    adata.uns["plots"].update({use_data: {}})
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
@@ -80,46 +80,63 @@ def microenv_plot(
         fig, a = plt.subplots()
         vmin = min(colors[i])
         vmax = max(colors[i])
-        sc = a.scatter(adata.obs["imagecol"], adata.obs["imagerow"], edgecolor="none", alpha=data_alpha, s=spot_size, marker="o",
-                       vmin=vmin, vmax=vmax, cmap=plt.get_cmap(cmap), c=colors[i])
+        sc = a.scatter(
+            adata.obs["imagecol"],
+            adata.obs["imagerow"],
+            edgecolor="none",
+            alpha=data_alpha,
+            s=spot_size,
+            marker="o",
+            vmin=vmin,
+            vmax=vmax,
+            cmap=plt.get_cmap(cmap),
+            c=colors[i],
+        )
 
         if show_color_bar:
             cb = plt.colorbar(sc, cax=fig.add_axes([0.78, 0.3, 0.03, 0.38]))
             cb.outline.set_visible(False)
         if not show_axis:
-            a.axis('off')
+            a.axis("off")
 
         if library_id is None:
             library_id = list(adata.uns["spatial"].keys())[0]
 
-        image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+        image = adata.uns["spatial"][library_id]["images"][
+            adata.uns["spatial"]["use_quality"]
+        ]
         # Overlay the tissue image
-        a.imshow(image, alpha=tissue_alpha, zorder=-1,)
-
+        a.imshow(
+            image,
+            alpha=tissue_alpha,
+            zorder=-1,
+        )
 
         if cropped:
-            a.set_xlim(imagecol.min() - margin,
-                    imagecol.max() + margin)
+            a.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
 
-            a.set_ylim(imagerow.min() - margin,
-                    imagerow.max() + margin)
-            
+            a.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
+
             a.set_ylim(a.get_ylim()[::-1])
-            #plt.gca().invert_yaxis()
+            # plt.gca().invert_yaxis()
 
         if name is None:
             name = method
         if output is not None:
-            fig.savefig(output + "/factor_" + str(i+1) + ".png",
-                        dpi=plt.figure().dpi, bbox_inches='tight', pad_inches=0)
+            fig.savefig(
+                output + "/factor_" + str(i + 1) + ".png",
+                dpi=plt.figure().dpi,
+                bbox_inches="tight",
+                pad_inches=0,
+            )
 
         fig_np = get_img_from_fig(fig, dpi)
 
         plt.close(fig)
 
-        current_plot = {"factor_"+str(i+1): fig_np}
+        current_plot = {"factor_" + str(i + 1): fig_np}
 
-        adata.uns['plots'][use_data].update(current_plot)
+        adata.uns["plots"][use_data].update(current_plot)
 
     print("The plot stored in adata.uns['plots']['" + use_data + "']")
 

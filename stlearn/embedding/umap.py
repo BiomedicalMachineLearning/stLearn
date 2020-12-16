@@ -7,7 +7,7 @@ from numpy.random.mtrand import RandomState
 from .._compat import Literal
 import scanpy
 
-_InitPos = Literal['paga', 'spectral', 'random']
+_InitPos = Literal["paga", "spectral", "random"]
 
 
 def run_umap(
@@ -15,17 +15,16 @@ def run_umap(
     min_dist: float = 0.5,
     spread: float = 1.0,
     n_components: int = 2,
-
     maxiter: Optional[int] = None,
     alpha: float = 1.0,
     gamma: float = 1.0,
     negative_sample_rate: int = 5,
-    init_pos: Union[_InitPos, np.ndarray, None] = 'spectral',
+    init_pos: Union[_InitPos, np.ndarray, None] = "spectral",
     random_state: Optional[Union[int, RandomState]] = 0,
     a: Optional[float] = None,
     b: Optional[float] = None,
     copy: bool = False,
-    method: Literal['umap', 'rapids'] = 'umap'
+    method: Literal["umap", "rapids"] = "umap",
 ) -> Optional[AnnData]:
     """\
     Wrap function scanpy.pp.umap
@@ -59,9 +58,21 @@ def run_umap(
 
     """
 
-    scanpy.tl.umap(adata, min_dist=min_dist, spread=spread, n_components=n_components,
-         maxiter=maxiter, alpha=alpha, gamma=gamma, negative_sample_rate=negative_sample_rate,
-         init_pos=init_pos, random_state=random_state, a=a, b=b, copy=copy, method=method)
+    scanpy.tl.umap(
+        adata,
+        min_dist=min_dist,
+        spread=spread,
+        n_components=n_components,
+        maxiter=maxiter,
+        alpha=alpha,
+        gamma=gamma,
+        negative_sample_rate=negative_sample_rate,
+        init_pos=init_pos,
+        random_state=random_state,
+        a=a,
+        b=b,
+        copy=copy,
+        method=method,
+    )
 
-    print(
-        "UMAP is done! Generated in adata.obsm['X_umap'] nad adata.uns['umap']")
+    print("UMAP is done! Generated in adata.obsm['X_umap'] nad adata.uns['umap']")

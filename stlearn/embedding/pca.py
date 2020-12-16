@@ -11,11 +11,11 @@ def run_pca(
     data: Union[AnnData, np.ndarray, spmatrix],
     n_comps: int = 50,
     zero_center: Optional[bool] = True,
-    svd_solver: str = 'auto',
+    svd_solver: str = "auto",
     random_state: Optional[Union[int, RandomState]] = 0,
     return_info: bool = False,
     use_highly_variable: Optional[bool] = None,
-    dtype: str = 'float32',
+    dtype: str = "float32",
     copy: bool = False,
     chunked: bool = False,
     chunk_size: Optional[int] = None,
@@ -85,9 +85,20 @@ def run_pca(
              covariance matrix.
     """
 
-    scanpy.pp.pca(data, n_comps=n_comps, zero_center=zero_center, svd_solver=svd_solver,
-            random_state=random_state, return_info=return_info,
-            use_highly_variable=use_highly_variable,
-            dtype=dtype, copy=copy, chunked=chunked, chunk_size=chunk_size)
+    scanpy.pp.pca(
+        data,
+        n_comps=n_comps,
+        zero_center=zero_center,
+        svd_solver=svd_solver,
+        random_state=random_state,
+        return_info=return_info,
+        use_highly_variable=use_highly_variable,
+        dtype=dtype,
+        copy=copy,
+        chunked=chunked,
+        chunk_size=chunk_size,
+    )
 
-    print("PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and adata.varm['PCs']")
+    print(
+        "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and adata.varm['PCs']"
+    )

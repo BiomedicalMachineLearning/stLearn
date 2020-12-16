@@ -83,18 +83,29 @@ def run_fa(
     else:
         matrix = adata.obsm[use_data].values
 
-    fa = FactorAnalysis(n_components=n_factors, tol=tol, max_iter=max_iter,
-                        svd_method=svd_method, iterated_power=iterated_power,
-                        random_state=random_state)
+    fa = FactorAnalysis(
+        n_components=n_factors,
+        tol=tol,
+        max_iter=max_iter,
+        svd_method=svd_method,
+        iterated_power=iterated_power,
+        random_state=random_state,
+    )
 
     latent = fa.fit_transform(matrix)
 
     adata.obsm["X_fa"] = latent
 
-    adata.uns['fa_params'] = {'params': {'n_factors': n_factors, 'tol': tol,
-                                         'max_iter': max_iter, 'svd_method': svd_method,
-                                         'iterated_power': iterated_power,
-                                         'random_state': random_state}}
+    adata.uns["fa_params"] = {
+        "params": {
+            "n_factors": n_factors,
+            "tol": tol,
+            "max_iter": max_iter,
+            "svd_method": svd_method,
+            "iterated_power": iterated_power,
+            "random_state": random_state,
+        }
+    }
 
     print('FA is done! Generated in adata.obsm["X_fa"]')
 

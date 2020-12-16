@@ -4,12 +4,13 @@ import numpy as np
 from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 import scanpy
 
+
 def filter_genes(
     adata: AnnData,
     min_counts: Optional[int] = None,
-    min_cells:  Optional[int] = None,
+    min_cells: Optional[int] = None,
     max_counts: Optional[int] = None,
-    max_cells:  Optional[int] = None,
+    max_cells: Optional[int] = None,
     inplace: bool = True,
 ) -> Union[AnnData, None, Tuple[np.ndarray, np.ndarray]]:
     """\
@@ -48,8 +49,13 @@ def filter_genes(
         `n_counts` or `n_cells` per gene.
     """
 
-    scanpy.pp.filter_genes(adata, min_counts=min_counts, min_cells=min_cells,
-                 max_counts=max_counts, max_cells=max_cells, inplace=inplace)
+    scanpy.pp.filter_genes(
+        adata,
+        min_counts=min_counts,
+        min_cells=min_cells,
+        max_counts=max_counts,
+        max_cells=max_cells,
+        inplace=inplace,
+    )
 
-    adata.obsm['filtered_counts'] = adata.to_df()
-
+    adata.obsm["filtered_counts"] = adata.to_df()

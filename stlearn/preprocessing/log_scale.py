@@ -6,6 +6,7 @@ from scipy import sparse
 from stlearn import logging as logg
 import scanpy
 
+
 def log1p(
     adata: Union[AnnData, np.ndarray, spmatrix],
     copy: bool = False,
@@ -39,7 +40,6 @@ def log1p(
     -------
     Returns or updates `data`, depending on `copy`.
     """
-
 
     scanpy.pp.log1p(adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base)
 
@@ -77,7 +77,6 @@ def scale(
     -------
     Depending on `copy` returns or updates `adata` with a scaled `adata.X`.
     """
-
 
     scanpy.pp.scale(adata, zero_center=zero_center, max_value=max_value, copy=copy)
 

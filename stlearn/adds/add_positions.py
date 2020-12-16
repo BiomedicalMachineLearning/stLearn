@@ -36,28 +36,40 @@ def positions(
     """
 
     tissue_positions = pd.read_csv(position_filepath, header=None)
-    tissue_positions.columns = ["barcode", "tissue",
-                                "row", "col", "imagerow", "imagecol"]
+    tissue_positions.columns = [
+        "barcode",
+        "tissue",
+        "row",
+        "col",
+        "imagerow",
+        "imagecol",
+    ]
     import json
+
     with open(scale_filepath) as json_file:
         scale_factors = json.load(json_file)
 
     if quality == "low":
-        tissue_positions["imagerow"] = tissue_positions["imagerow"] * \
-            scale_factors['tissue_lowres_scalef']
-        tissue_positions["imagecol"] = tissue_positions["imagecol"] * \
-            scale_factors['tissue_lowres_scalef']
+        tissue_positions["imagerow"] = (
+            tissue_positions["imagerow"] * scale_factors["tissue_lowres_scalef"]
+        )
+        tissue_positions["imagecol"] = (
+            tissue_positions["imagecol"] * scale_factors["tissue_lowres_scalef"]
+        )
     elif quality == "high":
-        tissue_positions["imagerow"] = tissue_positions["imagerow"] * \
-            scale_factors['tissue_hires_scalef']
-        tissue_positions["imagecol"] = tissue_positions["imagecol"] * \
-            scale_factors['tissue_hires_scalef']
+        tissue_positions["imagerow"] = (
+            tissue_positions["imagerow"] * scale_factors["tissue_hires_scalef"]
+        )
+        tissue_positions["imagecol"] = (
+            tissue_positions["imagecol"] * scale_factors["tissue_hires_scalef"]
+        )
 
-    tmp = adata.obs.merge(tissue_positions.reset_index()
-                          .set_index(['barcode']),
-                          left_index=True,
-                          right_index=True,
-                          how='left').reset_index()[["imagerow", "imagecol"]]
+    tmp = adata.obs.merge(
+        tissue_positions.reset_index().set_index(["barcode"]),
+        left_index=True,
+        right_index=True,
+        how="left",
+    ).reset_index()[["imagerow", "imagecol"]]
 
     adata.obs["imagerow"] = tmp["imagerow"].values
     adata.obs["imagecol"] = tmp["imagecol"].values

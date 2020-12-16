@@ -6,6 +6,7 @@ import networkx as nx
 from scipy.spatial.distance import cdist
 import scanpy
 
+
 def pseudotime(
     adata: AnnData,
     use_label: str = "louvain",
@@ -61,11 +62,13 @@ def pseudotime(
 
     # Localize
     from stlearn.spatials.clustering import localization
+
     localization(adata, use_label=use_label, eps=eps)
 
     # Running knn
     from stlearn.pp import neighbors
-    neighbors(adata,n_neighbors=n_neighbors,use_rep=use_rep,random_state=0)
+
+    neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
 
     # Running paga
     scanpy.tl.paga(adata, groups=use_label)
@@ -75,72 +78,78 @@ def pseudotime(
 
     if use_sme:
         from stlearn.spatials.morphology import adjust
+
         adjust(adata, use_data="X_diffmap", radius=radius, method=method)
         adata.obsm["X_diffmap"] = adata.obsm["X_diffmap_morphology"]
 
-
-    
-    
     # Get connection matrix
     cnt_matrix = adata.uns["paga"]["connectivities"].toarray()
 
     # Filter by threshold
 
-    cnt_matrix[cnt_matrix < threshold] = 0.
+    cnt_matrix[cnt_matrix < threshold] = 0.0
     cnt_matrix = pd.DataFrame(cnt_matrix)
 
     # Mapping louvain label to subcluster
     split_node = {}
     for label in adata.obs[use_label].unique():
         meaningful_sub = []
-        for i in adata.obs[adata.obs[use_label] == label]["sub_cluster_labels"].unique():
-            if len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)]) > threshold_spots:
+        for i in adata.obs[adata.obs[use_label] == label][
+            "sub_cluster_labels"
+        ].unique():
+            if (
+                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                > threshold_spots
+            ):
                 meaningful_sub.append(i)
 
         split_node[int(label)] = meaningful_sub
-            
+
     adata.uns["threshold_spots"] = threshold_spots
     adata.uns["split_node"] = split_node
-    # Replicate louvain label row to prepare for subcluster connection 
+    # Replicate louvain label row to prepare for subcluster connection
     # matrix construction
     replicate_list = np.array([])
     for i in range(0, len(cnt_matrix)):
         replicate_list = np.concatenate(
-            [replicate_list, np.array([i]*len(split_node[i]))])
+            [replicate_list, np.array([i] * len(split_node[i]))]
+        )
 
     # Connection matrix for subcluster
-    cnt_matrix = cnt_matrix.loc[replicate_list.astype(
-        int), replicate_list.astype(int)]
+    cnt_matrix = cnt_matrix.loc[replicate_list.astype(int), replicate_list.astype(int)]
 
     # Replace column and index
     cnt_matrix.columns = replace_with_dict(cnt_matrix.columns, split_node)
     cnt_matrix.index = replace_with_dict(cnt_matrix.index, split_node)
 
     # Sort column and index
-    cnt_matrix = cnt_matrix.loc[selection_sort(np.array(cnt_matrix.columns)),
-                                selection_sort(np.array(cnt_matrix.index))]
+    cnt_matrix = cnt_matrix.loc[
+        selection_sort(np.array(cnt_matrix.columns)),
+        selection_sort(np.array(cnt_matrix.index)),
+    ]
 
     # Create a connection graph of subclusters
     G = nx.from_pandas_adjacency(cnt_matrix)
 
-    adata.uns['global_graph'] = G
-    
+    adata.uns["global_graph"] = G
 
     # Create centroid dict for subclusters
     from sklearn.neighbors import NearestCentroid
+
     clf = NearestCentroid()
-    clf.fit(adata.obs[["imagecol", "imagerow"]].values,
-            adata.obs["sub_cluster_labels"])
+    clf.fit(adata.obs[["imagecol", "imagerow"]].values, adata.obs["sub_cluster_labels"])
     centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_))
 
     def closest_node(node, nodes):
         nodes = np.asarray(nodes)
-        dist_2 = np.sum((nodes - node)**2, axis=1)
+        dist_2 = np.sum((nodes - node) ** 2, axis=1)
         return np.argmin(dist_2)
 
     for cl in adata.obs["sub_cluster_labels"].unique():
-        cl_points = adata.obs[adata.obs["sub_cluster_labels"] == cl][["imagecol","imagerow"]].values
-        new_centroid = cl_points[closest_node(centroid_dict[int(cl)],cl_points)]
+        cl_points = adata.obs[adata.obs["sub_cluster_labels"] == cl][
+            ["imagecol", "imagerow"]
+        ].values
+        new_centroid = cl_points[closest_node(centroid_dict[int(cl)], cl_points)]
         centroid_dict[int(cl)] = new_centroid
 
     adata.uns["centroid_dict"] = centroid_dict
@@ -155,6 +164,7 @@ def pseudotime(
 
 
 ######## utils ########
+
 
 def replace_with_dict(ar, dic):
     # Extract out keys and values

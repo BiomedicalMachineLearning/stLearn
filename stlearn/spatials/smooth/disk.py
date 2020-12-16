@@ -23,7 +23,8 @@ def disk(
 
     for i in range(len(coor)):
         current_neightbor = point_tree.query_ball_point(
-            coor.values[i], radius)  # Spatial weight
+            coor.values[i], radius
+        )  # Spatial weight
         # print(coor.values[i])
         tmp.append(current_neightbor)
         # print(coor.values[current_neightbor])
@@ -47,6 +48,7 @@ def disk(
     adata.obsm[new_embed] = np.array(lag_coor)
 
     print(
-        'Disk smoothing function is applied! The new data are stored in adata.obsm["X_diffmap_disk"]')
+        'Disk smoothing function is applied! The new data are stored in adata.obsm["X_diffmap_disk"]'
+    )
 
     return adata if copy else None

@@ -1,4 +1,3 @@
-
 from types import MappingProxyType
 from typing import Union, Optional, Any, Mapping, Callable
 
@@ -9,17 +8,30 @@ from numpy.random import RandomState
 from .._compat import Literal
 import scanpy
 
-_Method = Literal['umap', 'gauss', 'rapids']
+_Method = Literal["umap", "gauss", "rapids"]
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
 # from sklearn.metrics.pairwise_distances.__doc__:
 _MetricSparseCapable = Literal[
-    'cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan'
+    "cityblock", "cosine", "euclidean", "l1", "l2", "manhattan"
 ]
 _MetricScipySpatial = Literal[
-    'braycurtis', 'canberra', 'chebyshev', 'correlation', 'dice', 'hamming',
-    'jaccard', 'kulsinski', 'mahalanobis', 'minkowski', 'rogerstanimoto',
-    'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean',
-    'yule'
+    "braycurtis",
+    "canberra",
+    "chebyshev",
+    "correlation",
+    "dice",
+    "hamming",
+    "jaccard",
+    "kulsinski",
+    "mahalanobis",
+    "minkowski",
+    "rogerstanimoto",
+    "russellrao",
+    "seuclidean",
+    "sokalmichener",
+    "sokalsneath",
+    "sqeuclidean",
+    "yule",
 ]
 _Metric = Union[_MetricSparseCapable, _MetricScipySpatial]
 
@@ -31,8 +43,8 @@ def neighbors(
     use_rep: Optional[str] = None,
     knn: bool = True,
     random_state: Optional[Union[int, RandomState]] = 0,
-    method: Optional[_Method] = 'umap',
-    metric: Union[_Metric, _MetricFn] = 'euclidean',
+    method: Optional[_Method] = "umap",
+    metric: Union[_Metric, _MetricFn] = "euclidean",
     metric_kwds: Mapping[str, Any] = MappingProxyType({}),
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -86,8 +98,17 @@ def neighbors(
         neighbors.
     """
 
-    scanpy.pp.neighbors(adata, n_neighbors=n_neighbors, n_pcs=n_pcs, use_rep=use_rep,
-              knn=knn, random_state=random_state, method=method, metric=metric,
-              metric_kwds=metric_kwds, copy=copy)
+    scanpy.pp.neighbors(
+        adata,
+        n_neighbors=n_neighbors,
+        n_pcs=n_pcs,
+        use_rep=use_rep,
+        knn=knn,
+        random_state=random_state,
+        method=method,
+        metric=metric,
+        metric_kwds=metric_kwds,
+        copy=copy,
+    )
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")

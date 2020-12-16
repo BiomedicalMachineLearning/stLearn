@@ -6,12 +6,13 @@ import os
 import sys
 import numpy as np
 
+
 def parsing(
     adata: AnnData,
     coordinates_file: Union[Path, str],
     copy: bool = True,
 ) -> Optional[AnnData]:
-    
+
     """\
     Parsing the old spaital transcriptomics data
 
@@ -35,7 +36,7 @@ def parsing(
     with open(coordinates_file, "r") as filehandler:
         for line in filehandler.readlines():
             tokens = line.split()
-            assert(len(tokens) == 6 or len(tokens) == 4)
+            assert len(tokens) == 6 or len(tokens) == 4
             if tokens[0] != "x":
                 old_x = int(tokens[0])
                 old_y = int(tokens[1])
@@ -46,8 +47,10 @@ def parsing(
                     pixel_y = float(tokens[5])
                     new_coordinates[(old_x, old_y)] = (pixel_x, pixel_y)
                 else:
-                    raise ValueError("Error, output format is pixel coordinates but\n "
-                                     "the coordinates file only contains 4 columns\n")
+                    raise ValueError(
+                        "Error, output format is pixel coordinates but\n "
+                        "the coordinates file only contains 4 columns\n"
+                    )
 
     counts_table = adata.to_df()
     new_index_values = list()
@@ -68,17 +71,16 @@ def parsing(
             counts_table.drop(index, inplace=True)
 
     # Assign the new indexes
-    #counts_table.index = new_index_values
+    # counts_table.index = new_index_values
 
     # Remove genes that have now a total count of zero
-    counts_table = counts_table.transpose(
-    )[counts_table.sum(axis=0) > 0].transpose()
+    counts_table = counts_table.transpose()[counts_table.sum(axis=0) > 0].transpose()
 
     adata = AnnData(counts_table)
 
     adata.obs["imagecol"] = imgcol
     adata.obs["imagerow"] = imgrow
 
-    adata.obsm["spatial"] = np.c_[[imgcol,imgrow]].reshape(-1,2)
+    adata.obsm["spatial"] = np.c_[[imgcol, imgrow]].reshape(-1, 2)
 
     return adata if copy else None
