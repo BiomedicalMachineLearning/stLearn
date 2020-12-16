@@ -10,7 +10,7 @@ from typing import Optional, Union
 
 def het_plot(
     adata: AnnData,
-    use_het: str = 'het',
+    use_het: str = "het",
     library_id: str = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
@@ -80,40 +80,61 @@ def het_plot(
     if not vmax:
         vmax = max(colors)
     # Plot scatter plot based on pixel of spots
-    plot = a.scatter(adata.obs["imagecol"], adata.obs["imagerow"], edgecolor="none", alpha=data_alpha, s=spot_size, marker="o",
-                     vmin=vmin, vmax=vmax, cmap=plt.get_cmap(cmap), c=colors)
+    plot = a.scatter(
+        adata.obs["imagecol"],
+        adata.obs["imagerow"],
+        edgecolor="none",
+        alpha=data_alpha,
+        s=spot_size,
+        marker="o",
+        vmin=vmin,
+        vmax=vmax,
+        cmap=plt.get_cmap(cmap),
+        c=colors,
+    )
 
     if show_color_bar:
 
-        cb = plt.colorbar(plot, cax=fig.add_axes(
-            [0.78, 0.3, 0.03, 0.38]), cmap=cmap)
+        cb = plt.colorbar(plot, cax=fig.add_axes([0.78, 0.3, 0.03, 0.38]), cmap=cmap)
         cb.outline.set_visible(False)
 
     if not show_axis:
-        a.axis('off')
+        a.axis("off")
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    image = adata.uns["spatial"][library_id]["images"][
+        adata.uns["spatial"]["use_quality"]
+    ]
     # Overlay the tissue image
-    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
+    a.imshow(
+        image,
+        alpha=tissue_alpha,
+        zorder=-1,
+    )
 
     if name is None:
         name = method
     if output is not None:
-        fig.savefig(output + "/" + name + ".png", dpi=dpi,
-                    bbox_inches='tight', pad_inches=0)
+        fig.savefig(
+            output + "/" + name + ".png", dpi=dpi, bbox_inches="tight", pad_inches=0
+        )
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
-
+    image = adata.uns["spatial"][library_id]["images"][
+        adata.uns["spatial"]["use_quality"]
+    ]
 
     # Overlay the tissue image
-    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
-    
+    a.imshow(
+        image,
+        alpha=tissue_alpha,
+        zorder=-1,
+    )
+
     plt.show()
 
     return
@@ -145,7 +166,7 @@ def grid_plot(
     name:                   Name of the output figure file.
     output:                 Save the figure as file or not.
     copy:                   Return a copy instead of writing to adata.
-    
+
     Returns
     -------
     Nothing
@@ -153,10 +174,19 @@ def grid_plot(
 
     plt.subplots()
 
-    sns.heatmap(pd.DataFrame(np.array(adata.uns[use_het]).reshape(num_col, num_row)).T, vmin=vmin, vmax=vmax)
-    plt.axis('equal')
+    sns.heatmap(
+        pd.DataFrame(np.array(adata.uns[use_het]).reshape(num_col, num_row)).T,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    plt.axis("equal")
 
     if output is not None:
-        plt.savefig(output + "/" + name + "_heatmap.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+        plt.savefig(
+            output + "/" + name + "_heatmap.pdf",
+            dpi=dpi,
+            bbox_inches="tight",
+            pad_inches=0,
+        )
 
     plt.show()

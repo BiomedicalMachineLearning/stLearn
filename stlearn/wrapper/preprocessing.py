@@ -3,6 +3,7 @@ import stlearn
 import os
 import scanpy
 
+
 def Preprocessing(
     adata: AnnData,
     out_path: str = "../tiling",
@@ -15,8 +16,7 @@ def Preprocessing(
     n_clusters: int = 10,
     random_state: int = 0,
     copy: bool = False,
-
-    ) -> AnnData:
+) -> AnnData:
 
     scanpy.pp.filter_genes()
     scanpy.pp.filter_cells()

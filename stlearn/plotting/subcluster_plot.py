@@ -67,22 +67,19 @@ def subcluster_plot(
     -------
     Nothing
     """
-    #plt.rcParams['figure.dpi'] = dpi
+    # plt.rcParams['figure.dpi'] = dpi
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
 
     if str(cluster) not in adata.obs[use_label].unique():
-        raise ValueError(
-            "This cluster is non-exist, please choose another cluster!")
+        raise ValueError("This cluster is non-exist, please choose another cluster!")
 
     if use_label not in adata.obs.columns:
-        raise ValueError(
-            "This label is non-exist, please choose another label!")
-    #plt.rcParams['figure.dpi'] = dpi
+        raise ValueError("This label is non-exist, please choose another label!")
+    # plt.rcParams['figure.dpi'] = dpi
 
-    colors = adata.obs[adata.obs[use_label]
-                       == str(cluster)]["sub_cluster_labels"]
+    colors = adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"]
     keys = list(np.sort(colors.unique()))
     vals = np.arange(len(keys))
     mapping = dict(zip(keys, vals))
@@ -95,23 +92,46 @@ def subcluster_plot(
     fig, a = plt.subplots()
 
     # Plot scatter plot based on pixel of spots
-    plot = a.scatter(adata.obs[adata.obs[use_label] == str(cluster)]["imagecol"],
-                     adata.obs[adata.obs[use_label]
-                               == str(cluster)]["imagerow"],
-                     edgecolor="none", s=spot_size, marker="o", cmap=plt.get_cmap(cmap),
-                     c=colors, alpha=data_alpha)
+    plot = a.scatter(
+        adata.obs[adata.obs[use_label] == str(cluster)]["imagecol"],
+        adata.obs[adata.obs[use_label] == str(cluster)]["imagerow"],
+        edgecolor="none",
+        s=spot_size,
+        marker="o",
+        cmap=plt.get_cmap(cmap),
+        c=colors,
+        alpha=data_alpha,
+    )
 
-    if len(adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"].unique()) < 2:
-        centroids = [centroidpython(adata.obs[adata.obs[use_label] == str(cluster)][[
-                                    "imagecol", "imagerow"]].values)]
+    if (
+        len(
+            adata.obs[adata.obs[use_label] == str(cluster)][
+                "sub_cluster_labels"
+            ].unique()
+        )
+        < 2
+    ):
+        centroids = [
+            centroidpython(
+                adata.obs[adata.obs[use_label] == str(cluster)][
+                    ["imagecol", "imagerow"]
+                ].values
+            )
+        ]
         classes = np.array(
-            [adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"][0]])
+            [adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"][0]]
+        )
 
     else:
         from sklearn.neighbors import NearestCentroid
+
         clf = NearestCentroid()
-        clf.fit(adata.obs[adata.obs[use_label] == str(cluster)][["imagecol", "imagerow"]].values,
-                adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"])
+        clf.fit(
+            adata.obs[adata.obs[use_label] == str(cluster)][
+                ["imagecol", "imagerow"]
+            ].values,
+            adata.obs[adata.obs[use_label] == str(cluster)]["sub_cluster_labels"],
+        )
 
         centroids = clf.centroids_
         classes = clf.classes_
@@ -121,30 +141,43 @@ def subcluster_plot(
     m = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
 
     for i, label in enumerate(classes):
-        a.text(centroids[i][0], centroids[i][1], label, color='white', fontsize=8, zorder=3,
-               bbox=dict(facecolor=matplotlib.colors.to_hex(m.to_rgba(mapping[label])),
-                         boxstyle='round', alpha=0.5))
+        a.text(
+            centroids[i][0],
+            centroids[i][1],
+            label,
+            color="white",
+            fontsize=8,
+            zorder=3,
+            bbox=dict(
+                facecolor=matplotlib.colors.to_hex(m.to_rgba(mapping[label])),
+                boxstyle="round",
+                alpha=0.5,
+            ),
+        )
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
-    
-    a.imshow(image, alpha=tissue_alpha, zorder=-1,)
+    image = adata.uns["spatial"][library_id]["images"][
+        adata.uns["spatial"]["use_quality"]
+    ]
 
+    a.imshow(
+        image,
+        alpha=tissue_alpha,
+        zorder=-1,
+    )
 
     if not show_axis:
-        a.axis('off')
+        a.axis("off")
 
     if cropped:
-        a.set_xlim(imagecol.min() - margin,
-                imagecol.max() + margin)
+        a.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
 
-        a.set_ylim(imagerow.min() - margin,
-                imagerow.max() + margin)
-        
+        a.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
+
         a.set_ylim(a.get_ylim()[::-1])
-        #plt.gca().invert_yaxis()
+        # plt.gca().invert_yaxis()
 
     if show_plot:
         plt.show()
@@ -153,20 +186,21 @@ def subcluster_plot(
         if name is None:
             print("The file name is not defined!")
             name = use_label
-        fig.savefig(output + "/" + name, dpi=plt.figure().dpi,
-                    bbox_inches='tight', pad_inches=0)
+        fig.savefig(
+            output + "/" + name, dpi=plt.figure().dpi, bbox_inches="tight", pad_inches=0
+        )
 
     # plt.close(fig)
 
     # if "plots" not in adata.uns:
     #    adata.uns['plots'] = {}
-    #adata.uns['plots'].update({"subcl_" + use_label + "_" + str(cluster): fig_np})
+    # adata.uns['plots'].update({"subcl_" + use_label + "_" + str(cluster): fig_np})
 
-    #print("The plot stored in adata.uns['plots']['" + "subcl_" + use_label + "_" + str(cluster)+ "']")
+    # print("The plot stored in adata.uns['plots']['" + "subcl_" + use_label + "_" + str(cluster)+ "']")
 
-    #import matplotlib.pyplot as plt
-    #plt.rcParams['figure.dpi'] = dpi
-    #plt.imshow(adata.uns['plots']["subcl_" + use_label + "_" + str(cluster)])
+    # import matplotlib.pyplot as plt
+    # plt.rcParams['figure.dpi'] = dpi
+    # plt.imshow(adata.uns['plots']["subcl_" + use_label + "_" + str(cluster)])
     # plt.axis('off')
 
 

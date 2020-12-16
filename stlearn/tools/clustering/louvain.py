@@ -12,18 +12,22 @@ from stlearn._compat import Literal
 try:
     from louvain.VertexPartition import MutableVertexPartition
 except ImportError:
-    class MutableVertexPartition: pass
-    MutableVertexPartition.__module__ = 'louvain.VertexPartition'
+
+    class MutableVertexPartition:
+        pass
+
+    MutableVertexPartition.__module__ = "louvain.VertexPartition"
 import scanpy
+
 
 def louvain(
     adata: AnnData,
     resolution: Optional[float] = None,
     random_state: Optional[Union[int, RandomState]] = 0,
     restrict_to: Optional[Tuple[str, Sequence[str]]] = None,
-    key_added: str = 'louvain',
+    key_added: str = "louvain",
     adjacency: Optional[spmatrix] = None,
-    flavor: Literal['vtraag', 'igraph', 'rapids'] = 'vtraag',
+    flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag",
     directed: bool = True,
     use_weights: bool = False,
     partition_type: Optional[Type[MutableVertexPartition]] = None,
@@ -84,10 +88,20 @@ def louvain(
         When ``copy=True`` is set, a copy of ``adata`` with those fields is returned.
     """
 
-    scanpy.tl.louvain(adata, resolution=resolution, random_state=random_state, 
-            restrict_to=restrict_to, key_added=key_added, adjacency=adjacency,
-            flavor=flavor, directed=directed, use_weights=use_weights, partition_type=partition_type,
-            partition_kwargs=partition_kwargs, copy=copy)
+    scanpy.tl.louvain(
+        adata,
+        resolution=resolution,
+        random_state=random_state,
+        restrict_to=restrict_to,
+        key_added=key_added,
+        adjacency=adjacency,
+        flavor=flavor,
+        directed=directed,
+        use_weights=use_weights,
+        partition_type=partition_type,
+        partition_kwargs=partition_kwargs,
+        copy=copy,
+    )
 
     print("Applying Louvain clustering ...")
     print("Louvain clustering is done! The labels are stored in adata.obs['louvain']")

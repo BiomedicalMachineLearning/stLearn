@@ -1,8 +1,9 @@
 from typing import Optional, Union
 from anndata import AnnData
-import pandas as pd 
-import numpy as np 
+import pandas as pd
+import numpy as np
 from pathlib import Path
+
 
 def auto_annotate(
     adata: AnnData,
@@ -32,7 +33,7 @@ def auto_annotate(
         The annotation of cluster results.
 
     """
-    label = pd.read_csv(annotation_path,index_col=0)
+    label = pd.read_csv(annotation_path, index_col=0)
     label = label[adata.obs_names]
-    
+
     adata.obsm["deconvolution"] = label[adata.obs.index].T

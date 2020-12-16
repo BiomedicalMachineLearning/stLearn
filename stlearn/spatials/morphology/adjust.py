@@ -9,14 +9,13 @@ _SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
 
 
 def adjust(
-        adata: AnnData,
-        use_data: str = "X_pca",
-        radius: float = 50.0,
-        rates: int = 1,
-        method="mean",
-        copy: bool = False,
-        similarity_matrix: _SIMILARITY_MATRIX = "cosine"
-
+    adata: AnnData,
+    use_data: str = "X_pca",
+    radius: float = 50.0,
+    rates: int = 1,
+    method="mean",
+    copy: bool = False,
+    similarity_matrix: _SIMILARITY_MATRIX = "cosine",
 ) -> Optional[AnnData]:
     """\
     SME normalisation: Using spot location information and tissue morphological
@@ -57,11 +56,15 @@ def adjust(
     point_tree = spatial.cKDTree(coor)
     img_embed = adata.obsm["X_morphology"]
     lag_coor = []
-    with tqdm(total=len(adata), desc="Adjusting data",
-              bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:
+    with tqdm(
+        total=len(adata),
+        desc="Adjusting data",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+    ) as pbar:
         for i in range(len(coor)):
             current_neightbor = point_tree.query_ball_point(
-                coor.values[i], radius)  # Spatial weight
+                coor.values[i], radius
+            )  # Spatial weight
             current_neightbor.remove(i)
             if len(current_neightbor) > 0:
                 main_count = count_embed[i].reshape(1, -1)
@@ -76,42 +79,55 @@ def adjust(
 
                     if similarity_matrix == "cosine":
                         from sklearn.metrics.pairwise import cosine_similarity
+
                         cosine = cosine_similarity(main_img, i)[0][0]
                         cosine = (abs(cosine) + cosine) / 2
                         similarity.append(cosine)
                     elif similarity_matrix == "euclidean":
                         from sklearn.metrics.pairwise import euclidean_distances
+
                         eculidean = euclidean_distances(main_img, i)[0][0]
                         eculidean = 1 / (1 + eculidean)
                         similarity.append(eculidean)
                     elif similarity_matrix == "pearson":
                         from scipy.stats import pearsonr
+
                         pearson_corr = abs(
-                            pearsonr(main_img.reshape(-1), i.reshape(-1))[0])
+                            pearsonr(main_img.reshape(-1), i.reshape(-1))[0]
+                        )
                         similarity.append(pearson_corr)
                     elif similarity_matrix == "spearman":
                         from scipy.stats import spearmanr
+
                         spearmanr_corr = abs(
-                            spearmanr(main_img.reshape(-1), i.reshape(-1))[0])
+                            spearmanr(main_img.reshape(-1), i.reshape(-1))[0]
+                        )
                         similarity.append(spearmanr_corr)
 
                 similarity = np.array(similarity).reshape((-1, 1))
-                surrounding_count_adjusted = np.multiply(
-                    surrounding_count, similarity)
+                surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
 
                 for i in range(0, rates):
                     if method == "median":
-                        main_count = np.append(main_count,
-                                               np.median(surrounding_count_adjusted, axis=0).reshape(1, -1),
-                                               axis=0)
+                        main_count = np.append(
+                            main_count,
+                            np.median(surrounding_count_adjusted, axis=0).reshape(
+                                1, -1
+                            ),
+                            axis=0,
+                        )
                     elif method == "mean":
-                        main_count = np.append(main_count,
-                                               np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
-                                               axis=0)
+                        main_count = np.append(
+                            main_count,
+                            np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                            axis=0,
+                        )
                     elif method == "sum":
-                        main_count = np.append(main_count,
-                                               np.sum(surrounding_count_adjusted, axis=0).reshape(1, -1),
-                                               axis=0)
+                        main_count = np.append(
+                            main_count,
+                            np.sum(surrounding_count_adjusted, axis=0).reshape(1, -1),
+                            axis=0,
+                        )
                     else:
                         raise ValueError("Only 'median' and 'mean' are aceptable")
                 lag_coor.append(list(np.sum(main_count, axis=0)))

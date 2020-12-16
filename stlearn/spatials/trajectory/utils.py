@@ -1,6 +1,7 @@
 from numpy import linalg as la
 
-def lambda_dist(A1,A2,k=None,p=2,kind='laplacian'):
+
+def lambda_dist(A1, A2, k=None, p=2, kind="laplacian"):
     """The function is migrated from NetComp package. The lambda distance between graphs, which is defined as
         d(G1,G2) = norm(L_1 - L_2)
     where L_1 is a vector of the top k eigenvalues of the appropriate matrix
@@ -13,7 +14,7 @@ def lambda_dist(A1,A2,k=None,p=2,kind='laplacian'):
         The number of eigenvalues to be compared
     p : non-zero Float
         The p-norm is used to compare the resulting vector of eigenvalues.
-    
+
     kind : String , in {'laplacian','laplacian_norm','adjacency'}
         The matrix for which eigenvalues will be calculated.
     Returns
@@ -36,21 +37,23 @@ def lambda_dist(A1,A2,k=None,p=2,kind='laplacian'):
     normalized_laplacian_eigs
     """
     # ensure valid k
-    n1,n2 = [A.shape[0] for A in [A1,A2]]
-    N = min(n1,n2) # minimum size between the two graphs
+    n1, n2 = [A.shape[0] for A in [A1, A2]]
+    N = min(n1, n2)  # minimum size between the two graphs
     if k is None or k > N:
         k = N
 
     # form matrices
-    L1,L2 = [laplacian_matrix(A) for A in [A1,A2]]
+    L1, L2 = [laplacian_matrix(A) for A in [A1, A2]]
     # get eigenvalues, ignore eigenvectors
-    evals1,evals2 = [_eigs(L)[0] for L in [L1,L2]]
+    evals1, evals2 = [_eigs(L)[0] for L in [L1, L2]]
 
-    dist = la.norm(evals1[:k]-evals2[:k],ord=p)
+    dist = la.norm(evals1[:k] - evals2[:k], ord=p)
     return dist
 
-def resistance_distance(A1,A2,p=2,renormalized=False,attributed=False,
-                        check_connected=True,beta=1):
+
+def resistance_distance(
+    A1, A2, p=2, renormalized=False, attributed=False, check_connected=True, beta=1
+):
     """Compare two graphs using resistance distance (possibly renormalized).
     Parameters
     ----------
@@ -86,22 +89,26 @@ def resistance_distance(A1,A2,p=2,renormalized=False,attributed=False,
     # Calculate resistance matricies and compare
     if renormalized:
         # pad smaller adj. mat. so they're the same size
-        n1,n2 = [A.shape[0] for A in [A1,A2]]
-        N = max(n1,n2)
-        A1,A2 = [_pad(A,N) for A in [A1,A2]]
-        R1,R2 = [renormalized_res_mat(A,beta=beta) for A in [A1,A2]]
+        n1, n2 = [A.shape[0] for A in [A1, A2]]
+        N = max(n1, n2)
+        A1, A2 = [_pad(A, N) for A in [A1, A2]]
+        R1, R2 = [renormalized_res_mat(A, beta=beta) for A in [A1, A2]]
     else:
-        R1,R2 = [resistance_matrix(A,check_connected=check_connected)
-                 for A in [A1,A2]]
+        R1, R2 = [
+            resistance_matrix(A, check_connected=check_connected) for A in [A1, A2]
+        ]
     try:
-        distance_vector = np.sum((R1-R2)**p,axis=1)
+        distance_vector = np.sum((R1 - R2) ** p, axis=1)
     except ValueError:
-        raise InputError('Input matrices are different sizes. Please use '
-                         'renormalized resistance distance.')
+        raise InputError(
+            "Input matrices are different sizes. Please use "
+            "renormalized resistance distance."
+        )
     if attributed:
-        return distance_vector**(1/p)
+        return distance_vector ** (1 / p)
     else:
-        return np.sum(distance_vector)**(1/p)
+        return np.sum(distance_vector) ** (1 / p)
+
 
 """
 **********
@@ -122,8 +129,8 @@ from scipy.sparse import issparse
 ######################
 
 
-def _eigs(M,which='SR',k=None):
-    """ Helper function for getting eigenstuff.
+def _eigs(M, which="SR", k=None):
+    """Helper function for getting eigenstuff.
     Parameters
     ----------
     M : matrix, numpy or scipy sparse
@@ -140,49 +147,53 @@ def _eigs(M,which='SR',k=None):
     See Also
     --------
     numpy.linalg.eig
-    scipy.sparse.eigs        
+    scipy.sparse.eigs
     """
-    n,_ = M.shape
+    n, _ = M.shape
     if k is None:
         k = n
-    if which not in ['LR','SR']:
+    if which not in ["LR", "SR"]:
         raise ValueError("which must be either 'LR' or 'SR'.")
     M = M.astype(float)
-    if issparse(M) and k < n-1:
-        evals,evecs = spla.eigs(M,k=k,which=which)
+    if issparse(M) and k < n - 1:
+        evals, evecs = spla.eigs(M, k=k, which=which)
     else:
-        try: M = M.todense()
-        except: pass
-        evals,evecs = la.eig(M)
+        try:
+            M = M.todense()
+        except:
+            pass
+        evals, evecs = la.eig(M)
         # sort dem eigenvalues
         inds = np.argsort(evals)
-        if which == 'LR':
+        if which == "LR":
             inds = inds[::-1]
-        else: pass
+        else:
+            pass
         inds = inds[:k]
         evals = evals[inds]
-        evecs = np.matrix(evecs[:,inds])
-    return np.real(evals),np.real(evecs)
+        evecs = np.matrix(evecs[:, inds])
+    return np.real(evals), np.real(evecs)
 
 
 #####################
 ##  Get Eigenstuff ##
 #####################
 
-def normalized_laplacian_eig(A,k=None):
+
+def normalized_laplacian_eig(A, k=None):
     """Return the eigenstuff of the normalized Laplacian matrix of graph
     associated with adjacency matrix A.
-    Calculates via eigenvalues if 
+    Calculates via eigenvalues if
     K = D^(-1/2) A D^(-1/2)
     where `A` is the adjacency matrix and `D` is the diagonal matrix of
-    node degrees. Since L = I - K, the eigenvalues and vectors of L can 
+    node degrees. Since L = I - K, the eigenvalues and vectors of L can
     be easily recovered.
     Parameters
     ----------
     A : NumPy matrix
         Adjacency matrix of a graph
     k : int, 0 < k < A.shape[0]-1
-        The number of eigenvalues to grab. 
+        The number of eigenvalues to grab.
     Returns
     -------
     lap_evals : NumPy array
@@ -202,19 +213,19 @@ def normalized_laplacian_eig(A,k=None):
     nx.laplacian_matrix
     nx.normalized_laplacian_matrix
     """
-    n,m = A.shape
+    n, m = A.shape
     ##
     ## TODO: implement checks on the adjacency matrix
     ##
     degs = _flat(A.sum(axis=1))
     # the below will break if
-    inv_root_degs = [d**(-1/2) if d>_eps else 0 for d in degs]
-    inv_rootD = sps.spdiags(inv_root_degs, [0], n, n, format='csr')
+    inv_root_degs = [d ** (-1 / 2) if d > _eps else 0 for d in degs]
+    inv_rootD = sps.spdiags(inv_root_degs, [0], n, n, format="csr")
     # build normalized diffusion matrix
-    K = inv_rootD*A*inv_rootD
-    evals,evecs = _eigs(K,k=k,which='LR')
-    lap_evals = 1-evals
-    return np.real(lap_evals),np.real(evecs)
+    K = inv_rootD * A * inv_rootD
+    evals, evecs = _eigs(K, k=k, which="LR")
+    lap_evals = 1 - evals
+    return np.real(lap_evals), np.real(evecs)
 
     """
 ********
@@ -223,11 +234,12 @@ Matrices
 Matrices associated with graphs. Also contains linear algebraic helper functions.
 """
 
+
 from scipy import sparse as sps
 from scipy.sparse import issparse
 import numpy as np
 
-_eps = 10**(-10) # a small parameter
+_eps = 10 ** (-10)  # a small parameter
 
 ######################
 ## Helper Functions ##
@@ -237,28 +249,28 @@ _eps = 10**(-10) # a small parameter
 def _flat(D):
     """Flatten column or row matrices, as well as arrays."""
     if issparse(D):
-        raise ValueError('Cannot flatten sparse matrix.')
+        raise ValueError("Cannot flatten sparse matrix.")
     d_flat = np.array(D).flatten()
     return d_flat
 
 
-def _pad(A,N):
+def _pad(A, N):
     """Pad A so A.shape is (N,N)"""
-    n,_ = A.shape
-    if n>=N:
+    n, _ = A.shape
+    if n >= N:
         return A
     else:
         if issparse(A):
             # thrown if we try to np.concatenate sparse matrices
-            side = sps.csr_matrix((n,N-n))
-            bottom = sps.csr_matrix((N-n,N))
-            A_pad = sps.hstack([A,side])
-            A_pad = sps.vstack([A_pad,bottom])
+            side = sps.csr_matrix((n, N - n))
+            bottom = sps.csr_matrix((N - n, N))
+            A_pad = sps.hstack([A, side])
+            A_pad = sps.vstack([A_pad, bottom])
         else:
-            side = np.zeros((n,N-n))
-            bottom = np.zeros((N-n,N))
-            A_pad = np.concatenate([A,side],axis=1)
-            A_pad = np.concatenate([A_pad,bottom])
+            side = np.zeros((n, N - n))
+            bottom = np.zeros((N - n, N))
+            A_pad = np.concatenate([A, side], axis=1)
+            A_pad = np.concatenate([A_pad, bottom])
         return A_pad
 
 
@@ -278,13 +290,13 @@ def degree_matrix(A):
     D : SciPy sparse matrix
         Diagonal matrix of degrees.
     """
-    n,m = A.shape
+    n, m = A.shape
     degs = _flat(A.sum(axis=1))
-    D = sps.spdiags(degs,[0],n,n,format='csr')
+    D = sps.spdiags(degs, [0], n, n, format="csr")
     return D
 
 
-def laplacian_matrix(A,normalized=False):
+def laplacian_matrix(A, normalized=False):
     """Diagonal degree matrix of graph with adjacency matrix A
     Parameters
     ----------
@@ -297,14 +309,15 @@ def laplacian_matrix(A,normalized=False):
     L : SciPy sparse matrix
         Combinatorial laplacian matrix.
     """
-    n,m = A.shape
+    n, m = A.shape
     D = degree_matrix(A)
     L = D - A
     if normalized:
         degs = _flat(A.sum(axis=1))
-        rootD = sps.spdiags(np.power(degs,-1/2), [0], n, n, format='csr')
-        L = rootD*L*rootD
+        rootD = sps.spdiags(np.power(degs, -1 / 2), [0], n, n, format="csr")
+        L = rootD * L * rootD
     return L
+
 
 """
 **********
@@ -313,8 +326,10 @@ Exceptions
 Custom exceptions for NetComp.
 """
 
+
 class UndefinedException(Exception):
     """Raised when matrix to be returned is undefined"""
+
 
 """
 **********
@@ -329,11 +344,11 @@ from scipy import linalg as spla
 import numpy as np
 from scipy.sparse import issparse
 
-#from netcomp.linalg.matrices import laplacian_matrix
-#from netcomp.exception import UndefinedException
+# from netcomp.linalg.matrices import laplacian_matrix
+# from netcomp.exception import UndefinedException
 
 
-def resistance_matrix(A,check_connected=True):
+def resistance_matrix(A, check_connected=True):
     """Return the resistance matrix of G.
     Parameters
     ----------
@@ -349,7 +364,7 @@ def resistance_matrix(A,check_connected=True):
     Notes
     -----
     Uses formula for resistance matrix R in terms of Moore-Penrose of
-    pseudoinverse (non-normalized) graph Laplacian. See e.g. Theorem 2.1 in [1]. 
+    pseudoinverse (non-normalized) graph Laplacian. See e.g. Theorem 2.1 in [1].
     This formula can be computed even for disconnected graphs, although the
     interpretation in this case is unclear. Thus, the usage of
     check_connected=False is recommended only to reduce computation time in a
@@ -367,7 +382,7 @@ def resistance_matrix(A,check_connected=True):
        Effective graph resistance.
        Linear Algebra and its Applications, 435 (2011)
     """
-    n,m = A.shape
+    n, m = A.shape
     # check if graph is connected
     if check_connected:
         if issparse(A):
@@ -375,17 +390,21 @@ def resistance_matrix(A,check_connected=True):
         else:
             G = nx.from_numpy_matrix(A)
         if not nx.is_connected(G):
-            raise UndefinedException('Graph is not connected. '
-                                     'Resistance matrix is undefined.')
+            raise UndefinedException(
+                "Graph is not connected. " "Resistance matrix is undefined."
+            )
     L = laplacian_matrix(A)
-    try: L = L.todense()
-    except: pass
+    try:
+        L = L.todense()
+    except:
+        pass
     M = la.pinv(L)
     # calculate R in terms of M
-    d = np.reshape(np.diag(M),(n,1))
-    ones = np.ones((n,1))
-    R = np.dot(d,ones.T) + np.dot(ones,d.T) - M - M.T
+    d = np.reshape(np.diag(M), (n, 1))
+    ones = np.ones((n, 1))
+    R = np.dot(d, ones.T) + np.dot(ones, d.T) - M - M.T
     return R
+
 
 def commute_matrix(A):
     """Return the commute matrix of the graph associated with adj. matrix A.
@@ -399,7 +418,7 @@ def commute_matrix(A):
        Matrix of pairwise resistances between nodes.
     Notes
     -----
-    Uses formula for commute time matrix in terms of resistance matrix, 
+    Uses formula for commute time matrix in terms of resistance matrix,
     C = R*2*|E|
     where |E| is the number of edges in G. See e.g. Theorem 2.8 in [1].
     See Also
@@ -413,11 +432,12 @@ def commute_matrix(A):
        Linear Algebra and its Applications, 435 (2011)
     """
     R = resistance_matrix(A)
-    E = A.sum()/2 # number of edges in graph
-    C = 2*E*R
+    E = A.sum() / 2  # number of edges in graph
+    C = 2 * E * R
     return C
 
-def renormalized_res_mat(A,beta=1):
+
+def renormalized_res_mat(A, beta=1):
     """Return the renormalized resistance matrix of graph associated with A.
     To renormalize a resistance R, we apply the function
     R' = R / (R + beta)
@@ -451,7 +471,7 @@ def renormalized_res_mat(A,beta=1):
     resistance_matrix
     """
     if issparse(A):
-        G = nx.from_scipy_sparse_matrix(A)        
+        G = nx.from_scipy_sparse_matrix(A)
     else:
         G = nx.from_numpy_matrix(A)
     n = len(G)
@@ -466,13 +486,13 @@ def renormalized_res_mat(A,beta=1):
     for component in nx.connected_components(G):
         component_order += list(component)
     component_order = list(np.argsort(component_order))
-    R = R[component_order,:]
-    R = R[:,component_order]
-    renorm = np.vectorize(lambda r: r/(r+beta))
+    R = R[component_order, :]
+    R = R[:, component_order]
+    renorm = np.vectorize(lambda r: r / (r + beta))
     R = renorm(R)
     # set resistance for different components to 1
-    R[R==0]=1
-    R = R - np.eye(n) # don't want diagonal to be 1
+    R[R == 0] = 1
+    R = R - np.eye(n)  # don't want diagonal to be 1
     return R
 
 
@@ -501,7 +521,7 @@ def conductance_matrix(A):
     renormalized_res_mat
     """
     if issparse(A):
-        G = nx.from_scipy_sparse_matrix(A)        
+        G = nx.from_scipy_sparse_matrix(A)
     else:
         G = nx.from_numpy_matrix(A)
     subgraphC = []
@@ -510,7 +530,7 @@ def conductance_matrix(A):
         r_sub = resistance_matrix(a_sub)
         m = len(subgraph)
         # add one to diagonal, invert, remove one from diagonal:
-        c_sub = 1/(r_sub + np.eye(m)) - np.eye(m)
+        c_sub = 1 / (r_sub + np.eye(m)) - np.eye(m)
         subgraphC.append(c_sub)
     C = spla.block_diag(*subgraphC)
     # resort C so that it matches the original node list
@@ -518,7 +538,6 @@ def conductance_matrix(A):
     for component in nx.connected_components(G):
         component_order += list(component)
     component_order = list(np.argsort(component_order))
-    C = C[component_order,:]
-    C = C[:,component_order]
+    C = C[component_order, :]
+    C = C[:, component_order]
     return C
-    

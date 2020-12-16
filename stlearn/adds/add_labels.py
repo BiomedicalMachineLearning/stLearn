@@ -9,10 +9,10 @@ def labels(
     adata: AnnData,
     label_filepath: str = None,
     index_col: int = 0,
-    sep: str = '\t',
+    sep: str = "\t",
     copy: bool = False,
 ) -> Optional[AnnData]:
-    """ Add label transfer results into AnnData object
+    """Add label transfer results into AnnData object
 
     Parameters
     ----------
@@ -27,9 +27,11 @@ def labels(
 
     """
     labels = pd.read_csv(label_filepath, index_col=index_col, sep=sep)
-    adata.uns["label_transfer"] = labels.drop(['predicted.id','prediction.score.max'], axis=1)
-    adata.obs['predictions'] = labels['predicted.id']
-    print("label transfer results added to adata.uns[\'label_transfer\']")
-    print("predicted label added to adata.obs[\'predictions\'].")
+    adata.uns["label_transfer"] = labels.drop(
+        ["predicted.id", "prediction.score.max"], axis=1
+    )
+    adata.obs["predictions"] = labels["predicted.id"]
+    print("label transfer results added to adata.uns['label_transfer']")
+    print("predicted label added to adata.obs['predictions'].")
 
     return adata if copy else None

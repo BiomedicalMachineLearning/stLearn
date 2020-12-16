@@ -7,13 +7,14 @@ from sklearn.utils import sparsefuncs
 from stlearn._compat import Literal
 import scanpy
 
+
 def normalize_total(
     adata: AnnData,
     target_sum: Optional[float] = None,
     exclude_highly_expressed: bool = False,
     max_fraction: float = 0.05,
     key_added: Optional[str] = None,
-    layers: Union[Literal['all'], Iterable[str]] = None,
+    layers: Union[Literal["all"], Iterable[str]] = None,
     layer_norm: Optional[str] = None,
     inplace: bool = True,
 ) -> Optional[Dict[str, np.ndarray]]:
@@ -71,11 +72,16 @@ def normalize_total(
     `adata.X` and `adata.layers`, depending on `inplace`.
     """
 
-
-    scanpy.pp.normalize_total(adata, target_sum=target_sum,
-                    exclude_highly_expressed=exclude_highly_expressed,
-                    max_fraction=max_fraction, key_added=key_added,
-                    layers=layers, layer_norm=layer_norm, inplace=inplace)
+    scanpy.pp.normalize_total(
+        adata,
+        target_sum=target_sum,
+        exclude_highly_expressed=exclude_highly_expressed,
+        max_fraction=max_fraction,
+        key_added=key_added,
+        layers=layers,
+        layer_norm=layer_norm,
+        inplace=inplace,
+    )
 
     adata.obsm["normalized_total"] = adata.to_df()
 

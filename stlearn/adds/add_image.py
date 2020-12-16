@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from pathlib import Path
 import os
 from PIL import Image
+
 Image.MAX_IMAGE_PIXELS = None
 
 
@@ -42,7 +43,6 @@ def image(
     **tissue_img** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
-    
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
@@ -57,17 +57,23 @@ def image(
                 adata.uns["spatial"][library_id]["images"][quality] = img
                 adata.uns["spatial"]["use_quality"] = quality
                 adata.uns["spatial"][library_id]["scalefactors"] = {}
-                adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"] = scale
+                adata.uns["spatial"][library_id]["scalefactors"][
+                    "tissue_" + quality + "_scalef"
+                ] = scale
 
             print("Added tissue image to the object!")
 
             return adata if copy else None
         except:
-            raise ValueError(f'''\
+            raise ValueError(
+                f"""\
             {imgpath!r} does not end on a valid extension.
-            ''')
+            """
+            )
     else:
-        raise ValueError(f'''\
+        raise ValueError(
+            f"""\
         {imgpath!r} does not end on a valid extension.
-        ''')
+        """
+        )
     return adata if copy else None

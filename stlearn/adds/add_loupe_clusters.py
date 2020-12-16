@@ -1,10 +1,11 @@
 from typing import Optional, Union
 from anndata import AnnData
-import pandas as pd 
-import numpy as np 
+import pandas as pd
+import numpy as np
 import stlearn
 from pathlib import Path
 from natsort import natsorted
+
 
 def add_loupe_clusters(
     adata: AnnData,
@@ -37,11 +38,7 @@ def add_loupe_clusters(
     """
     label = pd.read_csv(loupe_path)
 
-
     adata.obs[key_add] = pd.Categorical(
-        values=np.array(label[key_add]).astype('U'),
-        categories=natsorted(label[key_add].unique().astype('U')),
+        values=np.array(label[key_add]).astype("U"),
+        categories=natsorted(label[key_add].unique().astype("U")),
     )
-    
-
-

@@ -10,16 +10,16 @@ from pathlib import Path
 # Test progress bar
 from tqdm import tqdm
 
-_CNN_BASE = Literal['resnet50', 'vgg16', 'inception_v3', 'xception']
+_CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
 
 
 def extract_feature(
-        adata: AnnData,
-        cnn_base: _CNN_BASE = 'resnet50',
-        n_components: int = 50,
-        verbose: bool = False,
-        copy: bool = False,
-        seeds: int = 1
+    adata: AnnData,
+    cnn_base: _CNN_BASE = "resnet50",
+    n_components: int = 50,
+    verbose: bool = False,
+    copy: bool = False,
+    seeds: int = 1,
 ) -> Optional[AnnData]:
     """\
     Extract latent morphological features from H&E images using pre-trained
@@ -52,7 +52,11 @@ def extract_feature(
     if "tile_path" not in adata.obs:
         raise ValueError("Please run the function stlearn.pp.tiling")
 
-    with tqdm(total=len(adata), desc="Extract feature", bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:
+    with tqdm(
+        total=len(adata),
+        desc="Extract feature",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+    ) as pbar:
         for spot, tile_path in adata.obs["tile_path"].items():
             tile = Image.open(tile_path)
             tile = np.asarray(tile, dtype="int32")
@@ -67,11 +71,11 @@ def extract_feature(
     adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
 
     from sklearn.decomposition import PCA
+
     pca = PCA(n_components=n_components, random_state=seeds)
     pca.fit(feature_df.transpose().to_numpy())
 
-    adata.obsm["X_morphology"] = pca.transform(
-        feature_df.transpose().to_numpy())
+    adata.obsm["X_morphology"] = pca.transform(feature_df.transpose().to_numpy())
 
     print("The morphology feature is added to adata.obsm['X_morphology']!")
 

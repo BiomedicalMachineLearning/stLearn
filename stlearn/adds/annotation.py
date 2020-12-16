@@ -38,9 +38,9 @@ def annotation(
     if len(label_list) != len(adata.obs[use_label].unique()):
         raise ValueError("Please give the correct number of label list!")
 
-    adata.obs[use_label + '_anno'] = adata.obs[use_label]
-    adata.obs[use_label + '_anno'].cat.categories = label_list
+    adata.obs[use_label + "_anno"] = adata.obs[use_label]
+    adata.obs[use_label + "_anno"].cat.categories = label_list
 
-    print("The annotation is added to adata.obs['" + use_label + "_anno"+"']")
+    print("The annotation is added to adata.obs['" + use_label + "_anno" + "']")
 
     return adata if copy else None

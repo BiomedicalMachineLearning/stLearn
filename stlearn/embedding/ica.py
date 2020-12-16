@@ -62,10 +62,10 @@ def run_ica(
 
     adata.obsm["X_ica"] = latent
 
-    adata.uns['ica'] = {'params': {'n_factors': n_factors, 'fun': fun,
-                                   'tol': tol}}
+    adata.uns["ica"] = {"params": {"n_factors": n_factors, "fun": fun, "tol": tol}}
 
     print(
-        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in adata.uns['ica']")
+        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in adata.uns['ica']"
+    )
 
     return adata if copy else None

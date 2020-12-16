@@ -41,37 +41,41 @@ def localization(
     if "sub_cluster_labels" in adata.obs.columns:
         adata.obs = adata.obs.drop("sub_cluster_labels", axis=1)
 
-    pd.set_option('mode.chained_assignment', None)
+    pd.set_option("mode.chained_assignment", None)
     subclusters = pd.Series()
     for i in adata.obs[use_label].unique():
 
         tmp = adata.obs[adata.obs[use_label] == i]
 
         clustering = DBSCAN(eps=eps, min_samples=0, algorithm="kd_tree").fit(
-            tmp[["imagerow", "imagecol"]])
+            tmp[["imagerow", "imagecol"]]
+        )
 
         labels = clustering.labels_
 
         sublabels = []
         for label in labels:
-            sublabels.append(str(i)+"_"+str(label))
+            sublabels.append(str(i) + "_" + str(label))
         tmp["sub_labels"] = sublabels
         subclusters = subclusters.append(tmp["sub_labels"])
-    pd.reset_option('mode.chained_assignment')
+    pd.reset_option("mode.chained_assignment")
 
-    adata.obs = pd.merge(adata.obs, pd.DataFrame(
-        {"sub_cluster_labels": subclusters}),
-        left_index=True, right_index=True)
+    adata.obs = pd.merge(
+        adata.obs,
+        pd.DataFrame({"sub_cluster_labels": subclusters}),
+        left_index=True,
+        right_index=True,
+    )
     # Convert to numeric
     converted = dict(enumerate(adata.obs["sub_cluster_labels"].unique()))
     inv_map = {v: k for k, v in converted.items()}
-    adata.obs["sub_cluster_labels"] = adata.obs["sub_cluster_labels"].replace(
-        inv_map)
+    adata.obs["sub_cluster_labels"] = adata.obs["sub_cluster_labels"].replace(inv_map)
 
     adata.obs["sub_cluster_labels"] = pd.Categorical(
-        values=np.array(adata.obs["sub_cluster_labels"]).astype('U'),
+        values=np.array(adata.obs["sub_cluster_labels"]).astype("U"),
         categories=natsorted(
-            np.unique(np.array(adata.obs["sub_cluster_labels"])).astype('U')),
+            np.unique(np.array(adata.obs["sub_cluster_labels"])).astype("U")
+        ),
     )
 
     return adata if copy else None
