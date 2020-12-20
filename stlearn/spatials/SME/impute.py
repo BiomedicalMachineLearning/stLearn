@@ -110,7 +110,9 @@ def pseudo_spot(
     platform
         `Visium` or `Old_ST`
     copy
-        Return a copy instead of writing to adata.
+        Return Anndata
+        if `pseudo_spot_adata`, imputed Anndata
+        if `combined_adata`, merged Anndata of original data imputed Anndata.
     Returns
     -------
     Anndata
