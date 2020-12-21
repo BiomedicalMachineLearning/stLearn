@@ -106,9 +106,9 @@ def impute_neighbour(
             else:
                 current_neighbour = main_weights.argsort()[-3:]
 
+            surrounding_count = count_embed[current_neighbour]
+            surrounding_weights = main_weights[current_neighbour]
             if surrounding_weights.sum() > 0:
-                surrounding_count = count_embed[current_neighbour]
-                surrounding_weights = main_weights[current_neighbour]
                 surrounding_weights_scaled = surrounding_weights / surrounding_weights.sum()
                 weights_list.append(surrounding_weights_scaled)
 

@@ -53,6 +53,8 @@ def tiling(
         os.mkdir(out_path)
 
     image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    if image.dtype == np.float32 or image.dtype == np.float64:
+        image = (image * 255).astype(np.uint8)
     img_pillow = Image.fromarray(image)
     tile_names = []
 
