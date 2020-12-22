@@ -161,7 +161,7 @@ def apply_mask(
         adata.obs[key + "_code"] = spot_mask_df[0]
         adata.obs[key] = spot_mask_df[1]
 
-        c = [cmap_(int(i) / (len(cmap) - 1))]
+        c = cmap_(int(i) / (len(cmap) - 1))
         mask_final = mask_final + mask_image * np.array(c[0:3])
     print(f'''Mask annotation for spots added to `adata.obs["{key}"]`''')
     mask_final[mask_final == 0] = 1

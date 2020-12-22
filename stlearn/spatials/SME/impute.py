@@ -84,6 +84,7 @@ def pseudo_spot(
         adata: AnnData,
         tile_path: Union[Path, str] = Path("/tmp/tiles"),
         use_data: str = "raw",
+        crop_size: int = "auto",
         platform: _PLATFORM = "Visium",
         weights: _WEIGHTING_MATRIX = "weights_matrix_all",
         copy: _COPY = "pseudo_spot_adata",
@@ -101,6 +102,9 @@ def pseudo_spot(
         Input data, can be `raw` counts, log transformed data or dimension reduced space(`X_pca` and `X_umap`)
     tile_path
         Path to save spot image tiles
+    crop_size
+        Size of tiles
+        if `auto`, automatically detect crop size
     weights
         Weighting matrix for imputation.
         if `weights_matrix_all`, matrix combined all information from spatial location (S),
@@ -214,7 +218,10 @@ def pseudo_spot(
     pseudo_spot_adata = AnnData(impute_df, obs=obs_df)
     pseudo_spot_adata.uns["spatial"] = adata.uns["spatial"]
 
-    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=40)
+    if crop_size == "auto":
+        crop_size = round(unit / 2)
+
+    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=crop_size)
 
     stlearn.pp.extract_feature(pseudo_spot_adata)
 
