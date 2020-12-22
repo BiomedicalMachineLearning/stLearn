@@ -7,9 +7,11 @@ import numpy as np
 from PIL import Image
 import pandas as pd
 import stlearn
+from .._compat import Literal
 import scanpy
 import scipy
 
+_QUALITY = Literal["fulres", "hires", "lowres"]
 
 def Read10X(
     path: Union[str, Path],
@@ -17,7 +19,7 @@ def Read10X(
     count_file: str = "filtered_feature_bc_matrix.h5",
     library_id: str = None,
     load_images: Optional[bool] = True,
-    quality: str = "hires",
+    quality: _QUALITY = "hires",
 ) -> AnnData:
 
     """\
@@ -64,7 +66,7 @@ def Read10X(
     :attr:`~anndata.AnnData.uns`\\ `['spatial']`
         Dict of spaceranger output files with 'library_id' as key
     :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['images']`
-        Dict of images (`'hires'` and `'lowres'`)
+        Dict of images (`'fulres'`, `'hires'` and `'lowres'`)
     :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['scalefactors']`
         Scale factors for the spots
     :attr:`~anndata.AnnData.uns`\\ `['spatial'][library_id]['metadata']`
@@ -75,20 +77,22 @@ def Read10X(
 
     from scanpy import read_visium
 
-    adata = read_visium(
-        path, genome=None, count_file=count_file, library_id=None, load_images=True
-    )
+    adata = read_visium(path, genome=genome,
+                        count_file=count_file,
+                        library_id=library_id,
+                        load_images=load_images)
     adata.var_names_make_unique()
 
-    adata.obs["sum_counts"] = np.array(adata.X.sum(axis=1))
+    adata.obs['sum_counts'] = np.array(adata.X.sum(axis=1))
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    scale = adata.uns["spatial"][library_id]["scalefactors"][
-        "tissue_" + quality + "_scalef"
-    ]
-    image_coor = adata.obsm["spatial"] * scale
+    if quality == "fulres":
+        image_coor = adata.obsm["spatial"]
+    else:
+        scale = adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"]
+        image_coor = adata.obsm["spatial"] * scale
 
     adata.obs["imagecol"] = image_coor[:, 0]
     adata.obs["imagerow"] = image_coor[:, 1]
