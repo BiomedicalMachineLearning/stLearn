@@ -68,6 +68,8 @@ def calculate_weight_matrix(
         md[md < 0] = 0
 
         gd = 1 - pairwise_distances(adata.obsm["X_pca"], metric="correlation")
+        gd[gd < 0] = 0
+        
         adata.uns["gene_expression_correlation"] = gd
         adata.uns["physical_distance"] = pd_norm
         adata.uns["morphological_distance"] = md
