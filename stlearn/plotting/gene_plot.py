@@ -9,31 +9,34 @@ from typing import Optional, Union
 from anndata import AnnData
 import warnings
 
+
 # from .utils import get_img_from_fig, checkType
 
 
 def gene_plot(
-    adata: AnnData,
-    method: str = "CumSum",
-    genes: Optional[Union[str, list]] = None,
-    list_clusters: list = None,
-    use_raw_count: bool = False,
-    use_label: str = "louvain",
-    threshold: float = None,
-    library_id: str = None,
-    data_alpha: float = 1.0,
-    tissue_alpha: float = 1.0,
-    cmap: str = "Spectral_r",
-    spot_size: Union[float, int] = 6.5,
-    show_legend: bool = False,
-    show_color_bar: bool = True,
-    show_axis: bool = False,
-    cropped: bool = True,
-    margin: int = 100,
-    name: str = None,
-    dpi: int = 150,
-    output: str = None,
-    copy: bool = False,
+        adata: AnnData,
+        method: str = "CumSum",
+        genes: Optional[Union[str, list]] = None,
+        list_clusters: list = None,
+        use_raw_count: bool = False,
+        use_label: str = "louvain",
+        threshold: float = None,
+        library_id: str = None,
+        data_alpha: float = 1.0,
+        tissue_alpha: float = 1.0,
+        cmap: str = "Spectral_r",
+        spot_size: Union[float, int] = 6.5,
+        show_legend: bool = False,
+        show_color_bar: bool = True,
+        show_axis: bool = False,
+        cropped: bool = True,
+        margin: int = 100,
+        name: str = None,
+        dpi: int = 150,
+        vmin: float = None,
+        vmax: float = None,
+        output: str = None,
+        copy: bool = False,
 ) -> Optional[AnnData]:
     """\
     Gene expression plot for sptial transcriptomics data.
@@ -72,6 +75,10 @@ def gene_plot(
         Name of the output figure file.
     dpi
         DPI of the output figure.
+    vmin
+        minimum value for color.
+    vmax
+        maximum value for color.
     output
         Save the figure as file or not.
     copy
@@ -119,8 +126,10 @@ def gene_plot(
     # Initialize matplotlib
     fig, a = plt.subplots()
 
-    vmin = min(colors)
-    vmax = max(colors)
+    if not vmin:
+        vmin = min(colors)
+    if not vmax:
+        vmax = max(colors)
     # Plot scatter plot based on pixel of spots
     plot = a.scatter(
         imagecol,
@@ -136,7 +145,6 @@ def gene_plot(
     )
 
     if show_color_bar:
-
         cb = plt.colorbar(plot, aspect=10, shrink=0.5, cmap=cmap)
         cb.outline.set_visible(False)
 
@@ -175,7 +183,6 @@ def gene_plot(
 
 
 def _gene_plot(adata, method, genes):
-
     # Gene plot option
 
     if len(genes) == 0:
