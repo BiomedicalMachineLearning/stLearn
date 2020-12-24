@@ -40,7 +40,6 @@ Add: `add`
    add.parsing
    add.lr
    add.annotation
-   add.cpdb
    add.add_loupe_clusters
    add.auto_annotate
 
@@ -131,8 +130,6 @@ Plot: `pl`
    pl.deconvolution_plot
    pl.QC_plot
    pl.het_plot
-   pl.violin_plot
-   pl.stacked_bar_plot
    pl.trajectory.pseudotime_plot
    pl.trajectory.local_plot
    pl.trajectory.tree_plot

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.spatial.trajectory.pseudotimespace_global &mdash; stLearn 0.3.0 documentation</title>
+  <title>stlearn.spatial.trajectory.pseudotimespace_global &mdash; stLearn 0.3.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
             
           
@@ -120,10 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stLearn-CCI.html">stLearn Cell-cell interaction analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
@@ -224,7 +221,26 @@
 <dl class="py function">
 <dt id="stlearn.spatial.trajectory.pseudotimespace_global">
 <code class="sig-prename descclassname">stlearn.spatial.trajectory.</code><code class="sig-name descname">pseudotimespace_global</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">use_label</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'louvain'</span></em>, <em class="sig-param"><span class="n">list_cluster</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">w</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.spatial.trajectory.pseudotimespace_global" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Perform pseudo-time-space analysis with global level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>use_label</strong> – Use label result of clustering method.</p></li>
+<li><p><strong>list_cluster</strong> – List of cluster used to reconstruct spatial trajectory.</p></li>
+<li><p><strong>w</strong> – Weighting factor to balance between spatial data and gene expression</p></li>
+<li><p><strong>step</strong> – Step for screeing weighting factor</p></li>
+<li><p><strong>k</strong> – The number of eigenvalues to be compared</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Anndata</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

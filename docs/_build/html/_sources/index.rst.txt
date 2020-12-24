@@ -32,10 +32,7 @@ stLearn-interactive tutorial: `Wiki page <https://github.com/BiomedicalMachineLe
    stSME_clustering
    stSME_comparison
    Pseudo-time-space-tutorial
-   cci_single-lr_between-spot
-   cci_single-lr_within-spot
-   cci_multiple-lr_between-spot
-   cci_multiple-lr_within-spot
+   stLearn-CCI
    Working-with-Old-Spatial-Transcriptomics-data
    Read_slideseq
    Read_MERFISH

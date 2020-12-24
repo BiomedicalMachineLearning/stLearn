@@ -14,6 +14,28 @@ def pseudotimespace_global(
     k=10,
 ) -> Optional[AnnData]:
 
+    """\
+    Perform pseudo-time-space analysis with global level.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    list_cluster
+        List of cluster used to reconstruct spatial trajectory.
+    w
+        Weighting factor to balance between spatial data and gene expression
+    step
+        Step for screeing weighting factor
+    k
+        The number of eigenvalues to be compared
+    Returns
+    -------
+    Anndata
+    """
+
     if w is None:
 
         w = weight_optimizing_global(
@@ -29,6 +51,24 @@ def pseudotimespace_local(
     cluster: list = [],
     w: float = None,
 ) -> Optional[AnnData]:
+
+    """\
+    Perform pseudo-time-space analysis with local level.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    use_label
+        Use label result of clustering method.
+    cluster
+        Cluster used to reconstruct intraregional spatial trajectory.
+    w
+        Weighting factor to balance between spatial data and gene expression
+    Returns
+    -------
+    Anndata
+    """
 
     if w is None:
         w = weight_optimizing_local(adata, use_label=use_label, cluster=cluster)

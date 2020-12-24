@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.spatial.trajectory.detect_transition_markers_clades &mdash; stLearn 0.3.0 documentation</title>
+  <title>stlearn.spatial.trajectory.detect_transition_markers_clades &mdash; stLearn 0.3.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
             
           
@@ -120,10 +120,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stLearn-CCI.html">stLearn Cell-cell interaction analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
@@ -224,7 +221,26 @@
 <dl class="py function">
 <dt id="stlearn.spatial.trajectory.detect_transition_markers_clades">
 <code class="sig-prename descclassname">stlearn.spatial.trajectory.</code><code class="sig-name descname">detect_transition_markers_clades</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span></em>, <em class="sig-param"><span class="n">clade</span></em>, <em class="sig-param"><span class="n">cutoff_spearman</span><span class="o">=</span><span class="default_value">0.4</span></em>, <em class="sig-param"><span class="n">cutoff_pvalue</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">screening_genes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_raw_count</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#stlearn.spatial.trajectory.detect_transition_markers_clades" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transition markers detection of a clade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>clade</strong> – Name of a clade user wants to detect transition markers.</p></li>
+<li><p><strong>cutoff_spearman</strong> – The threshold of correlation coefficient.</p></li>
+<li><p><strong>cutoff_pvalue</strong> – The threshold of p-value.</p></li>
+<li><p><strong>screening_genes</strong> – List of customised genes.</p></li>
+<li><p><strong>use_raw_count</strong> – True if user wants to use raw layer data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Anndata</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

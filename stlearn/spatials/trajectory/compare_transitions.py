@@ -2,6 +2,19 @@ import numpy as np
 
 
 def compare_transitions(adata, trajectories):
+    """\
+    Compare transition markers between two clades
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    trajectories
+        List of clades names user want to compare.
+    Returns
+    -------
+    Anndata
+    """
 
     pos_1 = list(
         adata.uns[trajectories[0]][adata.uns[trajectories[0]]["score"] >= 0]["gene"]

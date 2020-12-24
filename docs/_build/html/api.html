@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API &mdash; stLearn 0.3.0 documentation</title>
+  <title>API &mdash; stLearn 0.3.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
             
           
@@ -106,6 +106,7 @@
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.parsing.html">stlearn.add.parsing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.lr.html">stlearn.add.lr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.annotation.html">stlearn.add.annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.add_loupe_clusters.html">stlearn.add.add_loupe_clusters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stlearn.add.auto_annotate.html">stlearn.add.auto_annotate</a></li>
 </ul>
 </li>
@@ -173,10 +174,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stLearn-CCI.html">stLearn Cell-cell interaction analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
@@ -326,13 +324,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.annotation.html#stlearn.add.annotation" title="stlearn.add.annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.annotation</span></code></a>(adata, label_list[, …])</p></td>
 <td><p>Adding annotation for cluster</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.cpdb</span></code></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.add_loupe_clusters.html#stlearn.add.add_loupe_clusters" title="stlearn.add.add_loupe_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.add_loupe_clusters</span></code></a>(adata, loupe_path[, …])</p></td>
+<td><p>Adding label transfered from Seurat</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.add_loupe_clusters</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="stlearn.add.auto_annotate.html#stlearn.add.auto_annotate" title="stlearn.add.auto_annotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.auto_annotate</span></code></a>(adata, annotation_path[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="stlearn.add.auto_annotate.html#stlearn.add.auto_annotate" title="stlearn.add.auto_annotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add.auto_annotate</span></code></a>(adata, annotation_path[, …])</p></td>
 <td><p>Adding label transfered from Seurat</p></td>
 </tr>
 </tbody>
@@ -411,19 +406,19 @@
 <td><p>Perform pseudotime analysis.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.pseudotimespace_global.html#stlearn.spatial.trajectory.pseudotimespace_global" title="stlearn.spatial.trajectory.pseudotimespace_global"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.pseudotimespace_global</span></code></a>(adata)</p></td>
-<td><p></p></td>
+<td><p>Perform pseudo-time-space analysis with global level.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.pseudotimespace_local.html#stlearn.spatial.trajectory.pseudotimespace_local" title="stlearn.spatial.trajectory.pseudotimespace_local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.pseudotimespace_local</span></code></a>(adata)</p></td>
-<td><p></p></td>
+<td><p>Perform pseudo-time-space analysis with local level.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.compare_transitions.html#stlearn.spatial.trajectory.compare_transitions" title="stlearn.spatial.trajectory.compare_transitions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.compare_transitions</span></code></a>(…)</p></td>
-<td><p></p></td>
+<td><p>Compare transition markers between two clades</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.detect_transition_markers_clades.html#stlearn.spatial.trajectory.detect_transition_markers_clades" title="stlearn.spatial.trajectory.detect_transition_markers_clades"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.detect_transition_markers_clades</span></code></a>(…)</p></td>
-<td><p></p></td>
+<td><p>Transition markers detection of a clade.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.spatial.trajectory.detect_transition_markers_branches.html#stlearn.spatial.trajectory.detect_transition_markers_branches" title="stlearn.spatial.trajectory.detect_transition_markers_branches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.trajectory.detect_transition_markers_branches</span></code></a>(…)</p></td>
-<td><p></p></td>
+<td><p>Transition markers detection of a branch.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.spatial.morphology.adjust.html#stlearn.spatial.morphology.adjust" title="stlearn.spatial.morphology.adjust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spatial.morphology.adjust</span></code></a>(adata[, use_data, …])</p></td>
 <td><p>SME normalisation: Using spot location information and tissue morphological features to correct spot gene expression</p></td>
@@ -489,12 +484,6 @@
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.het_plot.html#stlearn.pl.het_plot" title="stlearn.pl.het_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.het_plot</span></code></a>(adata[, use_het, library_id, …])</p></td>
 <td><p>Cell type diversity plot for sptial transcriptomics data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.violin_plot</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.stacked_bar_plot</span></code></p></td>
-<td><p></p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.pseudotime_plot.html#stlearn.pl.trajectory.pseudotime_plot" title="stlearn.pl.trajectory.pseudotime_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.pseudotime_plot</span></code></a>(adata[, …])</p></td>
 <td><p>Global trajectory inference plot (Only DPT).</p></td>
 </tr>
@@ -505,7 +494,7 @@
 <td><p>Hierarchical tree plot represent for the global spatial trajectory inference.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="stlearn.pl.trajectory.transition_markers_plot.html#stlearn.pl.trajectory.transition_markers_plot" title="stlearn.pl.trajectory.transition_markers_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.transition_markers_plot</span></code></a>(adata)</p></td>
-<td><p></p></td>
+<td><p>Plot transition marker.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="stlearn.pl.trajectory.DE_transition_plot.html#stlearn.pl.trajectory.DE_transition_plot" title="stlearn.pl.trajectory.DE_transition_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pl.trajectory.DE_transition_plot</span></code></a>(adata[, …])</p></td>
 <td><p>Differential expression between transition markers.</p></td>

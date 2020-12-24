@@ -12,6 +12,27 @@ def transition_markers_plot(
     output: str = None,
     name: str = None,
 ) -> Optional[AnnData]:
+    """\
+    Plot transition marker.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    top_genes
+        Top genes users want to display in the plot.
+    trajectory
+        Name of a clade/branch user wants to plot transition markers.
+    dpi
+        The resolution of the plot.
+    output
+        The output folder of the plot.
+    name
+        The filename of the plot.
+    Returns
+    -------
+    Anndata
+    """
 
     if trajectory == None:
         raise ValueError("Please input the trajectory name!")

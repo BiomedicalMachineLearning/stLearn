@@ -7,3 +7,4 @@ from .adds.add_labels import labels
 from .adds.auto_annotate import auto_annotate
 from .adds.add_mask import add_mask
 from .adds.add_mask import apply_mask
+from .adds.add_loupe_clusters import add_loupe_clusters

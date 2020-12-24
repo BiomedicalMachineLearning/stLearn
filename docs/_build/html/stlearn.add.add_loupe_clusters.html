@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.add.add_loupe_clusters &mdash; stLearn 0.3.0 documentation</title>
+  <title>stlearn.add.add_loupe_clusters &mdash; stLearn 0.3.1 documentation</title>
   
 
   
@@ -38,7 +38,9 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="stlearn.add.auto_annotate" href="stlearn.add.auto_annotate.html" />
+    <link rel="prev" title="stlearn.add.annotation" href="stlearn.add.annotation.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -62,7 +64,7 @@
             
             
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
             
           
@@ -87,9 +89,27 @@
             
             
               <p class="caption"><span class="caption-text">Content:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.wrapper">Wrapper functions: <cite>wrapper</cite></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="api.html#module-stlearn.add">Add: <cite>add</cite></a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.image.html">stlearn.add.image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.positions.html">stlearn.add.positions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.parsing.html">stlearn.add.parsing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.lr.html">stlearn.add.lr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.annotation.html">stlearn.add.annotation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">stlearn.add.add_loupe_clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stlearn.add.auto_annotate.html">stlearn.add.auto_annotate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pp">Preprocessing: <cite>pp</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.em">Embedding: <cite>em</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.spatial">Spatial: <cite>spatial</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.tl">Tools: <cite>tl</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-stlearn.pl">Plot: <cite>pl</cite></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
@@ -99,10 +119,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stLearn-CCI.html">stLearn Cell-cell interaction analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
@@ -153,6 +170,8 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
+          <li><a href="api.html">API</a> &raquo;</li>
+        
       <li>stlearn.add.add_loupe_clusters</li>
     
     
@@ -198,6 +217,30 @@
 </style>
 <div class="section" id="stlearn-add-add-loupe-clusters">
 <h1>stlearn.add.add_loupe_clusters<a class="headerlink" href="#stlearn-add-add-loupe-clusters" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="stlearn.add.add_loupe_clusters">
+<code class="sig-prename descclassname">stlearn.add.</code><code class="sig-name descname">add_loupe_clusters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">loupe_path</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>pathlib.Path<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">key_add</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'multiplex'</span></em>, <em class="sig-param"><span class="n">copy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="reference internal" href="_modules/stlearn/adds/add_loupe_clusters.html#add_loupe_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stlearn.add.add_loupe_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adding label transfered from Seurat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>annotation_path</strong> – Path of the output of label transfer result by Seurat</p></li>
+<li><p><strong>use_label</strong> – Choosing clustering type.</p></li>
+<li><p><strong>threshold</strong> – Quantile threshold of label</p></li>
+<li><p><strong>copy</strong> – Return a copy instead of writing to adata.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Depending on <cite>copy</cite>, returns or updates <cite>adata</cite> with the following fields.</p></li>
+<li><p><strong>**[clustering method name]_anno**</strong> (<cite>adata.obs</cite> field) – The annotation of cluster results.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -205,6 +248,15 @@
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stlearn.add.auto_annotate.html" class="btn btn-neutral float-right" title="stlearn.add.auto_annotate" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stlearn.add.annotation.html" class="btn btn-neutral float-left" title="stlearn.add.annotation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

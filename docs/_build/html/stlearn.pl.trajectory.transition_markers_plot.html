@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>stlearn.pl.trajectory.transition_markers_plot &mdash; stLearn 0.3.0 documentation</title>
+  <title>stlearn.pl.trajectory.transition_markers_plot &mdash; stLearn 0.3.1 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.3.0
+                0.3.1
               </div>
             
           
@@ -125,10 +125,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stSME_clustering.html">stSME clustering tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stSME_comparison.html">stSME comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stLearn-CCI.html">stLearn Cell-cell interaction analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_slideseq.html">Working with slide-seq data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Read_MERFISH.html">Working with MERFISH data</a></li>
@@ -229,7 +226,26 @@
 <dl class="py function">
 <dt id="stlearn.pl.trajectory.transition_markers_plot">
 <code class="sig-prename descclassname">stlearn.pl.trajectory.</code><code class="sig-name descname">transition_markers_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">adata</span><span class="p">:</span> <span class="n">anndata._core.anndata.AnnData</span></em>, <em class="sig-param"><span class="n">top_genes</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">trajectory</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">150</span></em>, <em class="sig-param"><span class="n">output</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>anndata._core.anndata.AnnData<span class="p">]</span><a class="headerlink" href="#stlearn.pl.trajectory.transition_markers_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot transition marker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> – Annotated data matrix.</p></li>
+<li><p><strong>top_genes</strong> – Top genes users want to display in the plot.</p></li>
+<li><p><strong>trajectory</strong> – Name of a clade/branch user wants to plot transition markers.</p></li>
+<li><p><strong>dpi</strong> – The resolution of the plot.</p></li>
+<li><p><strong>output</strong> – The output folder of the plot.</p></li>
+<li><p><strong>name</strong> – The filename of the plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Anndata</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 

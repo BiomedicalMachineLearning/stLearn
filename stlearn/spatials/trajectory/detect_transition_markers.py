@@ -14,6 +14,27 @@ def detect_transition_markers_clades(
     screening_genes=None,
     use_raw_count=False,
 ):
+    """\
+    Transition markers detection of a clade.
+
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    clade
+        Name of a clade user wants to detect transition markers.
+    cutoff_spearman
+        The threshold of correlation coefficient.
+    cutoff_pvalue
+        The threshold of p-value.
+    screening_genes
+        List of customised genes.
+    use_raw_count
+        True if user wants to use raw layer data.
+    Returns
+    -------
+    Anndata
+    """
 
     print("Detecting the transition markers of clade_" + str(clade) + "...")
 
@@ -64,7 +85,27 @@ def detect_transition_markers_branches(
     screening_genes=None,
     use_raw_count=False,
 ):
+    """\
+    Transition markers detection of a branch.
 
+    Parameters
+    ----------
+    adata
+        Annotated data matrix.
+    branch
+        Name of a branch user wants to detect transition markers.
+    cutoff_spearman
+        The threshold of correlation coefficient.
+    cutoff_pvalue
+        The threshold of p-value.
+    screening_genes
+        List of customised genes.
+    use_raw_count
+        True if user wants to use raw layer data.
+    Returns
+    -------
+    Anndata
+    """
     print(
         "Detecting the transition markers of branch_"
         + "_".join(np.array(branch).astype(str))
