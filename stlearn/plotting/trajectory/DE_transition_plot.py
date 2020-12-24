@@ -237,4 +237,6 @@ def DE_transition_plot(
         va="center",
     )
     plt.show()
-    plt.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
+    if output is not None:
+        if name is not None:
+                plt.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
