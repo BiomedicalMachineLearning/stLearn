@@ -50,6 +50,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/BiomedicalMachineLearning/stLearn',
-    version='0.2.9',
+    version='0.3.0',
     zip_safe=False,
 )

@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>stlearn.tools.microenv.SpatialDE.base &mdash; stLearn 0.3.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> stLearn
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Content:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../history.html">History</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../stlearn-interactive-tutorial.html">stLearn interactive web app tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../stSME_clustering.html">stSME clustering tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../stSME_comparison.html">stSME comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Pseudo-time-space-tutorial.html">Spatial trajectory inference analysis tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cci_single-lr_between-spot.html">Cell-cell interaction analysis (single LR, between-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cci_single-lr_within-spot.html">Cell-cell interaction analysis (single LR, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cci_multiple-lr_between-spot.html">Cell-cell interaction analysis (multiple LRs, between-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cci_multiple-lr_within-spot.html">Cell-cell interaction analysis (multiple LRs, within-spot)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Working-with-Old-Spatial-Transcriptomics-data.html">Working with Old Spatial Transcriptomics data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Read_slideseq.html">Working with slide-seq data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Read_MERFISH.html">Working with MERFISH data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Read_seqfish.html">Working with SeqFish data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../ST_deconvolution_visualization.html">Spatial transcriptomics deconvolution visualization</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">stLearn</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>stlearn.tools.microenv.SpatialDE.base</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for stlearn.tools.microenv.SpatialDE.base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Main underlying functions for SpatialDE functionality.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">scipy.misc</span> <span class="kn">import</span> <span class="n">derivative</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">logsumexp</span>
+
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">tqdm.autonotebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">qvalue</span>
+
+<span class="kn">from</span> <span class="nn">anndata</span> <span class="kn">import</span> <span class="n">AnnData</span>
+<span class="kn">import</span> <span class="nn">NaiveDE</span>
+
+
+<span class="k">def</span> <span class="nf">get_l_limits</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">Xsq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Xsq</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">Xsq</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">R_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">R2</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">R_vals</span> <span class="o">=</span> <span class="n">R_vals</span><span class="p">[</span><span class="n">R_vals</span> <span class="o">&gt;</span> <span class="mf">1e-8</span><span class="p">]</span>
+
+    <span class="n">l_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">R_vals</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">l_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">R_vals</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">*</span> <span class="mf">2.0</span>
+
+    <span class="k">return</span> <span class="n">l_min</span><span class="p">,</span> <span class="n">l_max</span>
+
+
+<span class="c1">## Kernels ##</span>
+
+
+<span class="k">def</span> <span class="nf">SE_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+    <span class="n">Xsq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Xsq</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">Xsq</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">linear_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">K</span> <span class="o">/</span> <span class="n">K</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">cosine_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Periodic kernel as l -&gt; oo in [Lloyd et al 2014]</span>
+
+<span class="sd">    Easier interpretable composability with SE?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Xsq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Xsq</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">Xsq</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">R2</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">gower_scaling_factor</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gower normalization factor for covariance matric K</span>
+
+<span class="sd">    Based on https://github.com/PMBio/limix/blob/master/limix/utils/preprocess.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">KP</span> <span class="o">=</span> <span class="n">K</span> <span class="o">-</span> <span class="n">K</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">trPKP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span class="n">KP</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">trPKP</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">factor</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+    <span class="n">S</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+    <span class="c1"># .clip removes negative eigenvalues</span>
+    <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_UT1</span><span class="p">(</span><span class="n">U</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">U</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_UTy</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">mu_hat</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ML Estimate of bias mu, function of delta.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">Yvar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Yvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="n">UT1_scaled</span> <span class="o">=</span> <span class="n">UT1</span> <span class="o">/</span> <span class="p">(</span><span class="n">S</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">Yvar</span><span class="p">)</span>
+    <span class="n">sum_1</span> <span class="o">=</span> <span class="n">UT1_scaled</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">UTy</span><span class="p">)</span>
+    <span class="n">sum_2</span> <span class="o">=</span> <span class="n">UT1_scaled</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">UT1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sum_1</span> <span class="o">/</span> <span class="n">sum_2</span>
+
+
+<span class="k">def</span> <span class="nf">s2_t_hat</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ML Estimate of structured noise, function of delta&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">Yvar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Yvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="n">UTy_scaled</span> <span class="o">=</span> <span class="n">UTy</span> <span class="o">/</span> <span class="p">(</span><span class="n">S</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">Yvar</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">UTy_scaled</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">UTy</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+
+
+<span class="k">def</span> <span class="nf">LL</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Log-likelihood of GP model as a function of delta.</span>
+
+<span class="sd">    The parameter delta is the ratio s2_e / s2_t, where s2_e is the</span>
+<span class="sd">    observation noise and s2_t is the noise explained by covariance</span>
+<span class="sd">    in time or space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mu_h</span> <span class="o">=</span> <span class="n">mu_hat</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">Yvar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Yvar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="n">sum_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">UTy</span> <span class="o">-</span> <span class="n">UT1</span> <span class="o">*</span> <span class="n">mu_h</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">S</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">Yvar</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">sum_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">S</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">Yvar</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sum_1</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="n">sum_2</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">logdelta_prior_lpdf</span><span class="p">(</span><span class="n">log_delta</span><span class="p">):</span>
+    <span class="n">s2p</span> <span class="o">=</span> <span class="mf">100.0</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">s2p</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">log_delta</span> <span class="o">-</span> <span class="mf">20.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s2p</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">make_objective</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">LL_obj</span><span class="p">(</span><span class="n">log_delta</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">LL</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_delta</span><span class="p">),</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">LL_obj</span>
+
+
+<span class="k">def</span> <span class="nf">brent_max_LL</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">LL_obj</span> <span class="o">=</span> <span class="n">make_objective</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">minimize_scalar</span><span class="p">(</span>
+        <span class="n">LL_obj</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bounded&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">max_ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">o</span><span class="o">.</span><span class="n">fun</span>
+    <span class="n">max_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">max_mu_hat</span> <span class="o">=</span> <span class="n">mu_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">max_s2_t_hat</span> <span class="o">=</span> <span class="n">s2_t_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">max_ll</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">,</span> <span class="n">max_mu_hat</span><span class="p">,</span> <span class="n">max_s2_t_hat</span>
+
+
+<span class="k">def</span> <span class="nf">lbfgsb_max_LL</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">LL_obj</span> <span class="o">=</span> <span class="n">make_objective</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="p">)</span>
+    <span class="n">min_boundary</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+    <span class="n">max_boundary</span> <span class="o">=</span> <span class="mf">20.0</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">fmin_l_bfgs_b</span><span class="p">(</span>
+        <span class="n">LL_obj</span><span class="p">,</span>
+        <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">approx_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="n">min_boundary</span><span class="p">,</span> <span class="n">max_boundary</span><span class="p">)],</span>
+        <span class="n">maxfun</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+        <span class="n">factr</span><span class="o">=</span><span class="mf">1e12</span><span class="p">,</span>
+        <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">max_ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">f</span>
+    <span class="n">max_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">boundary_ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">LL_obj</span><span class="p">(</span><span class="n">max_boundary</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">boundary_ll</span> <span class="o">&gt;</span> <span class="n">max_ll</span><span class="p">:</span>
+        <span class="n">max_ll</span> <span class="o">=</span> <span class="n">boundary_ll</span>
+        <span class="n">max_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">max_boundary</span><span class="p">)</span>
+
+    <span class="n">boundary_ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">LL_obj</span><span class="p">(</span><span class="n">min_boundary</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">boundary_ll</span> <span class="o">&gt;</span> <span class="n">max_ll</span><span class="p">:</span>
+        <span class="n">max_ll</span> <span class="o">=</span> <span class="n">boundary_ll</span>
+        <span class="n">max_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">min_boundary</span><span class="p">)</span>
+
+    <span class="n">max_mu_hat</span> <span class="o">=</span> <span class="n">mu_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="p">)</span>
+    <span class="n">max_s2_t_hat</span> <span class="o">=</span> <span class="n">s2_t_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Yvar</span><span class="p">)</span>
+
+    <span class="n">s2_logdelta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">derivative</span><span class="p">(</span><span class="n">LL_obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_delta</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">max_ll</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">,</span> <span class="n">max_mu_hat</span><span class="p">,</span> <span class="n">max_s2_t_hat</span><span class="p">,</span> <span class="n">s2_logdelta</span>
+
+
+<span class="k">def</span> <span class="nf">search_max_LL</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search for delta which maximizes log likelihood.&quot;&quot;&quot;</span>
+    <span class="n">min_obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">max_log_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">LL_obj</span> <span class="o">=</span> <span class="n">make_objective</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">log_delta</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num</span><span class="p">):</span>
+        <span class="n">cur_obj</span> <span class="o">=</span> <span class="n">LL_obj</span><span class="p">(</span><span class="n">log_delta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cur_obj</span> <span class="o">&lt;</span> <span class="n">min_obj</span><span class="p">:</span>
+            <span class="n">min_obj</span> <span class="o">=</span> <span class="n">cur_obj</span>
+            <span class="n">max_log_delta</span> <span class="o">=</span> <span class="n">log_delta</span>
+
+    <span class="n">max_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">max_log_delta</span><span class="p">)</span>
+    <span class="n">max_mu_hat</span> <span class="o">=</span> <span class="n">mu_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">max_s2_t_hat</span> <span class="o">=</span> <span class="n">s2_t_hat</span><span class="p">(</span><span class="n">max_delta</span><span class="p">,</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">max_ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">min_obj</span>
+
+    <span class="k">return</span> <span class="n">max_ll</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">,</span> <span class="n">max_mu_hat</span><span class="p">,</span> <span class="n">max_s2_t_hat</span>
+
+
+<span class="k">def</span> <span class="nf">make_FSV</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Gower</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">FSV</span><span class="p">(</span><span class="n">log_delta</span><span class="p">):</span>
+        <span class="n">s2_t</span> <span class="o">=</span> <span class="n">s2_t_hat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_delta</span><span class="p">),</span> <span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">s2_t_g</span> <span class="o">=</span> <span class="n">s2_t</span> <span class="o">*</span> <span class="n">Gower</span>
+
+        <span class="k">return</span> <span class="n">s2_t_g</span> <span class="o">/</span> <span class="p">(</span><span class="n">s2_t_g</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">s2_t</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">FSV</span>
+
+
+<span class="k">def</span> <span class="nf">lengthscale_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Gower</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fit GPs after pre-processing for particular lengthscale&quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">g</span><span class="p">]</span>
+        <span class="n">UTy</span> <span class="o">=</span> <span class="n">get_UTy</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">max_reg_ll</span><span class="p">,</span> <span class="n">max_delta</span><span class="p">,</span> <span class="n">max_mu_hat</span><span class="p">,</span> <span class="n">max_s2_t_hat</span><span class="p">,</span> <span class="n">s2_logdelta</span> <span class="o">=</span> <span class="n">lbfgsb_max_LL</span><span class="p">(</span>
+            <span class="n">UTy</span><span class="p">,</span> <span class="n">UT1</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span>
+        <span class="p">)</span>
+        <span class="n">max_ll</span> <span class="o">=</span> <span class="n">max_reg_ll</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+        <span class="c1"># Estimate standard error of Fraction Spatial Variance</span>
+        <span class="n">FSV</span> <span class="o">=</span> <span class="n">make_FSV</span><span class="p">(</span><span class="n">UTy</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Gower</span><span class="p">)</span>
+        <span class="n">s2_FSV</span> <span class="o">=</span> <span class="n">derivative</span><span class="p">(</span><span class="n">FSV</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_delta</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">s2_logdelta</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;g&quot;</span><span class="p">:</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">g</span><span class="p">],</span>
+                <span class="s2">&quot;max_ll&quot;</span><span class="p">:</span> <span class="n">max_ll</span><span class="p">,</span>
+                <span class="s2">&quot;max_delta&quot;</span><span class="p">:</span> <span class="n">max_delta</span><span class="p">,</span>
+                <span class="s2">&quot;max_mu_hat&quot;</span><span class="p">:</span> <span class="n">max_mu_hat</span><span class="p">,</span>
+                <span class="s2">&quot;max_s2_t_hat&quot;</span><span class="p">:</span> <span class="n">max_s2_t_hat</span><span class="p">,</span>
+                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span>
+                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+                <span class="s2">&quot;FSV&quot;</span><span class="p">:</span> <span class="n">FSV</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_delta</span><span class="p">)),</span>
+                <span class="s2">&quot;s2_FSV&quot;</span><span class="p">:</span> <span class="n">s2_FSV</span><span class="p">,</span>
+                <span class="s2">&quot;s2_logdelta&quot;</span><span class="p">:</span> <span class="n">s2_logdelta</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">null_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get maximum LL for null model&quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">g</span><span class="p">]</span>
+        <span class="n">max_mu_hat</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">max_s2_e_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">n</span>  <span class="c1"># mll estimate</span>
+        <span class="n">max_ll</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">n</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_s2_e_hat</span><span class="p">))</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;g&quot;</span><span class="p">:</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">g</span><span class="p">],</span>
+                <span class="s2">&quot;max_ll&quot;</span><span class="p">:</span> <span class="n">max_ll</span><span class="p">,</span>
+                <span class="s2">&quot;max_delta&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+                <span class="s2">&quot;max_mu_hat&quot;</span><span class="p">:</span> <span class="n">max_mu_hat</span><span class="p">,</span>
+                <span class="s2">&quot;max_s2_t_hat&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">const_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get maximum LL for const model&quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">g</span><span class="p">]</span>
+        <span class="n">max_mu_hat</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">max_s2_e_hat</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+        <span class="n">sum1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">max_mu_hat</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">max_ll</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_s2_e_hat</span><span class="p">)</span> <span class="o">+</span> <span class="n">sum1</span> <span class="o">/</span> <span class="n">max_s2_e_hat</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;g&quot;</span><span class="p">:</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">g</span><span class="p">],</span>
+                <span class="s2">&quot;max_ll&quot;</span><span class="p">:</span> <span class="n">max_ll</span><span class="p">,</span>
+                <span class="s2">&quot;max_delta&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+                <span class="s2">&quot;max_mu_hat&quot;</span><span class="p">:</span> <span class="n">max_mu_hat</span><span class="p">,</span>
+                <span class="s2">&quot;max_s2_t_hat&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">simulate_const_model</span><span class="p">(</span><span class="n">MLL_params</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+    <span class="n">dfm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">MLL_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">MLL_params</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">s2_e</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">max_s2_t_hat</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">max_delta</span>
+        <span class="n">dfm</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">max_mu_hat</span><span class="p">,</span> <span class="n">s2_e</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+
+    <span class="n">dfm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dfm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dfm</span>
+
+
+<span class="k">def</span> <span class="nf">get_mll_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">null_model</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">):</span>
+    <span class="n">null_lls</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;model == &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">null_model</span><span class="p">))[[</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;max_ll&quot;</span><span class="p">]]</span>
+    <span class="n">model_results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;model != &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">null_model</span><span class="p">))</span>
+    <span class="n">model_results</span> <span class="o">=</span> <span class="n">model_results</span><span class="p">[</span>
+        <span class="n">model_results</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;g&quot;</span><span class="p">])[</span><span class="s2">&quot;max_ll&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="nb">max</span><span class="p">)</span> <span class="o">==</span> <span class="n">model_results</span><span class="p">[</span><span class="s2">&quot;max_ll&quot;</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="n">mll_results</span> <span class="o">=</span> <span class="n">model_results</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">null_lls</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;_null&quot;</span><span class="p">))</span>
+    <span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;LLR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;max_ll&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;max_ll_null&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">mll_results</span>
+
+
+<span class="k">def</span> <span class="nf">dyn_de</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">exp_tab</span><span class="p">,</span> <span class="n">kernel_space</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">kernel_space</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kernel_space</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;SE&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">]}</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;null&quot;</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">null_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;null&quot;</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;const&quot;</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">const_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;const&quot;</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Pre-calculating USU^T = K&#39;s ...&quot;</span><span class="p">)</span>
+    <span class="n">US_mats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;linear&quot;</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">:</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">linear_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">U</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="n">factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+        <span class="n">gower</span> <span class="o">=</span> <span class="n">gower_scaling_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+        <span class="n">UT1</span> <span class="o">=</span> <span class="n">get_UT1</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+        <span class="n">US_mats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;l&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s2">&quot;U&quot;</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
+                <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span>
+                <span class="s2">&quot;UT1&quot;</span><span class="p">:</span> <span class="n">UT1</span><span class="p">,</span>
+                <span class="s2">&quot;Gower&quot;</span><span class="p">:</span> <span class="n">gower</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;SE&quot;</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">lengthscale</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">[</span><span class="s2">&quot;SE&quot;</span><span class="p">]:</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">SE_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">lengthscale</span><span class="p">)</span>
+            <span class="n">U</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="n">factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">gower</span> <span class="o">=</span> <span class="n">gower_scaling_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">UT1</span> <span class="o">=</span> <span class="n">get_UT1</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+            <span class="n">US_mats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s2">&quot;l&quot;</span><span class="p">:</span> <span class="n">lengthscale</span><span class="p">,</span>
+                    <span class="s2">&quot;U&quot;</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
+                    <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span>
+                    <span class="s2">&quot;UT1&quot;</span><span class="p">:</span> <span class="n">UT1</span><span class="p">,</span>
+                    <span class="s2">&quot;Gower&quot;</span><span class="p">:</span> <span class="n">gower</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;PER&quot;</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">kernel_space</span><span class="p">[</span><span class="s2">&quot;PER&quot;</span><span class="p">]:</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">cosine_kernel</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+            <span class="n">U</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="n">factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">gower</span> <span class="o">=</span> <span class="n">gower_scaling_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">UT1</span> <span class="o">=</span> <span class="n">get_UT1</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+            <span class="n">US_mats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;PER&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s2">&quot;l&quot;</span><span class="p">:</span> <span class="n">period</span><span class="p">,</span>
+                    <span class="s2">&quot;U&quot;</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
+                    <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span>
+                    <span class="s2">&quot;UT1&quot;</span><span class="p">:</span> <span class="n">UT1</span><span class="p">,</span>
+                    <span class="s2">&quot;Gower&quot;</span><span class="p">:</span> <span class="n">gower</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done: </span><span class="si">{0:.2}</span><span class="s2">s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fitting gene models&quot;</span><span class="p">)</span>
+    <span class="n">n_models</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">US_mats</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cov</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">US_mats</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Models: &quot;</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">lengthscale_fits</span><span class="p">(</span><span class="n">exp_tab</span><span class="p">,</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;UT1&quot;</span><span class="p">],</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;S&quot;</span><span class="p">],</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;Gower&quot;</span><span class="p">])</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="n">n_genes</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished fitting </span><span class="si">{}</span><span class="s2"> models to </span><span class="si">{}</span><span class="s2"> genes&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_models</span><span class="p">,</span> <span class="n">n_genes</span><span class="p">))</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;BIC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;max_ll&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;M&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<div class="viewcode-block" id="SpatialDE"><a class="viewcode-back" href="../../../../../stlearn.tl.SpatialDE.html#stlearn.tl.SpatialDE">[docs]</a><span class="k">def</span> <span class="nf">SpatialDE</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
+    <span class="n">use_data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;normalized&quot;</span><span class="p">,</span>
+    <span class="n">top_genes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">kernel_space</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Perform SpatialDE test</span>
+
+<span class="sd">    X : matrix of spatial coordinates times observations</span>
+<span class="sd">    exp_tab : Expression table, assumed appropriatealy normalised.</span>
+
+<span class="sd">    The grid of covariance matrices to search over for the alternative</span>
+<span class="sd">    model can be specifiec using the kernel_space paramter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sample_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="mi">0</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">use_data</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">,</span> <span class="s2">&quot;imagecol&quot;</span><span class="p">,</span> <span class="s2">&quot;sum_counts&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">sample_info</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span>
+    <span class="n">sample_info</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span>
+    <span class="n">sample_info</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;sum_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;sum_counts&quot;</span><span class="p">]</span>
+
+    <span class="n">norm_expr</span> <span class="o">=</span> <span class="n">NaiveDE</span><span class="o">.</span><span class="n">stabilize</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">use_data</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">resid_expr</span> <span class="o">=</span> <span class="n">NaiveDE</span><span class="o">.</span><span class="n">regress_out</span><span class="p">(</span><span class="n">sample_info</span><span class="p">,</span> <span class="n">norm_expr</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;np.log(sum_counts)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">sample_resid_expr</span> <span class="o">=</span> <span class="n">resid_expr</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+        <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;filtered_counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">sample_info</span><span class="p">[[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">,</span> <span class="s2">&quot;imagecol&quot;</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="n">kernel_space</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">l_min</span><span class="p">,</span> <span class="n">l_max</span> <span class="o">=</span> <span class="n">get_l_limits</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">kernel_space</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;SE&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">l_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">l_max</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="s2">&quot;const&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Performing DE test&quot;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">dyn_de</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">sample_resid_expr</span><span class="p">,</span> <span class="n">kernel_space</span><span class="p">)</span>
+    <span class="n">mll_results</span> <span class="o">=</span> <span class="n">get_mll_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="c1"># Perform significance test</span>
+    <span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;pval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">chi2</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;LLR&quot;</span><span class="p">],</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;qval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">qvalue</span><span class="p">(</span><span class="n">mll_results</span><span class="p">[</span><span class="s2">&quot;pval&quot;</span><span class="p">])</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;SpatialDE_results&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mll_results</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;SpatialDE_top_genes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">mll_results</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;qval&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">top_genes</span><span class="p">)[</span><span class="s2">&quot;g&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;SpatialDE results stored in adata.uns[&#39;SpatialDE_results&#39;] and adata.uns[&#39;SpatialDE_top_genes&#39;]&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span> <span class="k">if</span> <span class="n">copy</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<span class="k">def</span> <span class="nf">model_search</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">exp_tab</span><span class="p">,</span> <span class="n">DE_mll_results</span><span class="p">,</span> <span class="n">kernel_space</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compare model fits with different models.</span>
+
+<span class="sd">    This way DE genes can be classified to interpretable function classes.</span>
+
+<span class="sd">    The strategy is based on ABCD in the Automatic Statistician, but</span>
+<span class="sd">    using precomputed covariance matrices for all models in the search space.</span>
+
+<span class="sd">    By default searches a grid of periodic covariance matrices and a linear</span>
+<span class="sd">    covariance matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kernel_space</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">P_min</span><span class="p">,</span> <span class="n">P_max</span> <span class="o">=</span> <span class="n">get_l_limits</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">kernel_space</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;PER&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">P_min</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">P_max</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="n">de_exp_tab</span> <span class="o">=</span> <span class="n">exp_tab</span><span class="p">[</span><span class="n">DE_mll_results</span><span class="p">[</span><span class="s2">&quot;g&quot;</span><span class="p">]]</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Performing model search&quot;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">dyn_de</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">de_exp_tab</span><span class="p">,</span> <span class="n">kernel_space</span><span class="p">)</span>
+    <span class="n">new_and_old_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">results</span><span class="p">,</span> <span class="n">DE_mll_results</span><span class="p">),</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Calculate model probabilities</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">new_and_old_results</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">])[</span><span class="s2">&quot;BIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="nb">min</span><span class="p">)</span>
+        <span class="o">==</span> <span class="n">new_and_old_results</span><span class="p">[</span><span class="s2">&quot;BIC&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">log_p_data_Hi</span> <span class="o">=</span> <span class="o">-</span><span class="n">new_and_old_results</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+        <span class="n">values</span><span class="o">=</span><span class="s2">&quot;BIC&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;model&quot;</span>
+    <span class="p">)</span>
+    <span class="n">log_Z</span> <span class="o">=</span> <span class="n">logsumexp</span><span class="p">(</span><span class="n">log_p_data_Hi</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">log_p_Hi_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_p_data_Hi</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="n">log_Z</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">p_Hi_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_p_Hi_data</span><span class="p">)</span><span class="o">.</span><span class="n">add_suffix</span><span class="p">(</span><span class="s2">&quot;_prob&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Select most likely model</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">new_and_old_results</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)[</span><span class="s2">&quot;BIC&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="nb">min</span><span class="p">)</span>
+        <span class="o">==</span> <span class="n">new_and_old_results</span><span class="p">[</span><span class="s2">&quot;BIC&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">ms_results</span> <span class="o">=</span> <span class="n">new_and_old_results</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="n">ms_results</span> <span class="o">=</span> <span class="n">ms_results</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p_Hi_data</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Retain information from significance testing in the new table</span>
+    <span class="n">transfer_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pval&quot;</span><span class="p">,</span> <span class="s2">&quot;qval&quot;</span><span class="p">,</span> <span class="s2">&quot;max_ll_null&quot;</span><span class="p">]</span>
+    <span class="n">ms_results</span> <span class="o">=</span> <span class="n">ms_results</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">transfer_columns</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">DE_mll_results</span><span class="p">[</span><span class="n">transfer_columns</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;g&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;g&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ms_results</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Genomics and Machine Learning lab
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

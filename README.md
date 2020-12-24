@@ -35,7 +35,7 @@ Prepare conda environment for stlearn
 
 #### Step 3:
 
-``` pip install stlearn```
+``` pip install -U stlearn```
 
 
 ### For Windows users
@@ -72,7 +72,7 @@ You have to change to downloaded files directory and install it:
 
 #### Step 4:
 
-``` pip install stlearn```
+``` pip install -U stlearn```
 
 
 ### Popular bugs when install
