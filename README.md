@@ -13,7 +13,7 @@
       <img src="https://img.shields.io/pypi/v/stlearn.svg" alt="PyPI Version">
       </a>
       <a href="https://pepy.tech/project/stlearn">
-      <img src="https://static.pepy.tech/personalized-badge/stlearn?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads"
+      <img src="https://static.pepy.tech/personalized-badge/stlearn?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads"
         alt="PyPI downloads">
       </a>
     </td>
