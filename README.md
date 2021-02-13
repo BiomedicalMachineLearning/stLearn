@@ -42,7 +42,7 @@
       <b>License</b>
     </td>
     <td>
-      <a href="http://perso.crans.org/besson/LICENSE.html"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg"
+      <a href="http://perso.crans.org/besson/LICENSE.html"><img src="https://img.shields.io/badge/License-BSD-blue.svg"
         alt="LICENSE"></a>
     </td>
   </tr>
