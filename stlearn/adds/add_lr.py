@@ -42,7 +42,7 @@ def lr(
     elif source == 'connectomedb':
         ctdb = pd.read_csv(db_filepath, sep=sep, quotechar='\"', encoding='latin1')
         adata.uns['lr'] = (ctdb['Ligand gene symbol'] + '_' + ctdb['Receptor gene symbol']).values.tolist()
-        print("connectomedb results added to adata.uns['cpdb']")
+        print("connectomedb results added to adata.uns['ctdb']")
         print("Added ligand receptor pairs to adata.uns['lr'].")
 
     return adata if copy else None
