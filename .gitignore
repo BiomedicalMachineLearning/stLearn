@@ -1,0 +1,13 @@
+*.pyc
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+build/
+dist/
+*.egg-info
+/*.ipynb
+/*.csv
+output/
+.DS_Store
+*/.DS_Store
+.idea/
+docs/_build
