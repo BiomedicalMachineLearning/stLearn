@@ -35,7 +35,7 @@ def add_mask(
     """
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
-        quality = adata.uns["spatial"]["use_quality"]
+        quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
         raise KeyError(f'''\
         Please read ST data first and try again
@@ -124,7 +124,7 @@ def apply_mask(
 
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
-        quality = adata.uns["spatial"]["use_quality"]
+        quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
         raise KeyError(f'''\
         Please read ST data first and try again

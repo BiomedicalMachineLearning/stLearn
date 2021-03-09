@@ -55,7 +55,7 @@ def image(
                 adata.uns["spatial"][library_id] = {}
                 adata.uns["spatial"][library_id]["images"] = {}
                 adata.uns["spatial"][library_id]["images"][quality] = img
-                adata.uns["spatial"]["use_quality"] = quality
+                adata.uns["spatial"][library_id]["use_quality"] = quality
                 adata.uns["spatial"][library_id]["scalefactors"] = {}
                 adata.uns["spatial"][library_id]["scalefactors"][
                     "tissue_" + quality + "_scalef"
