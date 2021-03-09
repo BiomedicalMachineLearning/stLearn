@@ -124,7 +124,7 @@ def plot_mask(
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"]["use_quality"]]
+    image = adata.uns["spatial"][library_id]["images"][adata.uns["spatial"][library_id]["use_quality"]]
 
     if not show_axis:
         a.axis('off')

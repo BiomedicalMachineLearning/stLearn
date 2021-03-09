@@ -96,7 +96,7 @@ def Read10X(
 
     adata.obs["imagecol"] = image_coor[:, 0]
     adata.obs["imagerow"] = image_coor[:, 1]
-    adata.uns["spatial"]["use_quality"] = quality
+    adata.uns["spatial"][library_id]["use_quality"] = quality
 
     return adata
 

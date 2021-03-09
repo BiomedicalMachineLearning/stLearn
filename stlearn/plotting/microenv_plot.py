@@ -103,7 +103,7 @@ def microenv_plot(
             library_id = list(adata.uns["spatial"].keys())[0]
 
         image = adata.uns["spatial"][library_id]["images"][
-            adata.uns["spatial"]["use_quality"]
+            adata.uns["spatial"][library_id]["use_quality"]
         ]
         # Overlay the tissue image
         a.imshow(
