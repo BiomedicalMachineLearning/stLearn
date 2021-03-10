@@ -48,6 +48,8 @@ class SpatialBasePlot(Spatial):
         image_alpha: Optional[float] = 1.0,
         cell_alpha: Optional[float] = 0.7,
         use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
         **kwds
         ):
         super().__init__(
@@ -60,27 +62,34 @@ class SpatialBasePlot(Spatial):
         self.size = size
         self.query_adata = self.adata[0].copy()
         self.list_clusters = list_clusters
+        self.fname =  fname
+        self.dpi = dpi
         
         if use_raw:
             self.query_adata = self.adata[0].raw.to_adata().copy()
 
+        if self.list_clusters != None:
+            assert use_label != None, "Please specify `use_label` parameter!"
+
         if use_label != None:
-            assert use_label in self.adata[0].obs.columns, "Please run the clustering methods!"
-        self.use_label = use_label
 
-        if self.list_clusters is None:
-            self.list_clusters = np.array(range(0,len(self.adata[0].obs[use_label].unique()))).astype(str)
-        else:
-            if type(self.list_clusters) != list:
-                self.list_clusters = [self.list_clusters]
+            assert use_label in self.adata[0].obs.columns, "Please choose the right label in `adata.obs.columns`!"
+            self.use_label = use_label
 
-            self.list_clusters = np.array(self.list_clusters).astype(str)
+            if self.list_clusters is None:
 
-        self.query_indexes = self._get_query_clusters_index()
+                self.list_clusters = np.array(self.adata[0].obs[use_label].cat.categories)
+            else:
+                if type(self.list_clusters) != list:
+                    self.list_clusters = [self.list_clusters]
 
-        assert self.use_label != None, "Please specify the 'use_label' parameter!"
-        self._select_clusters()
-        
+                self.list_clusters = np.array(self.list_clusters).astype(str)
+
+            self.query_indexes = self._get_query_clusters_index()
+
+            
+            self._select_clusters()
+
         # Initialize cmap
         scanpy_cmap = ["vega_10_scanpy", "vega_20_scanpy", "default_102", "default_28"] 
         stlearn_cmap = ["jana_40", "default"]
@@ -95,8 +104,9 @@ class SpatialBasePlot(Spatial):
             
         if show_image:
             self._add_image(self.ax)
-             
-        
+
+        if show_plot == False:
+            plt.close(self.fig)
 
     def _select_clusters(self):
         def create_query(list_cl, use_label):
@@ -149,14 +159,17 @@ class SpatialBasePlot(Spatial):
 
     def _get_query_clusters_index(self):
         index_query = []
-        full_labels = self.adata[0].obs[self.use_label].unique()
+        full_labels = self.adata[0].obs[self.use_label].cat.categories
         
         for query in self.list_clusters:
             index_query.append(np.where(np.array(full_labels) == query)[0][0])
 
         return index_query
     
-    
+    def _save_output(self):
+
+        self.fig.savefig(fname=self.fname,
+            bbox_inches="tight", pad_inches=0, dpi=self.dpi)
         
         
         
@@ -187,6 +200,8 @@ class GenePlot(SpatialBasePlot):
         image_alpha: Optional[float] = 1.0,
         cell_alpha: Optional[float] = 1.0,
         use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
         # gene plot param
         gene_symbols: Union[str, list] = None,
         threshold: Optional[float] = None,
@@ -214,6 +229,8 @@ class GenePlot(SpatialBasePlot):
             image_alpha=image_alpha,
             cell_alpha=cell_alpha,
             use_raw=use_raw,
+            fname=fname,
+            dpi=dpi
             
         )
         
@@ -253,6 +270,9 @@ class GenePlot(SpatialBasePlot):
         
         if crop:
             self._crop_image(self.ax, margin)
+
+        if fname != None:
+            self._save_output()
 
                
         
@@ -382,6 +402,8 @@ class ClusterPlot(SpatialBasePlot):
         size: Optional[float] = 5,
         image_alpha: Optional[float] = 1.0,
         cell_alpha: Optional[float] = 1.0,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
         # cluster plot param
         show_subcluster: Optional[bool] = False,
         show_cluster_labels: Optional[bool] = False,
@@ -391,7 +413,7 @@ class ClusterPlot(SpatialBasePlot):
         threshold_spots: Optional[int] = 5,
         text_box_size: Optional[float] = 5,
         color_bar_size: Optional[float] = 10,
-        bbox_to_anchor: Optional[Tuple[float, float]] = (1,1),
+        bbox_to_anchor: Optional[Tuple[float, float]] = (1,1)
         
                 ):
         super().__init__(
@@ -411,6 +433,8 @@ class ClusterPlot(SpatialBasePlot):
             size=size,
             image_alpha=image_alpha,
             cell_alpha=cell_alpha,
+            fname=fname,
+            dpi=dpi
             
         )
         
@@ -440,6 +464,9 @@ class ClusterPlot(SpatialBasePlot):
             
         if crop:
             self._crop_image(self.ax, margin)
+
+        if fname != None:
+            self._save_output()
         
     def _add_cluster_colors(self):
         self.adata[0].uns[self.use_label + "_colors"] = []
@@ -522,7 +549,7 @@ class ClusterPlot(SpatialBasePlot):
             imgrow_new = subset_spatial[:,1]* self.scale_factor
             
             if (
-                len(self.query_adata.obs[self.query_adata.obs[self.use_label] == str(label)][self.use_label].unique())
+                len(self.query_adata.obs[self.query_adata.obs[self.use_label] == str(label)][self.use_label].cat.categories)
                 < 2
             ):
                 centroids = [
@@ -694,3 +721,160 @@ class ClusterPlot(SpatialBasePlot):
                             alpha=1,
                         ),
                     )
+
+################################################################
+#                                                              #
+#                      SubCluster plot class                   #
+#                                                              #
+################################################################
+
+class SubClusterPlot(SpatialBasePlot):
+    def __init__(self,
+        adata: AnnData,
+        # plotting param
+        title: Optional['str'] = None,
+        figsize: Optional[Tuple[float, float]] = None,
+        cmap: Optional[str] = "jet",
+        use_label: Optional[str] = None,
+        list_clusters: Optional[list] = None,
+        ax: Optional[_AxesSubplot] = None,
+        show_plot: Optional[bool] = True,
+        show_axis: Optional[bool] = False,
+        show_image: Optional[bool] = True,
+        show_color_bar: Optional[bool] = True,
+        crop: Optional[bool] = True,
+        margin: Optional[bool] = 100,
+        size: Optional[float] = 5,
+        image_alpha: Optional[float] = 1.0,
+        cell_alpha: Optional[float] = 1.0,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
+        # subcluster plot param
+        cluster: Optional[int] = 0,
+        text_box_size: Optional[float] = 5,
+        bbox_to_anchor: Optional[Tuple[float, float]] = (1,1),
+        
+        
+        ):
+        super().__init__(
+            adata=adata,
+            title=title,
+            figsize=figsize,
+            cmap=cmap,
+            use_label=use_label,
+            list_clusters=list_clusters,
+            ax=ax,
+            show_plot=show_plot,
+            show_axis=show_axis,
+            show_image=show_image,
+            show_color_bar=show_color_bar,
+            crop=crop,
+            margin=margin,
+            size=size,
+            image_alpha=image_alpha,
+            cell_alpha=cell_alpha,
+            fname=fname,
+            dpi=dpi,
+        )
+        
+        self.text_box_size = text_box_size
+        self.cluster = cluster
+        
+        
+        self._plot_subclusters()
+        
+        self._add_subclusters_label()
+        
+        if crop:
+            self._crop_image(self.ax, margin)
+
+        if fname != None:
+            self._save_output()
+        
+        
+    def _plot_subclusters(self):
+        subset = self.adata[0].obs[self.adata[0].obs[self.use_label] == str(self.cluster)]
+        colors = subset["sub_cluster_labels"]
+        sub_anndata = self.adata[0][subset.index,:]
+        self.imgcol_new = sub_anndata.obsm["spatial"][:,0]* self.scale_factor
+        self.imgrow_new = sub_anndata.obsm["spatial"][:,1]* self.scale_factor
+        
+        keys = list(np.sort(colors.unique()))
+        self.vals = np.arange(len(keys))
+        self.mapping = dict(zip(keys, self.vals))
+        
+        colors = colors.replace(self.mapping)
+        
+        plot = self.ax.scatter(
+            self.imgcol_new,
+            self.imgrow_new,
+            edgecolor="none",
+            s=self.size,
+            marker="o",
+            cmap=plt.get_cmap(self.cmap),
+            c=colors,
+            alpha=self.cell_alpha,
+        )
+    def _add_subclusters_label(self):
+        if (
+            len(
+                self.adata[0].obs[self.adata[0].obs[self.use_label] == str(self.cluster)][
+                    "sub_cluster_labels"
+                ].unique()
+            )
+            < 2
+        ):
+            centroids = [
+                centroidpython(
+                    self.adata[0].obs[self.adata[0].obs[self.use_label] == str(self.cluster)][
+                        ["imagecol", "imagerow"]
+                    ].values
+                )
+            ]
+            classes = np.array(
+                [self.adata[0].obs[self.adata[0].obs[self.use_label] == str(self.cluster)]["sub_cluster_labels"][0]]
+            )
+
+        else:
+            from sklearn.neighbors import NearestCentroid
+
+            clf = NearestCentroid()
+            clf.fit(
+                np.column_stack((self.imgcol_new, self.imgrow_new)),
+                self.adata[0].obs[self.adata[0].obs[self.use_label] == str(self.cluster)]["sub_cluster_labels"],
+            )
+
+            centroids = clf.centroids_
+            classes = clf.classes_
+
+        norm = matplotlib.colors.Normalize(vmin=min(self.vals), vmax=max(self.vals))
+
+        m = matplotlib.cm.ScalarMappable(norm=norm, cmap=self.cmap)
+        
+        
+        for i, label in enumerate(classes):
+            if centroids[i][0] < 1000:
+                x = -100
+                y = 100
+            else:
+                x = 100
+                y = -100
+            
+            self.ax.text(
+                centroids[i][0] + x,
+                centroids[i][1] + y,
+                label,
+                color="white",
+                fontsize=self.text_box_size,
+                zorder=3,
+                bbox=dict(
+                    facecolor=matplotlib.colors.to_hex(m.to_rgba(self.mapping[label])),
+                    boxstyle="round",
+                    alpha=0.5,
+                ),
+            )
+    
+
+        
+        
+        

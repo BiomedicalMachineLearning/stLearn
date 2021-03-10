@@ -12,7 +12,7 @@ from anndata import AnnData
 import warnings
 
 from .classes import GenePlot
-from .classes_bokeh import BokehBasePlot
+from .classes_bokeh import BokehGenePlot
 from ..utils import Empty,_empty,_AxesSubplot
 
 from bokeh.io import push_notebook,output_notebook
@@ -41,6 +41,8 @@ def gene_plot(
     image_alpha: Optional[float] = 1.0,
     cell_alpha: Optional[float] = 0.7,
     use_raw: Optional[bool] = False,
+    fname: Optional[str] = None,
+    dpi: Optional[int] = 120,
 
 ) -> Optional[AnnData]:
 
@@ -65,12 +67,14 @@ def gene_plot(
         size=size,
         image_alpha=image_alpha,
         cell_alpha=cell_alpha,
-        use_raw=use_raw
+        use_raw=use_raw,
+        fname=fname,
+        dpi=dpi
         )
 
 def gene_plot_interactive(
     adata: AnnData
     ):
-    bokeh_object = BokehBasePlot(adata)
+    bokeh_object = BokehGenePlot(adata)
     output_notebook()
     show(bokeh_object.app,notebook_handle=True)
