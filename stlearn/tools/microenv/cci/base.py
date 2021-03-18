@@ -10,6 +10,7 @@ def lr(
     adata: AnnData,
     use_lr: str = 'cci_lr',
     distance: float = None,
+    verbose: bool = True,
 ) -> AnnData:
 
     """ Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
@@ -54,7 +55,8 @@ def lr(
     avail = [i for i, x in enumerate(lr1) if lr1[i] in df.columns and lr2[i] in df.columns]  
     spot_lr1 = df[[lr1[i] for i in avail]]
     spot_lr2 = df[[lr2[i] for i in avail]]
-    print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
+    if verbose:
+        print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
 
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
@@ -78,8 +80,8 @@ def lr(
     spot_lr = pd.DataFrame(spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values, \
                            index=df.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
     adata.obsm[use_lr] = spot_lr / 2
-
-    print("L-R interactions with neighbours are counted and stored into adata.obsm[\'" + use_lr + "\']")
+    if verbose:
+        print("L-R interactions with neighbours are counted and stored into adata.obsm[\'" + use_lr + "\']")
 
     #return adata
 
@@ -90,6 +92,7 @@ def lr_grid(
     num_col: int = 10,
     use_lr: str = 'cci_lr_grid',
     radius: int = 1,
+    verbose: bool = True
 ) -> AnnData:
 
     """ Calculate the proportion of known ligand-receptor co-expression among the neighbouring grids or within each grid
@@ -136,7 +139,8 @@ def lr_grid(
     avail = [i for i, x in enumerate(lr1) if lr1[i] in df.columns and lr2[i] in df.columns]
     grid_lr1 = df_grid[[lr1[i] for i in avail]]
     grid_lr2 = df_grid[[lr2[i] for i in avail]]
-    print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
+    if verbose:
+        print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
 
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
@@ -155,6 +159,7 @@ def lr_grid(
                            index=df_grid.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
     adata.obsm[use_lr] = grid_lr / 2
 
-    print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
+    if verbose:
+        print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
 
     return adata

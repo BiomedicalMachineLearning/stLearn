@@ -29,7 +29,7 @@ def permutation(
                             Final significant merged scores stored in adata.uns['merged_sign']
     """
 
-    blockPrint()
+    #blockPrint()
 
     #  select n_pair*2 closely expressed genes from the data
     genes = [
@@ -64,7 +64,6 @@ def permutation(
             .drop([lr1, lr2])[: n_pairs * 2]
             .index.tolist()
         )
-        print(selected)
         adata.uns["selected"] = selected
         # form gene pairs from selected randomly
         random.shuffle(selected)
@@ -87,9 +86,9 @@ def permutation(
     # for each randomly selected pair, run through cci analysis and keep the scores
     for item in pairs:
         adata.uns["lr"] = [item]
-        lr(adata, use_lr=use_lr, distance=distance)
+        lr(adata, use_lr=use_lr, distance=distance, verbose=False)
         if use_het != None:
-            merge(adata, use_lr=use_lr, use_het=use_het)
+            merge(adata, use_lr=use_lr, use_het=use_het, verbose=False)
             background += adata.obsm["merged"].tolist()
         else:
             background += adata.obsm[use_lr].tolist()
@@ -124,7 +123,7 @@ def permutation(
             adata.obsm["merged"] * (permutation > -np.log10(0.05))["pval"]
         )  # p-value < 0.05
 
-        enablePrint()
+        #enablePrint()
         print("Results of permutation test has been kept in adata.obsm['merged_pvalues']")
         print("Significant merged result has been kept in adata.obsm['merged_sign']")
     else:
@@ -134,7 +133,7 @@ def permutation(
             adata.obsm["lr"] * (permutation > -np.log10(0.05))["pval"]
         )  # p-value < 0.05
 
-        enablePrint()
+        #enablePrint()
         print("Results of permutation test has been kept in adata.obsm['lr_pvalues']")
         print("Significant merged result has been kept in adata.obsm['lr_sign']")
 

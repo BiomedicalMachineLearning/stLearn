@@ -14,7 +14,11 @@ from typing import Tuple  # Classes
 import warnings
 
 from .classes import CciPlot
+from .classes_bokeh import BokehCciPlot
 from ..utils import Empty,_empty,_AxesSubplot
+
+from bokeh.io import push_notebook,output_notebook
+from bokeh.plotting import show
 
 
 def het_plot(
@@ -67,6 +71,15 @@ def het_plot(
         use_het=use_het,
         contour=contour,
         step_size=step_size,)
+
+
+def het_plot_interactive(
+    adata: AnnData
+    ):
+    bokeh_object = BokehCciPlot(adata)
+    output_notebook()
+    show(bokeh_object.app,notebook_handle=True)
+
 
 
 def grid_plot(
