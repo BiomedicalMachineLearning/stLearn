@@ -197,11 +197,13 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id] = {}
     adata.uns["spatial"][library_id]["images"] = {}
     adata.uns["spatial"][library_id]["images"][quality] = imgarr
-    adata.uns["spatial"]["use_quality"] = quality
+    adata.uns["spatial"][library_id]["use_quality"] = quality
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
+
+    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
     adata.obsm["spatial"] = meta[["x", "y"]].values
 
     adata.obs["sum_counts"] = np.array(adata.X.sum(axis=1))
@@ -264,12 +266,12 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"][library_id] = {}
     adata_merfish.uns["spatial"][library_id]["images"] = {}
     adata_merfish.uns["spatial"][library_id]["images"][quality] = imgarr
-    adata_merfish.uns["spatial"]["use_quality"] = quality
+    adata_merfish.uns["spatial"][library_id]["use_quality"] = quality
     adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
-
+    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:, 0] * scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:, 1] * scale
 
@@ -338,11 +340,12 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id] = {}
     adata.uns["spatial"][library_id]["images"] = {}
     adata.uns["spatial"][library_id]["images"][quality] = imgarr
-    adata.uns["spatial"]["use_quality"] = quality
+    adata.uns["spatial"][library_id]["use_quality"] = quality
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
+    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
     adata.obsm["spatial"] = spatial[["X", "Y"]].values
 
     adata.obs["sum_counts"] = np.array(adata.X.sum(axis=1))

@@ -1,4 +1,4 @@
-from tensorflow.keras import backend as K
+
 
 
 def encode(tiles, model):
@@ -11,6 +11,7 @@ class Model:
     __name__ = "CNN base model"
 
     def __init__(self, base, batch_size=1):
+        from tensorflow.keras import backend as K
         self.base = base
         self.model, self.preprocess = self.load_model()
         self.batch_size = batch_size
@@ -53,6 +54,7 @@ class Model:
         return cnn_base_model, preprocess_input
 
     def predict(self, x):
+        from tensorflow.keras import backend as K
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
         x = self.preprocess(x.astype(K.floatx()))

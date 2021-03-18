@@ -14,7 +14,7 @@ def deconvolution_plot(
     celltype: str = None,
     celltype_threshold: float = 0,
     data_alpha: float = 1.0,
-    threshold: float = 0.5,
+    threshold: float = 0.0,
     cmap: str = "tab20",
     tissue_alpha: float = 1.0,
     title: str = None,

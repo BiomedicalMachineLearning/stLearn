@@ -7,6 +7,7 @@ def merge(
     adata: AnnData,
     use_lr: str = "cci_lr",
     use_het: str = "cci_het",
+    verbose: bool = True,
 ) -> AnnData:
     """Merge results from cell type heterogeneity and L-R clustering
     Parameters
@@ -20,10 +21,11 @@ def merge(
     adata: AnnData          With merged result stored in adata.uns['merged']
     """
 
-    adata.uns["merged"] = adata.uns[use_het].mul(adata.uns[use_lr])
+    adata.obsm["merged"] = adata.obsm[use_het].mul(adata.obsm[use_lr])
 
-    print(
-        "Results of spatial interaction analysis has been written to adata.uns['merged']"
-    )
+    if verbose:
+        print(
+            "Results of spatial interaction analysis has been written to adata.uns['merged']"
+        )
 
     return adata

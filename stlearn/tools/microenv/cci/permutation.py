@@ -12,7 +12,7 @@ def permutation(
     n_pairs: int = 200,
     distance: int = None,
     use_lr: str = "cci_lr",
-    use_het: str = "cci_het",
+    use_het: str = None,
 ) -> AnnData:
 
     """Permutation test for merged result
@@ -29,7 +29,7 @@ def permutation(
                             Final significant merged scores stored in adata.uns['merged_sign']
     """
 
-    blockPrint()
+    #blockPrint()
 
     #  select n_pair*2 closely expressed genes from the data
     genes = [
@@ -77,16 +77,22 @@ def permutation(
     random.shuffle(genes)
     pairs = [i + '_' + j for i, j in zip(genes[:n_pairs], genes[-n_pairs:])]
     """
-
-    scores = adata.uns["merged"]
+    if use_het != None:
+        scores = adata.obsm["merged"]
+    else:
+        scores = adata.obsm[use_lr]
     background = []
 
     # for each randomly selected pair, run through cci analysis and keep the scores
     for item in pairs:
         adata.uns["lr"] = [item]
-        lr(adata, use_lr=use_lr, distance=distance)
-        merge(adata, use_lr=use_lr, use_het=use_het)
-        background += adata.uns["merged"].tolist()
+        lr(adata, use_lr=use_lr, distance=distance, verbose=False)
+        if use_het != None:
+            merge(adata, use_lr=use_lr, use_het=use_het, verbose=False)
+            background += adata.obsm["merged"].tolist()
+        else:
+            background += adata.obsm[use_lr].tolist()
+        
 
     # Permutation test for each spot across all runs
     permutation = pd.DataFrame(0, adata.obs_names, ["pval"])
@@ -110,18 +116,28 @@ def permutation(
         item - np.log10(len(adata.obs_names))
         for item in -np.log10(1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob))
     ]
+    if use_het != None:
+        adata.obsm["merged"] = scores
+        adata.obsm["merged_pvalues"] = permutation["pval"]
+        adata.obsm["merged_sign"] = (
+            adata.obsm["merged"] * (permutation > -np.log10(0.05))["pval"]
+        )  # p-value < 0.05
 
-    adata.uns["merged"] = scores
-    adata.uns["merged_pvalues"] = permutation["pval"]
-    adata.uns["merged_sign"] = (
-        adata.uns["merged"] * (permutation > -np.log10(0.05))["pval"]
-    )  # p-value < 0.05
+        #enablePrint()
+        print("Results of permutation test has been kept in adata.obsm['merged_pvalues']")
+        print("Significant merged result has been kept in adata.obsm['merged_sign']")
+    else:
+        adata.obsm["lr"] = scores
+        adata.obsm["lr_pvalues"] = permutation["pval"]
+        adata.obsm["lr_sign"] = (
+            adata.obsm["lr"] * (permutation > -np.log10(0.05))["pval"]
+        )  # p-value < 0.05
 
-    enablePrint()
-    print("Results of permutation test has been kept in adata.uns['merged_pvalues']")
-    print("Significant merged result has been kept in adata.uns['merged_sign']")
+        #enablePrint()
+        print("Results of permutation test has been kept in adata.obsm['lr_pvalues']")
+        print("Significant merged result has been kept in adata.obsm['lr_sign']")
 
-    return adata
+    #return adata
 
 
 # Disable printing

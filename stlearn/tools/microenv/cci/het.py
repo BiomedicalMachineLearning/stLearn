@@ -8,6 +8,7 @@ def count(
     adata: AnnData,
     use_clustering: str = None,
     use_het: str = "cci_het",
+    verbose: bool = True,
     distance: float = None,
 ) -> AnnData:
     """Count the cell type densities
@@ -61,11 +62,12 @@ def count(
         # count the cell types with prob > 0.2 in the result of label transfer
         adata.uns[use_het] = (adata.uns[use_clustering] > 0.2).sum(axis=1)
 
-    print(
-        "Counts for cluster (cell type) diversity stored into adata.uns['"
-        + use_het
-        + "']"
-    )
+    if verbose:
+        print(
+            "Counts for cluster (cell type) diversity stored into adata.uns['"
+            + use_het
+            + "']"
+        )
 
     return adata
 
@@ -135,6 +137,7 @@ def count_grid(
     use_clustering: str = None,
     use_het: str = "cci_het_grid",
     radius: int = 1,
+    verbose: bool = True
 ) -> AnnData:
     """Count the cell type densities
     Parameters
@@ -164,10 +167,11 @@ def count_grid(
         counts.loc[n] = (adata.uns[use_clustering].loc[spots.index] > 0.2).sum().sum()
     adata.uns[use_het] = (counts / counts.max())["CT"]
 
-    print(
-        "Counts for cluster (cell type) diversity stored into data.uns['"
-        + use_het
-        + "']"
-    )
+    if verbose:
+        print(
+            "Counts for cluster (cell type) diversity stored into data.uns['"
+            + use_het
+            + "']"
+        )
 
     return adata

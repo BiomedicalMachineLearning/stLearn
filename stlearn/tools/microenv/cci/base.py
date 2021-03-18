@@ -10,6 +10,7 @@ def lr(
     adata: AnnData,
     use_lr: str = 'cci_lr',
     distance: float = None,
+    verbose: bool = True,
 ) -> AnnData:
 
     """ Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
@@ -28,7 +29,8 @@ def lr(
     if not distance and distance != 0:
         # for arranged-spots
         scalefactors = next(iter(adata.uns['spatial'].values()))['scalefactors']
-        distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial']['use_quality']+'_scalef'] * 2
+        library_id = list(adata.uns["spatial"].keys())[0]
+        distance = scalefactors['spot_diameter_fullres'] * scalefactors['tissue_' + adata.uns['spatial'][library_id]['use_quality']+'_scalef'] * 2
 
     df = adata.to_df()
 
@@ -53,7 +55,8 @@ def lr(
     avail = [i for i, x in enumerate(lr1) if lr1[i] in df.columns and lr2[i] in df.columns]  
     spot_lr1 = df[[lr1[i] for i in avail]]
     spot_lr2 = df[[lr2[i] for i in avail]]
-    print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
+    if verbose:
+        print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
 
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
@@ -76,11 +79,11 @@ def lr(
     # keep value of nb_lr2 only when lr1 is also expressed on the spots
     spot_lr = pd.DataFrame(spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values, \
                            index=df.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
-    adata.uns[use_lr] = spot_lr / 2
+    adata.obsm[use_lr] = spot_lr / 2
+    if verbose:
+        print("L-R interactions with neighbours are counted and stored into adata.obsm[\'" + use_lr + "\']")
 
-    print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
-
-    return adata
+    #return adata
 
 
 def lr_grid(
@@ -89,6 +92,7 @@ def lr_grid(
     num_col: int = 10,
     use_lr: str = 'cci_lr_grid',
     radius: int = 1,
+    verbose: bool = True
 ) -> AnnData:
 
     """ Calculate the proportion of known ligand-receptor co-expression among the neighbouring grids or within each grid
@@ -135,7 +139,8 @@ def lr_grid(
     avail = [i for i, x in enumerate(lr1) if lr1[i] in df.columns and lr2[i] in df.columns]
     grid_lr1 = df_grid[[lr1[i] for i in avail]]
     grid_lr2 = df_grid[[lr2[i] for i in avail]]
-    print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
+    if verbose:
+        print('Altogether ' + str(len(avail)) + ' valid L-R pairs')
 
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
@@ -152,8 +157,9 @@ def lr_grid(
     # keep value of nb_lr2 only when lr1 is also expressed on the grids
     grid_lr = pd.DataFrame(grid_lr1.values * (nb_lr2.values > 0) + (grid_lr1.values > 0) * nb_lr2.values, \
                            index=df_grid.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
-    adata.uns[use_lr] = grid_lr / 2
+    adata.obsm[use_lr] = grid_lr / 2
 
-    print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
+    if verbose:
+        print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")
 
     return adata
