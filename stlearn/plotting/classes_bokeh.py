@@ -66,9 +66,7 @@ class BokehGenePlot(Spatial):
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
         gene_list = list(adata.var_names)
-        self.header = Div(
-                text="""<h2>Gene plot: </h2>""", width=400, height=50, sizing_mode="fixed"
-            )
+
         self.data_alpha = Slider(title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1)
         self.tissue_alpha = Slider(title="Tissue alpha", value=1.0, start=0, end=1.0, step=0.1)
         self.spot_size = Slider(title="Spot size", value=5.0, start=0, end=5.0, step=1.0)
@@ -76,7 +74,7 @@ class BokehGenePlot(Spatial):
         self.gene_select = AutocompleteInput(
                 title="Gene:", value=gene_list[0], completions=gene_list, min_characters=1
             )
-        inputs = column(self.header, self.gene_select, self.data_alpha, self.tissue_alpha,
+        inputs = column(self.gene_select, self.data_alpha, self.tissue_alpha,
                        self.spot_size)
         
         self.layout = row(inputs, self.make_fig())
@@ -202,12 +200,6 @@ class BokehClusterPlot(Spatial):
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
 
-        header = Div(
-        text="""<h2>Clustering plot: </h2>""",
-        width=400,
-        height=30,
-        sizing_mode="fixed",
-        )
 
         self.data_alpha = Slider(title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1)
         
@@ -225,7 +217,7 @@ class BokehClusterPlot(Spatial):
             active=list(np.array(range(0,len(self.adata[0].obs[self.use_label].unique())))),
         )
 
-        inputs = column(header, self.data_alpha, self.tissue_alpha, self.spot_size,
+        inputs = column(self.data_alpha, self.tissue_alpha, self.spot_size,
             p, self.list_cluster, self.checkbox_group)
         self.layout = row(inputs, self.make_fig())
         
@@ -380,9 +372,6 @@ class BokehCciPlot(Spatial):
             if len(self.adata[0].obsm[key].shape) == 1:
                 available_het.append(key)
 
-        self.header = Div(
-                text="""<h2>Gene plot: </h2>""", width=400, height=50, sizing_mode="fixed"
-            )
         self.data_alpha = Slider(title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1)
         self.tissue_alpha = Slider(title="Tissue alpha", value=1.0, start=0, end=1.0, step=0.1)
         self.spot_size = Slider(title="Spot size", value=5.0, start=0, end=5.0, step=1.0)
@@ -390,7 +379,7 @@ class BokehCciPlot(Spatial):
         self.het_select = AutocompleteInput(
                 title="Het:", value=available_het[0], completions=available_het, min_characters=1
             )
-        inputs = column(self.header, self.het_select, self.data_alpha, self.tissue_alpha,
+        inputs = column(self.het_select, self.data_alpha, self.tissue_alpha,
                        self.spot_size)
         
         self.layout = row(inputs, self.make_fig())
