@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 
-def auto_annotate(
+def add_deconvolution(
     adata: AnnData,
     annotation_path: Union[Path, str],
     use_label: str = "louvain",
