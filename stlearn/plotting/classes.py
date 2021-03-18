@@ -207,7 +207,8 @@ class GenePlot(SpatialBasePlot):
         threshold: Optional[float] = None,
         method: str = "CumSum",
         contour: bool = False,
-        step_size: Optional[int] = None
+        step_size: Optional[int] = None,
+        **kwargs
 
         
                 ):
@@ -241,9 +242,8 @@ class GenePlot(SpatialBasePlot):
         
         self.step_size = step_size
         
-        
             
-        if title == None:
+        if self.title == None:
             if type(gene_symbols) == str:
                 
                 self.title = str(gene_symbols)
@@ -753,7 +753,7 @@ class SubClusterPlot(SpatialBasePlot):
         cluster: Optional[int] = 0,
         text_box_size: Optional[float] = 5,
         bbox_to_anchor: Optional[Tuple[float, float]] = (1,1),
-        
+        **kwargs
         
         ):
         super().__init__(
@@ -874,7 +874,72 @@ class SubClusterPlot(SpatialBasePlot):
                 ),
             )
     
+################################################################
+#                                                              #
+#                      Cci Plot class                          #
+#                                                              #
+################################################################
+
+class CciPlot(GenePlot):
+    def __init__(self,
+        adata: AnnData,
+        # plotting param
+        title: Optional['str'] = None,
+        figsize: Optional[Tuple[float, float]] = None,
+        cmap: Optional[str] = "Spectral_r",
+        use_label: Optional[str] = None,
+        list_clusters: Optional[list] = None,
+        ax: Optional[_AxesSubplot] = None,
+        show_plot: Optional[bool] = True,
+        show_axis: Optional[bool] = False,
+        show_image: Optional[bool] = True,
+        show_color_bar: Optional[bool] = True,
+        crop: Optional[bool] = True,
+        margin: Optional[bool] = 100,
+        size: Optional[float] = 7,
+        image_alpha: Optional[float] = 1.0,
+        cell_alpha: Optional[float] = 1.0,
+        use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
+        # cci param
+        use_het: Optional[str] = "het",
+        contour: bool = False,
+        step_size: Optional[int] = None,
+        **kwargs
 
         
+                ):
+        super().__init__(
+            adata=adata,
+            title=title,
+            figsize=figsize,
+            cmap=cmap,
+            use_label=use_label,
+            list_clusters=list_clusters,
+            ax=ax,
+            show_plot=show_plot,
+            show_axis=show_axis,
+            show_image=show_image,
+            show_color_bar=show_color_bar,
+            crop=crop,
+            margin=margin,
+            size=size,
+            image_alpha=image_alpha,
+            cell_alpha=cell_alpha,
+            use_raw=use_raw,
+            fname=fname,
+            dpi=dpi,
+            gene_symbols=use_het,
+            contour = contour,
+            step_size = step_size
+            
+        )
+        
+    def _get_gene_expression(self):
+        return self.query_adata.obsm[self.gene_symbols[0]]
+        
+        
+    
         
         
