@@ -194,7 +194,7 @@ def _generate_image(
     color = adata.uns[use_label + "_colors"][int(subset[use_label][0])]
 
     image = adata.uns["spatial"][library_id]["images"][
-        adata.uns["spatial"]["use_quality"]
+        adata.uns["spatial"][library_id]["use_quality"]
     ]
 
     ax2.imshow(image, alpha=1)

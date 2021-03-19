@@ -118,9 +118,9 @@ def permutation(
     ]
     if use_het != None:
         adata.obsm["merged"] = scores
-        adata.obsm["merged_pvalues"] = permutation["pval"]
+        adata.obsm["merged_pvalues"] = permutation["pval"].values
         adata.obsm["merged_sign"] = (
-            adata.obsm["merged"] * (permutation > -np.log10(0.05))["pval"]
+            adata.obsm["merged"] * (permutation > -np.log10(0.05))["pval"].values
         )  # p-value < 0.05
 
         #enablePrint()
@@ -128,9 +128,9 @@ def permutation(
         print("Significant merged result has been kept in adata.obsm['merged_sign']")
     else:
         adata.obsm["lr"] = scores
-        adata.obsm["lr_pvalues"] = permutation["pval"]
+        adata.obsm["lr_pvalues"] = permutation["pval"].values
         adata.obsm["lr_sign"] = (
-            adata.obsm["lr"] * (permutation > -np.log10(0.05))["pval"]
+            adata.obsm["lr"] * (permutation > -np.log10(0.05))["pval"].values
         )  # p-value < 0.05
 
         #enablePrint()

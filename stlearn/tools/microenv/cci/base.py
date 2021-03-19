@@ -79,7 +79,7 @@ def lr(
     # keep value of nb_lr2 only when lr1 is also expressed on the spots
     spot_lr = pd.DataFrame(spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values, \
                            index=df.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
-    adata.obsm[use_lr] = spot_lr / 2
+    adata.obsm[use_lr] = spot_lr.values / 2
     if verbose:
         print("L-R interactions with neighbours are counted and stored into adata.obsm[\'" + use_lr + "\']")
 
@@ -157,7 +157,7 @@ def lr_grid(
     # keep value of nb_lr2 only when lr1 is also expressed on the grids
     grid_lr = pd.DataFrame(grid_lr1.values * (nb_lr2.values > 0) + (grid_lr1.values > 0) * nb_lr2.values, \
                            index=df_grid.index, columns=[lr_pairs[i] for i in avail]).sum(axis=1)
-    adata.obsm[use_lr] = grid_lr / 2
+    adata.obsm[use_lr] = grid_lr.values / 2
 
     if verbose:
         print("L-R interactions with neighbours are counted and stored into adata.uns[\'" + use_lr + "\']")

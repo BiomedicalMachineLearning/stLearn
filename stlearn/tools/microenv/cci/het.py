@@ -55,12 +55,12 @@ def count(
             counts_ct.loc[spot] = (
                 (adata.uns[use_clustering].loc[neighbours] > 0.2).sum() > 0
             ).sum()
-        adata.uns[use_het] = counts_ct["CT"]
+        adata.obsm[use_het] = counts_ct["CT"].values
 
     # within spot
     else:
         # count the cell types with prob > 0.2 in the result of label transfer
-        adata.uns[use_het] = (adata.uns[use_clustering] > 0.2).sum(axis=1)
+        adata.obsm[use_het] = (adata.uns[use_clustering] > 0.2).sum(axis=1)
 
     if verbose:
         print(
