@@ -4,7 +4,6 @@
 
 
 import unittest
-from click.testing import CliRunner
 
 import stlearn as st
 import scanpy as sc
