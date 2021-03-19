@@ -30,7 +30,7 @@ jobs:
         
         pip install leidenalg
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install louvain-igraph
+        pip install louvain
     - name: Test with pytest
       run: |
         pytest
