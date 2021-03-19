@@ -45,6 +45,7 @@ def subcluster_plot(
     assert use_label in adata.obs.columns, "Please run `stlearn.spatial.clustering.localization` function!"
     
     SubClusterPlot(adata,
+
         title=title,
         figsize=figsize,
         cmap=cmap,
@@ -63,4 +64,5 @@ def subcluster_plot(
         fname=fname,
         dpi=dpi,
         text_box_size=text_box_size,
-        bbox_to_anchor=bbox_to_anchor)
+        bbox_to_anchor=bbox_to_anchor,
+        cluster=cluster)
