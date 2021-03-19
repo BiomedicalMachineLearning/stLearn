@@ -11,7 +11,16 @@ from typing import Tuple  # Classes
 import numpy as np
 from anndata import AnnData
 
-from .utils import Empty,_empty,_check_spatial_data,_check_img,_check_spot_size,_check_scale_factor,_check_coords
+from .utils import (
+    Empty,
+    _empty,
+    _check_spatial_data,
+    _check_img,
+    _check_spot_size,
+    _check_scale_factor,
+    _check_coords,
+)
+
 
 class Spatial(object):
     def __init__(
@@ -20,17 +29,17 @@ class Spatial(object):
         basis: str = "spatial",
         img: Union[np.ndarray, None] = None,
         img_key: Union[str, None, Empty] = _empty,
-        library_id: Union[str,None] = _empty,
+        library_id: Union[str, None] = _empty,
         crop_coord: Optional[bool] = True,
         bw: Optional[bool] = False,
         scale_factor: Optional[float] = None,
         spot_size: Optional[float] = None,
         use_raw: Optional[bool] = False,
         **kwargs,
-        ):
+    ):
 
-        self.adata = adata,
-        self.library_id, self.spatial_data = _check_spatial_data(adata.uns,library_id)
+        self.adata = (adata,)
+        self.library_id, self.spatial_data = _check_spatial_data(adata.uns, library_id)
         self.img, self.img_key = _check_img(self.spatial_data, img, img_key, bw=bw)
         self.spot_size = _check_spot_size(self.spatial_data, spot_size)
         self.scale_factor = _check_scale_factor(
@@ -38,5 +47,4 @@ class Spatial(object):
         )
         self.crop_coord = crop_coord
         self.use_raw = use_raw
-        self.imagecol, self.imagerow = _check_coords(adata.obsm,self.scale_factor)
-
+        self.imagecol, self.imagerow = _check_coords(adata.obsm, self.scale_factor)

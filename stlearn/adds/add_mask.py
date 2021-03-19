@@ -9,10 +9,10 @@ from stlearn._compat import Literal
 
 
 def add_mask(
-        adata: AnnData,
-        imgpath: Union[Path, str],
-        key: str = "mask",
-        copy: bool = False,
+    adata: AnnData,
+    imgpath: Union[Path, str],
+    key: str = "mask",
+    copy: bool = False,
 ) -> Optional[AnnData]:
     """\
     Adding binary mask image to the Anndata object
@@ -37,15 +37,18 @@ def add_mask(
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
-        raise KeyError(f'''\
+        raise KeyError(
+            f"""\
         Please read ST data first and try again
-        '''
-                       )
+        """
+        )
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
             img = plt.imread(imgpath, 0)
-            assert img.shape == adata.uns["spatial"][library_id]["images"][quality].shape, "\
+            assert (
+                img.shape == adata.uns["spatial"][library_id]["images"][quality].shape
+            ), "\
             size of mask image does not match size of H&E images"
             if "mask_image" not in adata.uns:
                 adata.uns["mask_image"] = {}
@@ -59,22 +62,26 @@ def add_mask(
 
             return adata if copy else None
         except:
-            raise ValueError(f'''\
+            raise ValueError(
+                f"""\
             {imgpath!r} does not end on a valid extension.
-            ''')
+            """
+            )
     else:
-        raise ValueError(f'''\
+        raise ValueError(
+            f"""\
         {imgpath!r} does not end on a valid extension.
-        ''')
+        """
+        )
     return adata if copy else None
 
 
 def apply_mask(
-        adata: AnnData,
-        masks: Optional[list] = "all",
-        select: str = "black",
-        cmap: str = "default",
-        copy: bool = False
+    adata: AnnData,
+    masks: Optional[list] = "all",
+    select: str = "black",
+    cmap: str = "default",
+    copy: bool = False,
 ) -> Optional[AnnData]:
     """\
     Parsing the old spaital transcriptomics data
@@ -126,9 +133,11 @@ def apply_mask(
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
-        raise KeyError(f'''\
+        raise KeyError(
+            f"""\
         Please read ST data first and try again
-        ''')
+        """
+        )
 
     if masks == "all":
         masks = list(adata.uns["mask_image"][library_id].keys())
@@ -142,29 +151,36 @@ def apply_mask(
         try:
             mask_image = adata.uns["mask_image"][library_id][mask][quality]
         except:
-            raise KeyError(f'''\
+            raise KeyError(
+                f"""\
             Please load mask {mask} images first and try again
-            ''')
+            """
+            )
 
         if select == "black":
             mask_image = np.where(mask_image > 155, 0, 1)
         elif select == "white":
             mask_image = np.where(mask_image > 155, 0, 1)
         else:
-            raise ValueError(f'''\
+            raise ValueError(
+                f"""\
             Only support black and white mask yet.
-            ''')
+            """
+            )
         mask_image_2d = mask_image.mean(axis=2)
-        apply_spot_mask = lambda x: [i, mask] if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1 else [
-            x[key + "_code"], x[key]]
+        apply_spot_mask = (
+            lambda x: [i, mask]
+            if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1
+            else [x[key + "_code"], x[key]]
+        )
         spot_mask_df = adata.obs.apply(apply_spot_mask, axis=1, result_type="expand")
         adata.obs[key + "_code"] = spot_mask_df[0]
         adata.obs[key] = spot_mask_df[1]
 
         c = cmap_(int(i) / (len(cmap) - 1))
         mask_final = mask_final + mask_image * np.array(c[0:3])
-    print(f'''Mask annotation for spots added to `adata.obs["{key}"]`''')
+    print(f"""Mask annotation for spots added to `adata.obs["{key}"]`""")
     mask_final[mask_final == 0] = 1
     adata.uns[key] = mask_final
-    print(f'''Mask annotation for H&E image added to `adata.uns["{key}"]`''')
+    print(f"""Mask annotation for H&E image added to `adata.uns["{key}"]`""")
     return adata if copy else None

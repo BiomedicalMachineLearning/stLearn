@@ -29,7 +29,7 @@ def permutation(
                             Final significant merged scores stored in adata.uns['merged_sign']
     """
 
-    #blockPrint()
+    # blockPrint()
 
     #  select n_pair*2 closely expressed genes from the data
     genes = [
@@ -92,7 +92,6 @@ def permutation(
             background += adata.obsm["merged"].tolist()
         else:
             background += adata.obsm[use_lr].tolist()
-        
 
     # Permutation test for each spot across all runs
     permutation = pd.DataFrame(0, adata.obs_names, ["pval"])
@@ -123,8 +122,10 @@ def permutation(
             adata.obsm["merged"] * (permutation > -np.log10(0.05))["pval"].values
         )  # p-value < 0.05
 
-        #enablePrint()
-        print("Results of permutation test has been kept in adata.obsm['merged_pvalues']")
+        # enablePrint()
+        print(
+            "Results of permutation test has been kept in adata.obsm['merged_pvalues']"
+        )
         print("Significant merged result has been kept in adata.obsm['merged_sign']")
     else:
         adata.obsm["lr"] = scores
@@ -133,11 +134,11 @@ def permutation(
             adata.obsm["lr"] * (permutation > -np.log10(0.05))["pval"].values
         )  # p-value < 0.05
 
-        #enablePrint()
+        # enablePrint()
         print("Results of permutation test has been kept in adata.obsm['lr_pvalues']")
         print("Significant merged result has been kept in adata.obsm['lr_sign']")
 
-    #return adata
+    # return adata
 
 
 # Disable printing

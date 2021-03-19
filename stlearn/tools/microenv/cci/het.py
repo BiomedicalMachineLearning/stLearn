@@ -137,7 +137,7 @@ def count_grid(
     use_clustering: str = None,
     use_het: str = "cci_het_grid",
     radius: int = 1,
-    verbose: bool = True
+    verbose: bool = True,
 ) -> AnnData:
     """Count the cell type densities
     Parameters

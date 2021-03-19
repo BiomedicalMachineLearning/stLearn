@@ -13,10 +13,11 @@ import warnings
 
 from .classes import GenePlot
 from .classes_bokeh import BokehGenePlot
-from ..utils import Empty,_empty,_AxesSubplot
+from ..utils import Empty, _empty, _AxesSubplot
 
-from bokeh.io import push_notebook,output_notebook
+from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
+
 
 def gene_plot(
     adata: AnnData,
@@ -25,7 +26,7 @@ def gene_plot(
     method: str = "CumSum",
     contour: bool = False,
     step_size: Optional[int] = None,
-    title: Optional['str'] = None,
+    title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "Spectral_r",
     use_label: Optional[str] = None,
@@ -43,10 +44,10 @@ def gene_plot(
     use_raw: Optional[bool] = False,
     fname: Optional[str] = None,
     dpi: Optional[int] = 120,
-
 ) -> Optional[AnnData]:
 
-    GenePlot(adata,
+    GenePlot(
+        adata,
         gene_symbols=gene_symbols,
         threshold=threshold,
         method=method,
@@ -69,12 +70,11 @@ def gene_plot(
         cell_alpha=cell_alpha,
         use_raw=use_raw,
         fname=fname,
-        dpi=dpi
-        )
+        dpi=dpi,
+    )
 
-def gene_plot_interactive(
-    adata: AnnData
-    ):
+
+def gene_plot_interactive(adata: AnnData):
     bokeh_object = BokehGenePlot(adata)
     output_notebook()
-    show(bokeh_object.app,notebook_handle=True)
+    show(bokeh_object.app, notebook_handle=True)

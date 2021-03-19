@@ -51,7 +51,7 @@ Prepare conda environment for stLearn
 
 **Step 3:**
 
-Access to: 
+Access to:
 
  - https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-igraph
 

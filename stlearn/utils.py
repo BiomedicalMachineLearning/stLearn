@@ -10,6 +10,8 @@ from typing import Sequence, Iterable  # ABCs
 from typing import Tuple  # Classes
 
 from enum import Enum
+
+
 class Empty(Enum):
     token = 0
 
@@ -24,8 +26,7 @@ from abc import ABC
 class _AxesSubplot(Axes, axes.SubplotBase, ABC):
     """Intersection between Axes and SubplotBase: Has methods of both"""
 
-    
-    
+
 def _check_spot_size(
     spatial_data: Optional[Mapping], spot_size: Optional[float]
 ) -> float:
@@ -39,7 +40,7 @@ def _check_spot_size(
             "provided directly."
         )
     elif spot_size is None:
-        return spatial_data['scalefactors']['spot_diameter_fullres']
+        return spatial_data["scalefactors"]["spot_diameter_fullres"]
     else:
         return spot_size
 
@@ -53,7 +54,7 @@ def _check_scale_factor(
     if scale_factor is not None:
         return scale_factor
     elif spatial_data is not None and img_key is not None:
-        return spatial_data['scalefactors'][f"tissue_{img_key}_scalef"]
+        return spatial_data["scalefactors"][f"tissue_{img_key}_scalef"]
     else:
         return 1.0
 
@@ -94,7 +95,7 @@ def _check_img(
     """
     if img is None and spatial_data is not None and img_key is _empty:
         img_key = next(
-            (k for k in ['hires', 'lowres'] if k in spatial_data['images']),
+            (k for k in ["hires", "lowres"] if k in spatial_data["images"]),
         )  # Throws StopIteration Error if keys not present
     if img is None and spatial_data is not None and img_key is not None:
         img = spatial_data["images"][img_key]
@@ -102,13 +103,13 @@ def _check_img(
         img = np.dot(img[..., :3], [0.2989, 0.5870, 0.1140])
     return img, img_key
 
+
 def _check_coords(
-    obsm: Optional[Mapping],
-    scale_factor: Optional[float]
-    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-    
+    obsm: Optional[Mapping], scale_factor: Optional[float]
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+
     image_coor = obsm["spatial"] * scale_factor
-    imagecol = image_coor[:,0]
-    imagerow = image_coor[:,1]
-    
-    return [imagecol,imagerow]
+    imagecol = image_coor[:, 0]
+    imagerow = image_coor[:, 1]
+
+    return [imagecol, imagerow]

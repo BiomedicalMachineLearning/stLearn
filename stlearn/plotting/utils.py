@@ -17,6 +17,7 @@ from matplotlib import rcParams, ticker, gridspec, axes
 from matplotlib.axes import Axes
 from abc import ABC
 
+
 def get_img_from_fig(fig, dpi=180):
     buf = io.BytesIO()
     from io import BytesIO
@@ -34,7 +35,7 @@ def get_img_from_fig(fig, dpi=180):
     return img
 
 
-def centroidpython(x,y):
+def centroidpython(x, y):
     l = len(x)
     return sum(x) / l, sum(y) / l
 
@@ -56,7 +57,8 @@ def get_node(node_list, split_node):
         result = np.append(result, np.array(split_node[node]).astype(int))
     return result.astype(int)
 
-def check_sublist(full,sub):
+
+def check_sublist(full, sub):
     index_bool = []
     for barcode in full:
         if barcode in sub:

@@ -30,7 +30,7 @@ def kmeans(
     ----------
     adata
         Annotated data matrix.
-    n_clusters 
+    n_clusters
         The number of clusters to form as well as the number of
         centroids to generate.
     use_data

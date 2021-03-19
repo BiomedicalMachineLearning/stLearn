@@ -16,11 +16,11 @@ from ._compat import Literal
 # It help to work with scanpy package
 
 _VERBOSITY_TO_LOGLEVEL = {
-    'error': 'ERROR',
-    'warning': 'WARNING',
-    'info': 'INFO',
-    'hint': 'HINT',
-    'debug': 'DEBUG',
+    "error": "ERROR",
+    "warning": "WARNING",
+    "info": "INFO",
+    "hint": "HINT",
+    "debug": "DEBUG",
 }
 # Python 3.7 ensures iteration order
 for v, level in enumerate(list(_VERBOSITY_TO_LOGLEVEL.values())):
@@ -38,7 +38,6 @@ class Verbosity(IntEnum):
     def level(self) -> int:
         # getLevelName(str) returns the int level…
         return getLevelName(_VERBOSITY_TO_LOGLEVEL[self])
-
 
     @contextmanager
     def override(self, verbosity: "Verbosity") -> ContextManager["Verbosity"]:
@@ -67,6 +66,7 @@ class stLearnConfig:
     """\
     Config manager for scanpy.
     """
+
     def __init__(
         self,
         *,
@@ -80,7 +80,7 @@ class stLearnConfig:
         cachedir: Union[str, Path] = "./cache/",
         datasetdir: Union[str, Path] = "./data/",
         figdir: Union[str, Path] = "./figures/",
-        cache_compression: Union[str, None] = 'lzf',
+        cache_compression: Union[str, None] = "lzf",
         max_memory=15,
         n_jobs=1,
         logfile: Union[str, Path, None] = None,
@@ -141,8 +141,7 @@ class stLearnConfig:
     @verbosity.setter
     def verbosity(self, verbosity: Union[Verbosity, int, str]):
         verbosity_str_options = [
-            v for v in _VERBOSITY_TO_LOGLEVEL
-            if isinstance(v, str)
+            v for v in _VERBOSITY_TO_LOGLEVEL if isinstance(v, str)
         ]
         if isinstance(verbosity, Verbosity):
             self._verbosity = verbosity
@@ -163,8 +162,7 @@ class stLearnConfig:
 
     @property
     def plot_suffix(self) -> str:
-        """Global suffix that is appended to figure filenames.
-        """
+        """Global suffix that is appended to figure filenames."""
         return self._plot_suffix
 
     @plot_suffix.setter
@@ -293,7 +291,7 @@ class stLearnConfig:
 
     @cache_compression.setter
     def cache_compression(self, cache_compression: Optional[str]):
-        if cache_compression not in {'lzf', 'gzip', None}:
+        if cache_compression not in {"lzf", "gzip", None}:
             raise ValueError(
                 f"`cache_compression` ({cache_compression}) "
                 "must be in {'lzf', 'gzip', None}"
@@ -337,7 +335,7 @@ class stLearnConfig:
     def logpath(self, logpath: Union[str, Path, None]):
         _type_check(logpath, "logfile", (str, Path))
         # set via “file object” branch of logfile.setter
-        self.logfile = Path(logpath).open('a')
+        self.logfile = Path(logpath).open("a")
         self._logpath = Path(logpath)
 
     @property
@@ -355,7 +353,7 @@ class stLearnConfig:
 
     @logfile.setter
     def logfile(self, logfile: Union[str, Path, TextIO, None]):
-        if not hasattr(logfile, 'write') and logfile:
+        if not hasattr(logfile, "write") and logfile:
             self.logpath = logfile
         else:  # file object
             if not logfile:  # None or ''
@@ -384,9 +382,18 @@ class stLearnConfig:
 
     # Collected from the print_* functions in matplotlib.backends
     _Format = Literal[
-        'png', 'jpg', 'tif', 'tiff',
-        'pdf', 'ps', 'eps', 'svg', 'svgz', 'pgf',
-        'raw', 'rgba',
+        "png",
+        "jpg",
+        "tif",
+        "tiff",
+        "pdf",
+        "ps",
+        "eps",
+        "svg",
+        "svgz",
+        "pgf",
+        "raw",
+        "rgba",
     ]
 
     def set_figure_params(
@@ -430,12 +437,14 @@ class stLearnConfig:
         """
         try:
             import IPython
+
             if isinstance(ipython_format, str):
                 ipython_format = [ipython_format]
             IPython.display.set_matplotlib_formats(*ipython_format)
         except Exception:
             pass
         from matplotlib import rcParams
+
         self._vector_friendly = vector_friendly
         self.file_format_figs = format
         if dpi is not None:
@@ -459,10 +468,10 @@ class stLearnConfig:
             return False
 
     def __str__(self) -> str:
-        return '\n'.join(
-            f'{k} = {v!r}'
+        return "\n".join(
+            f"{k} = {v!r}"
             for k, v in inspect.getmembers(self)
-            if not k.startswith("_") and not k == 'getdoc'
+            if not k.startswith("_") and not k == "getdoc"
         )
 
 

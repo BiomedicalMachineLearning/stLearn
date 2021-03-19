@@ -110,12 +110,11 @@ def resistance_distance(
         return np.sum(distance_vector) ** (1 / p)
 
 
-"""
-**********
-Eigenstuff
-**********
-Functions for calculating eigenstuff of graphs.
-"""
+# **********
+# Eigenstuff
+# **********
+# Functions for calculating eigenstuff of graphs.
+
 
 from scipy import sparse as sps
 import numpy as np
@@ -227,12 +226,13 @@ def normalized_laplacian_eig(A, k=None):
     lap_evals = 1 - evals
     return np.real(lap_evals), np.real(evecs)
 
-    """
-********
-Matrices
-********
-Matrices associated with graphs. Also contains linear algebraic helper functions.
-"""
+
+#     """
+# ********
+# Matrices
+# ********
+# Matrices associated with graphs. Also contains linear algebraic helper functions.
+# """
 
 
 from scipy import sparse as sps
@@ -319,24 +319,24 @@ def laplacian_matrix(A, normalized=False):
     return L
 
 
-"""
-**********
-Exceptions
-**********
-Custom exceptions for NetComp.
-"""
+# """
+# **********
+# Exceptions
+# **********
+# Custom exceptions for NetComp.
+# """
 
 
 class UndefinedException(Exception):
     """Raised when matrix to be returned is undefined"""
 
 
-"""
-**********
-Resistance
-**********
-Resistance matrix. Renormalized version, as well as conductance and commute matrices.
-"""
+# """
+# **********
+# Resistance
+# **********
+# Resistance matrix. Renormalized version, as well as conductance and commute matrices.
+# """
 
 import networkx as nx
 from numpy import linalg as la

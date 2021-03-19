@@ -1,5 +1,5 @@
+bokeh == 2.3.0
+fa2 == 0.3.5
+Pillow==8.1.1
 scanpy==1.7.1
 tensorflow==2.4.0
-Pillow==8.1.1
-fa2 == 0.3.5 
-bokeh == 2.3.0
