@@ -38,6 +38,7 @@ from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
 from ..classes import Spatial
 from typing import Optional
+from ..utils import _read_graph
 
 
 class BokehGenePlot(Spatial):
@@ -320,7 +321,7 @@ class BokehClusterPlot(Spatial):
             )
 
         if 0 in self.checkbox_group.active:
-            tmp = self.adata[0].uns["PTS_graph"]
+            tmp = _read_graph(self.adata[0], "PTS_graph")
             G = tmp.copy()
 
             remove = [edge for edge in G.edges if 9999 in edge]

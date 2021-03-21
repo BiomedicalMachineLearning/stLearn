@@ -19,7 +19,7 @@ from scipy.interpolate import griddata
 import networkx as nx
 
 from ..classes import Spatial
-from ..utils import _AxesSubplot, Axes
+from ..utils import _AxesSubplot, Axes, _read_graph
 from .utils import centroidpython, get_cluster, get_node, check_sublist
 
 ################################################################
@@ -685,10 +685,10 @@ class ClusterPlot(SpatialBasePlot):
 
         cmap = plt.get_cmap(cmaps)
 
-        if not self.adata[0].uns["PTS_graph"]:
+        if "PTS_graph" not in self.adata[0].uns:
             raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
-        tmp = self.adata[0].uns["PTS_graph"]
+        tmp = _read_graph(self.adata[0], "PTS_graph")
 
         G = tmp.copy()
 

@@ -83,6 +83,4 @@ def normalize_total(
         inplace=inplace,
     )
 
-    adata.obsm["normalized_total"] = adata.to_df()
-
     print("Normalization step is finished in adata.X")

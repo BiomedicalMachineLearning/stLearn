@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from scipy.spatial.distance import cdist
+from ...utils import _read_graph
 
 
 def global_level(
@@ -40,7 +41,7 @@ def global_level(
 
     assert w <= 1, "w should be in range 0 to 1"
     # Get global graph
-    G = adata.uns["global_graph"]
+    G = _read_graph(adata, "global_graph")
     # Convert to directed graph
     H = G.to_directed()
 
@@ -107,7 +108,7 @@ def global_level(
         sum(prepare_root[:, 0]) / len(prepare_root[:, 0]),
         sum(prepare_root[:, 1]) / len(prepare_root[:, 1]),
     )
-    centroid_dict[9999] = centroide
+    centroid_dict[9999] = np.array(centroide)
 
     labels = nx.get_edge_attributes(H_sub, "weight")
 
@@ -126,7 +127,15 @@ def global_level(
     # H_sub.remove_edges_from(remove)
     # remove.remove_node(9999)
 
-    adata.uns["PTS_graph"] = H_sub
+    H_nodes = list(range(len(H_sub.nodes)))
+
+    node_convert = {}
+    for pair in zip(list(H_sub.nodes), H_nodes):
+        node_convert[pair[1]] = pair[0]
+
+    adata.uns["PTS_graph"] = {}
+    adata.uns["PTS_graph"]["graph"] = nx.to_scipy_sparse_matrix(H_sub)
+    adata.uns["PTS_graph"]["node_dict"] = node_convert
 
     if return_graph:
         return H_sub

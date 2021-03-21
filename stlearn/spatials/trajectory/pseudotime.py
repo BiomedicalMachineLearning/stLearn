@@ -130,8 +130,15 @@ def pseudotime(
 
     # Create a connection graph of subclusters
     G = nx.from_pandas_adjacency(cnt_matrix)
+    G_nodes = list(range(len(G.nodes)))
 
-    adata.uns["global_graph"] = G
+    node_convert = {}
+    for pair in zip(list(G.nodes), G_nodes):
+        node_convert[pair[1]] = pair[0]
+
+    adata.uns["global_graph"] = {}
+    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_matrix(G)
+    adata.uns["global_graph"]["node_dict"] = node_convert
 
     # Create centroid dict for subclusters
     from sklearn.neighbors import NearestCentroid

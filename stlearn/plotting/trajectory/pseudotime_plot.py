@@ -9,6 +9,8 @@ from typing import Optional, Union
 from anndata import AnnData
 import warnings
 
+from ...utils import _read_graph
+
 # from .utils import get_img_from_fig, checkType
 
 
@@ -100,7 +102,7 @@ def pseudotime_plot(
     #    command.append(use_label + ' == "' + str(i) + '"')
     # tmp = adata.obs.query(" or ".join(command))
     tmp = adata.obs
-    G = adata.uns["global_graph"]
+    G = _read_graph(adata, "global_graph")
 
     labels = nx.get_edge_attributes(G, "weight")
 
@@ -197,10 +199,10 @@ def pseudotime_plot(
 
         cmap = plt.get_cmap(cmaps)
 
-        if not adata.uns["PTS_graph"]:
+        if "PTS_graph" in adata.uns:
             raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
-        tmp = adata.uns["PTS_graph"]
+        tmp = _read_graph(adata, "PTS_graph")
 
         G = tmp.copy()
 

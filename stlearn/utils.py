@@ -4,6 +4,7 @@ import io
 from PIL import Image
 import matplotlib
 from anndata import AnnData
+import networkx as nx
 
 from typing import Optional, Union, Mapping  # Special
 from typing import Sequence, Iterable  # ABCs
@@ -113,3 +114,13 @@ def _check_coords(
     imagerow = image_coor[:, 1]
 
     return [imagecol, imagerow]
+
+def _read_graph(adata: AnnData, graph_type: Optional[str]):
+
+    graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
+    node_dict = adata.uns[graph_type]["node_dict"]
+
+    relabel_graph = nx.relabel_nodes(graph, node_dict)
+
+    return relabel_graph
+
