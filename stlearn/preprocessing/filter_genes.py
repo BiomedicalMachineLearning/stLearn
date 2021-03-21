@@ -57,5 +57,3 @@ def filter_genes(
         max_cells=max_cells,
         inplace=inplace,
     )
-
-    adata.obsm["filtered_counts"] = adata.to_df()

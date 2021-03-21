@@ -11,6 +11,7 @@ from anndata import AnnData
 import warnings
 import io
 from copy import deepcopy
+from ...utils import _read_graph
 
 
 def tree_plot(
@@ -65,7 +66,7 @@ def tree_plot(
     Nothing
     """
 
-    G = adata.uns["PTS_graph"]
+    G = _read_graph(adata, "PTS_graph")
 
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]

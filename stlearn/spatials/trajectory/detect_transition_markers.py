@@ -2,6 +2,8 @@ from scipy.stats import spearmanr
 import numpy as np
 import pandas as pd
 import warnings
+import networkx as nx
+from ...utils import _read_graph
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -38,7 +40,7 @@ def detect_transition_markers_clades(
 
     print("Detecting the transition markers of clade_" + str(clade) + "...")
 
-    tmp = adata.uns["PTS_graph"]
+    tmp = _read_graph(adata, "PTS_graph")
 
     G = tmp.copy()
 

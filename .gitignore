@@ -11,3 +11,4 @@ output/
 */.DS_Store
 .idea/
 docs/_build
+data/

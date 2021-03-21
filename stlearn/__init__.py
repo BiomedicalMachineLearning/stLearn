@@ -1,8 +1,8 @@
 """Top-level package for stLearn."""
 
 __author__ = """Genomics and Machine Learning lab"""
-__email__ = 'duy.pham@uq.edu.au'
-__version__ = '0.3.1'
+__email__ = "duy.pham@uq.edu.au"
+__version__ = "0.3.1"
 
 
 from . import add
@@ -11,6 +11,7 @@ from . import em
 from . import tl
 from . import pl
 from . import spatial
+from . import dataset
 
 # Wrapper
 
