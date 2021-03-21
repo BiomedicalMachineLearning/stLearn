@@ -16,13 +16,14 @@ from .classes import ClusterPlot
 from .classes_bokeh import BokehClusterPlot
 from ..utils import _AxesSubplot, Axes
 
-from bokeh.io import push_notebook,output_notebook
+from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
+
 
 def cluster_plot(
     adata: AnnData,
     # plotting param
-    title: Optional['str'] = None,
+    title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "default",
     use_label: Optional[str] = None,
@@ -48,12 +49,13 @@ def cluster_plot(
     threshold_spots: Optional[int] = 5,
     text_box_size: Optional[float] = 5,
     color_bar_size: Optional[float] = 10,
-    bbox_to_anchor: Optional[Tuple[float, float]] = (1,1),
+    bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
 ) -> Optional[AnnData]:
-    
+
     assert use_label != None, "Please select `use_label` parameter"
-    
-    ClusterPlot(adata,
+
+    ClusterPlot(
+        adata,
         title=title,
         figsize=figsize,
         cmap=cmap,
@@ -79,17 +81,19 @@ def cluster_plot(
         threshold_spots=threshold_spots,
         text_box_size=text_box_size,
         color_bar_size=color_bar_size,
-        bbox_to_anchor=bbox_to_anchor
-        )
+        bbox_to_anchor=bbox_to_anchor,
+    )
+
 
 def cluster_plot_interactive(
     adata: AnnData,
     use_label: Optional[str] = None,
-    ):
-    assert use_label + "_colors" in adata.uns.keys(), "Please run the `stlearn.pl.cluster_plot` to initialize the colors!"
+):
+    assert (
+        use_label + "_colors" in adata.uns.keys()
+    ), "Please run the `stlearn.pl.cluster_plot` to initialize the colors!"
     assert use_label != None, "Please select `use_label` parameter"
-
 
     bokeh_object = BokehClusterPlot(adata, use_label)
     output_notebook()
-    show(bokeh_object.app,notebook_handle=True)
+    show(bokeh_object.app, notebook_handle=True)

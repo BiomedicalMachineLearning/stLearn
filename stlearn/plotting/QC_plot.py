@@ -89,28 +89,43 @@ def QC_plot(
 
     if show_color_bar:
         from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-        axins = inset_axes(a,
-                   width="100%",
-                   height="100%",
-                   loc='upper left',
-                   bbox_to_anchor=(1.0, 0.73, 0.05, 0.35),
-                   bbox_transform=a.transAxes,
-                   borderpad=4.3,
-                   )
+
+        axins = inset_axes(
+            a,
+            width="100%",
+            height="100%",
+            loc="upper left",
+            bbox_to_anchor=(1.0, 0.73, 0.05, 0.35),
+            bbox_transform=a.transAxes,
+            borderpad=4.3,
+        )
         cb = plt.colorbar(plot, cax=axins)
-        cb.ax.set_xlabel('Number of Genes', fontsize=10)
+        cb.ax.set_xlabel("Number of Genes", fontsize=10)
         cb.ax.xaxis.set_label_coords(0.98, 1.20)
         cb.outline.set_visible(False)
 
     if show_size_legend:
         size_min, size_max = spot_size
-        markers = [size_min, size_min + 1 / 3 * (size_max - size_min),
-                   size_min + 2 / 3 * (size_max - size_min), size_max]
+        markers = [
+            size_min,
+            size_min + 1 / 3 * (size_max - size_min),
+            size_min + 2 / 3 * (size_max - size_min),
+            size_max,
+        ]
         legend_markers = [plt.scatter([], [], s=i, c="grey") for i in markers]
-        labels = [str(int(scaler.inverse_transform(np.array(i).reshape(1, 1))))
-                  for i in markers]
-        a.legend(handles=legend_markers, labels=labels, loc='lower left', bbox_to_anchor=(1, 0.05),
-                   scatterpoints=1, frameon=False, title="Number of Reads")
+        labels = [
+            str(int(scaler.inverse_transform(np.array(i).reshape(1, 1))))
+            for i in markers
+        ]
+        a.legend(
+            handles=legend_markers,
+            labels=labels,
+            loc="lower left",
+            bbox_to_anchor=(1, 0.05),
+            scatterpoints=1,
+            frameon=False,
+            title="Number of Reads",
+        )
 
     if not show_axis:
         a.axis("off")

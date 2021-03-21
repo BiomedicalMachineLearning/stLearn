@@ -115,7 +115,6 @@ def _check_coords(
 
     return [imagecol, imagerow]
 
-
 def _read_graph(adata: AnnData, graph_type: Optional[str]):
 
     graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
@@ -124,3 +123,4 @@ def _read_graph(adata: AnnData, graph_type: Optional[str]):
     relabel_graph = nx.relabel_nodes(graph, node_dict)
 
     return relabel_graph
+

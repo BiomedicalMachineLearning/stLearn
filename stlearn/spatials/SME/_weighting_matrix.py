@@ -6,17 +6,22 @@ from ..._compat import Literal
 from tqdm import tqdm
 
 _PLATFORM = Literal["Visium", "Old_ST"]
-_WEIGHTING_MATRIX = Literal["weights_matrix_all", "weights_matrix_pd_gd", "weights_matrix_pd_md", "weights_matrix_gd_md",
-                            "gene_expression_correlation", "physical_distance",
-                            "morphological_distance"]
+_WEIGHTING_MATRIX = Literal[
+    "weights_matrix_all",
+    "weights_matrix_pd_gd",
+    "weights_matrix_pd_md",
+    "weights_matrix_gd_md",
+    "gene_expression_correlation",
+    "physical_distance",
+    "morphological_distance",
+]
 
 
 def calculate_weight_matrix(
-        adata: AnnData,
-        adata_imputed: Union[AnnData, None] = None,
-        pseudo_spots: bool = False,
-        platform: _PLATFORM = "Visium",
-
+    adata: AnnData,
+    adata_imputed: Union[AnnData, None] = None,
+    pseudo_spots: bool = False,
+    platform: _PLATFORM = "Visium",
 ) -> Optional[AnnData]:
     from sklearn.linear_model import LinearRegression
     import math
@@ -45,19 +50,28 @@ def calculate_weight_matrix(
     reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
 
     if pseudo_spots and adata_imputed:
-        pd = pairwise_distances(adata_imputed.obs[["imagecol", "imagerow"]], adata.obs[["imagecol", "imagerow"]],
-                                metric="euclidean")
+        pd = pairwise_distances(
+            adata_imputed.obs[["imagecol", "imagerow"]],
+            adata.obs[["imagecol", "imagerow"]],
+            metric="euclidean",
+        )
         unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
         pd_norm = np.where(pd >= unit, 0, 1)
 
-        md = 1 - pairwise_distances(adata_imputed.obsm["X_morphology"], adata.obsm["X_morphology"], metric="cosine")
+        md = 1 - pairwise_distances(
+            adata_imputed.obsm["X_morphology"],
+            adata.obsm["X_morphology"],
+            metric="cosine",
+        )
         md[md < 0] = 0
 
         adata_imputed.uns["physical_distance"] = pd_norm
         adata_imputed.uns["morphological_distance"] = md
 
-        adata_imputed.uns["weights_matrix_all"] = adata_imputed.uns["physical_distance"] * adata_imputed.uns[
-            "morphological_distance"]
+        adata_imputed.uns["weights_matrix_all"] = (
+            adata_imputed.uns["physical_distance"]
+            * adata_imputed.uns["morphological_distance"]
+        )
 
     else:
         pd = pairwise_distances(adata.obs[["imagecol", "imagerow"]], metric="euclidean")
@@ -72,20 +86,28 @@ def calculate_weight_matrix(
         adata.uns["physical_distance"] = pd_norm
         adata.uns["morphological_distance"] = md
 
-        adata.uns["weights_matrix_all"] = adata.uns["physical_distance"] * adata.uns["morphological_distance"] * \
-                                          adata.uns["gene_expression_correlation"]
-        adata.uns["weights_matrix_pd_gd"] = adata.uns["physical_distance"] * adata.uns["gene_expression_correlation"]
-        adata.uns["weights_matrix_pd_md"] = adata.uns["physical_distance"] * adata.uns["morphological_distance"]
-        adata.uns["weights_matrix_gd_md"] = adata.uns["gene_expression_correlation"] * adata.uns[
-            "morphological_distance"]
+        adata.uns["weights_matrix_all"] = (
+            adata.uns["physical_distance"]
+            * adata.uns["morphological_distance"]
+            * adata.uns["gene_expression_correlation"]
+        )
+        adata.uns["weights_matrix_pd_gd"] = (
+            adata.uns["physical_distance"] * adata.uns["gene_expression_correlation"]
+        )
+        adata.uns["weights_matrix_pd_md"] = (
+            adata.uns["physical_distance"] * adata.uns["morphological_distance"]
+        )
+        adata.uns["weights_matrix_gd_md"] = (
+            adata.uns["gene_expression_correlation"]
+            * adata.uns["morphological_distance"]
+        )
 
 
 def impute_neighbour(
-        adata: AnnData,
-        count_embed: Union[np.ndarray, None] = None,
-        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-        copy: bool = False,
-
+    adata: AnnData,
+    count_embed: Union[np.ndarray, None] = None,
+    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+    copy: bool = False,
 ) -> Optional[AnnData]:
     coor = adata.obs[["imagecol", "imagerow"]]
 
@@ -95,8 +117,11 @@ def impute_neighbour(
 
     weights_list = []
 
-    with tqdm(total=len(adata), desc="Adjusting data",
-              bar_format="{l_bar}{bar} [ time left: {remaining} ]") as pbar:
+    with tqdm(
+        total=len(adata),
+        desc="Adjusting data",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+    ) as pbar:
         for i in range(len(coor)):
 
             main_weights = weights_matrix[i]
@@ -109,11 +134,14 @@ def impute_neighbour(
             surrounding_count = count_embed[current_neighbour]
             surrounding_weights = main_weights[current_neighbour]
             if surrounding_weights.sum() > 0:
-                surrounding_weights_scaled = surrounding_weights / surrounding_weights.sum()
+                surrounding_weights_scaled = (
+                    surrounding_weights / surrounding_weights.sum()
+                )
                 weights_list.append(surrounding_weights_scaled)
 
-                surrounding_count_adjusted = np.multiply(surrounding_weights_scaled.reshape(-1, 1),
-                                                         surrounding_count)
+                surrounding_count_adjusted = np.multiply(
+                    surrounding_weights_scaled.reshape(-1, 1), surrounding_count
+                )
                 surrounding_count_final = np.sum(surrounding_count_adjusted, axis=0)
 
             else:

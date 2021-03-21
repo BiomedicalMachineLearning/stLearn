@@ -15,16 +15,16 @@ import warnings
 
 from .classes import CciPlot
 from .classes_bokeh import BokehCciPlot
-from ..utils import Empty,_empty,_AxesSubplot
+from ..utils import Empty, _empty, _AxesSubplot
 
-from bokeh.io import push_notebook,output_notebook
+from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
 
 def het_plot(
     adata: AnnData,
     # plotting param
-    title: Optional['str'] = None,
+    title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "Spectral_r",
     use_label: Optional[str] = None,
@@ -45,11 +45,11 @@ def het_plot(
     # cci param
     use_het: Optional[str] = "het",
     contour: bool = False,
-    step_size: Optional[int] = None
+    step_size: Optional[int] = None,
 ) -> Optional[AnnData]:
 
-
-    CciPlot(adata,
+    CciPlot(
+        adata,
         title=title,
         figsize=figsize,
         cmap=cmap,
@@ -70,16 +70,14 @@ def het_plot(
         dpi=dpi,
         use_het=use_het,
         contour=contour,
-        step_size=step_size,)
+        step_size=step_size,
+    )
 
 
-def het_plot_interactive(
-    adata: AnnData
-    ):
+def het_plot_interactive(adata: AnnData):
     bokeh_object = BokehCciPlot(adata)
     output_notebook()
-    show(bokeh_object.app,notebook_handle=True)
-
+    show(bokeh_object.app, notebook_handle=True)
 
 
 def grid_plot(
@@ -112,7 +110,7 @@ def grid_plot(
     name:                   Name of the output figure file.
     output:                 Save the figure as file or not.
     copy:                   Return a copy instead of writing to adata.
-    
+
     Returns
     -------
     Nothing
@@ -120,10 +118,19 @@ def grid_plot(
 
     plt.subplots()
 
-    sns.heatmap(pd.DataFrame(np.array(adata.uns[use_het]).reshape(num_col, num_row)).T, vmin=vmin, vmax=vmax)
-    plt.axis('equal')
+    sns.heatmap(
+        pd.DataFrame(np.array(adata.uns[use_het]).reshape(num_col, num_row)).T,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    plt.axis("equal")
 
     if output is not None:
-        plt.savefig(output + "/" + name + "_heatmap.pdf", dpi=dpi, bbox_inches='tight', pad_inches=0)
+        plt.savefig(
+            output + "/" + name + "_heatmap.pdf",
+            dpi=dpi,
+            bbox_inches="tight",
+            pad_inches=0,
+        )
 
     plt.show()

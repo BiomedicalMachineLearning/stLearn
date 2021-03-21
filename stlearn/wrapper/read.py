@@ -13,6 +13,7 @@ import scipy
 
 _QUALITY = Literal["fulres", "hires", "lowres"]
 
+
 def Read10X(
     path: Union[str, Path],
     genome: Optional[str] = None,
@@ -77,10 +78,13 @@ def Read10X(
 
     from scanpy import read_visium
 
-    adata = read_visium(path, genome=genome,
-                        count_file=count_file,
-                        library_id=library_id,
-                        load_images=load_images)
+    adata = read_visium(
+        path,
+        genome=genome,
+        count_file=count_file,
+        library_id=library_id,
+        load_images=load_images,
+    )
     adata.var_names_make_unique()
 
     if library_id is None:
@@ -89,7 +93,9 @@ def Read10X(
     if quality == "fulres":
         image_coor = adata.obsm["spatial"]
     else:
-        scale = adata.uns["spatial"][library_id]["scalefactors"]["tissue_" + quality + "_scalef"]
+        scale = adata.uns["spatial"][library_id]["scalefactors"][
+            "tissue_" + quality + "_scalef"
+        ]
         image_coor = adata.obsm["spatial"] * scale
 
     adata.obs["imagecol"] = image_coor[:, 0]

@@ -18,7 +18,7 @@ from ..utils import _AxesSubplot, Axes
 def subcluster_plot(
     adata: AnnData,
     # plotting param
-    title: Optional['str'] = None,
+    title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "jet",
     use_label: Optional[str] = None,
@@ -38,14 +38,16 @@ def subcluster_plot(
     # subcluster plot param
     cluster: Optional[int] = 0,
     text_box_size: Optional[float] = 5,
-    bbox_to_anchor: Optional[Tuple[float, float]] = (1,1),
+    bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
 ) -> Optional[AnnData]:
 
     assert use_label != None, "Please select `use_label` parameter"
-    assert use_label in adata.obs.columns, "Please run `stlearn.spatial.clustering.localization` function!"
-    
-    SubClusterPlot(adata,
+    assert (
+        use_label in adata.obs.columns
+    ), "Please run `stlearn.spatial.clustering.localization` function!"
 
+    SubClusterPlot(
+        adata,
         title=title,
         figsize=figsize,
         cmap=cmap,
@@ -65,4 +67,5 @@ def subcluster_plot(
         dpi=dpi,
         text_box_size=text_box_size,
         bbox_to_anchor=bbox_to_anchor,
-        cluster=cluster)
+        cluster=cluster,
+    )

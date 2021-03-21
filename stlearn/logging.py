@@ -10,7 +10,7 @@ import anndata.logging
 
 
 HINT = (INFO + DEBUG) // 2
-logging.addLevelName(HINT, 'HINT')
+logging.addLevelName(HINT, "HINT")
 
 
 class _RootLogger(logging.RootLogger):
@@ -29,12 +29,13 @@ class _RootLogger(logging.RootLogger):
         deep: Optional[str] = None,
     ) -> datetime:
         from . import settings
+
         now = datetime.now(timezone.utc)
         time_passed: timedelta = None if time is None else now - time
         extra = {
             **(extra or {}),
-            'deep': deep if settings.verbosity.level < level else None,
-            'time_passed': time_passed
+            "deep": deep if settings.verbosity.level < level else None,
+            "time_passed": time_passed,
         }
         super().log(level, msg, extra=extra)
         return now
@@ -68,39 +69,45 @@ def _set_log_file(settings):
     if len(root.handlers) == 1:
         root.removeHandler(root.handlers[0])
     elif len(root.handlers) > 1:
-        raise RuntimeError('Scanpy’s root logger somehow got more than one handler')
+        raise RuntimeError("Scanpy’s root logger somehow got more than one handler")
     root.addHandler(h)
 
 
 def _set_log_level(settings, level: int):
     root = settings._root_logger
     root.setLevel(level)
-    h, = root.handlers  # may only be 1
+    (h,) = root.handlers  # may only be 1
     h.setLevel(level)
 
 
 class _LogFormatter(logging.Formatter):
-    def __init__(self, fmt='{levelname}: {message}', datefmt='%Y-%m-%d %H:%M', style='{'):
+    def __init__(
+        self, fmt="{levelname}: {message}", datefmt="%Y-%m-%d %H:%M", style="{"
+    ):
         super().__init__(fmt, datefmt, style)
 
     def format(self, record: logging.LogRecord):
         format_orig = self._style._fmt
         if record.levelno == INFO:
-            self._style._fmt = '{message}'
+            self._style._fmt = "{message}"
         elif record.levelno == HINT:
-            self._style._fmt = '--> {message}'
+            self._style._fmt = "--> {message}"
         elif record.levelno == DEBUG:
-            self._style._fmt = '    {message}'
+            self._style._fmt = "    {message}"
         if record.time_passed:
             # strip microseconds
             if record.time_passed.microseconds:
-                record.time_passed = timedelta(seconds=int(record.time_passed.total_seconds()))
-            if '{time_passed}' in record.msg:
-                record.msg = record.msg.replace('{time_passed}', str(record.time_passed))
+                record.time_passed = timedelta(
+                    seconds=int(record.time_passed.total_seconds())
+                )
+            if "{time_passed}" in record.msg:
+                record.msg = record.msg.replace(
+                    "{time_passed}", str(record.time_passed)
+                )
             else:
-                self._style._fmt += ' ({time_passed})'
+                self._style._fmt += " ({time_passed})"
         if record.deep:
-            record.msg = f'{record.msg}: {record.deep}'
+            record.msg = f"{record.msg}: {record.deep}"
         result = logging.Formatter.format(self, record)
         self._style._fmt = format_orig
         return result
@@ -111,19 +118,19 @@ get_memory_usage = anndata.logging.get_memory_usage
 
 
 _DEPENDENCIES_NUMERICS = [
-    'anndata',  # anndata actually shouldn't, but as long as it's in development
-    'umap',
-    'numpy',
-    'scipy',
-    'pandas',
-    ('sklearn', 'scikit-learn'),
-    'statsmodels',
-    ('igraph', 'python-igraph'),
-    'louvain',
+    "anndata",  # anndata actually shouldn't, but as long as it's in development
+    "umap",
+    "numpy",
+    "scipy",
+    "pandas",
+    ("sklearn", "scikit-learn"),
+    "statsmodels",
+    ("igraph", "python-igraph"),
+    "louvain",
 ]
 
 
-_DEPENDENCIES_PLOTTING = ['matplotlib', 'seaborn']
+_DEPENDENCIES_PLOTTING = ["matplotlib", "seaborn"]
 
 
 def _versions_dependencies(dependencies):
@@ -144,11 +151,12 @@ def print_versions():
     Matplotlib and Seaborn are excluded from this.
     """
     from ._settings import settings
-    modules = ['scanpy'] + _DEPENDENCIES_NUMERICS
-    print(' '.join(
-        f'{mod}=={ver}'
-        for mod, ver in _versions_dependencies(modules)
-    ), file=settings.logfile)
+
+    modules = ["scanpy"] + _DEPENDENCIES_NUMERICS
+    print(
+        " ".join(f"{mod}=={ver}" for mod, ver in _versions_dependencies(modules)),
+        file=settings.logfile,
+    )
 
 
 def print_version_and_date():
@@ -157,15 +165,15 @@ def print_version_and_date():
     """
     from . import __version__
     from ._settings import settings
+
     print(
-        f'Running Scanpy {__version__}, '
-        f'on {datetime.now():%Y-%m-%d %H:%M}.',
+        f"Running Scanpy {__version__}, " f"on {datetime.now():%Y-%m-%d %H:%M}.",
         file=settings.logfile,
     )
 
 
 def _copy_docs_and_signature(fn):
-    return partial(update_wrapper, wrapped=fn, assigned=['__doc__', '__annotations__'])
+    return partial(update_wrapper, wrapped=fn, assigned=["__doc__", "__annotations__"])
 
 
 def error(
@@ -194,28 +202,33 @@ def error(
         Additional values you can specify in `msg` like `{time_passed}`.
     """
     from ._settings import settings
+
     return settings._root_logger.error(msg, time=time, deep=deep, extra=extra)
 
 
 @_copy_docs_and_signature(error)
 def warning(msg, *, time=None, deep=None, extra=None) -> datetime:
     from ._settings import settings
+
     return settings._root_logger.warning(msg, time=time, deep=deep, extra=extra)
 
 
 @_copy_docs_and_signature(error)
 def info(msg, *, time=None, deep=None, extra=None) -> datetime:
     from ._settings import settings
+
     return settings._root_logger.info(msg, time=time, deep=deep, extra=extra)
 
 
 @_copy_docs_and_signature(error)
 def hint(msg, *, time=None, deep=None, extra=None) -> datetime:
     from ._settings import settings
+
     return settings._root_logger.hint(msg, time=time, deep=deep, extra=extra)
 
 
 @_copy_docs_and_signature(error)
 def debug(msg, *, time=None, deep=None, extra=None) -> datetime:
     from ._settings import settings
+
     return settings._root_logger.debug(msg, time=time, deep=deep, extra=extra)

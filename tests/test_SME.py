@@ -4,14 +4,14 @@
 
 
 import unittest
-from click.testing import CliRunner
 
 import stlearn as st
 import scanpy as sc
 from .utils import read_test_data
 
 global adata
-adata = read_test_data()    
+adata = read_test_data()
+
 
 class TestSME(unittest.TestCase):
     """Tests for `stlearn` package."""
@@ -21,6 +21,7 @@ class TestSME(unittest.TestCase):
         st.pp.tiling(adata, "./tiling")
         st.pp.extract_feature(adata)
         import shutil
+
         shutil.rmtree("./tiling")
         data_SME = adata.copy()
         # apply stSME to normalise log transformed data

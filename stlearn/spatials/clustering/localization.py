@@ -24,9 +24,9 @@ def localization(
     use_label
         Use label result of clustering method.
     eps
-        The maximum distance between two samples for one to be considered as 
-        in the neighborhood of the other. This is not a maximum bound on the 
-        distances of points within a cluster. This is the most important DBSCAN 
+        The maximum distance between two samples for one to be considered as
+        in the neighborhood of the other. This is not a maximum bound on the
+        distances of points within a cluster. This is the most important DBSCAN
         parameter to choose appropriately for your data set and distance function.
     min_samples
         The number of samples (or total weight) in a neighborhood for a point to be

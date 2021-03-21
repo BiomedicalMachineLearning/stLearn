@@ -3,16 +3,20 @@ from anndata import AnnData
 import numpy as np
 from scipy.sparse.csr import csr_matrix
 import pandas as pd
-from ._weighting_matrix import calculate_weight_matrix, impute_neighbour, _WEIGHTING_MATRIX, _PLATFORM
+from ._weighting_matrix import (
+    calculate_weight_matrix,
+    impute_neighbour,
+    _WEIGHTING_MATRIX,
+    _PLATFORM,
+)
 
 
 def SME_normalize(
-        adata: AnnData,
-        use_data: str = "raw",
-        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-        platform: _PLATFORM = "Visium",
-        copy: bool = False,
-
+    adata: AnnData,
+    use_data: str = "raw",
+    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+    platform: _PLATFORM = "Visium",
+    copy: bool = False,
 ) -> Optional[AnnData]:
     """\
     using spatial location (S), tissue morphological feature (M) and gene expression (E) information to normalize data.
@@ -57,7 +61,7 @@ def SME_normalize(
 
     impute_neighbour(adata, count_embed=count_embed, weights=weights)
 
-    imputed_data = adata.obsm['imputed_data'].astype(float)
+    imputed_data = adata.obsm["imputed_data"].astype(float)
     imputed_data[imputed_data == 0] = np.nan
     adjusted_count_matrix = np.nanmean(np.array([count_embed, imputed_data]), axis=0)
 

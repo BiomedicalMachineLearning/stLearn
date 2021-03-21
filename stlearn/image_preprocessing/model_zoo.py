@@ -1,6 +1,3 @@
-
-
-
 def encode(tiles, model):
     features = model.predict(tiles)
     features = features.ravel()
@@ -12,6 +9,7 @@ class Model:
 
     def __init__(self, base, batch_size=1):
         from tensorflow.keras import backend as K
+
         self.base = base
         self.model, self.preprocess = self.load_model()
         self.batch_size = batch_size
@@ -55,6 +53,7 @@ class Model:
 
     def predict(self, x):
         from tensorflow.keras import backend as K
+
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
         x = self.preprocess(x.astype(K.floatx()))
