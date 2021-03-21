@@ -63,7 +63,7 @@
 
 `stlearn.pl.gene_plot_interactive`
 
-![](https://media.giphy.com/media/rTlsU1toCFE4QSZiCb/giphy.gif)
+![](https://media.giphy.com/media/9r9o6GGwadXofs9GI3/giphy.gif)
 
 ## Citing stLearn
 
