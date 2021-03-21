@@ -724,7 +724,7 @@ class ClusterPlot(SpatialBasePlot):
         if self.show_node:
             for x, y in centroid_dict.items():
 
-                if x in get_node(list_cluster, self.adata[0].uns["split_node"]):
+                if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
                     a.text(
                         y[0],
                         y[1],
