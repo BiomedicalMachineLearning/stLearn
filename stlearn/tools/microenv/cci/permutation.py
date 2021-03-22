@@ -2,6 +2,7 @@ import sys, os, random, scipy
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from statsmodels.stats.multitest import multipletests
 from anndata import AnnData
 from .base import lr
 from .merge import merge
