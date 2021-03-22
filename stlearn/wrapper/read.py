@@ -275,7 +275,7 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
-    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
+    adata_merfish.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:, 0] * scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:, 1] * scale
 
