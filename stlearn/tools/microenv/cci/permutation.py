@@ -112,8 +112,7 @@ def permutation(
     prob = size / (size + mu)
 
     # Calculate probability for all spots
-    permutation['pval'] = -np.log10(multipletests(1 - 
-        scipy.stats.nbinom.cdf(scores-pmin, size, prob), method='bonferroni')[1])
+    permutation['pval'] = -np.log10(multipletests(1 - scipy.stats.nbinom.cdf(scores-pmin, size, prob), method='bonferroni')[1])
 
     if use_het != None:
         adata.uns["merged"] = scores
