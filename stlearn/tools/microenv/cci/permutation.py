@@ -123,9 +123,9 @@ def permutation(
 
         # enablePrint()
         print(
-            "Results of permutation test has been kept in adata.obsm['merged_pvalues']"
+            "Results of permutation test has been kept in adata.uns['merged_pvalues']"
         )
-        print("Significant merged result has been kept in adata.obsm['merged_sign']")
+        print("Significant merged result has been kept in adata.uns['merged_sign']")
     else:
         adata.uns["lr"] = scores
         adata.uns["lr_pvalues"] = permutation["pval"].values
@@ -134,8 +134,8 @@ def permutation(
         )  # p-value < 0.05
 
         # enablePrint()
-        print("Results of permutation test has been kept in adata.obsm['lr_pvalues']")
-        print("Significant merged result has been kept in adata.obsm['lr_sign']")
+        print("Results of permutation test has been kept in adata.uns['lr_pvalues']")
+        print("Significant merged result has been kept in adata.uns['lr_sign']")
 
     # return adata
 
