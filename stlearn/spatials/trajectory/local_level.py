@@ -49,6 +49,7 @@ def local_level(
     dpt = []
     sd = []
     centroid_dict = cluster_data.uns["centroid_dict"]
+    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
     for i in list_cluster:
         if (
             len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])

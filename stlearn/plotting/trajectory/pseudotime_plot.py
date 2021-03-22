@@ -19,7 +19,7 @@ def pseudotime_plot(
     library_id: str = None,
     use_label: str = "louvain",
     use_pseudotime: str = "dpt_pseudotime",
-    list_cluster: Union[str, list] = None,
+    list_clusters: Union[str, list] = None,
     data_alpha: float = 1.0,
     tissue_alpha: float = 1.0,
     edge_alpha: float = 0.8,
@@ -52,7 +52,7 @@ def pseudotime_plot(
         Library id stored in AnnData.
     use_label
         Use label result of clustering method.
-    list_cluster
+    list_clusters
         Choose set of clusters that will display in the plot.
     data_alpha
         Opacity of the spot.
@@ -94,11 +94,11 @@ def pseudotime_plot(
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
 
-    if list_cluster == "all":
-        list_cluster = list(range(0, len(adata.obs[use_label].unique())))
+    if list_clusters == "all":
+        list_clusters = list(range(0, len(adata.obs[use_label].unique())))
     # Get query clusters
     command = []
-    # for i in list_cluster:
+    # for i in list_clusters:
     #    command.append(use_label + ' == "' + str(i) + '"')
     # tmp = adata.obs.query(" or ".join(command))
     tmp = adata.obs
@@ -107,7 +107,7 @@ def pseudotime_plot(
     labels = nx.get_edge_attributes(G, "weight")
 
     result = []
-    query_node = get_node(list_cluster, adata.uns["split_node"])
+    query_node = get_node(list_clusters, adata.uns["split_node"])
     for edge in G.edges(query_node):
         if (edge[0] in query_node) and (edge[1] in query_node):
             result.append(edge)
@@ -121,6 +121,7 @@ def pseudotime_plot(
 
     fig, a = plt.subplots()
     centroid_dict = adata.uns["centroid_dict"]
+    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
     dpt = adata.obs[use_pseudotime]
 
     colors = adata.obs[use_label].astype(int)
@@ -174,7 +175,7 @@ def pseudotime_plot(
 
         for x, y in centroid_dict.items():
 
-            if x in get_node(list_cluster, adata.uns["split_node"]):
+            if x in get_node(list_clusters, adata.uns["split_node"]):
                 a.text(
                     y[0],
                     y[1],
@@ -210,6 +211,7 @@ def pseudotime_plot(
         G.remove_edges_from(remove)
         G.remove_node(9999)
         centroid_dict = adata.uns["centroid_dict"]
+        centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
         if reverse:
             nx.draw_networkx_edges(
                 G,
@@ -238,7 +240,7 @@ def pseudotime_plot(
         if show_node:
             for x, y in centroid_dict.items():
 
-                if x in get_node(list_cluster, adata.uns["split_node"]):
+                if x in get_node(list_clusters, adata.uns["split_node"]):
                     a.text(
                         y[0],
                         y[1],

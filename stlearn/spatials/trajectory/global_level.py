@@ -10,7 +10,7 @@ from ...utils import _read_graph
 def global_level(
     adata: AnnData,
     use_label: str = "louvain",
-    list_cluster: list = [],
+    list_clusters: list = [],
     return_graph: bool = False,
     w: float = None,
     verbose: bool = True,
@@ -24,7 +24,7 @@ def global_level(
     ----------
     adata
         Annotated data matrix.
-    list_cluster
+    list_clusters
         Setup a list of cluster to perform pseudo-space-time
     use_label
         Use label result of clustering method.
@@ -46,7 +46,7 @@ def global_level(
     H = G.to_directed()
 
     # Query cluster
-    query_nodes = list_cluster
+    query_nodes = list_clusters
     query_nodes = ordering_nodes(query_nodes, use_label, adata)
 
     if verbose:
@@ -95,6 +95,7 @@ def global_level(
 
     # Get centroid dictionary
     centroid_dict = adata.uns["centroid_dict"]
+    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
 
     H_sub = H.edge_subgraph(edge_list)
     H_sub = nx.DiGraph(H_sub)
@@ -207,6 +208,7 @@ def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
     chosen_adata2 = adata[list(tmp.index)]
 
     centroid_dict = adata.uns["centroid_dict"]
+    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
 
     sub_coord1 = []
     chosen_sub1 = chosen_adata1.obs["sub_cluster_labels"].unique()

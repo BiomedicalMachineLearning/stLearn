@@ -125,6 +125,7 @@ def _read_graph(adata: AnnData, graph_type: Optional[str]):
     else:
         graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
     node_dict = adata.uns[graph_type]["node_dict"]
+    node_dict = {int(k):int(v) for k,v in node_dict.items()}
 
     relabel_graph = nx.relabel_nodes(graph, node_dict)
 
