@@ -33,7 +33,7 @@ def lr(
         distance = (
             scalefactors["spot_diameter_fullres"]
             * scalefactors[
-                "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
+                "tissue_" + adata.uns["spatial"]["use_quality"] + "_scalef"
             ]
             * 2
         )
@@ -97,7 +97,7 @@ def lr(
         index=df.index,
         columns=[lr_pairs[i] for i in avail],
     ).sum(axis=1)
-    adata.obsm[use_lr] = spot_lr.values / 2
+    adata.uns[use_lr] = spot_lr.values / 2
     if verbose:
         print(
             "L-R interactions with neighbours are counted and stored into adata.obsm['"
@@ -189,7 +189,7 @@ def lr_grid(
         index=df_grid.index,
         columns=[lr_pairs[i] for i in avail],
     ).sum(axis=1)
-    adata.obsm[use_lr] = grid_lr.values / 2
+    adata.uns[use_lr] = grid_lr.values / 2
 
     if verbose:
         print(
