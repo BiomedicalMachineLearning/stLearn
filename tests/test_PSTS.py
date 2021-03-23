@@ -28,7 +28,7 @@ class TestPSTS(unittest.TestCase):
             adata, eps=100, use_rep="X_pca", use_sme=False, use_label="leiden"
         )
         st.spatial.trajectory.pseudotimespace_global(
-            adata, use_label="leiden", list_cluster=[0, 1]
+            adata, use_label="leiden", list_clusters=[0, 1]
         )
         st.spatial.trajectory.detect_transition_markers_clades(
             adata, clade=1, use_raw_count=False, cutoff_spearman=0.3
