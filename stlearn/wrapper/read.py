@@ -208,7 +208,7 @@ def ReadSlideSeq(
     ] = scale
 
     adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
-    adata.obsm["spatial"] = meta[["x", "y"]].values
+    adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
     adata.obs["sum_counts"] = np.array(adata.X.sum(axis=1))
 
@@ -281,6 +281,8 @@ def ReadMERFISH(
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:, 0] * scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:, 1] * scale
 
+    adata_merfish.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
+
     adata_merfish.obs["sum_counts"] = np.array(adata_merfish.X.sum(axis=1))
 
     return adata_merfish
@@ -352,7 +354,7 @@ def ReadSeqFish(
         "tissue_" + quality + "_scalef"
     ] = scale
     adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = 50
-    adata.obsm["spatial"] = spatial[["X", "Y"]].values
+    adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
     adata.obs["sum_counts"] = np.array(adata.X.sum(axis=1))
 

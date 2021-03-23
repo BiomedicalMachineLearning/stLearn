@@ -60,6 +60,10 @@ def image(
                 adata.uns["spatial"][library_id]["scalefactors"][
                     "tissue_" + quality + "_scalef"
                 ] = scale
+                adata.uns["spatial"][library_id]["scalefactors"][
+                    "spot_diameter_fullres"
+                ] = 50
+                adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
             print("Added tissue image to the object!")
 
