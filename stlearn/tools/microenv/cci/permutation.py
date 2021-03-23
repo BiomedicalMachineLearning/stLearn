@@ -2,6 +2,8 @@ import sys, os, random, scipy
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from statsmodels.stats.multitest import multipletests
+
 from anndata import AnnData
 from .base import lr
 from .merge import merge
@@ -84,6 +86,7 @@ def permutation(
     background = []
 
     # for each randomly selected pair, run through cci analysis and keep the scores
+    query_pair = adata.uns["lr"]
     for item in pairs:
         adata.uns["lr"] = [item]
         lr(adata, use_lr=use_lr, distance=distance, verbose=False)
@@ -92,6 +95,9 @@ def permutation(
             background += adata.obsm["merged"].tolist()
         else:
             background += adata.obsm[use_lr].tolist()
+
+    # log back the original query
+    adata.uns["lr"] = query_pair
 
     # Permutation test for each spot across all runs
     permutation = pd.DataFrame(0, adata.obs_names, ["pval"])
@@ -111,10 +117,11 @@ def permutation(
     prob = size / (size + mu)
 
     # Calculate probability for all spots
-    permutation["pval"] = [
-        item - np.log10(len(adata.obs_names))
-        for item in -np.log10(1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob))
-    ]
+    permutation["pval"] = -np.log10(
+        multipletests(
+            1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob), method="bonferroni"
+        )[1]
+    )
     if use_het != None:
         adata.obsm["merged"] = scores
         adata.obsm["merged_pvalues"] = permutation["pval"].values
