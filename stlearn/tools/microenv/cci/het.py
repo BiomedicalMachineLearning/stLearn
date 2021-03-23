@@ -6,7 +6,7 @@ import scipy.spatial as spatial
 
 def count(
     adata: AnnData,
-    use_clustering: str = None,
+    use_label: str = None,
     use_het: str = "cci_het",
     verbose: bool = True,
     distance: float = None,
@@ -15,7 +15,7 @@ def count(
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count
-    use_clustering:         The cell type results to use in counting
+    use_label:         The cell type results to use in counting
     use_het:                The stoarge place for result
     distance: int           Distance to determine the neighbours (default is the nearest neighbour), distance=0 means within spot
 
@@ -24,6 +24,7 @@ def count(
     adata: AnnData          With the counts of specified clusters in nearby spots stored as adata.uns['het']
     """
 
+    library_id = list(adata.uns["spatial"].keys())[0]
     # between spot
     if distance != 0:
         # automatically calculate distance if not given, won't overwrite distance=0 which is within-spot
@@ -33,7 +34,9 @@ def count(
             distance = (
                 scalefactors["spot_diameter_fullres"]
                 * scalefactors[
-                    "tissue_" + adata.uns["spatial"]["use_quality"] + "_scalef"
+                    "tissue_"
+                    + adata.uns["spatial"][library_id]["use_quality"]
+                    + "_scalef"
                 ]
                 * 2
             )
@@ -53,14 +56,14 @@ def count(
             )
             neighbours = [item for item in adata.obs_names[n_index]]
             counts_ct.loc[spot] = (
-                (adata.uns[use_clustering].loc[neighbours] > 0.2).sum() > 0
+                (adata.uns[use_label].loc[neighbours] > 0.2).sum() > 0
             ).sum()
         adata.obsm[use_het] = counts_ct["CT"].values
 
     # within spot
     else:
         # count the cell types with prob > 0.2 in the result of label transfer
-        adata.obsm[use_het] = (adata.uns[use_clustering] > 0.2).sum(axis=1)
+        adata.obsm[use_het] = (adata.uns[use_label] > 0.2).sum(axis=1)
 
     if verbose:
         print(
@@ -134,7 +137,7 @@ def count_grid(
     adata: AnnData,
     num_row: int = 30,
     num_col: int = 30,
-    use_clustering: str = None,
+    use_label: str = None,
     use_het: str = "cci_het_grid",
     radius: int = 1,
     verbose: bool = True,
@@ -145,7 +148,7 @@ def count_grid(
     adata: AnnData          The data object including the cell types to count
     num_row: int            Number of grids on height
     num_col: int            Number of grids on width
-    use_clustering:         The cell type results to use in counting
+    use_label:         The cell type results to use in counting
     use_het:                The stoarge place for result
     radius: int             Distance to determine the neighbour grids (default: 1=nearest), radius=0 means within grid
 
@@ -164,8 +167,8 @@ def count_grid(
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
         ]
-        counts.loc[n] = (adata.uns[use_clustering].loc[spots.index] > 0.2).sum().sum()
-    adata.uns[use_het] = (counts / counts.max())["CT"]
+        counts.loc[n] = (adata.obsm[use_label].loc[spots.index] > 0.2).sum().sum()
+    adata.obsm[use_het] = (counts / counts.max())["CT"]
 
     if verbose:
         print(

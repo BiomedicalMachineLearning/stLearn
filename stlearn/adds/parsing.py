@@ -36,13 +36,13 @@ def parsing(
     with open(coordinates_file, "r") as filehandler:
         for line in filehandler.readlines():
             tokens = line.split()
-            assert len(tokens) == 6 or len(tokens) == 4
+            assert len(tokens) >= 6 or len(tokens) == 4
             if tokens[0] != "x":
                 old_x = int(tokens[0])
                 old_y = int(tokens[1])
                 new_x = round(float(tokens[2]), 2)
                 new_y = round(float(tokens[3]), 2)
-                if len(tokens) == 6:
+                if len(tokens) >= 6:
                     pixel_x = float(tokens[4])
                     pixel_y = float(tokens[5])
                     new_coordinates[(old_x, old_y)] = (pixel_x, pixel_y)

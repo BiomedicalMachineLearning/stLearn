@@ -696,6 +696,7 @@ class ClusterPlot(SpatialBasePlot):
         G.remove_edges_from(remove)
         G.remove_node(9999)
         centroid_dict = self.adata[0].uns["centroid_dict"]
+        centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
         if self.reverse:
             nx.draw_networkx_edges(
                 G,
@@ -724,7 +725,7 @@ class ClusterPlot(SpatialBasePlot):
         if self.show_node:
             for x, y in centroid_dict.items():
 
-                if x in get_node(list_cluster, self.adata[0].uns["split_node"]):
+                if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
                     a.text(
                         y[0],
                         y[1],

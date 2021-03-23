@@ -8,7 +8,7 @@ from .local_level import local_level
 def pseudotimespace_global(
     adata: AnnData,
     use_label: str = "louvain",
-    list_cluster: list = [],
+    list_clusters: list = [],
     w: float = None,
     step=0.01,
     k=10,
@@ -23,7 +23,7 @@ def pseudotimespace_global(
         Annotated data matrix.
     use_label
         Use label result of clustering method.
-    list_cluster
+    list_clusters
         List of cluster used to reconstruct spatial trajectory.
     w
         Weighting factor to balance between spatial data and gene expression
@@ -39,10 +39,10 @@ def pseudotimespace_global(
     if w is None:
 
         w = weight_optimizing_global(
-            adata, use_label=use_label, list_cluster=list_cluster, step=step, k=k
+            adata, use_label=use_label, list_clusters=list_clusters, step=step, k=k
         )
 
-    global_level(adata, use_label=use_label, list_cluster=list_cluster, w=w)
+    global_level(adata, use_label=use_label, list_clusters=list_clusters, w=w)
 
 
 def pseudotimespace_local(

@@ -21,7 +21,7 @@ def merge(
     adata: AnnData          With merged result stored in adata.uns['merged']
     """
 
-    adata.obsm["merged"] = adata.obsm[use_het].mul(adata.obsm[use_lr])
+    adata.obsm["merged"] = np.multiply(adata.obsm[use_het], adata.obsm[use_lr])
 
     if verbose:
         print(

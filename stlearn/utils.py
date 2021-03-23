@@ -115,12 +115,18 @@ def _check_coords(
 
     return [imagecol, imagerow]
 
+
 def _read_graph(adata: AnnData, graph_type: Optional[str]):
 
-    graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
+    if graph_type == "PTS_graph":
+        graph = nx.from_scipy_sparse_matrix(
+            adata.uns[graph_type]["graph"], create_using=nx.DiGraph
+        )
+    else:
+        graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
     node_dict = adata.uns[graph_type]["node_dict"]
+    node_dict = {int(k): int(v) for k, v in node_dict.items()}
 
     relabel_graph = nx.relabel_nodes(graph, node_dict)
 
     return relabel_graph
-
