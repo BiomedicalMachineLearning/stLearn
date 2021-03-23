@@ -21,3 +21,4 @@ from .wrapper.read import ReadOldST
 from .wrapper.read import ReadMERFISH
 from .wrapper.read import ReadSeqFish
 from ._settings import settings
+from .wrapper.convert_scanpy import convert_scanpy
