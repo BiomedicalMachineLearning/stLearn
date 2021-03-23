@@ -90,7 +90,7 @@ def local_plot(
         ):
             classes_.append(i)
             centroid_dict = adata.uns["centroid_dict"]
-            centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
+            centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
             centroids_.append(centroid_dict[int(i)])
             order_dict[int(i)] = int(order)
             order += 1

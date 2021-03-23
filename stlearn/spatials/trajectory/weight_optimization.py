@@ -7,7 +7,9 @@ from .utils import lambda_dist, resistance_distance
 from tqdm import tqdm
 
 
-def weight_optimizing_global(adata, use_label=None, list_clusters=None, step=0.01, k=10):
+def weight_optimizing_global(
+    adata, use_label=None, list_clusters=None, step=0.01, k=10
+):
     # Screening PTS graph
     print("Screening PTS global graph...")
     Gs = []

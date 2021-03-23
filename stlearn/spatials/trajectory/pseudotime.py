@@ -160,7 +160,7 @@ def pseudotime(
         centroid_dict[int(cl)] = new_centroid
 
     adata.uns["centroid_dict"] = centroid_dict
-    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
+    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
 
     # Running diffusion pseudo-time
     scanpy.tl.dpt(adata)

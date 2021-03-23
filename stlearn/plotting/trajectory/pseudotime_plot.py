@@ -121,7 +121,7 @@ def pseudotime_plot(
 
     fig, a = plt.subplots()
     centroid_dict = adata.uns["centroid_dict"]
-    centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
+    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     dpt = adata.obs[use_pseudotime]
 
     colors = adata.obs[use_label].astype(int)
@@ -211,7 +211,7 @@ def pseudotime_plot(
         G.remove_edges_from(remove)
         G.remove_node(9999)
         centroid_dict = adata.uns["centroid_dict"]
-        centroid_dict = {int(key):centroid_dict[key] for key in centroid_dict}
+        centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
         if reverse:
             nx.draw_networkx_edges(
                 G,
