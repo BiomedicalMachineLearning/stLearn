@@ -13,12 +13,14 @@ import warnings
 
 from .classes import GenePlot
 from .classes_bokeh import BokehGenePlot
-from ..utils import Empty, _empty, _AxesSubplot
+from ._docs import doc_spatial_base_plot, doc_gene_plot
+from ..utils import Empty, _empty, _AxesSubplot, _docs_params
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
 
+@_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def gene_plot(
     adata: AnnData,
     gene_symbols: Union[str, list] = None,
@@ -45,7 +47,24 @@ def gene_plot(
     fname: Optional[str] = None,
     dpi: Optional[int] = 120,
 ) -> Optional[AnnData]:
+    """\
+    Allows the visualization of a single gene or multiple genes as the values
+    of dot points or contour in the Spatial transcriptomics array.
 
+
+    Parameters
+    -------------------------------------
+    {spatial_base_plot}
+    {gene_plot}
+
+    Examples
+    -------------------------------------
+    >>> import stlearn as st
+    >>> adata = st.datasets.example_bcba()
+    >>> genes = ["BRCA1","BRCA2"]
+    >>> st.pl.gene_plot(adata, gene_symbols = genes)
+
+    """
     GenePlot(
         adata,
         gene_symbols=gene_symbols,

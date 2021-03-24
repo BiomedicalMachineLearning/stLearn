@@ -8,8 +8,6 @@ from pathlib import Path
 def add_deconvolution(
     adata: AnnData,
     annotation_path: Union[Path, str],
-    use_label: str = "louvain",
-    threshold: float = 0.9,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -22,8 +20,6 @@ def add_deconvolution(
         Annotated data matrix.
     annotation_path
         Path of the output of label transfer result by Seurat
-    use_label
-        Choosing clustering type.
     copy
         Return a copy instead of writing to adata.
     Returns

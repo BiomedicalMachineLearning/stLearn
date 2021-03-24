@@ -12,9 +12,13 @@ from anndata import AnnData
 import warnings
 
 from .classes import SubClusterPlot
-from ..utils import _AxesSubplot, Axes
+from ._docs import doc_spatial_base_plot, doc_subcluster_plot
+from ..utils import _AxesSubplot, Axes, _docs_params
 
 
+@_docs_params(
+    spatial_base_plot=doc_spatial_base_plot, subcluster_plot=doc_subcluster_plot
+)
 def subcluster_plot(
     adata: AnnData,
     # plotting param
@@ -40,6 +44,24 @@ def subcluster_plot(
     text_box_size: Optional[float] = 5,
     bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
 ) -> Optional[AnnData]:
+    """\
+    Allows the visualization of a subclustering results as the discretes values
+    of dot points in the Spatial transcriptomics array.
+
+    Parameters
+    -------------------------------------
+    {spatial_base_plot}
+    {subcluster_plot}
+
+    Examples
+    -------------------------------------
+    >>> import stlearn as st
+    >>> adata = st.datasets.example_bcba()
+    >>> label = "louvain"
+    >>> cluster = 6
+    >>> st.pl.cluster_plot(adata, use_label = label, cluster = cluster)
+
+    """
 
     assert use_label != None, "Please select `use_label` parameter"
     assert (

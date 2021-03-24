@@ -15,12 +15,14 @@ import warnings
 
 from .classes import CciPlot
 from .classes_bokeh import BokehCciPlot
-from ..utils import Empty, _empty, _AxesSubplot
+from ._docs import doc_spatial_base_plot, doc_het_plot
+from ..utils import Empty, _empty, _AxesSubplot, _docs_params
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
 
+@_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_het_plot)
 def het_plot(
     adata: AnnData,
     # plotting param
@@ -47,6 +49,26 @@ def het_plot(
     contour: bool = False,
     step_size: Optional[int] = None,
 ) -> Optional[AnnData]:
+
+    """\
+    Allows the visualization of significant cell-cell interaction
+    as the values of dot points or contour in the Spatial
+    transcriptomics array.
+
+
+    Parameters
+    -------------------------------------
+    {spatial_base_plot}
+    {het_plot}
+
+    Examples
+    -------------------------------------
+    >>> import stlearn as st
+    >>> adata = st.datasets.example_bcba()
+    >>> pvalues = "lr_pvalues"
+    >>> st.pl.gene_plot(adata, use_het = pvalues)
+
+    """
 
     CciPlot(
         adata,
