@@ -561,26 +561,26 @@ class ClusterPlot(SpatialBasePlot):
             imgcol_new = subset_spatial[:, 0] * self.scale_factor
             imgrow_new = subset_spatial[:, 1] * self.scale_factor
 
-            if (
-                len(
-                    self.query_adata.obs[
-                        self.query_adata.obs[self.use_label] == str(label)
-                    ][self.use_label].cat.categories
-                )
-                < 2
-            ):
-                centroids = [centroidpython(imgcol_new, imgrow_new)]
+            # if (
+            #     len(
+            #         self.query_adata.obs[
+            #             self.query_adata.obs[self.use_label] == str(label)
+            #         ][self.use_label].cat.categories
+            #     )
+            #     < 2
+            # ):
+            centroids = [centroidpython(imgcol_new, imgrow_new)]
 
-            else:
-                from sklearn.neighbors import NearestCentroid
+            # else:
+            #     from sklearn.neighbors import NearestCentroid
 
-                clf = NearestCentroid()
-                clf.fit(
-                    np.column_stack((spatial.imagecol, spatial.imagerow)),
-                    np.repeat(label, len(imgcol_new)),
-                )
+            #     clf = NearestCentroid()
+            #     clf.fit(
+            #         np.column_stack((imgcol_new, imgrow_new)),
+            #         np.repeat(label, len(imgcol_new)),
+            #     )
 
-                centroids = clf.centroids_
+            #     centroids = clf.centroids_
 
             if centroids[0][0] < 1500:
                 x = -100
@@ -632,7 +632,11 @@ class ClusterPlot(SpatialBasePlot):
                 < 2
             ):
                 centroids = [centroidpython(imgcol_new, imgrow_new)]
-                # classes = np.array(self.query_adata.obs[self.query_adata.obs[self.use_label] == str(label)]["sub_cluster_labels"])
+                classes = np.array(
+                    self.query_adata.obs[
+                        self.query_adata.obs[self.use_label] == str(label)
+                    ]["sub_cluster_labels"].unique()
+                )
 
             else:
                 from sklearn.neighbors import NearestCentroid
@@ -657,7 +661,7 @@ class ClusterPlot(SpatialBasePlot):
                     )
                     > self.threshold_spots
                 ):
-                    if centroids[i][0] < 1500:
+                    if centroids[j][0] < 1500:
                         x = -100
                         y = 50
                     else:
@@ -665,6 +669,7 @@ class ClusterPlot(SpatialBasePlot):
                         y = -50
                     colors = self.adata[0].uns[self.use_label + "_colors"]
                     index = self.query_indexes[i]
+
                     self.ax.text(
                         centroids[j][0] + x,
                         centroids[j][1] + y,
@@ -726,7 +731,7 @@ class ClusterPlot(SpatialBasePlot):
             for x, y in centroid_dict.items():
 
                 if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
-                    a.text(
+                    self.ax.text(
                         y[0],
                         y[1],
                         get_cluster(str(x), self.adata[0].uns["split_node"]),
