@@ -14,7 +14,8 @@ def labels(
     sep: str = "\t",
     copy: bool = False,
 ) -> Optional[AnnData]:
-    """Add label transfer results into AnnData object
+    """\
+    Add label transfer results into AnnData object
 
     Parameters
     ----------

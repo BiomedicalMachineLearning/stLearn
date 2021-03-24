@@ -10,6 +10,8 @@ from typing import Optional, Union, Mapping  # Special
 from typing import Sequence, Iterable  # ABCs
 from typing import Tuple  # Classes
 
+from textwrap import dedent
+
 from enum import Enum
 
 
@@ -130,3 +132,16 @@ def _read_graph(adata: AnnData, graph_type: Optional[str]):
     relabel_graph = nx.relabel_nodes(graph, node_dict)
 
     return relabel_graph
+
+
+def _docs_params(**kwds):
+    """\
+    Docstrings should start with "\" in the first line for proper formatting.
+    """
+
+    def dec(obj):
+        obj.__orig_doc__ = obj.__doc__
+        obj.__doc__ = dedent(obj.__doc__).format_map(kwds)
+        return obj
+
+    return dec

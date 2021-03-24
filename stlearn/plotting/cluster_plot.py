@@ -14,12 +14,14 @@ import warnings
 
 from .classes import ClusterPlot
 from .classes_bokeh import BokehClusterPlot
-from ..utils import _AxesSubplot, Axes
+from ._docs import doc_spatial_base_plot, doc_cluster_plot
+from ..utils import _AxesSubplot, Axes, _docs_params
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
 
+@_docs_params(spatial_base_plot=doc_spatial_base_plot, cluster_plot=doc_cluster_plot)
 def cluster_plot(
     adata: AnnData,
     # plotting param
@@ -51,6 +53,26 @@ def cluster_plot(
     color_bar_size: Optional[float] = 10,
     bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
 ) -> Optional[AnnData]:
+
+    """\
+    Allows the visualization of a clustering results as the discretes values
+    of dot points in the Spatial transcriptomics array. We also support to
+    visualize the spatial trajectory results
+
+
+    Parameters
+    -------------------------------------
+    {spatial_base_plot}
+    {cluster_plot}
+
+    Examples
+    -------------------------------------
+    >>> import stlearn as st
+    >>> adata = st.datasets.example_bcba()
+    >>> label = "louvain"
+    >>> st.pl.cluster_plot(adata, use_label = label, show_trajectories = True)
+
+    """
 
     assert use_label != None, "Please select `use_label` parameter"
 

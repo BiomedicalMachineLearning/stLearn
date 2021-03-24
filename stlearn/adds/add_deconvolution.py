@@ -8,7 +8,6 @@ from pathlib import Path
 def add_deconvolution(
     adata: AnnData,
     annotation_path: Union[Path, str],
-    threshold: float = 0.0,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
