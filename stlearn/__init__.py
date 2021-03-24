@@ -11,7 +11,7 @@ from . import em
 from . import tl
 from . import pl
 from . import spatial
-from . import dataset
+from . import datasets
 
 # Wrapper
 
