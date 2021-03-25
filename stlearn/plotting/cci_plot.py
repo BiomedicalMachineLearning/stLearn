@@ -138,10 +138,14 @@ def grid_plot(
     Nothing
     """
 
+    try:
+        import seaborn as sns
+    except:
+        raise ImportError("Please run `pip install seaborn`")
     plt.subplots()
 
     sns.heatmap(
-        pd.DataFrame(np.array(adata.uns[use_het]).reshape(num_col, num_row)).T,
+        pd.DataFrame(np.array(adata.obsm[use_het]).reshape(num_col, num_row)).T,
         vmin=vmin,
         vmax=vmax,
     )

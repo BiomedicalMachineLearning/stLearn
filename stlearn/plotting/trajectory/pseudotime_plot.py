@@ -11,7 +11,6 @@ import warnings
 
 from ...utils import _read_graph
 
-# from .utils import get_img_from_fig, checkType
 
 
 def pseudotime_plot(
@@ -20,8 +19,8 @@ def pseudotime_plot(
     use_label: str = "louvain",
     use_pseudotime: str = "dpt_pseudotime",
     list_clusters: Union[str, list] = None,
-    data_alpha: float = 1.0,
-    tissue_alpha: float = 1.0,
+    cell_alpha: float = 1.0,
+    image_alpha: float = 1.0,
     edge_alpha: float = 0.8,
     node_alpha: float = 1.0,
     spot_size: Union[float, int] = 6.5,
@@ -54,9 +53,9 @@ def pseudotime_plot(
         Use label result of clustering method.
     list_clusters
         Choose set of clusters that will display in the plot.
-    data_alpha
+    cell_alpha
         Opacity of the spot.
-    tissue_alpha
+    image_alpha
         Opacity of the tissue.
     edge_alpha
         Opacity of edge in PAGA graph in the tissue.
@@ -94,7 +93,7 @@ def pseudotime_plot(
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
 
-    if list_clusters == "all":
+    if list_clusters == None:
         list_clusters = list(range(0, len(adata.obs[use_label].unique())))
     # Get query clusters
     command = []
@@ -139,7 +138,7 @@ def pseudotime_plot(
         tmp["imagecol"],
         tmp["imagerow"],
         edgecolor="none",
-        alpha=data_alpha,
+        alpha=cell_alpha,
         s=spot_size,
         marker="o",
         vmin=vmin,
@@ -266,12 +265,12 @@ def pseudotime_plot(
         library_id = list(adata.uns["spatial"].keys())[0]
 
     image = adata.uns["spatial"][library_id]["images"][
-        adata.uns["spatial"]["use_quality"]
+        adata.uns["spatial"][library_id]["use_quality"]
     ]
 
     a.imshow(
         image,
-        alpha=tissue_alpha,
+        alpha=image_alpha,
         zorder=-1,
     )
 
@@ -302,5 +301,5 @@ def get_cluster(search, dictionary):
 def get_node(node_list, split_node):
     result = np.array([])
     for node in node_list:
-        result = np.append(result, np.array(split_node[node]).astype(int))
+        result = np.append(result, np.array(split_node[str(node)]).astype(int))
     return result.astype(int)
