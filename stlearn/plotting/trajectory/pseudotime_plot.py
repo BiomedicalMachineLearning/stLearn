@@ -12,7 +12,6 @@ import warnings
 from ...utils import _read_graph
 
 
-
 def pseudotime_plot(
     adata: AnnData,
     library_id: str = None,
