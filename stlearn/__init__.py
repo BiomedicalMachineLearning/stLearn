@@ -20,5 +20,6 @@ from .wrapper.read import Read10X
 from .wrapper.read import ReadOldST
 from .wrapper.read import ReadMERFISH
 from .wrapper.read import ReadSeqFish
+from .wrapper.read import create_stlearn
 from ._settings import settings
 from .wrapper.convert_scanpy import convert_scanpy

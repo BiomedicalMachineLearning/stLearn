@@ -15,6 +15,7 @@ def image(
     quality: str = "hires",
     scale: float = 1.0,
     visium: bool = False,
+    spot_diameter_fullres: float = 50,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -62,7 +63,7 @@ def image(
                 ] = scale
                 adata.uns["spatial"][library_id]["scalefactors"][
                     "spot_diameter_fullres"
-                ] = 50
+                ] = spot_diameter_fullres
                 adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
             print("Added tissue image to the object!")
