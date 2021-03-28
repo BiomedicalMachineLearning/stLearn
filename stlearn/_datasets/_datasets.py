@@ -11,7 +11,7 @@ def example_bcba() -> AnnData:
     """
     settings.datasetdir.mkdir(exist_ok=True)
     filename = settings.datasetdir / "example_bcba.h5"
-    url = "https://raw.githubusercontent.com/duypham2108/dev_st/master/tutorials/example_bcba_small.h5"
+    url = "https://www.dropbox.com/s/0o10xzan58ln38o/example_bcba.h5"
     if not filename.is_file():
         sc.readwrite._download(url=url, path=filename)
     adata = sc.read_h5ad(filename)
