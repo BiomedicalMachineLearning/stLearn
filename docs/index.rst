@@ -1,5 +1,17 @@
+
+
 stLearn - a downstream analysis toolkit for Spatial Transcriptomics data
 ============================================================================
+
+|PyPI| |PyPIDownloads| |Docs|
+
+.. |PyPI| image:: https://img.shields.io/pypi/v/stlearn?logo=PyPI
+   :target: https://pypi.org/project/stlearn
+.. |PyPIDownloads| image:: https://pepy.tech/badge/stlearn
+.. |Docs| image:: https://readthedocs.org/projects/stlearn/badge/?version=latest
+   :target: https://stlearn.readthedocs.io
+
+
 
 .. image:: https://i.imgur.com/yfXlCYO.png
    :width: 300px
@@ -9,32 +21,33 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
 
 We also published stLearn-interactive which is a python-based interactive website for working with all the functions from stLearn and upgrade with some bokeh-based plots.
 
-stLearn-interactive source code and installation: `Github <https://github.com/BiomedicalMachineLearning/stlearn_interactive>`_
+stLearn-interactive source code and installation: `Github <https://github.com/BiomedicalMachineLearning/stlearn_interactive>`_ and `Wiki page <https://github.com/BiomedicalMachineLearning/stlearn_interactive/wiki/stLearn-interactive-tutorial>`_
 
-stLearn-interactive tutorial: `Wiki page <https://github.com/BiomedicalMachineLearning/stlearn_interactive/wiki/stLearn-interactive-tutorial>`_
 
+New features
+**********************
+
+In the new release, we provide the interactive plots:
+
+.. image:: https://media.giphy.com/media/hUHAZcbVMm5pdUKMq4/giphy.gif
+   :width: 600px
+
+
+
+Latest additions
+----------------
+
+.. include:: release_notes/0.3.2.rst
 
 
 .. toctree::
    :maxdepth: 1
-   :caption: Content:
+   :hidden:
+
 
    installation
+   tutorials
    api
+   release_notes/index
    authors
-   history
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials:
-
-   stlearn-interactive-tutorial
-   stSME_clustering
-   stSME_comparison
-   Pseudo-time-space-tutorial
-   stLearn-CCI
-   Working-with-Old-Spatial-Transcriptomics-data
-   Read_slideseq
-   Read_MERFISH
-   Read_seqfish
-   ST_deconvolution_visualization
+   references

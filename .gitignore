@@ -13,3 +13,4 @@ output/
 docs/_build
 data/
 tiling/
+.pytest_cache

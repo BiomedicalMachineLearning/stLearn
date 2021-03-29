@@ -1,8 +1,14 @@
 -r ../requirements.txt
+ipyvolume==0.6.0a1
+ipywebrtc
+ipywidgets>=7.4.0
+jupyter_sphinx==0.1.4
 nbclean>=0.3.2
+nbformat==4.4.0
 nbsphinx>=0.7.0
 pygments >= 2.4.1
-sphinx>=2.0.1
+sphinx==3.0.0
 sphinx-autodoc-typehints
+sphinx_gallery
 sphinx_rtd_theme>=0.3.1
 typing_extensions; python_version < '3.8'

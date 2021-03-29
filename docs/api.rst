@@ -24,6 +24,8 @@ Wrapper functions: `wrapper`
    ReadSlideSeq
    ReadMERFISH
    ReadSeqFish
+   convert_scanpy
+   create_stlearn
 
 
 Add: `add`
@@ -39,9 +41,12 @@ Add: `add`
    add.positions
    add.parsing
    add.lr
+   add.labels
    add.annotation
    add.add_loupe_clusters
-   add.auto_annotate
+   add.add_mask
+   add.apply_mask
+   add.add_deconvolution
 
 
 Preprocessing: `pp`
@@ -82,25 +87,49 @@ Embedding: `em`
 Spatial: `spatial`
 -------------------
 
-.. module:: stlearn.spatial
+.. module:: stlearn.spatial.clustering
 .. currentmodule:: stlearn
 
 .. autosummary::
    :toctree: .
 
    spatial.clustering.localization
+
+.. module:: stlearn.spatial.trajectory
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
    spatial.trajectory.pseudotime
    spatial.trajectory.pseudotimespace_global
    spatial.trajectory.pseudotimespace_local
    spatial.trajectory.compare_transitions
    spatial.trajectory.detect_transition_markers_clades
    spatial.trajectory.detect_transition_markers_branches
+
+.. module:: stlearn.spatial.morphology
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
    spatial.morphology.adjust
+
+.. module:: stlearn.spatial.SME
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
+   spatial.SME.SME_impute0
+   spatial.SME.pseudo_spot
+   spatial.SME.SME_normalize
 
 Tools: `tl`
 -------------------
 
-.. module:: stlearn.tl
+.. module:: stlearn.tl.clustering
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -108,9 +137,20 @@ Tools: `tl`
 
    tl.clustering.kmeans
    tl.clustering.louvain
+
+
+.. module:: stlearn.tl.cci
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
    tl.cci.lr
+   tl.cci.het.count
+   tl.cci.het.create_grids
+   tl.cci.het.count_grid
    tl.cci.merge
-   tl.SpatialDE
+   tl.cci.permutation
 
 
 Plot: `pl`
@@ -123,15 +163,38 @@ Plot: `pl`
    :toctree: .
 
    pl.gene_plot
+   pl.gene_plot_interactive
    pl.cluster_plot
+   pl.cluster_plot_interactive
    pl.subcluster_plot
-   pl.microenv_plot
+   pl.subcluster_plot
    pl.non_spatial_plot
    pl.deconvolution_plot
    pl.QC_plot
    pl.het_plot
+   pl.het_plot_interactive
+   pl.grid_plot
+   pl.plot_mask
+
+.. module:: stlearn.pl.trajectory
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
    pl.trajectory.pseudotime_plot
    pl.trajectory.local_plot
    pl.trajectory.tree_plot
    pl.trajectory.transition_markers_plot
    pl.trajectory.DE_transition_plot
+
+Tools: `datasets`
+-------------------
+
+.. module:: stlearn.datasets
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: .
+
+   datasets.example_bcba()

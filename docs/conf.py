@@ -21,8 +21,15 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
-
 import stlearn
+
+# Setup files
+import os
+
+if not os.path.isdir("./_static"):
+    url = "https://www.dropbox.com/s/mky2cp1ksjc4bes/downloads.zip"
+    os.system("wget " + url)
+    os.system("unzip downloads.zip")
 
 # -- General configuration ---------------------------------------------
 
@@ -39,6 +46,8 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "nbsphinx",
+    "jupyter_sphinx.embed_widgets",
+    "sphinx_gallery.load_style",
 ]
 
 # Generate the API documentation when building
@@ -102,6 +111,12 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+
+
+def setup(app):
+    app.add_stylesheet("css/theme_override.css")
+
+
 html_theme = "sphinx_rtd_theme"
 html_css_files = [
     "css/custom.css",
@@ -180,24 +195,37 @@ texinfo_documents = [
 ]
 
 
-import nbclean, glob
-from pathlib import Path
+nbsphinx_thumbnails = {
+    "tutorials/stSME_clustering": "_static/img/thumbnail/sme.png",
+    "tutorials/stSME_comparison": "_static/img/thumbnail/com.png",
+    "tutorials/Pseudo-time-space-tutorial": "_static/img/thumbnail/psts.png",
+    "tutorials/stLearn-CCI": "_static/img/thumbnail/cci.png",
+    "tutorials/Read_MERFISH": "_static/img/thumbnail/mer.png",
+    "tutorials/Read_seqfish": "_static/img/thumbnail/seq.png",
+    "tutorials/Working-with-Old-Spatial-Transcriptomics-data": "_static/img/thumbnail/legacy.png",
+    "tutorials/Read_slideseq": "_static/img/thumbnail/slide.png",
+    "tutorials/ST_deconvolution_visualization": "_static/img/thumbnail/decon.png",
+    "tutorials/Interactive_plot": "_static/img/thumbnail/bokeh.gif",
+    "tutorials/Working_with_scanpy": "_static/img/thumbnail/scanpy.png",
+    "tutorials/Core_plots": "_static/img/thumbnail/core_plots.png",
+    "tutorials/Read_any_data": "_static/img/thumbnail/any.png",
+}
+
+
+# import nbclean, glob
+# from pathlib import Path
 
 # for filename in glob.glob('../tutorials/*.ipynb', recursive=True):
 #    Path(filename).rename(filename.split("/")[-1])
 
-import os
 
-with open("./list_tutorial.txt") as f:
-    content = f.readlines()
+# with open("./list_tutorial.txt") as f:
+#     content = f.readlines()
 
-content = [x.strip() for x in content]
-
-for url in content:
-    os.system("wget " + url)
+# content = [x.strip() for x in content]
 
 
-for filename in glob.glob("*.ipynb", recursive=True):
-    ntbk = nbclean.NotebookCleaner(filename)
-    ntbk.clear("stderr")
-    ntbk.save(filename)
+# for filename in glob.glob('*.ipynb', recursive=True):
+#     ntbk = nbclean.NotebookCleaner(filename)
+#     ntbk.clear('stderr')
+#     ntbk.save(filename)

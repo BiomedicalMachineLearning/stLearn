@@ -66,6 +66,14 @@ You have to change to downloaded files directory and install it:
 	pip install louvain‑0.6.1‑cp38‑cp38‑win_amd64.whl
 
 **Step 4:**
+
+If you have previous version of stLearn, please uninstall it.
+
+::
+
+	pip uninstall stlearn
+
+**Step 5:**
 ::
 
 	pip install -U stlearn

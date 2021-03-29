@@ -59,7 +59,7 @@
 
 - [Documentation and Tutorials](https://stlearn.readthedocs.io/en/latest/)
 
-## New feature in the next update
+## New features
 
 `stlearn.pl.gene_plot_interactive`
 
