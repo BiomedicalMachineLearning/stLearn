@@ -479,12 +479,14 @@ class ClusterPlot(SpatialBasePlot):
             self._save_output()
 
     def _add_cluster_colors(self):
-        self.adata[0].uns[self.use_label + "_colors"] = []
+        if self.use_label + "_colors" not in self.adata[0].uns:
+            self.adata[0].uns[self.use_label + "_colors"] = []
 
-        for i, cluster in enumerate(self.adata[0].obs.groupby(self.use_label)):
-            self.adata[0].uns[self.use_label + "_colors"].append(
-                matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
-            )
+            for i, cluster in \
+                    enumerate(self.adata[0].obs.groupby(self.use_label)):
+                self.adata[0].uns[self.use_label + "_colors"].append(
+                    matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
+                )
 
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
@@ -495,12 +497,17 @@ class ClusterPlot(SpatialBasePlot):
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
             ]
 
+            if self.use_label+'_colors' in self.adata[0].uns:
+                color = self.adata[0].uns[self.use_label+'_colors'][i]
+            else:
+                color = self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))
+
             imgcol_new = subset_spatial[:, 0] * self.scale_factor
             imgrow_new = subset_spatial[:, 1] * self.scale_factor
             _ = self.ax.scatter(
                 imgcol_new,
                 imgrow_new,
-                c=[self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))],
+                c=[color],
                 label=cluster[0],
                 edgecolor="none",
                 alpha=self.cell_alpha,
