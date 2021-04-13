@@ -1,16 +1,18 @@
 import numpy as np
 import pandas as pd
 import scipy as sc
+from numba import jit, njit, float64, int64
 import scipy.spatial as spatial
 from anndata import AnnData
 from .het import create_grids
-
 
 def lr(
     adata: AnnData,
     use_lr: str = "cci_lr",
     distance: float = None,
     verbose: bool = True,
+    neighbours: list = None,
+    fast: bool = True,
 ) -> AnnData:
 
     """Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
@@ -19,6 +21,8 @@ def lr(
     adata: AnnData          The data object to scan
     use_lr: str             object to keep the result (default: adata.uns['cci_lr'])
     distance: float         Distance to determine the neighbours (default: closest), distance=0 means within spot
+    neighbours: list        List of the neighbours for each spot, if None then computed. Useful for speeding up function.
+    fast: bool              Whether to use the fast implimentation or not.
 
     Returns
     -------
@@ -42,25 +46,12 @@ def lr(
 
     # expand the LR pairs list by swapping ligand-receptor positions
     lr_pairs = adata.uns["lr"].copy()
-    lr_pairs += [item.split("_")[1] + "_" + item.split("_")[0] for item in lr_pairs]
+    lr_pairs += [item.split("_")[1] + "_" + item.split("_")[0]
+                 for item in lr_pairs] # NOTE the +=, VERY important.
 
     # get neighbour spots for each spot according to the specified distance
-    coor = adata.obs[["imagerow", "imagecol"]]
-    point_tree = spatial.cKDTree(coor)
-    neighbours = []
-    for spot in adata.obs_names:
-        if distance == 0:
-            neighbours.append([spot])
-        else:
-            n_index = point_tree.query_ball_point(
-                np.array(
-                    [adata.obs["imagerow"].loc[spot], adata.obs["imagecol"].loc[spot]]
-                ),
-                distance,
-            )
-            neighbours.append(
-                [item for item in df.index[n_index] if not (item == spot)]
-            )
+    if type(neighbours) == type(None):
+        neighbours = calc_neighbours(adata, distance, index=fast)
 
     # filter out those LR pairs that do not exist in the dataset
     lr1 = [item.split("_")[0] for item in lr_pairs]
@@ -73,12 +64,28 @@ def lr(
     if verbose:
         print("Altogether " + str(len(avail)) + " valid L-R pairs")
 
+    # Calculating the scores, can have either the fast or the pandas version #
+    if fast:
+        adata.obsm[use_lr] = lr_core(spot_lr1.values, spot_lr2.values, neighbours)
+    else:
+        adata.obsm[use_lr] = lr_pandas(spot_lr1, spot_lr2, neighbours)
+
+    if verbose:
+        print(
+            "L-R interactions with neighbours are counted and stored into adata.obsm['"
+            + use_lr
+            + "']"
+        )
+
+    # return adata
+
+"""
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
         # get lr2 expressions from the neighbour(s)
-        nbs = spot_lr2.loc[neighbours[df.index.tolist().index(x.name)], :]
+        nbs = spot_lr2.values[neighbours[df.index.tolist().index(x.name)], :]
         if nbs.shape[0] > 0:  # if neighbour exists
-            return (nbs > 0).sum() / nbs.shape[0]
+            return nbs.sum() / nbs.shape[0]
         else:
             return 0
 
@@ -98,15 +105,118 @@ def lr(
         columns=[lr_pairs[i] for i in avail],
     ).sum(axis=1)
     adata.obsm[use_lr] = spot_lr.values / 2
-    if verbose:
-        print(
-            "L-R interactions with neighbours are counted and stored into adata.obsm['"
-            + use_lr
-            + "']"
-        )
+"""
 
-    # return adata
 
+def calc_neighbours(adata: AnnData,
+                    distance: float = None,
+                    index: bool = True,
+                    ) -> np.array:
+    """Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
+        Parameters
+        ----------
+        adata: AnnData          The data object to scan
+        distance: float         Distance to determine the neighbours (default: closest), distance=0 means within spot
+        index: bool             Indicates whether to return neighbours as indices to other spots or names of other spots.
+
+        Returns
+        -------
+        neighbours: list          List of neighbours by indices for each spot.
+        """
+
+    # get neighbour spots for each spot according to the specified distance
+    coor = adata.obs[["imagerow", "imagecol"]]
+    point_tree = spatial.cKDTree(coor)
+    neighbours = []
+    for i, spot in enumerate(adata.obs_names):
+        if distance == 0:
+            neighbours.append([i if index else spot])
+        else:
+            n_index = point_tree.query_ball_point(
+                np.array(
+                    [adata.obs["imagerow"].loc[spot],
+                     adata.obs["imagecol"].loc[spot]]
+                ),
+                distance,
+            )
+            if index:
+                n_index = np.array(n_index)
+                neighbours.append( list(n_index[n_index!=i]) )
+            else:
+                n_spots = adata.obs_names[n_index]
+                neighbours.append( n_spots[n_spots!=spot] )
+
+    return np.array(neighbours,
+                    dtype=np.int_ if type(neighbours[0])!=str else str)
+
+#@jit(float64[:](float64[:,:],float64[:,:],int64[:]), nopython=True)
+@njit
+def lr_core(spot_lr1: np.ndarray,
+            spot_lr2: np.ndarray,
+            neighbours: np.array,
+            ) -> np.ndarray:
+    """Calculate the lr scores for each spot.
+        Parameters
+        ----------
+        spot_lr1: np.ndarray          Spots*Ligands
+        spot_lr2: np.ndarray          Spots*Receptors
+        neighbours: list       List of neighbours by indices for each spot.
+
+        Returns
+        -------
+        lr_scores: numpy.ndarray   Cells*LR-scores.
+        """
+    # Calculating mean of lr2 expressions from neighbours of each spot
+    nb_lr2 = np.zeros(spot_lr2.shape, np.float64)
+    for i in range(spot_lr2.shape[0]):
+        #if len(neighbours[i]) > 0: # if neighbour exists
+        nb_expr = spot_lr2[neighbours[i], :]
+        nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
+        nb_lr2[i, :] = nb_expr_mean
+
+    scores = spot_lr1 * (nb_lr2 > 0) + (spot_lr1 > 0) * nb_lr2
+    spot_lr = scores.sum(axis=1)
+    return spot_lr / 2
+
+def lr_pandas(spot_lr1: np.ndarray,
+              spot_lr2: np.ndarray,
+              neighbours: list,
+             ) -> np.ndarray:
+    """Calculate the lr scores for each spot.
+            Parameters
+            ----------
+            spot_lr1: pd.DataFrame          Cells*Ligands
+            spot_lr2: pd.DataFrame          Cells*Receptors
+            neighbours: list       List of neighbours by indices for each spot.
+
+            Returns
+            -------
+            lr_scores: numpy.ndarray   Cells*LR-scores.
+    """
+    # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
+    def mean_lr2(x):
+        # get lr2 expressions from the neighbour(s)
+        n_spots = neighbours[spot_lr2.index.tolist().index(x.name)]
+        nbs = spot_lr2.loc[n_spots, :]
+        if nbs.shape[0] > 0:  # if neighbour exists
+            return nbs.sum() / nbs.shape[0]
+        else:
+            return 0
+
+    # mean of lr2 expressions from neighbours of each spot
+    nb_lr2 = spot_lr2.apply(mean_lr2, axis=1)
+
+    # check whether neighbours exist
+    try:
+        nb_lr2.shape[1]
+    except:
+        raise ValueError("No neighbours found within given distance.")
+
+    # keep value of nb_lr2 only when lr1 is also expressed on the spots
+    spot_lr = pd.DataFrame(
+        spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values,
+    ).sum(axis=1)
+    return spot_lr.values / 2
 
 def lr_grid(
     adata: AnnData,
