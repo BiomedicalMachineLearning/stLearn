@@ -146,8 +146,7 @@ def calc_neighbours(adata: AnnData,
                 n_spots = adata.obs_names[n_index]
                 neighbours.append( n_spots[n_spots!=spot] )
 
-    return np.array(neighbours,
-                    dtype=np.int_ if type(neighbours[0])!=str else str)
+    return np.array(neighbours, dtype=np.int_ if index else str)
 
 #@jit(float64[:](float64[:,:],float64[:,:],int64[:]), nopython=True)
 @njit

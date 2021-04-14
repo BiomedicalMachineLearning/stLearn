@@ -1,6 +1,6 @@
 import sys, os, random, scipy
 import numpy as np
-from numba import jit, njit, float64, int64
+from numba import jit, njit, float64, int64, prange
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
@@ -18,7 +18,7 @@ def permutation(
     neg_binom: bool = False,
     adj_method: str = 'fdr',
     neighbours: list = None,
-    run_fast: bool = False,
+    run_fast: bool = True,
     bg_pairs: list = None,
     **kwargs,
 ) -> AnnData:
@@ -217,8 +217,9 @@ def get_background(
     background = np.zeros((1, spot_lr1s.shape[0]*spot_lr1s.shape[1]),
                                                                 np.float64)[0,:]
     index = 0
-    for i in range(0, spot_lr1s.shape[1], 2):
-        spot_lr1, spot_lr2 = spot_lr1s[:,i:(i+2)], spot_lr2s[:,i:(i+2)]
+    for i in prange(0, spot_lr1s.shape[1]//2):
+        i_ = i*2 # equivalent to range(0, spot_lr1s.shape[1], 2)
+        spot_lr1, spot_lr2 = spot_lr1s[:,i_:(i_+2)], spot_lr2s[:,i_:(i_+2)]
         lr_bg = lr_core(spot_lr1, spot_lr2, neighbours)
         # The merge scores #
         lr_bg = np.multiply(het_vals, lr_bg)
