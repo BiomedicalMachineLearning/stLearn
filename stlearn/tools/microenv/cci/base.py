@@ -42,27 +42,16 @@ def lr(
             * 2
         )
 
-    df = adata.to_df()
-
-    # expand the LR pairs list by swapping ligand-receptor positions
+    # # expand the LR pairs list by swapping ligand-receptor positions
     lr_pairs = adata.uns["lr"].copy()
-    lr_pairs += [item.split("_")[1] + "_" + item.split("_")[0]
-                 for item in lr_pairs] # NOTE the +=, VERY important.
+    spot_lr1 = get_spot_lrs(adata, lr_pairs=lr_pairs, lr_order=True)
+    spot_lr2 = get_spot_lrs(adata, lr_pairs=lr_pairs, lr_order=False)
+    if verbose:
+        print("Altogether " + str(spot_lr1.shape[1]) + " valid L-R pairs")
 
     # get neighbour spots for each spot according to the specified distance
     if type(neighbours) == type(None):
         neighbours = calc_neighbours(adata, distance, index=fast)
-
-    # filter out those LR pairs that do not exist in the dataset
-    lr1 = [item.split("_")[0] for item in lr_pairs]
-    lr2 = [item.split("_")[1] for item in lr_pairs]
-    avail = [
-        i for i, x in enumerate(lr1) if lr1[i] in df.columns and lr2[i] in df.columns
-    ]
-    spot_lr1 = df[[lr1[i] for i in avail]]
-    spot_lr2 = df[[lr2[i] for i in avail]]
-    if verbose:
-        print("Altogether " + str(len(avail)) + " valid L-R pairs")
 
     # Calculating the scores, can have either the fast or the pandas version #
     if fast:
@@ -79,34 +68,37 @@ def lr(
 
     # return adata
 
-"""
-    # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
-    def mean_lr2(x):
-        # get lr2 expressions from the neighbour(s)
-        nbs = spot_lr2.values[neighbours[df.index.tolist().index(x.name)], :]
-        if nbs.shape[0] > 0:  # if neighbour exists
-            return nbs.sum() / nbs.shape[0]
-        else:
-            return 0
+def get_spot_lrs(adata: AnnData,
+                 lr_pairs: list,
+                 lr_order: bool,
+                 filter_pairs: bool = True,
+                 ):
+    """
+        Parameters
+        ----------
+        adata: AnnData         The adata object to scan
+        lr_pairs: list         List of the lr pairs (e.g. ['L1_R1', 'L2_R2',...]
+        lr_order: bool         Forward version of the spot lr pairs (L1_R1), False indicates reverse (R1_L1)
+        filter_pairs: bool     Whether to filter the pairs or not (check if present before subsetting).
 
-    # mean of lr2 expressions from neighbours of each spot
-    nb_lr2 = spot_lr2.apply(mean_lr2, axis=1)
+        Returns
+        -------
+        spot_lrs: pd.DataFrame   Spots*GeneOrder, in format l1, r1, ... ln, rn if lr_order True, else r1, l1, ... rn, ln
+    """
+    df = adata.to_df()
+    pairs_rev = [f'{pair.split("_")[1]}_{pair.split("_")[0]}'
+                                                           for pair in lr_pairs]
+    pairs_wRev = []
+    for i in range(len(lr_pairs)):
+        pairs_wRev.extend([lr_pairs[i], pairs_rev[i]])
 
-    # check whether neighbours exist
-    try:
-        nb_lr2.shape[1]
-    except:
-        raise ValueError("No neighbours found within given distance.")
+    if filter_pairs:
+        pairs_wRev = [lr for i, lr in enumerate(pairs_wRev)
+                      if lr.split('_')[0] in df.columns and
+                         lr.split('_')[1] in df.columns]
 
-    # keep value of nb_lr2 only when lr1 is also expressed on the spots
-    spot_lr = pd.DataFrame(
-        spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values,
-        index=df.index,
-        columns=[lr_pairs[i] for i in avail],
-    ).sum(axis=1)
-    adata.obsm[use_lr] = spot_lr.values / 2
-"""
-
+    spot_lrs = df[[pair.split('_')[int(lr_order)] for pair in pairs_wRev]]
+    return spot_lrs
 
 def calc_neighbours(adata: AnnData,
                     distance: float = None,
@@ -148,7 +140,6 @@ def calc_neighbours(adata: AnnData,
 
     return np.array(neighbours, dtype=np.int_ if index else str)
 
-#@jit(float64[:](float64[:,:],float64[:,:],int64[:]), nopython=True)
 @njit
 def lr_core(spot_lr1: np.ndarray,
             spot_lr2: np.ndarray,
