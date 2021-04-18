@@ -78,4 +78,8 @@ def localization(
         ),
     )
 
+    labels_cat = adata.obs[use_label].cat.categories
+    cat_ind = {labels_cat[i]: i for i in range(len(labels_cat))}
+    adata.uns[use_label + "_index_dict"] = cat_ind
+
     return adata if copy else None
