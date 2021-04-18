@@ -91,6 +91,9 @@ def pseudotime(
     cnt_matrix = pd.DataFrame(cnt_matrix)
 
     # Mapping louvain label to subcluster
+
+    cat_ind = adata.uns[use_label + "_index_dict"]
+
     split_node = {}
     for label in adata.obs[use_label].unique():
         meaningful_sub = []
@@ -103,10 +106,11 @@ def pseudotime(
             ):
                 meaningful_sub.append(i)
 
-        split_node[int(label)] = meaningful_sub
+        split_node[cat_ind[label]] = meaningful_sub
 
     adata.uns["threshold_spots"] = threshold_spots
     adata.uns["split_node"] = split_node
+
     # Replicate louvain label row to prepare for subcluster connection
     # matrix construction
     replicate_list = np.array([])
