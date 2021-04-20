@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import scipy as sc
-from numba import jit, njit, float64, int64
+from numba import njit
+from numba.typed import List
 import scipy.spatial as spatial
 from anndata import AnnData
 from .het import create_grids
@@ -30,17 +31,7 @@ def lr(
     """
 
     # automatically calculate distance if not given, won't overwrite distance=0 which is within-spot
-    if not distance and distance != 0:
-        # for arranged-spots
-        scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
-        library_id = list(adata.uns["spatial"].keys())[0]
-        distance = (
-            scalefactors["spot_diameter_fullres"]
-            * scalefactors[
-                "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
-            ]
-            * 2
-        )
+    distance = calc_distance(adata, distance)
 
     # # expand the LR pairs list by swapping ligand-receptor positions
     lr_pairs = adata.uns["lr"].copy()
@@ -67,6 +58,31 @@ def lr(
         )
 
     # return adata
+
+def calc_distance(adata: AnnData, distance: float):
+    """Automatically calculate distance if not given, won't overwrite \
+        distance=0 which is within-spot.
+    Parameters
+    ----------
+    adata: AnnData          The data object to scan
+    distance: float         Distance to determine the neighbours (default: closest), distance=0 means within spot
+
+    Returns
+    -------
+    distance: float         The automatically calcualted distance (or inputted distance)
+    """
+    if not distance and distance != 0:
+        # for arranged-spots
+        scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
+        library_id = list(adata.uns["spatial"].keys())[0]
+        distance = (
+            scalefactors["spot_diameter_fullres"]
+            * scalefactors[
+                "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
+            ]
+            * 2
+        )
+    return distance
 
 def get_spot_lrs(adata: AnnData,
                  lr_pairs: list,
@@ -103,7 +119,8 @@ def get_spot_lrs(adata: AnnData,
 def calc_neighbours(adata: AnnData,
                     distance: float = None,
                     index: bool = True,
-                    ) -> np.array:
+                    verbose: bool = True,
+                    ) -> List:
     """Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
         Parameters
         ----------
@@ -113,9 +130,10 @@ def calc_neighbours(adata: AnnData,
 
         Returns
         -------
-        neighbours: list          List of neighbours by indices for each spot.
+        neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
         """
-
+    if verbose:
+        print("Calculating neighbours...")
     # get neighbour spots for each spot according to the specified distance
     coor = adata.obs[["imagerow", "imagecol"]]
     point_tree = spatial.cKDTree(coor)
@@ -132,26 +150,37 @@ def calc_neighbours(adata: AnnData,
                 distance,
             )
             if index:
-                n_index = np.array(n_index)
-                neighbours.append( list(n_index[n_index!=i]) )
+                n_index = np.array(n_index, dtype=np.int_)
+                neighbours.append( n_index[n_index!=i] )
             else:
                 n_spots = adata.obs_names[n_index]
                 neighbours.append( n_spots[n_spots!=spot] )
 
-    return np.array(neighbours, dtype=np.int_ if index else str)
+    typed_neighs = List()
+    [typed_neighs.append(neigh) for neigh in neighbours]
+
+    n_neighs = np.array([len(neigh) for neigh in neighbours])
+    if verbose:
+        print(f"{len(np.where(n_neighs==0)[0])} spots with no neighbours, "
+              f"{int(np.median(n_neighs))} median spot neighbours.")
+
+    if np.all(n_neighs==0):
+        raise Exception("All spots have no neighbours at current distance,"
+                        " set distance to higher value, or distance=0 for "
+                        "within-spot mode.")
+    return typed_neighs
 
 @njit
 def lr_core(spot_lr1: np.ndarray,
             spot_lr2: np.ndarray,
-            neighbours: np.array,
+            neighbours: tuple,
             ) -> np.ndarray:
     """Calculate the lr scores for each spot.
         Parameters
         ----------
         spot_lr1: np.ndarray          Spots*Ligands
         spot_lr2: np.ndarray          Spots*Receptors
-        neighbours: list       List of neighbours by indices for each spot.
-
+        neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
         Returns
         -------
         lr_scores: numpy.ndarray   Cells*LR-scores.
@@ -178,7 +207,6 @@ def lr_pandas(spot_lr1: np.ndarray,
             spot_lr1: pd.DataFrame          Cells*Ligands
             spot_lr2: pd.DataFrame          Cells*Receptors
             neighbours: list       List of neighbours by indices for each spot.
-
             Returns
             -------
             lr_scores: numpy.ndarray   Cells*LR-scores.

@@ -6,130 +6,167 @@ import os
 import numpy as np
 import pandas as pd
 
+from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
-from .base import lr, calc_neighbours, get_spot_lrs
+from .base import calc_neighbours, get_spot_lrs, calc_distance
 from .het import count
-from .merge import merge
-from .permutation import permutation, get_scores, get_stats, \
-                  get_valid_genes, get_ordered, get_median_index, get_rand_pairs
+from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
+                                                get_median_index, get_rand_pairs
 
-def run(adata, lrs, use_label=None, distance=0, n_pairs=0, verbose=True,
-        neg_binom: bool = False, adj_method: str = 'fdr', run_fast=True,
-        bg_pairs = None, min_spots=5,
-        **kwargs):
+def run(adata: AnnData, lrs: np.array,
+        use_label: str = None, use_het: str = 'cci_het',
+        distance: int = 0, n_pairs: int = 0, neg_binom: bool = False,
+        adj_method: str = 'fdr_bh', lr_mid_dist: int = 200,
+        min_spots: int = 5, verbose: bool = True,
+        ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
         on the inputted data / state of the anndata object.
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count.
-    use_label:              The cell type results to use in counting.
-    use_het:                The storage place for cell heterogeneity results.
+    lrs:    np.array        The LR pairs to score/test for enrichment (in format 'L1_R1')
+    use_label: str          The cell type results to use in counting.
+    use_het:                The storage place for cell heterogeneity results in adata.obsm.
     distance: int           Distance to determine the neighbours (default is the nearest neighbour), distance=0 means within spot
-    **kwargs:               Extra arguments parsed to permutation.
+    n_pairs: int            Number of random pairs to generate when performing the background distribution.
+    neg_binom: bool         Whether to use neg-binomial distribution to estimate p-values, NOT appropriate with log1p data, alternative is to use background distribution itself (recommend higher number of n_pairs for this).
+    adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
+    lr_mid_dist: int        The distance between the mid-points of the average expression of the two genes in an LR pair for it to be group with other pairs via AgglomerativeClustering to generate a common background distribution.
+    min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
     Returns
     -------
-    adata: AnnData          With the counts of specified clusters in nearby spots stored as adata.uns['het']
+    adata: AnnData          Relevant information stored: adata.uns['het'], adata.uns['lr_summary'], & data.uns['per_lr_results'].
     """
-    adata.uns['lr'] = lrs
-    neighbours = calc_neighbours(adata, distance,
-                         index=True if 'fast' not in kwargs else kwargs['fast'])
+    distance = calc_distance(adata, distance)
+    neighbours = calc_neighbours(adata, distance, verbose=verbose)
 
     # Conduct with cell heterogeneity info if label_transfer provided #
     cell_het = type(use_label) != type(None) and use_label in adata.uns.keys()
-    use_het = 'cci_het' if cell_het else None
     if cell_het:
         if verbose:
-            print("Calculating cell hetereogeneity & merging with LR scores...")
+            print("Calculating cell hetereogeneity...")
 
         # Calculating cell heterogeneity #
-        count(adata, distance=distance, use_label=use_label)
+        count(adata, distance=distance, use_label=use_label, use_het=use_het)
 
-    if len(lrs) == 1: #Single LR mode
-        lr(adata=adata, distance=distance, neighbours=neighbours, **kwargs)
-        if cell_het: # Merging with the lR values #
-            merge(adata, use_lr='cci_lr', use_het='cci_het')
+    het_vals = np.array([1] * len(adata)) \
+                           if use_het not in adata.obsm else adata.obsm[use_het]
 
-        if n_pairs != 0:  # Permutation testing #
-            print("Performing permutation testing...")
-            res = permutation(adata, use_het=use_het, n_pairs=n_pairs,
-                              distance=distance, neg_binom=neg_binom,
-                              adj_method=adj_method, neighbours=neighbours,
-                              run_fast=run_fast, bg_pairs=bg_pairs,
-                              **kwargs)
-            return res
+    """ 1. Filter any LRs without stored expression.
+          2. Group LRs with similar mean expression.
+          3. Calc. common bg distrib. for grouped lrs.
+          4. Calc. p-values for each lr relative to bg. 
+    """
+    # Calculating the lr_scores across spots for the inputted lrs #
+    lr_scores, lrs = get_lrs_scores(adata, lrs, neighbours, het_vals)
+    lr_bool = (lr_scores>0).sum(axis=0) > min_spots
+    lrs = lrs[lr_bool]
+    lr_scores = lr_scores[:, lr_bool]
+    if verbose:
+        print("Altogether " + str(len(lrs)) + " valid L-R pairs")
+    if len(lrs) == 0:
+        print("Exiting due to lack of valid LR pairs.")
+        return
 
-    else: #Multi-LR mode
-        """ 1. Filter any LRs without stored expression.
-            2. Group LRs with similar mean expression.
-            3. Calc. common bg distrib. for grouped lrs.
-            4. Calc. p-values for each lr relative to bg. 
-        """
-        het_vals = np.array([1] * len(adata)) if use_het == None else \
-                                                             adata.obsm[use_het]
+    if n_pairs != 0: #Perform permutation testing
+        # Grouping spots with similar mean expression point #
+        genes = get_valid_genes(adata, n_pairs)
+        means_ordered, genes_ordered = get_ordered(adata, genes)
+        ims = np.array(
+                     [get_median_index(lr_.split('_')[0], lr_.split('_')[1],
+                                        means_ordered.values, genes_ordered)
+                        for lr_ in lrs]).reshape(-1, 1)
 
-        # Calculating the lr_scores across spots for the inputted lrs #
-        lr_scores, lrs = get_lrs_scores(adata, lrs, neighbours, het_vals)
-        lr_bool = (lr_scores>0).sum(axis=0) > min_spots
-        lrs = lrs[lr_bool]
-        lr_scores = lr_scores[:, lr_bool]
-        if verbose:
-            print("Altogether " + str(len(lrs)) + " valid L-R pairs")
-
-        if n_pairs != 0:
-            # Grouping spots with similar mean expression point #
-            genes = get_valid_genes(adata, n_pairs)
-            means_ordered, genes_ordered = get_ordered(adata, genes)
-            ims = np.array(
-                         [get_median_index(lr_.split('_')[0], lr_.split('_')[1],
-                                            means_ordered.values, genes_ordered)
-                            for lr_ in lrs]).reshape(-1, 1)
+        if len(lrs) > 1: # Multi-LR pair mode, group LRs to generate backgrounds
             clusterer = AgglomerativeClustering(n_clusters=None,
-                                                distance_threshold=n_pairs,
+                                                distance_threshold=lr_mid_dist,
                                                 affinity='manhattan',
                                                 linkage='single')
             lr_groups = clusterer.fit_predict(ims)
             lr_group_set = np.unique(lr_groups)
-            print(f'{len(lr_group_set)} lr groups with similar expression levels.')
-            print('Generating background for each group, may take a while...')
-            res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
+            if verbose:
+                print(f'{len(lr_group_set)} lr groups with similar expression levels.')
+                print('Generating background for each group, may take a while...')
+
+        else: #Single LR pair mode, generate background for the LR.
+            lr_groups = np.array([0])
+            lr_group_set = lr_groups
+            if verbose:
+                print("Generating background distribution for LR pair...")
+
+        res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
                                                                 'lr_sig_scores']
-            n_sigs = np.array([0]*len(lrs))
-            per_lr_results = {}
-            for group in lr_group_set:
-                # Determining common mid-point for each group #
-                group_bool = lr_groups==group
-                group_im = int(np.median(ims[group_bool, 0]))
+        n_, n_sigs = np.array([0]*len(lrs)), np.array([0]*len(lrs))
+        per_lr_results = {}
+        for group in lr_group_set:
+            # Determining common mid-point for each group #
+            group_bool = lr_groups==group
+            group_im = int(np.median(ims[group_bool, 0]))
 
-                # Calculating the background #
-                rand_pairs = get_rand_pairs(adata, genes, n_pairs,
+            # Calculating the background #
+            rand_pairs = get_rand_pairs(adata, genes, n_pairs,
                                                            lrs=lrs, im=group_im)
-                background = get_lrs_scores(adata, rand_pairs, neighbours,
+            background = get_lrs_scores(adata, rand_pairs, neighbours,
                                            het_vals, filter_pairs=False).ravel()
+            total_bg = len(background)
+            background = background[background!=0] #Filtering for increase speed
 
-                # Getting stats for each lr in group #
-                group_lr_indices = np.where(group_bool)[0]
-                for lr_i in group_lr_indices:
-                    lr_ = lrs[lr_i]
-                    lr_results = pd.DataFrame(index=adata.obs_names,
+            # Getting stats for each lr in group #
+            group_lr_indices = np.where(group_bool)[0]
+            for lr_i in group_lr_indices:
+                lr_ = lrs[lr_i]
+                lr_results = pd.DataFrame(index=adata.obs_names,
                                                                columns=res_info)
-                    scores = lr_scores[:, lr_i]
-                    stats = get_stats(scores, background, neg_binom, adj_method)
-                    full_stats = [scores]+list(stats)
-                    for vals, colname in zip(full_stats, res_info):
-                        lr_results[colname] = vals
+                scores = lr_scores[:, lr_i]
+                stats = get_stats(scores, background, total_bg, neg_binom, adj_method)
+                full_stats = [scores]+list(stats)
+                for vals, colname in zip(full_stats, res_info):
+                    lr_results[colname] = vals
 
-                    n_sigs[lr_i] = len(np.where(lr_results['p_adj'].values<0.05)[0])
-                    if n_sigs[lr_i] > 1:
-                        per_lr_results[lr_] = lr_results
+                n_[lr_i] = len(np.where(scores>0)[0])
+                n_sigs[lr_i] = len(np.where(lr_results['p_adj'].values<0.05)[0])
+                if n_sigs[lr_i] > 1:
+                    per_lr_results[lr_] = lr_results
 
-            lr_summary = pd.DataFrame(index=lrs, columns=['n_spots_sig'])
-            lr_summary['n_spots_sig'] = n_sigs
+        print(f"{len(per_lr_results)} LR pairs with significant interactions.")
 
-            print(f"{len(per_lr_results)} LR pairs with significant interactions.")
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots', 'n_spots_sig'])
+        lr_summary['n_spots'] = n_
+        lr_summary['n_spots_sig'] = n_sigs
+        lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
 
-            return lr_summary, per_lr_results
+    else: #Simply stored the scores
+        per_lr_results = {}
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots'])
+        for i, lr_ in enumerate(lrs):
+            lr_results = pd.DataFrame(index=adata.obs_names,
+                                                          columns=['lr_scores'])
+            lr_results['lr_scores'] = lr_scores[:, i]
+            per_lr_results[lr_] = lr_results
+            lr_summary.loc[lr_, 0] = len(np.where(lr_scores[:, i]>0)[0])
+        lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:,0]),:]
 
-def get_lrs_scores(adata, lrs, neighbours, het_vals, filter_pairs=True):
+    adata.uns['lr_summary'] = lr_summary
+    adata.uns['per_lr_results'] = per_lr_results
+    if verbose:
+        print("Summary of significant spots for each lr pair in adata.uns['lr_summary'].")
+        print("Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']")
+
+def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
+                   het_vals: np.array, filter_pairs: bool = True
+                   ):
+    """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
+    Parameters
+    ----------
+    adata: AnnData   See run() doc-string.
+    lrs: np.array    See run() doc-string.
+    neighbours: np.array    Array of arrays with indices specifying neighbours of each spot.
+    het_vals: np.array      Cell heterogeneity counts per spot.
+    filter_pairs: bool      Whether to filter to valid pairs or not.
+    Returns
+    -------
+    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    """
     spot_lr1s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=True,
                                                       filter_pairs=filter_pairs)
     spot_lr2s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=False,
@@ -146,15 +183,15 @@ def get_lrs_scores(adata, lrs, neighbours, het_vals, filter_pairs=True):
         return lr_scores
 
 def load_lrs(names: str) -> np.array:
-    """
-            Parameters
-            ----------
-            names: str   Databases to load, options: \
-                        'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
-                        If more than one specified, loads all & removes duplicates.
-            Returns
-            -------
-            lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates.
+    Parameters
+    ----------
+    names: str   Databases to load, options: \
+                'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
+                If more than one specified, loads all & removes duplicates.
+    Returns
+    -------
+    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
     path = os.path.dirname(os.path.realpath(__file__))
     dbs = [pd.read_csv(f'{path}/databases/{name}.txt', sep='\t')

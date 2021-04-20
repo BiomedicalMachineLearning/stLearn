@@ -1,7 +1,7 @@
 import sys, os, random, scipy
 import numpy as np
-from numba import jit, njit, float64, int64, prange
-import pandas as pd
+from numba import njit, prange
+from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
 
@@ -123,7 +123,21 @@ def permutation(
     # return adata
     return background
 
-def get_stats(scores, background, neg_binom=False, adj_method='fdr'):
+def get_stats(scores: np.array, background: np.array, total_bg: int,
+              neg_binom: bool = False, adj_method: str = 'fdr_bh'
+              ):
+    """Retrieves valid candidate genes to be used for random gene pairs.
+    Parameters
+    ----------
+    scores: np.array        Per spot scores for a particular LR pair.
+    background: np.array    Background distribution for non-zero scores.
+    total_bg: int           Total number of background values calculated.
+    neg_binom: bool         Whether to use neg-binomial distribution to estimate p-values, NOT appropriate with log1p data, alternative is to use background distribution itself (recommend higher number of n_pairs for this).
+    adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
+    Returns
+    -------
+    stats: tuple          Per spot pvalues, pvals_adj, log10_pvals_adj, lr_sign (the LR scores for significant spots).
+    """
     ##### Negative Binomial fit - dosn't make sense, distribution not neg binom
     if neg_binom:
         pmin, pmax = min(background), max(background)
@@ -143,7 +157,8 @@ def get_stats(scores, background, neg_binom=False, adj_method='fdr'):
         pvals = 1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob)
 
     else:  ###### Using the actual values to estimate p-values
-        pvals = np.array([len(np.where(background >= score)[0])/len(background)
+        pvals = np.array([len(np.where(background >= score)[0])/total_bg
+                          if score!= 0 else (total_bg-len(background))/total_bg
                                                            for score in scores])
 
     pvals_adj = multipletests(pvals, method=adj_method)[1]
@@ -151,7 +166,24 @@ def get_stats(scores, background, neg_binom=False, adj_method='fdr'):
     lr_sign = scores * (pvals_adj < 0.05)
     return pvals, pvals_adj, log10_pvals_adj, lr_sign
 
-def get_valid_genes(adata, n_pairs):
+# @njit(parallel=True)
+# def perm_pvals(scores, background):
+#     """Determines the p-values based on the actual observed frequency of the \
+#         indicated score or greater in the background.
+#     """
+#     pvals = np.zeros((1, len(scores)), np.float64)[0,:]
+#     for i in prange(len(pvals)):
+
+def get_valid_genes(adata: AnnData, n_pairs: int) -> np.array:
+    """Retrieves valid candidate genes to be used for random gene pairs.
+    Parameters
+    ----------
+    adata: AnnData          The data object including the cell types to count
+    n_pairs: int            The number of random pairs will generate elsewhere.
+    Returns
+    -------
+    genes: np.array          List of genes which could be valid pairs.
+    """
     genes = np.array([
         item
         for item in adata.var_names.tolist()
@@ -245,7 +277,7 @@ def get_median_index(l, r, means_ordered, genes_ordered):
 def get_scores(
         spot_lr1s: np.ndarray,
         spot_lr2s: np.ndarray,
-        neighbours: np.array,
+        neighbours: List,
         het_vals: np.array,
 ) -> np.array:
     """Permutation test for merged result
@@ -254,7 +286,7 @@ def get_scores(
     spot_lr1s: np.ndarray   Spots*GeneOrder1, in format l1, r1, ... ln, rn
     spot_lr2s: np.ndarray   Spots*GeneOrder2, in format r1, l1, ... rn, ln
     het_vals:  np.ndarray   Spots*Het counts
-    neighbours: list        List of the neighbours for each spot, if None then computed. Useful for speeding up function.
+    neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
     Returns
     -------
     spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
