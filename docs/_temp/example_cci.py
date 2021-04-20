@@ -26,7 +26,7 @@ st.pl.cluster_plot(data, use_label="predictions")
 ################################################################################
                 # Performing cci analysis #
 ################################################################################
-# Load the NATMI literature-curated database of LR pairs #
+# Load the NATMI literature-curated database of LR pairs, human formatted #
 lrs = st.tl.cci.load_lrs(['connectomeDB2020_lit'])
 
 st.tl.cci.run(data, lrs,
@@ -64,7 +64,7 @@ if 'cell_het' in data.obsm:
     plt.show()
 
 # Now looking at the LR pair with the highest number of sig. spots #
-best_lr = data.uns['lr_summary'].index.values[10]
+best_lr = data.uns['lr_summary'].index.values[4]
 # LR enrichment scores
 data.obsm[f'{best_lr}_scores'] = data.uns['per_lr_results'][best_lr].loc[:,
                                                              'lr_scores'].values
