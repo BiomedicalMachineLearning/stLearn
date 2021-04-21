@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import pandas as pd
 from PIL import Image
 from bokeh.plotting import (
     figure,
@@ -28,11 +29,13 @@ from bokeh.models import (
     CheckboxGroup,
     Arrow,
     VeeHead,
+    Button,
 )
 
+from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
 from anndata import AnnData
-from bokeh.palettes import Spectral11
-from bokeh.layouts import column, row
+from bokeh.palettes import Spectral11, Category20
+from bokeh.layouts import column, row, grid
 from collections import OrderedDict
 from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
@@ -522,3 +525,180 @@ class BokehCciPlot(Spatial):
         colors = self.adata[0].obsm[het]
 
         return colors
+
+
+class Annotate(Spatial):
+    def __init__(
+        self,
+        # plotting param
+        adata: AnnData,
+    ):
+        super().__init__(adata)
+        # Open image, and make sure it's RGB*A*
+        image = (self.img * 255).astype(np.uint8)
+
+        img_pillow = Image.fromarray(image).convert("RGBA")
+
+        self.xdim, self.ydim = img_pillow.size
+
+        # Create an array representation for the image `img`, and an 8-bit "4
+        # layer/RGBA" version of it `view`.
+        self.image = np.empty((self.ydim, self.xdim), dtype=np.uint32)
+        view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
+        # Copy the RGBA image into view, flipping it so it comes right-side up
+        # with a lower-left origin
+        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+
+        # Display the 32-bit RGBA image
+        self.dim = max(self.xdim, self.ydim)
+
+        self.data_alpha = Slider(
+            title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
+        )
+
+        self.tissue_alpha = Slider(
+            title="Tissue alpha", value=1.0, start=0, end=1.0, step=0.1
+        )
+
+        self.spot_size = Slider(
+            title="Spot size", value=5.0, start=0, end=5.0, step=1.0
+        )
+
+        self.checkbox_group = CheckboxGroup(
+            labels=["Show spatial trajectories"], active=[]
+        )
+
+        inputs = column(
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+        )
+        self.layout = row(inputs, self.make_fig())
+
+        def modify_fig(doc):
+            doc.add_root(row(self.layout, width=800))
+            self.data_alpha.on_change("value", self.update_data)
+            self.tissue_alpha.on_change("value", self.update_data)
+            self.spot_size.on_change("value", self.update_data)
+
+        handler = FunctionHandler(modify_fig)
+        self.app = Application(handler)
+
+    def update_data(self, attrname, old, new):
+        self.layout.children[1] = self.make_fig()
+
+    def make_fig(self):
+        fig = figure(
+            x_range=(0, self.dim - 150),
+            y_range=(self.dim, 0),
+            tools=["lasso_select", "undo", "redo", "reset", "save"],
+        )
+
+        colors = np.repeat("black", len(self.imagecol))
+        adding_colors = np.array(Category20[20])[
+            list(sorted(list(range(0, 20)), key=lambda x: [x % 2, x]))
+        ]
+        s1 = ColumnDataSource(
+            data=dict(x=self.imagecol, y=self.imagerow, colors=colors)
+        )
+
+        fig.image_rgba(
+            image=[self.image],
+            x=0,
+            y=self.xdim,
+            dw=self.ydim,
+            dh=self.xdim,
+            global_alpha=self.tissue_alpha.value,
+        )
+
+        fig.circle(
+            "x",
+            "y",
+            size=self.spot_size.value,
+            color="colors",
+            source=s1,
+            fill_alpha=self.data_alpha.value,
+            line_alpha=self.data_alpha.value,
+        )
+
+        self.s2 = ColumnDataSource(data=dict(spot=[], label=[]))
+        columns = [
+            TableColumn(field="spot", title="Spots"),
+            TableColumn(field="label", title="Labels"),
+        ]
+        table = DataTable(
+            source=self.s2,
+            columns=columns,
+            width=400,
+            height=600,
+            reorderable=False,
+            editable=True,
+        )
+
+        color_index = ColumnDataSource(data=dict(index=[0]))
+        savebutton = Button(label="Add new group", button_type="success", width=200)
+        savebutton.js_on_click(
+            CustomJS(
+                args=dict(
+                    source_data=s1,
+                    source_data_2=self.s2,
+                    adding_colors=adding_colors,
+                    color_index=color_index,
+                    table=table,
+                ),
+                code="""
+
+                function addRowToAccumulator(accumulator, spots, labels, index) {
+                    accumulator['spot'][index] = spots;
+                    accumulator['label'][index] = labels;
+
+                    return accumulator;
+                }
+
+                var inds = source_data.selected.indices;
+                var data = source_data.data;
+                var add_color = adding_colors
+                var colors = source_data.data.colors
+                var i = 0;
+                for (i; i < inds.length; i++) {
+                    colors[inds[i]] = add_color[color_index.data.index[0]]
+                }
+
+                source_data.change.emit();
+
+                var new_data =  source_data_2.data;
+
+                new_data = addRowToAccumulator(new_data,inds,color_index.data.index[0].toString(),color_index.data.index[0])
+
+                source_data_2.data = new_data
+
+                source_data_2.change.emit();
+                color_index.data.index[0] += 1
+                color_index.change.emit();
+                """,
+            )
+        )
+        submitbutton = Button(label="Submit", button_type="success", width=200)
+
+        def change_click():
+            self.adata[0].uns["annotation"] = self.s2.to_df()
+            empty_array = np.empty(len(self.adata[0]))
+            empty_array[:] = np.NaN
+            empty_array = empty_array.astype(object)
+            for i in range(0, len(self.adata[0].uns["annotation"])):
+                empty_array[
+                    [np.array(self.adata[0].uns["annotation"]["spot"][i])]
+                ] = str(self.adata[0].uns["annotation"]["label"][i])
+            self.adata[0].obs["annotation"] = pd.Categorical(empty_array)
+
+        submitbutton.on_click(change_click)
+        submitbutton.js_on_click(
+            CustomJS(
+                args={},
+                code='alert("The annotated labels stored in adata.obs.annotation")',
+            )
+        )
+
+        layout = grid([fig, table, savebutton, submitbutton], ncols=3)
+
+        return layout
