@@ -5,6 +5,7 @@
 import os
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
@@ -39,6 +40,11 @@ def run(adata: AnnData, lrs: np.array,
     """
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
+    adata.uns['spot_neighbours'] = pd.DataFrame([','.join(x.astype(str))
+                                                           for x in neighbours],
+                           index=adata.obs_names, columns=['neighbour_indices'])
+    if verbose:
+        print("Spot neighbour indices stored in adata.uns['spot_neighbours']")
 
     # Conduct with cell heterogeneity info if label_transfer provided #
     cell_het = type(use_label) != type(None) and use_label in adata.uns.keys()
@@ -86,47 +92,52 @@ def run(adata: AnnData, lrs: np.array,
             lr_group_set = np.unique(lr_groups)
             if verbose:
                 print(f'{len(lr_group_set)} lr groups with similar expression levels.')
-                print('Generating background for each group, may take a while...')
 
         else: #Single LR pair mode, generate background for the LR.
             lr_groups = np.array([0])
             lr_group_set = lr_groups
-            if verbose:
-                print("Generating background distribution for LR pair...")
 
         res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
                                                                 'lr_sig_scores']
         n_, n_sigs = np.array([0]*len(lrs)), np.array([0]*len(lrs))
         per_lr_results = {}
-        for group in lr_group_set:
-            # Determining common mid-point for each group #
-            group_bool = lr_groups==group
-            group_im = int(np.median(ims[group_bool, 0]))
+        with tqdm(
+                total=len(lr_group_set),
+                desc="Generating background distributions for the LR pair groups..",
+                bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        ) as pbar:
+            for group in lr_group_set:
+                # Determining common mid-point for each group #
+                group_bool = lr_groups==group
+                group_im = int(np.median(ims[group_bool, 0]))
 
-            # Calculating the background #
-            rand_pairs = get_rand_pairs(adata, genes, n_pairs,
+                # Calculating the background #
+                rand_pairs = get_rand_pairs(adata, genes, n_pairs,
                                                            lrs=lrs, im=group_im)
-            background = get_lrs_scores(adata, rand_pairs, neighbours,
+                background = get_lrs_scores(adata, rand_pairs, neighbours,
                                            het_vals, filter_pairs=False).ravel()
-            total_bg = len(background)
-            background = background[background!=0] #Filtering for increase speed
+                total_bg = len(background)
+                background = background[background!=0] #Filtering for increase speed
 
-            # Getting stats for each lr in group #
-            group_lr_indices = np.where(group_bool)[0]
-            for lr_i in group_lr_indices:
-                lr_ = lrs[lr_i]
-                lr_results = pd.DataFrame(index=adata.obs_names,
+                # Getting stats for each lr in group #
+                group_lr_indices = np.where(group_bool)[0]
+                for lr_i in group_lr_indices:
+                    lr_ = lrs[lr_i]
+                    lr_results = pd.DataFrame(index=adata.obs_names,
                                                                columns=res_info)
-                scores = lr_scores[:, lr_i]
-                stats = get_stats(scores, background, total_bg, neg_binom, adj_method)
-                full_stats = [scores]+list(stats)
-                for vals, colname in zip(full_stats, res_info):
-                    lr_results[colname] = vals
+                    scores = lr_scores[:, lr_i]
+                    stats = get_stats(scores, background, total_bg, neg_binom,
+                                                                     adj_method)
+                    full_stats = [scores]+list(stats)
+                    for vals, colname in zip(full_stats, res_info):
+                        lr_results[colname] = vals
 
-                n_[lr_i] = len(np.where(scores>0)[0])
-                n_sigs[lr_i] = len(np.where(lr_results['p_adj'].values<0.05)[0])
-                if n_sigs[lr_i] > 1:
-                    per_lr_results[lr_] = lr_results
+                    n_[lr_i] = len(np.where(scores>0)[0])
+                    n_sigs[lr_i] = len(np.where(
+                                            lr_results['p_adj'].values<0.05)[0])
+                    if n_sigs[lr_i] > 1:
+                        per_lr_results[lr_] = lr_results
+                pbar.update(1)
 
         print(f"{len(per_lr_results)} LR pairs with significant interactions.")
 
