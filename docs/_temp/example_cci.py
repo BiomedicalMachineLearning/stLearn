@@ -64,7 +64,7 @@ if 'cell_het' in data.obsm:
     plt.show()
 
 # Now looking at the LR pair with the highest number of sig. spots #
-best_lr = data.uns['lr_summary'].index.values[1]
+best_lr = data.uns['lr_summary'].index.values[0]
 # LR enrichment scores
 data.obsm[f'{best_lr}_scores'] = data.uns['per_lr_results'][best_lr].loc[:,
                                                              'lr_scores'].values

@@ -188,9 +188,11 @@ def lr_core(spot_lr1: np.ndarray,
     # Calculating mean of lr2 expressions from neighbours of each spot
     nb_lr2 = np.zeros(spot_lr2.shape, np.float64)
     for i in range(spot_lr2.shape[0]):
-        #if len(neighbours[i]) > 0: # if neighbour exists
         nb_expr = spot_lr2[neighbours[i], :]
-        nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
+        if nb_expr.shape[0] != 0: #Accounting for no neighbours
+            nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
+        else:
+            nb_expr_mean = nb_expr.sum(axis=0)
         nb_lr2[i, :] = nb_expr_mean
 
     scores = spot_lr1 * (nb_lr2 > 0) + (spot_lr1 > 0) * nb_lr2

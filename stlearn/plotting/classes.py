@@ -39,11 +39,13 @@ class SpatialBasePlot(Spatial):
         cmap: Optional[str] = "Spectral_r",
         use_label: Optional[str] = None,
         list_clusters: Optional[list] = None,
-        ax: Optional[_AxesSubplot] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
         show_plot: Optional[bool] = True,
         show_axis: Optional[bool] = False,
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
+        color_bar_label: Optional[str] = "",
         crop: Optional[bool] = True,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
@@ -99,12 +101,18 @@ class SpatialBasePlot(Spatial):
         scanpy_cmap = ["vega_10_scanpy", "vega_20_scanpy", "default_102", "default_28"]
         stlearn_cmap = ["jana_40", "default"]
         cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
-        assert cmap in cmap_available, "cmap should be one of these colors: " + str(
-            cmap_available
-        )
+        error_msg = "cmap must be a matplotlib.colors.LinearSegmentedColormap OR" \
+                    "one of these: "+str(cmap_available)
+        if type(cmap) == str:
+            assert cmap in cmap_available, error_msg
+        elif type(cmap) != matplotlib.colors.LinearSegmentedColormap:
+            raise Exception(error_msg)
         self.cmap = cmap
 
-        self.fig, self.ax = self._generate_frame()
+        if type(fig) == type(None) and type(ax) == type(None):
+            self.fig, self.ax = self._generate_frame()
+        else:
+            self.fig, self.ax = fig, ax
 
         if show_axis == False:
             self._remove_axis(self.ax)
@@ -145,9 +153,10 @@ class SpatialBasePlot(Spatial):
             zorder=-1,
         )
 
-    def _plot_colorbar(self, plot_ax: Axes):
+    def _plot_colorbar(self, plot_ax: Axes, color_bar_label: str = ""):
 
-        cb = plt.colorbar(plot_ax, aspect=10, shrink=0.5, cmap=self.cmap)
+        cb = plt.colorbar(plot_ax, aspect=10, shrink=0.5, cmap=self.cmap,
+                                                          label=color_bar_label)
         cb.outline.set_visible(False)
 
     def _remove_axis(self, main_ax: Axes):
@@ -161,8 +170,9 @@ class SpatialBasePlot(Spatial):
 
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
-    def _add_color_bar(self, plot):
-        cb = plt.colorbar(plot, aspect=10, shrink=0.5, cmap=self.cmap)
+    def _add_color_bar(self, plot, color_bar_label: str = ""):
+        cb = plt.colorbar(plot, aspect=10, shrink=0.5, cmap=self.cmap,
+                                                          label=color_bar_label)
         cb.outline.set_visible(False)
 
     def _add_title(self):
@@ -203,11 +213,13 @@ class GenePlot(SpatialBasePlot):
         cmap: Optional[str] = "Spectral_r",
         use_label: Optional[str] = None,
         list_clusters: Optional[list] = None,
-        ax: Optional[_AxesSubplot] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
         show_plot: Optional[bool] = True,
         show_axis: Optional[bool] = False,
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
+        color_bar_label: Optional[str] = "",
         crop: Optional[bool] = True,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
@@ -232,6 +244,7 @@ class GenePlot(SpatialBasePlot):
             use_label=use_label,
             list_clusters=list_clusters,
             ax=ax,
+            fig=fig,
             show_plot=show_plot,
             show_axis=show_axis,
             show_image=show_image,
@@ -276,7 +289,7 @@ class GenePlot(SpatialBasePlot):
             plot = self._plot_genes(gene_values[self.available_ids])
 
         if show_color_bar:
-            self._add_color_bar(plot)
+            self._add_color_bar(plot, color_bar_label=color_bar_label)
 
         if crop:
             self._crop_image(self.ax, margin)
@@ -347,7 +360,7 @@ class GenePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap),
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
             c=gene_values,
         )
         return plot
@@ -377,7 +390,7 @@ class GenePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap),
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
@@ -406,7 +419,8 @@ class ClusterPlot(SpatialBasePlot):
         cmap: Optional[str] = "default",
         use_label: Optional[str] = None,
         list_clusters: Optional[list] = None,
-        ax: Optional[_AxesSubplot] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
         show_plot: Optional[bool] = True,
         show_axis: Optional[bool] = False,
         show_image: Optional[bool] = True,
@@ -437,6 +451,7 @@ class ClusterPlot(SpatialBasePlot):
             use_label=use_label,
             list_clusters=list_clusters,
             ax=ax,
+            fig=fig,
             show_plot=show_plot,
             show_axis=show_axis,
             show_image=show_image,
@@ -531,9 +546,12 @@ class ClusterPlot(SpatialBasePlot):
             cmap = palettes_st.jana_40
         elif cmap == "default":
             cmap = palettes_st.default
-        else:
+        elif type(cmap) == str: #If refers to matplotlib cmap
             self.cmap_n = plt.get_cmap(cmap).N
             return plt.get_cmap(cmap)
+        elif type(cmap) == matplotlib.colors.LinearSegmentedColormap: #already cmap
+            self.cmap_n = cmap.N
+            return cmap
 
         self.cmap_n = len(cmap)
         cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
@@ -775,7 +793,8 @@ class SubClusterPlot(SpatialBasePlot):
         cmap: Optional[str] = "jet",
         use_label: Optional[str] = None,
         list_clusters: Optional[list] = None,
-        ax: Optional[_AxesSubplot] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
         show_plot: Optional[bool] = True,
         show_axis: Optional[bool] = False,
         show_image: Optional[bool] = True,
@@ -801,6 +820,7 @@ class SubClusterPlot(SpatialBasePlot):
             use_label=use_label,
             list_clusters=list_clusters,
             ax=ax,
+            fig=fig,
             show_plot=show_plot,
             show_axis=show_axis,
             show_image=show_image,
@@ -848,7 +868,7 @@ class SubClusterPlot(SpatialBasePlot):
             edgecolor="none",
             s=self.size,
             marker="o",
-            cmap=plt.get_cmap(self.cmap),
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
             c=colors,
             alpha=self.cell_alpha,
         )
@@ -939,7 +959,8 @@ class CciPlot(GenePlot):
         cmap: Optional[str] = "Spectral_r",
         use_label: Optional[str] = None,
         list_clusters: Optional[list] = None,
-        ax: Optional[_AxesSubplot] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
         show_plot: Optional[bool] = True,
         show_axis: Optional[bool] = False,
         show_image: Optional[bool] = True,
@@ -966,6 +987,7 @@ class CciPlot(GenePlot):
             use_label=use_label,
             list_clusters=list_clusters,
             ax=ax,
+            fig=fig,
             show_plot=show_plot,
             show_axis=show_axis,
             show_image=show_image,

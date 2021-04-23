@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from numba import njit, prange
 from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_spot_lrs, calc_distance
@@ -16,9 +17,10 @@ from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
 
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
-        distance: int = 0, n_pairs: int = 0, neg_binom: bool = False,
-        adj_method: str = 'fdr_bh', lr_mid_dist: int = 200,
-        min_spots: int = 5, verbose: bool = True,
+        distance: int = 0, n_pairs: int = 1000, neg_binom: bool = False,
+        adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.01,
+        lr_mid_dist: int = 150, min_spots: int = 5, min_expr: float = 0.5,
+        verbose: bool = True,
         ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
         on the inputted data / state of the anndata object.
@@ -34,6 +36,7 @@ def run(adata: AnnData, lrs: np.array,
     adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
     lr_mid_dist: int        The distance between the mid-points of the average expression of the two genes in an LR pair for it to be group with other pairs via AgglomerativeClustering to generate a common background distribution.
     min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
+    min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
     Returns
     -------
     adata: AnnData          Relevant information stored: adata.uns['het'], adata.uns['lr_summary'], & data.uns['per_lr_results'].
@@ -64,7 +67,7 @@ def run(adata: AnnData, lrs: np.array,
           4. Calc. p-values for each lr relative to bg. 
     """
     # Calculating the lr_scores across spots for the inputted lrs #
-    lr_scores, lrs = get_lrs_scores(adata, lrs, neighbours, het_vals)
+    lr_scores, lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, min_expr)
     lr_bool = (lr_scores>0).sum(axis=0) > min_spots
     lrs = lrs[lr_bool]
     lr_scores = lr_scores[:, lr_bool]
@@ -115,7 +118,8 @@ def run(adata: AnnData, lrs: np.array,
                 rand_pairs = get_rand_pairs(adata, genes, n_pairs,
                                                            lrs=lrs, im=group_im)
                 background = get_lrs_scores(adata, rand_pairs, neighbours,
-                                           het_vals, filter_pairs=False).ravel()
+                                            het_vals, min_expr,
+                                                     filter_pairs=False).ravel()
                 total_bg = len(background)
                 background = background[background!=0] #Filtering for increase speed
 
@@ -127,7 +131,7 @@ def run(adata: AnnData, lrs: np.array,
                                                                columns=res_info)
                     scores = lr_scores[:, lr_i]
                     stats = get_stats(scores, background, total_bg, neg_binom,
-                                                                     adj_method)
+                                    adj_method, pval_adj_cutoff=pval_adj_cutoff)
                     full_stats = [scores]+list(stats)
                     for vals, colname in zip(full_stats, res_info):
                         lr_results[colname] = vals
@@ -135,7 +139,7 @@ def run(adata: AnnData, lrs: np.array,
                     n_[lr_i] = len(np.where(scores>0)[0])
                     n_sigs[lr_i] = len(np.where(
                                             lr_results['p_adj'].values<0.05)[0])
-                    if n_sigs[lr_i] > 1:
+                    if n_sigs[lr_i] > 0:
                         per_lr_results[lr_] = lr_results
                 pbar.update(1)
 
@@ -164,7 +168,8 @@ def run(adata: AnnData, lrs: np.array,
         print("Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']")
 
 def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
-                   het_vals: np.array, filter_pairs: bool = True
+                   het_vals: np.array, min_expr: float,
+                   filter_pairs: bool = True
                    ):
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
@@ -173,6 +178,7 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
     lrs: np.array    See run() doc-string.
     neighbours: np.array    Array of arrays with indices specifying neighbours of each spot.
     het_vals: np.array      Cell heterogeneity counts per spot.
+    min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
     filter_pairs: bool      Whether to filter to valid pairs or not.
     Returns
     -------
@@ -182,16 +188,44 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
                                                       filter_pairs=filter_pairs)
     spot_lr2s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=False,
                                                       filter_pairs=filter_pairs)
-
-    # Calculating the lr_scores across spots for the inputted lrs #
-    lr_scores = get_scores(spot_lr1s.values, spot_lr2s.values,
-                           neighbours, het_vals)
     if filter_pairs:
         lrs = np.array(['_'.join(spot_lr1s.columns.values[i:i + 2])
                         for i in range(0, spot_lr1s.shape[1], 2)])
+
+    # Calculating the expression filter to make sure low expression spots filtered
+    ls = np.array([lr.split('_')[0] for lr in lrs])
+    rs = np.array([lr.split('_')[1] for lr in lrs])
+    lrs_ = np.array(list(ls)+list(rs))
+    lr_df = adata.to_df().loc[:, lrs_]
+    lr_indices = np.array([
+                            [np.where(lr_df.columns.values==ls[i])[0][0],
+                             np.where(lr_df.columns.values==rs[i])[0][0]]
+                                                       for i in range(len(ls))])
+    expr_filter = calc_expr_filter(lr_df.values, lr_indices, min_expr)
+
+    # Calculating the lr_scores across spots for the inputted lrs #
+    lr_scores = get_scores(spot_lr1s.values, spot_lr2s.values,
+                           neighbours, het_vals, expr_filter)
+
+    if filter_pairs:
         return lr_scores, lrs
     else:
         return lr_scores
+
+@njit(parallel=True)
+def calc_expr_filter(lr_expr: np.array, lr_indices: np.array, min_expr: float):
+    # Determining spots to filter scores if insignificantly express L or R #
+    expr_filter = np.zeros((lr_expr.shape[0], lr_indices.shape[0]),
+                                                                  dtype=np.int_)
+    for j in prange(expr_filter.shape[1]):
+        l_bool = lr_expr[:,lr_indices[j,0]] > min_expr
+        r_bool = lr_expr[:,lr_indices[j,1]] > min_expr
+        for i in range(expr_filter.shape[0]):
+            if l_bool[i] or r_bool[i]:
+                expr_filter[i, j] = 1
+            else:
+                expr_filter[i, j] = 0
+    return expr_filter
 
 def load_lrs(names: str) -> np.array:
     """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates.

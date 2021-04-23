@@ -124,7 +124,8 @@ def permutation(
     return background
 
 def get_stats(scores: np.array, background: np.array, total_bg: int,
-              neg_binom: bool = False, adj_method: str = 'fdr_bh'
+              neg_binom: bool = False, adj_method: str = 'fdr_bh',
+              pval_adj_cutoff: float = 0.01,
               ):
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
@@ -145,7 +146,7 @@ def get_stats(scores: np.array, background: np.array, total_bg: int,
         x = np.linspace(pmin, pmax, 1000)
         res = sm.NegativeBinomial(
             background2, np.ones(len(background2)), loglike_method="nb2"
-        ).fit(start_params=[0.1, 0.3])
+        ).fit(start_params=[0.1, 0.3], disp=0)
         mu = res.predict()  # use if not constant
         mu = np.exp(res.params[0])
         alpha = res.params[1]
@@ -163,7 +164,7 @@ def get_stats(scores: np.array, background: np.array, total_bg: int,
 
     pvals_adj = multipletests(pvals, method=adj_method)[1]
     log10_pvals_adj = -np.log10(pvals_adj)
-    lr_sign = scores * (pvals_adj < 0.05)
+    lr_sign = scores * (pvals_adj < pval_adj_cutoff)
     return pvals, pvals_adj, log10_pvals_adj, lr_sign
 
 # @njit(parallel=True)
@@ -279,6 +280,7 @@ def get_scores(
         spot_lr2s: np.ndarray,
         neighbours: List,
         het_vals: np.array,
+        expr_filter: np.ndarray,
 ) -> np.array:
     """Permutation test for merged result
     Parameters
@@ -287,6 +289,7 @@ def get_scores(
     spot_lr2s: np.ndarray   Spots*GeneOrder2, in format r1, l1, ... rn, ln
     het_vals:  np.ndarray   Spots*Het counts
     neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
+    expr_filter: np.ndarray   Spots*LR, 0 for spot that does not have valid expression for consideration, 1 for spot that does, for each LR.
     Returns
     -------
     spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
@@ -299,6 +302,7 @@ def get_scores(
         lr_scores = lr_core(spot_lr1, spot_lr2, neighbours)
         # The merge scores #
         lr_scores = np.multiply(het_vals, lr_scores)
+        lr_scores = np.multiply(expr_filter[:,i], lr_scores)
         spot_scores[:, i] = lr_scores
     return spot_scores
 
