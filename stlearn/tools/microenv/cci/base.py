@@ -46,7 +46,8 @@ def lr(
 
     # Calculating the scores, can have either the fast or the pandas version #
     if fast:
-        adata.obsm[use_lr] = lr_core(spot_lr1.values, spot_lr2.values, neighbours)
+        adata.obsm[use_lr] = lr_core(spot_lr1.values, spot_lr2.values,
+                                     neighbours, 0)
     else:
         adata.obsm[use_lr] = lr_pandas(spot_lr1, spot_lr2, neighbours)
 
@@ -140,7 +141,7 @@ def calc_neighbours(adata: AnnData,
     neighbours = []
     for i, spot in enumerate(adata.obs_names):
         if distance == 0:
-            neighbours.append([i if index else spot])
+            neighbours.append(np.array([i if index else spot]))
         else:
             n_index = point_tree.query_ball_point(
                 np.array(
@@ -173,7 +174,8 @@ def calc_neighbours(adata: AnnData,
 @njit
 def lr_core(spot_lr1: np.ndarray,
             spot_lr2: np.ndarray,
-            neighbours: tuple,
+            neighbours: List,
+            min_expr: float,
             ) -> np.ndarray:
     """Calculate the lr scores for each spot.
         Parameters
@@ -181,6 +183,7 @@ def lr_core(spot_lr1: np.ndarray,
         spot_lr1: np.ndarray          Spots*Ligands
         spot_lr2: np.ndarray          Spots*Receptors
         neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
+        min_expr: float               Minimum expression for gene to be considered expressed.
         Returns
         -------
         lr_scores: numpy.ndarray   Cells*LR-scores.
@@ -195,7 +198,7 @@ def lr_core(spot_lr1: np.ndarray,
             nb_expr_mean = nb_expr.sum(axis=0)
         nb_lr2[i, :] = nb_expr_mean
 
-    scores = spot_lr1 * (nb_lr2 > 0) + (spot_lr1 > 0) * nb_lr2
+    scores = spot_lr1 * (nb_lr2 > min_expr) + (spot_lr1 > min_expr) * nb_lr2
     spot_lr = scores.sum(axis=1)
     return spot_lr / 2
 

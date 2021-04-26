@@ -280,7 +280,7 @@ def get_scores(
         spot_lr2s: np.ndarray,
         neighbours: List,
         het_vals: np.array,
-        expr_filter: np.ndarray,
+        min_expr: float,
 ) -> np.array:
     """Permutation test for merged result
     Parameters
@@ -289,7 +289,7 @@ def get_scores(
     spot_lr2s: np.ndarray   Spots*GeneOrder2, in format r1, l1, ... rn, ln
     het_vals:  np.ndarray   Spots*Het counts
     neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
-    expr_filter: np.ndarray   Spots*LR, 0 for spot that does not have valid expression for consideration, 1 for spot that does, for each LR.
+    min_expr: float               Minimum expression for gene to be considered expressed.
     Returns
     -------
     spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
@@ -299,10 +299,9 @@ def get_scores(
     for i in prange(0, spot_lr1s.shape[1]//2):
         i_ = i*2 # equivalent to range(0, spot_lr1s.shape[1], 2)
         spot_lr1, spot_lr2 = spot_lr1s[:,i_:(i_+2)], spot_lr2s[:,i_:(i_+2)]
-        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours)
+        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr)
         # The merge scores #
         lr_scores = np.multiply(het_vals, lr_scores)
-        lr_scores = np.multiply(expr_filter[:,i], lr_scores)
         spot_scores[:, i] = lr_scores
     return spot_scores
 

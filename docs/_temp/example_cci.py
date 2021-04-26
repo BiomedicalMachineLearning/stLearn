@@ -30,24 +30,27 @@ st.pl.cluster_plot(data, use_label="predictions")
 lrs = st.tl.cci.load_lrs(['connectomeDB2020_lit'])
 
 st.tl.cci.run(data, lrs,
-              use_label = None, #Need to add the label transfer results to object first, above code puts into 'label_transfer'
-              use_het = 'cell_het', #Slot for cell het. results in adata.obsm, only if use_label
-              min_spots = 5, #Filter out any LR pairs with no scores for less than 5 spots
-              distance=40, #distance=0 for within-spot mode
-              n_pairs=200, #Number of random pairs to generate
-              adj_method='fdr_bh', #MHT correction method
-              lr_mid_dist = 200 #Controls how LR pairs grouped when creating bg distribs, higher number results in less groups
-                                #Recommended to re-run a few times with different values to ensure results robust to this parameter.
-              )
+                  use_label = None, #Need to add the label transfer results to object first, above code puts into 'label_transfer'
+                  use_het = 'cell_het', #Slot for cell het. results in adata.obsm, only if use_label specified
+                  min_spots = 6, #Filter out any LR pairs with no scores for less than 6 spots
+                  distance=0, #distance=0 for within-spot mode
+                  n_pairs=1000, #Number of random pairs to generate
+                  adj_method='fdr_bh', #MHT correction method
+                  lr_mid_dist = 150, #Controls how LR pairs grouped when creating bg distribs, higher number results in less groups
+                                    #Recommended to re-run a few times with different values to ensure results robust to this parameter.
+                  min_expr=0, #min expression for gene to be considered expressed.
+                  pval_adj_cutoff=.05,
+                  )
 """
 Example output:
 
 Calculating neighbours...
-3 spots with no neighbours, 6 median spot neighbours.
-Altogether 334 valid L-R pairs
-18 lr groups with similar expression levels.
-Generating background for each group, may take a while...
-334 LR pairs with significant interactions.
+0 spots with no neighbours, 1 median spot neighbours.
+Spot neighbour indices stored in adata.uns['spot_neighbours']
+Altogether 115 valid L-R pairs
+9 lr groups with similar expression levels.
+Generating background distributions for the LR pair groups..: 100%|██████████ [ time left: 00:00 ]
+28 LR pairs with significant interactions.
 Summary of significant spots for each lr pair in adata.uns['lr_summary'].
 Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']
 """

@@ -18,8 +18,8 @@ from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
         distance: int = 0, n_pairs: int = 1000, neg_binom: bool = False,
-        adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.01,
-        lr_mid_dist: int = 150, min_spots: int = 5, min_expr: float = 0.5,
+        adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
+        lr_mid_dist: int = 150, min_spots: int = 5, min_expr: float = 0,
         verbose: bool = True,
         ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
@@ -138,7 +138,7 @@ def run(adata: AnnData, lrs: np.array,
 
                     n_[lr_i] = len(np.where(scores>0)[0])
                     n_sigs[lr_i] = len(np.where(
-                                            lr_results['p_adj'].values<0.05)[0])
+                                 lr_results['p_adj'].values<pval_adj_cutoff)[0])
                     if n_sigs[lr_i] > 0:
                         per_lr_results[lr_] = lr_results
                 pbar.update(1)
@@ -150,7 +150,7 @@ def run(adata: AnnData, lrs: np.array,
         lr_summary['n_spots_sig'] = n_sigs
         lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
 
-    else: #Simply stored the scores
+    else: #Simply store the scores
         per_lr_results = {}
         lr_summary = pd.DataFrame(index=lrs, columns=['n_spots'])
         for i, lr_ in enumerate(lrs):
@@ -192,20 +192,9 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
         lrs = np.array(['_'.join(spot_lr1s.columns.values[i:i + 2])
                         for i in range(0, spot_lr1s.shape[1], 2)])
 
-    # Calculating the expression filter to make sure low expression spots filtered
-    ls = np.array([lr.split('_')[0] for lr in lrs])
-    rs = np.array([lr.split('_')[1] for lr in lrs])
-    lrs_ = np.array(list(ls)+list(rs))
-    lr_df = adata.to_df().loc[:, lrs_]
-    lr_indices = np.array([
-                            [np.where(lr_df.columns.values==ls[i])[0][0],
-                             np.where(lr_df.columns.values==rs[i])[0][0]]
-                                                       for i in range(len(ls))])
-    expr_filter = calc_expr_filter(lr_df.values, lr_indices, min_expr)
-
     # Calculating the lr_scores across spots for the inputted lrs #
     lr_scores = get_scores(spot_lr1s.values, spot_lr2s.values,
-                           neighbours, het_vals, expr_filter)
+                                                 neighbours, het_vals, min_expr)
 
     if filter_pairs:
         return lr_scores, lrs
