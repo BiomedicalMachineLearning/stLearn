@@ -159,7 +159,7 @@ def ReadSlideSeq(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
     library_id: str = None,
-    scale: float = 1.0,
+    scale: float = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
@@ -199,6 +199,10 @@ def ReadSlideSeq(
 
     adata.obs["index"] = meta["index"].values
 
+    if scale == None:
+        max_coor = np.max(meta[["x", "y"]].values)
+        scale = 2000 / max_coor
+
     adata.obs["imagecol"] = meta["x"].values * scale
     adata.obs["imagerow"] = meta["y"].values * scale
 
@@ -207,9 +211,9 @@ def ReadSlideSeq(
     max_size = int(max_size + 0.1 * max_size)
 
     if background_color == "black":
-        image = Image.new("RGB", (max_size, max_size), (0, 0, 0))
+        image = Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
     else:
-        image = Image.new("RGB", (max_size, max_size), (255, 255, 255))
+        image = Image.new("RGBA", (max_size, max_size), (255, 255, 255, 255))
     imgarr = np.array(image)
 
     if library_id is None:
@@ -228,7 +232,7 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
-    adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
+    adata.obsm["spatial"] = meta[["x", "y"]].values
 
     return adata
 
@@ -237,7 +241,7 @@ def ReadMERFISH(
     count_matrix_file: Union[str, Path],
     spatial_file: Union[str, Path],
     library_id: str = None,
-    scale: float = 1,
+    scale: float = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
@@ -277,6 +281,11 @@ def ReadMERFISH(
 
     adata_merfish = counts[coordinates.index, :]
     adata_merfish.obsm["spatial"] = coordinates.to_numpy()
+
+    if scale == None:
+        max_coor = np.max(adata_merfish.obsm["spatial"])
+        scale = 2000 / max_coor
+
     adata_merfish.obs["imagecol"] = adata_merfish.obsm["spatial"][:, 0] * scale
     adata_merfish.obs["imagerow"] = adata_merfish.obsm["spatial"][:, 1] * scale
 
@@ -286,9 +295,9 @@ def ReadMERFISH(
     )
     max_size = int(max_size + 0.1 * max_size)
     if background_color == "black":
-        image = Image.new("RGB", (max_size, max_size), (0, 0, 0))
+        image = Image.new("RGB", (max_size, max_size), (0, 0, 0, 0))
     else:
-        image = Image.new("RGB", (max_size, max_size), (255, 255, 255))
+        image = Image.new("RGB", (max_size, max_size), (255, 255, 255, 255))
     imgarr = np.array(image)
 
     if library_id is None:
@@ -359,17 +368,23 @@ def ReadSeqFish(
 
     adata = AnnData(count)
 
+    if scale == None:
+        max_coor = np.max(spatial[["X", "Y"]])
+        scale = 2000 / max_coor
+
     adata.obs["imagecol"] = spatial["X"].values * scale
     adata.obs["imagerow"] = spatial["Y"].values * scale
+
+    adata.obsm["spatial"] = spatial[["X", "Y"]].values
 
     # Create image
     max_size = np.max([adata.obs["imagecol"].max(), adata.obs["imagerow"].max()])
     max_size = int(max_size + 0.1 * max_size)
 
     if background_color == "black":
-        image = Image.new("RGB", (max_size, max_size), (0, 0, 0))
+        image = Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
     else:
-        image = Image.new("RGB", (max_size, max_size), (255, 255, 255))
+        image = Image.new("RGBA", (max_size, max_size), (255, 255, 255, 255))
     imgarr = np.array(image)
 
     if library_id is None:
@@ -387,7 +402,6 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
-    adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
     return adata
 
@@ -397,7 +411,7 @@ def create_stlearn(
     spatial: pd.DataFrame,
     library_id: str,
     image_path: Optional[Path] = None,
-    scale: float = 1.0,
+    scale: float = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
@@ -428,6 +442,11 @@ def create_stlearn(
     adata = AnnData(X=count)
 
     adata.obsm["spatial"] = spatial.values
+
+    if scale == None:
+        max_coor = np.max(adata.obsm["spatial"])
+        scale = 2000 / max_coor
+
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
@@ -445,9 +464,9 @@ def create_stlearn(
         max_size = int(max_size + 0.1 * max_size)
 
         if background_color == "black":
-            image = Image.new("RGB", (max_size, max_size), (0, 0, 0))
+            image = Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
         else:
-            image = Image.new("RGB", (max_size, max_size), (255, 255, 255))
+            image = Image.new("RGBA", (max_size, max_size), (255, 255, 255, 255))
         imgarr = np.array(image)
 
         # Create spatial dictionary
