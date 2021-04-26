@@ -65,6 +65,7 @@ def image(
                     "spot_diameter_fullres"
                 ] = spot_diameter_fullres
                 adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
+                adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
 
             print("Added tissue image to the object!")
 
