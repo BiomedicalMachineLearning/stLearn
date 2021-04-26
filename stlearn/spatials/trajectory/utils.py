@@ -541,3 +541,127 @@ def conductance_matrix(A):
     C = C[component_order, :]
     C = C[:, component_order]
     return C
+
+
+########################
+## CytoTrace wrapper  ##
+########################
+
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    TypeVar,
+    Hashable,
+    Iterable,
+    Optional,
+    Sequence,
+)
+import numpy as np
+import pandas as pd
+from pandas import Series
+from scipy.stats import norm
+from numpy.linalg import norm as d_norm
+from scipy.sparse import eye as speye
+from scipy.sparse import diags, issparse, spmatrix, csr_matrix, isspmatrix_csr
+from sklearn.cluster import KMeans
+from pandas.api.types import infer_dtype, is_categorical_dtype
+from scipy.sparse.linalg import norm as sparse_norm
+
+
+def _mat_mat_corr_sparse(
+    X: csr_matrix,
+    Y: np.ndarray,
+) -> np.ndarray:
+    """\
+    This function is borrow from cellrank
+    """
+    n = X.shape[1]
+
+    X_bar = np.reshape(np.array(X.mean(axis=1)), (-1, 1))
+    X_std = np.reshape(
+        np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar ** 2)), (-1, 1)
+    )
+
+    y_bar = np.reshape(np.mean(Y, axis=0), (1, -1))
+    y_std = np.reshape(np.std(Y, axis=0), (1, -1))
+
+    with np.warnings.catch_warnings():
+        np.warnings.filterwarnings(
+            "ignore", r"invalid value encountered in true_divide"
+        )
+        return (X @ Y - (n * X_bar * y_bar)) / ((n - 1) * X_std * y_std)
+
+
+def _correlation_test_helper(
+    X: Union[np.ndarray, spmatrix],
+    Y: np.ndarray,
+    n_perms: Optional[int] = None,
+    seed: Optional[int] = None,
+    confidence_level: float = 0.95,
+    **kwargs,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    This function is borrow from cellrank.
+    Compute the correlation between rows in matrix ``X`` columns of matrix ``Y``.
+    Parameters
+    ----------
+    X
+        Array or matrix of `(M, N)` elements.
+    Y
+        Array of `(N, K)` elements.
+    method
+        Method for p-value calculation.
+    n_perms
+        Number of permutations if ``method='perm_test'``.
+    seed
+        Random seed if ``method='perm_test'``.
+    confidence_level
+        Confidence level for the confidence interval calculation. Must be in `[0, 1]`.
+    kwargs
+        Keyword arguments for :func:`cellrank.ul._parallelize.parallelize`.
+    Returns
+    -------
+        Correlations, p-values, corrected p-values, lower and upper bound of 95% confidence interval.
+        Each array if of shape ``(n_genes, n_lineages)``.
+    """
+
+    def perm_test_extractor(
+        res: Sequence[Tuple[np.ndarray, np.ndarray]]
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        pvals, corr_bs = zip(*res)
+        pvals = np.sum(pvals, axis=0) / float(n_perms)
+
+        corr_bs = np.concatenate(corr_bs, axis=0)
+        corr_ci_low, corr_ci_high = np.quantile(corr_bs, q=ql, axis=0), np.quantile(
+            corr_bs, q=qh, axis=0
+        )
+
+        return pvals, corr_ci_low, corr_ci_high
+
+    if not (0 <= confidence_level <= 1):
+        raise ValueError(
+            f"Expected `confidence_level` to be in interval `[0, 1]`, found `{confidence_level}`."
+        )
+
+    n = X.shape[1]  # genes x cells
+    ql = 1 - confidence_level - (1 - confidence_level) / 2.0
+    qh = confidence_level + (1 - confidence_level) / 2.0
+
+    if issparse(X) and not isspmatrix_csr(X):
+        X = csr_matrix(X)
+
+    corr = _mat_mat_corr_sparse(X, Y) if issparse(X) else _mat_mat_corr_dense(X, Y)
+
+    # see: https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#Using_the_Fisher_transformation
+    mean, se = np.arctanh(corr), 1.0 / np.sqrt(n - 3)
+    z_score = (np.arctanh(corr) - np.arctanh(0)) * np.sqrt(n - 3)
+
+    z = norm.ppf(qh)
+    corr_ci_low = np.tanh(mean - z * se)
+    corr_ci_high = np.tanh(mean + z * se)
+    pvals = 2 * norm.cdf(-np.abs(z_score))
+
+    return corr, pvals, corr_ci_low, corr_ci_high
