@@ -114,7 +114,8 @@ def get_spot_lrs(adata: AnnData,
                       if lr.split('_')[0] in df.columns and
                          lr.split('_')[1] in df.columns]
 
-    spot_lrs = df[[pair.split('_')[int(lr_order)] for pair in pairs_wRev]]
+    lr_cols = [pair.split('_')[int(lr_order==False)] for pair in pairs_wRev]
+    spot_lrs = df[lr_cols]
     return spot_lrs
 
 def calc_neighbours(adata: AnnData,
@@ -187,7 +188,7 @@ def lr_core(spot_lr1: np.ndarray,
         Returns
         -------
         lr_scores: numpy.ndarray   Cells*LR-scores.
-        """
+    """
     # Calculating mean of lr2 expressions from neighbours of each spot
     nb_lr2 = np.zeros(spot_lr2.shape, np.float64)
     for i in range(spot_lr2.shape[0]):

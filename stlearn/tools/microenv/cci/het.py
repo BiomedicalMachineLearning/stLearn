@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from anndata import AnnData
 import scipy.spatial as spatial
-
+from numba.typed import List
 
 def count(
     adata: AnnData,
@@ -74,6 +74,74 @@ def count(
 
     return adata
 
+def count_core(adata: AnnData, use_label: str, neighbours: List,
+               spot_indices: np.array = None, neigh_bool: np.array = None,
+               label_set=None, spot_mixtures: bool = True, cutoff: float = 0.2,
+               ) -> np.array:
+    """Get the cell type counts per spot, if spot_mixtures is True & there is \
+        per spot deconvolution results available, then counts within spot. \
+        If cell type deconvolution results not present but use_label in \
+        adata.obs, then does counts number of cell types in the neighbourhood.
+
+        Parameters
+        ----------
+        spot_lr1: np.ndarray          Spots*Ligands
+        Returns
+        -------
+        cell_counts: numpy.ndarray   Cells*Cell_Type_Counts.
+    """
+    # Ensuring compatibility with current way of adding label_transfer to object
+    if use_label == "label_transfer" or use_label == "predictions":
+        obs_key, uns_key = "predictions", "label_transfer"
+    else:
+        obs_key, uns_key = use_label, use_label
+
+    # Setting label_set if not present
+    if type(label_set) == type(None):
+        label_set = np.unique(adata.obs.loc[:,obs_key].values)
+
+    # Setting neigh_bool if not present, is used to filter which spots can be neighbours
+    if type(neigh_bool) == type(None):
+        neigh_bool = np.array([1]*len(adata))
+
+    # Setting the spot indices to do the counting
+    if type(spot_indices) == type(None):
+        spot_indices = np.array(list(range(len(adata))))
+
+    neigh_zip = zip(spot_indices, [neighbours[i] for i in spot_indices])
+
+    # Mixture mode
+    if spot_mixtures and uns_key in adata.uns:
+        # Making sure the label_set in consistent format with columns of adata.uns
+        cols = list(adata.uns[uns_key])
+        col_set = np.array([col.split(lab)[0]+lab+col.split(lab)[-1]
+                                          for col, lab in zip(label_set, cols)])
+
+        # within-spot
+        if np.all(np.array([i in neighs for i, neighs in neigh_zip])==1):
+
+            counts = (adata.uns[uns_key].loc[:,col_set].values[spot_indices, :]
+                                                           > cutoff).sum(axis=1)
+
+        # between-spot
+        else:
+            counts = np.zeros((1,len(adata)))[0]
+            for i, neighs in neigh_zip:
+                neighs = neighs[ neigh_bool[neighs] ]
+                cell_bool = adata.uns[uns_key].loc[:,col_set].values[neighs,:] > 0.2
+                counts[i] = sum(sum(cell_bool))
+
+    # Absolute mode
+    else:
+        counts = np.zeros((1, len(adata)))[0]
+        for i, neighs in neigh_zip:
+            neighs = neighs[ neigh_bool[neighs] ]
+            neigh_cell_types = adata.obs.loc[:,obs_key].values[neighs]
+            cell_counts = [len(np.where(neigh_cell_types==cell_type)[0])
+                                                     for cell_type in label_set]
+            counts[i] = sum(cell_counts)
+
+    return counts
 
 def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
     """Generate screening grids across the tissue sample
