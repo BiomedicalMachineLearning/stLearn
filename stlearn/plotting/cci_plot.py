@@ -24,7 +24,7 @@ from .gene_plot import gene_plot
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-@_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_lr_plot)
+#@_docs_params(het_plot=doc_lr_plot)
 def lr_plot(
     adata: AnnData, lr: str,
     min_expr: float = 0, sig_spots=True,
