@@ -131,11 +131,16 @@ class SpatialBasePlot(Spatial):
             return ini[:-2]
 
         if self.list_clusters is not None:
-            self.query_adata = self.query_adata[
-                self.query_adata.obs.query(
-                    create_query(self.list_clusters, self.use_label)
-                ).index
-            ].copy()
+            # IF not all clusters specified, subset, otherwise just copy.
+            if len(self.list_clusters) != \
+                          len(self.adata[0].obs[self.use_label].cat.categories):
+                self.query_adata = self.query_adata[
+                    self.query_adata.obs.query(
+                        create_query(self.list_clusters, self.use_label)
+                    ).index
+                ].copy()
+            else:
+                self.query_adata = self.query_adata.copy()
         else:
             self.query_adata = self.query_adata.copy()
 
@@ -495,6 +500,7 @@ class ClusterPlot(SpatialBasePlot):
 
     def _add_cluster_colors(self):
         if self.use_label + "_colors" not in self.adata[0].uns:
+            self.adata[0].uns[self.use_label + "_set"] = []
             self.adata[0].uns[self.use_label + "_colors"] = []
 
             for i, cluster in \
@@ -502,18 +508,24 @@ class ClusterPlot(SpatialBasePlot):
                 self.adata[0].uns[self.use_label + "_colors"].append(
                     matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
                 )
+                self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
 
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
         for i, cluster in enumerate(self.query_adata.obs.groupby(self.use_label)):
+        #for i, cluster in enumerate(self.query_adata.obs[self.use_label].cat.categories):
+
             # Plot scatter plot based on pixel of spots
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
             ]
 
             if self.use_label+'_colors' in self.adata[0].uns:
-                color = self.adata[0].uns[self.use_label+'_colors'][i]
+                label_set = self.adata[0].uns[self.use_label+'_set']
+                col_index = [index for index, label in enumerate(label_set)
+                                                        if label==cluster[0]][0]
+                color = self.adata[0].uns[self.use_label+'_colors'][col_index]
             else:
                 color = self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))
 

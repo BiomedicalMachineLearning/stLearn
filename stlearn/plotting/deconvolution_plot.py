@@ -21,6 +21,7 @@ def deconvolution_plot(
     spot_size: Union[float, int] = 10,
     show_axis: bool = False,
     show_legend: bool = True,
+    show_donut: bool = True,
     cropped: bool = True,
     margin: int = 100,
     name: str = None,
@@ -54,6 +55,8 @@ def deconvolution_plot(
         Show axis or not.
     show_legend
         Show legend or not.
+    show_donut
+        Whether to show the donut plot or not.
     show_trajectory
         Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
@@ -117,24 +120,25 @@ def deconvolution_plot(
         adata.uns["spatial"][library_id]["use_quality"]
     ]
 
-    ax_pie = fig.add_axes([0.5, -0.4, 0.03, 0.5])
+    if show_donut:
+        ax_pie = fig.add_axes([0.5, -0.4, 0.03, 0.5])
 
-    def my_autopct(pct):
-        return ("%1.0f%%" % pct) if pct >= 4 else ""
+        def my_autopct(pct):
+            return ("%1.0f%%" % pct) if pct >= 4 else ""
 
-    ax_pie.pie(
-        label_filter_.sum(axis=1),
-        colors=my_cmap.colors,
-        radius=5,
-        frame=True,
-        autopct=my_autopct,
-        pctdistance=1.1,
-        startangle=90,
-        wedgeprops=dict(width=(2), edgecolor="w", antialiased=True),
-        textprops={"fontsize": 5},
-    )
+        ax_pie.pie(
+            label_filter_.sum(axis=1),
+            colors=my_cmap.colors,
+            radius=5,
+            frame=True,
+            autopct=my_autopct,
+            pctdistance=1.1,
+            startangle=90,
+            wedgeprops=dict(width=(2), edgecolor="w", antialiased=True),
+            textprops={"fontsize": 5},
+        )
 
-    ax_pie.set_axis_off()
+        ax_pie.set_axis_off()
 
     ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
     cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals)

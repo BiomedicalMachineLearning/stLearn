@@ -68,6 +68,44 @@ if 'cell_het' in data.obsm:
 
 # Now looking at the LR pair with the highest number of sig. spots #
 best_lr = data.uns['lr_summary'].index.values[0]
+
+# Binary LR coexpression plot for all spots #
+st.pl.lr_plot(data, best_lr, inner_size_prop=0.1, outer_mode='binary', pt_scale=10,
+              use_label=None, show_image=True,
+              sig_spots=False)
+plt.show()
+
+# Significance scores for all spots #
+st.pl.lr_plot(data, best_lr, inner_size_prop=1, outer_mode=None, pt_scale=20,
+              use_label='lr_scores', show_image=True,
+              sig_spots=False)
+plt.show()
+
+# Binary LR coexpression plot for significant spots #
+st.pl.lr_plot(data, best_lr, outter_size_prop=1, outer_mode='binary', pt_scale=20,
+              use_label=None, show_image=True,
+              sig_spots=True)
+plt.show()
+
+# Continuous LR coexpression for signficant spots #
+st.pl.lr_plot(data, best_lr,
+              inner_size_prop=0.1, middle_size_prop=.2, outter_size_prop=.4,
+              outer_mode='continuous', pt_scale=150,
+              use_label=None, show_image=True,
+              sig_spots=True)
+plt.show()
+
+# Continous LR coexpression for significant spots with tissue_type information #
+st.pl.lr_plot(data, best_lr,
+              inner_size_prop=0.08, middle_size_prop=.3, outter_size_prop=.5,
+              outer_mode='continuous', pt_scale=150,
+              use_label='tissue_type', show_image=True,
+              sig_spots=True)
+plt.show()
+
+
+# Old version of visualisation #
+"""
 # LR enrichment scores
 data.obsm[f'{best_lr}_scores'] = data.uns['per_lr_results'][best_lr].loc[:,
                                                              'lr_scores'].values
@@ -84,4 +122,5 @@ plt.show()
 
 st.pl.het_plot(data, use_het=f'{best_lr}_sig-scores', cell_alpha=0.7)
 plt.show()
+"""
 
