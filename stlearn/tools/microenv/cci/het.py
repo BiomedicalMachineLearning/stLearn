@@ -113,9 +113,9 @@ def count_core(adata: AnnData, use_label: str, neighbours: List,
     # Mixture mode
     if spot_mixtures and uns_key in adata.uns:
         # Making sure the label_set in consistent format with columns of adata.uns
-        cols = list(adata.uns[uns_key])
-        col_set = np.array([col.split(lab)[0]+lab+col.split(lab)[-1]
-                                          for col, lab in zip(label_set, cols)])
+        cols = list(adata.uns[uns_key].columns)
+        col_set = np.array([col for i, col in enumerate(cols)
+                                                        if label_set[i] in col])
 
         # within-spot
         if np.all(np.array([i in neighs for i, neighs in neigh_zip])==1):
@@ -126,17 +126,19 @@ def count_core(adata: AnnData, use_label: str, neighbours: List,
         # between-spot
         else:
             counts = np.zeros((1,len(adata)))[0]
+            prop_vals = adata.uns[uns_key].loc[:, col_set].values
             for i, neighs in neigh_zip:
                 neighs = neighs[ neigh_bool[neighs] ]
-                cell_bool = adata.uns[uns_key].loc[:,col_set].values[neighs,:] > 0.2
+                cell_bool = prop_vals[neighs,:] > cutoff
                 counts[i] = sum(sum(cell_bool))
 
     # Absolute mode
     else:
         counts = np.zeros((1, len(adata)))[0]
+        cell_types = adata.obs.loc[:,obs_key].values
         for i, neighs in neigh_zip:
             neighs = neighs[ neigh_bool[neighs] ]
-            neigh_cell_types = adata.obs.loc[:,obs_key].values[neighs]
+            neigh_cell_types = cell_types[neighs]
             cell_counts = [len(np.where(neigh_cell_types==cell_type)[0])
                                                      for cell_type in label_set]
             counts[i] = sum(cell_counts)

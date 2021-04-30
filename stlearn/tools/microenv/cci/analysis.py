@@ -6,12 +6,12 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from numba.typed import List
 
-from numba import njit, prange
 from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_spot_lrs, calc_distance
-from .het import count
+from .het import count, count_core
 from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
                                                 get_median_index, get_rand_pairs
 
@@ -158,7 +158,7 @@ def run(adata: AnnData, lrs: np.array,
                                                           columns=['lr_scores'])
             lr_results['lr_scores'] = lr_scores[:, i]
             per_lr_results[lr_] = lr_results
-            lr_summary.loc[lr_, 0] = len(np.where(lr_scores[:, i]>0)[0])
+            lr_summary.loc[lr_, 'n_spots'] = len(np.where(lr_scores[:, i]>0)[0])
         lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:,0]),:]
 
     adata.uns['lr_summary'] = lr_summary
@@ -201,21 +201,6 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
     else:
         return lr_scores
 
-@njit(parallel=True)
-def calc_expr_filter(lr_expr: np.array, lr_indices: np.array, min_expr: float):
-    # Determining spots to filter scores if insignificantly express L or R #
-    expr_filter = np.zeros((lr_expr.shape[0], lr_indices.shape[0]),
-                                                                  dtype=np.int_)
-    for j in prange(expr_filter.shape[1]):
-        l_bool = lr_expr[:,lr_indices[j,0]] > min_expr
-        r_bool = lr_expr[:,lr_indices[j,1]] > min_expr
-        for i in range(expr_filter.shape[0]):
-            if l_bool[i] or r_bool[i]:
-                expr_filter[i, j] = 1
-            else:
-                expr_filter[i, j] = 0
-    return expr_filter
-
 def load_lrs(names: str) -> np.array:
     """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates.
     Parameters
@@ -236,8 +221,105 @@ def load_lrs(names: str) -> np.array:
         lrs_full.extend(lrs)
     return np.unique(lrs_full)
 
+################################################################################
+            # Functions for calling Celltype-Celltype interactions #
+################################################################################
+def run_cci(adata: AnnData, use_label: str,
+            min_sig_spots: int = 3,
+            spot_mixtures: bool = True, cell_prop_cutoff: float = 0.2,
+            verbose: bool = True,
+            ):
 
+    ran_lr = 'lr_summary' in adata.uns
+    ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
+    if not ran_lr and not ran_sig:
+        raise Exception("No LR results testing results found, " 
+                        "please run st.tl.cci.run first")
 
+    # Ensuring compatibility with current way of adding label_transfer to object
+    if use_label == "label_transfer" or use_label == "predictions":
+        obs_key, uns_key = "predictions", "label_transfer"
+    else:
+        obs_key, uns_key = use_label, use_label
+
+    # Determining the neighbour spots used form significance testing #
+    neighbours = List()
+    for i in range(adata.uns['spot_neighbours'].shape[0]):
+        neighs = np.array(adata.uns['spot_neighbours'].values[i,
+                                                               :][0].split(','))
+        neighs = neighs[neighs != ''].astype(int)
+        neighbours.append(neighs)
+
+    # Getting the cell/tissue types that we are actually testing #
+    tissue_types = adata.obs[obs_key].values.astype(str)
+    all_set = np.unique(tissue_types)
+
+    # Mixture mode
+    mix_mode = spot_mixtures and uns_key in adata.uns
+    if mix_mode:
+        cell_type_props = adata.uns[uns_key]
+
+    lr_summary = adata.uns['lr_summary']
+    best_lrs = lr_summary.index.values[lr_summary.values[:,1] > min_sig_spots]
+    all_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+    per_lr_cci = {}
+    for best_lr in best_lrs:
+        l, r = best_lr.split('_')
+        lr_results = adata.uns['per_lr_results'][best_lr]
+
+        L_bool = adata[:, l].X.toarray()[:, 0] > 0
+        R_bool = adata[:, r].X.toarray()[:, 0] > 0
+        sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
+
+        int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+        for i, cell_A in enumerate(all_set):  # transmitter
+            # Determining which spots have cell type A #
+            if not mix_mode:
+                A_bool = tissue_types == cell_A
+            else:
+                col_A = [col for i, col in enumerate(cell_type_props.columns)
+                                                            if cell_A in col][0]
+                A_bool = cell_type_props.loc[:,col_A].values > cell_prop_cutoff
+
+            A_L_bool = np.logical_and(A_bool, L_bool)
+            A_L_Sig_bool = np.logical_and(A_L_bool, sig_bool)
+            A_L_Sig_indices = np.where(A_L_Sig_bool)[0]
+
+            for j, cell_B in enumerate(all_set):  # receiver
+                cellA_cellB_counts = sum(
+                                    count_core(adata, obs_key, neighbours,
+                                               spot_indices=A_L_Sig_indices,
+                                               neigh_bool=R_bool,
+                                               label_set=[cell_B]))
+                int_matrix[i, j] = cellA_cellB_counts
+                all_matrix[i, j] += cellA_cellB_counts
+        int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
+        per_lr_cci[best_lr] = int_matrix
+
+    adata.uns['lr_cci'] = pd.DataFrame(all_matrix,
+                                       index=all_set, columns=all_set)
+    adata.uns['per_lr_cci'] = per_lr_cci
+    if verbose:
+        print("Counts of cci interactions for all LR pairs in adata.uns['lr_cci']")
+        print("Counts of cci interactions for each LR pair stored in dictionary adata.uns['per_lr_cci']")
+
+# Junk Code #
+"""
+@njit(parallel=True)
+def calc_expr_filter(lr_expr: np.array, lr_indices: np.array, min_expr: float):
+    # Determining spots to filter scores if insignificantly express L or R #
+    expr_filter = np.zeros((lr_expr.shape[0], lr_indices.shape[0]),
+                                                                  dtype=np.int_)
+    for j in prange(expr_filter.shape[1]):
+        l_bool = lr_expr[:,lr_indices[j,0]] > min_expr
+        r_bool = lr_expr[:,lr_indices[j,1]] > min_expr
+        for i in range(expr_filter.shape[0]):
+            if l_bool[i] or r_bool[i]:
+                expr_filter[i, j] = 1
+            else:
+                expr_filter[i, j] = 0
+    return expr_filter
+"""
 
 
 

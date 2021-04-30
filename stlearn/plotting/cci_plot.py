@@ -66,7 +66,8 @@ def lr_plot(
     if type(use_mix)!=type(None) and use_mix not in adata.uns:
         raise Exception(f"Specified use_mix, but no deconvolution results added "
                        "to adata.uns matching the use_mix ({use_mix}) key.")
-    elif type(use_label)!=type(None) and use_label in lr_use_labels and not lr_sig:
+    elif type(use_label)!=type(None) and use_label in lr_use_labels \
+            and ran_sig and not lr_sig:
         raise Exception(f"Since use_label refers to lr stats, "
                         f"need to first run st.tl.cci.run.")
     elif type(use_label)!=type(None) and use_label not in adata.obs.keys() \
