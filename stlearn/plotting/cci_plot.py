@@ -13,10 +13,10 @@ from typing import Tuple  # Classes
 
 import warnings
 
-from .classes import CciPlot
-from .classes_bokeh import BokehCciPlot
-from ._docs import doc_spatial_base_plot, doc_het_plot
-from ..utils import Empty, _empty, _AxesSubplot, _docs_params
+from stlearn.plotting.classes import CciPlot
+from stlearn.plotting.classes_bokeh import BokehCciPlot
+from stlearn.plotting._docs import doc_spatial_base_plot, doc_het_plot
+from stlearn.utils import Empty, _empty, _AxesSubplot, _docs_params
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show

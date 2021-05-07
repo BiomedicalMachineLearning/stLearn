@@ -11,9 +11,9 @@ from typing import Tuple  # Classes
 from anndata import AnnData
 import warnings
 
-from .classes import SubClusterPlot
-from ._docs import doc_spatial_base_plot, doc_subcluster_plot
-from ..utils import _AxesSubplot, Axes, _docs_params
+from stlearn.plotting.classes import SubClusterPlot
+from stlearn.plotting._docs import doc_spatial_base_plot, doc_subcluster_plot
+from stlearn.utils import _AxesSubplot, Axes, _docs_params
 
 
 @_docs_params(
