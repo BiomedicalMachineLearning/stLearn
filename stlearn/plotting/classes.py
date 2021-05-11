@@ -239,6 +239,8 @@ class GenePlot(SpatialBasePlot):
         method: str = "CumSum",
         contour: bool = False,
         step_size: Optional[int] = None,
+        vmin: float = None,
+        vmax: float = None,
         **kwargs
     ):
         super().__init__(
@@ -287,6 +289,8 @@ class GenePlot(SpatialBasePlot):
         gene_values = self._get_gene_expression()
 
         self.available_ids = self._add_threshold(gene_values, threshold)
+
+        self.vmin, self.vmax = vmin, vmax
 
         if contour:
             plot = self._plot_contour(gene_values[self.available_ids])
@@ -351,8 +355,12 @@ class GenePlot(SpatialBasePlot):
 
     def _plot_genes(self, gene_values: pd.Series):
 
-        vmin = min(gene_values)
-        vmax = max(gene_values)
+        if type(self.vmin) == type(None) and type(self.vmax) == type(None):
+            vmin = min(gene_values)
+            vmax = max(gene_values)
+        else:
+            vmin, vmax = self.vmin, self.vmax
+
         # Plot scatter plot based on pixel of spots
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
@@ -989,6 +997,7 @@ class CciPlot(GenePlot):
         use_het: Optional[str] = "het",
         contour: bool = False,
         step_size: Optional[int] = None,
+        vmin: float = None, vmax: float = None,
         **kwargs
     ):
         super().__init__(
@@ -1015,6 +1024,7 @@ class CciPlot(GenePlot):
             gene_symbols=use_het,
             contour=contour,
             step_size=step_size,
+            vmin=vmin, vmax=vmax,
         )
 
     def _get_gene_expression(self):

@@ -119,6 +119,10 @@ contour
     Option to show the contour plot.
 step_size
     Determines the number and positions of the contour lines / regions.
+vmin
+    Lower end of scale bar.
+vmax
+    Upper end of scale bar. 
 """
 
 doc_subcluster_plot = """\

@@ -68,8 +68,8 @@ def lr_plot(
                        "to adata.uns matching the use_mix ({use_mix}) key.")
     elif type(use_label)!=type(None) and use_label in lr_use_labels \
             and ran_sig and not lr_sig:
-        raise Exception(f"Since use_label refers to lr stats, "
-                        f"need to first run st.tl.cci.run.")
+        raise Exception(f"Since use_label refers to lr stats & ran permutation testing, "
+                        f"LR needs to be significant to view stats.")
     elif type(use_label)!=type(None) and use_label not in adata.obs.keys() \
                                              and use_label not in lr_use_labels:
         raise Exception(f"use_label must be in adata.obs or "
@@ -206,6 +206,7 @@ def het_plot(
     use_het: Optional[str] = "het",
     contour: bool = False,
     step_size: Optional[int] = None,
+    vmin: float = None, vmax: float = None,
 ) -> Optional[AnnData]:
 
     """\
@@ -252,6 +253,7 @@ def het_plot(
         use_het=use_het,
         contour=contour,
         step_size=step_size,
+        vmin=vmin, vmax=vmax,
     )
 
 
