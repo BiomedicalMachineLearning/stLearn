@@ -145,6 +145,37 @@ def count_core(adata: AnnData, use_label: str, neighbours: List,
 
     return counts
 
+def count_interactions(adata, all_set, mix_mode, neighbours, obs_key,
+                       sig_bool, gene1_bool, gene2_bool,
+                       tissue_types=None, cell_type_props=None,
+                       cell_prop_cutoff=None, trans_dir=True,
+                       ):
+
+    # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
+    int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+    for i, cell_A in enumerate(all_set):  # transmitter if trans_dir else reciever
+        # Determining which spots have cell type A #
+        if not mix_mode:
+            A_bool = tissue_types == cell_A
+        else:
+            col_A = [col for i, col in enumerate(cell_type_props.columns)
+                     if cell_A in col][0]
+            A_bool = cell_type_props.loc[:, col_A].values > cell_prop_cutoff
+
+        A_gene1_bool = np.logical_and(A_bool, gene1_bool)
+        A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
+        A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
+
+        for j, cell_B in enumerate(all_set): # receiver if trans_dir else transmitter
+            cellA_cellB_counts = sum(
+                count_core(adata, obs_key, neighbours,
+                           spot_indices=A_gene1_sig_indices,
+                           neigh_bool=gene2_bool,
+                           label_set=[cell_B]))
+            int_matrix[i, j] = cellA_cellB_counts
+
+    return int_matrix if trans_dir else int_matrix.transpose()
+
 def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
     """Generate screening grids across the tissue sample
     Parameters

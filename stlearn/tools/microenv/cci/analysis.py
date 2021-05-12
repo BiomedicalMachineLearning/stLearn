@@ -11,7 +11,7 @@ from numba.typed import List
 from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_spot_lrs, calc_distance
-from .het import count, count_core
+from .het import count, count_core, count_interactions
 from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
                                                 get_median_index, get_rand_pairs
 
@@ -256,8 +256,7 @@ def run_cci(adata: AnnData, use_label: str,
 
     # Mixture mode
     mix_mode = spot_mixtures and uns_key in adata.uns
-    if mix_mode:
-        cell_type_props = adata.uns[uns_key]
+    cell_type_props = None if not mix_mode else adata.uns[uns_key]
 
     lr_summary = adata.uns['lr_summary']
     best_lrs = lr_summary.index.values[lr_summary.values[:,1] > min_sig_spots]
@@ -269,39 +268,41 @@ def run_cci(adata: AnnData, use_label: str,
 
         L_bool = adata[:, l].X.toarray()[:, 0] > 0
         R_bool = adata[:, r].X.toarray()[:, 0] > 0
+        # L_bool_ = adata[:, l].X.toarray()[:, 0] > 0
+        # R_bool_ = adata[:, r].X.toarray()[:, 0] > 0
+        # L_bool[R_bool_] = False
+        # R_bool[L_bool_] = False
+
         sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
-        int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
-        for i, cell_A in enumerate(all_set):  # transmitter
-            # Determining which spots have cell type A #
-            if not mix_mode:
-                A_bool = tissue_types == cell_A
-            else:
-                col_A = [col for i, col in enumerate(cell_type_props.columns)
-                                                            if cell_A in col][0]
-                A_bool = cell_type_props.loc[:,col_A].values > cell_prop_cutoff
+        # Now counting the interactions under 3 situations:
+        # 1) sig spot with ligand, only neighbours with receptor relevant
+        # 2) sig spot with receptor, only neighbours with ligand relevant
+        # NOTE, A<->B is double counted
+        # (if bidirectional interaction between two spots, counts as two interactions).
+        ## 3) sig spot with both ligand and receptor, counting just R neighbours
+        ## 4) sig spot with both ligand and receptor, counting just L neighbours
+        int_mat1 = count_interactions(
+                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool, L_bool, R_bool,
+                     tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
+                     trans_dir=True, #sig ligand->receptor mode
+                     )
+        int_mat2 = count_interactions(
+                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool, R_bool, L_bool,
+                     tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
+                     trans_dir=False, #sig receptor->ligand mode
+                     )
 
-            A_L_bool = np.logical_and(A_bool, L_bool)
-            A_L_Sig_bool = np.logical_and(A_L_bool, sig_bool)
-            A_L_Sig_indices = np.where(A_L_Sig_bool)[0]
-
-            for j, cell_B in enumerate(all_set):  # receiver
-                cellA_cellB_counts = sum(
-                                    count_core(adata, obs_key, neighbours,
-                                               spot_indices=A_L_Sig_indices,
-                                               neigh_bool=R_bool,
-                                               label_set=[cell_B]))
-                int_matrix[i, j] = cellA_cellB_counts
-                all_matrix[i, j] += cellA_cellB_counts
+        int_matrix = int_mat1 + int_mat2
         int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
         per_lr_cci[best_lr] = int_matrix
 
-    adata.uns['lr_cci'] = pd.DataFrame(all_matrix,
-                                       index=all_set, columns=all_set)
-    adata.uns['per_lr_cci'] = per_lr_cci
+    adata.uns[f'lr_cci_{use_label}'] = pd.DataFrame(all_matrix,
+                                             index=all_set, columns=all_set)
+    adata.uns[f'per_lr_cci_{use_label}'] = per_lr_cci
     if verbose:
-        print("Counts of cci interactions for all LR pairs in adata.uns['lr_cci']")
-        print("Counts of cci interactions for each LR pair stored in dictionary adata.uns['per_lr_cci']")
+        print(f"Counts of cci interactions for all LR pairs in {f'lr_cci_{use_label}'}")
+        print(f"Counts of cci interactions for each LR pair stored in dictionary {f'per_lr_cci_{use_label}'}")
 
 # Junk Code #
 """

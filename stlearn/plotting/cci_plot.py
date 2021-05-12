@@ -17,6 +17,7 @@ from .classes import CciPlot
 from .classes_bokeh import BokehCciPlot
 from ._docs import doc_spatial_base_plot, doc_het_plot, doc_lr_plot
 from ..utils import Empty, _empty, _AxesSubplot, _docs_params
+from .utils import get_cmap, check_cmap
 from .cluster_plot import cluster_plot
 from .deconvolution_plot import deconvolution_plot
 from .gene_plot import gene_plot
@@ -116,7 +117,7 @@ def lr_plot(
                 [matplotlib.colors.to_hex('r'), matplotlib.colors.to_hex('limegreen'),
                  matplotlib.colors.to_hex('b'), matplotlib.colors.to_hex('k')]
         else:
-            lr_cmap = get_cmap(lr_cmap)
+            lr_cmap = check_cmap(lr_cmap)
 
         cluster_plot(adata, use_label=f'{lr}_binary_labels', cmap=lr_cmap,
                            size=outer_size_prop * pt_scale,
@@ -130,7 +131,7 @@ def lr_plot(
                                                                  (.75, 0, 0),
                                                                  (1, 0, 0)])
         else:
-            l_cmap = get_cmap(l_cmap)
+            l_cmap = check_cmap(l_cmap)
         if type(r_cmap)==type(None):
             r_cmap = matplotlib.colors.LinearSegmentedColormap.from_list('rcmap',
                                                                 [(0, 0, 0),
@@ -138,7 +139,7 @@ def lr_plot(
                                                                  (0, .75, 0),
                                                                  (0, 1, 0)])
         else:
-            r_cmap = get_cmap(r_cmap)
+            r_cmap = check_cmap(r_cmap)
 
         gene_plot(adata, gene_symbols=l, size=outer_size_prop * pt_scale,
                cmap=l_cmap, color_bar_label=l, ax=ax, fig=fig,
@@ -160,24 +161,9 @@ def lr_plot(
             cluster_plot(adata, use_label=use_label, cmap=inner_cmap,
                          size=inner_size_prop * pt_scale,
                          ax=ax, fig=fig, show_image=show_image, **kwargs)
-
     plt.title(title)
 
-def get_cmap(cmap):
-    """ Initialize cmap
-    """
-    scanpy_cmap = ["vega_10_scanpy", "vega_20_scanpy", "default_102",
-                   "default_28"]
-    stlearn_cmap = ["jana_40", "default"]
-    cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
-    error_msg = "cmap must be a matplotlib.colors.LinearSegmentedColormap OR" \
-                "one of these: " + str(cmap_available)
-    if type(cmap) == str:
-        assert cmap in cmap_available, error_msg
-    elif type(cmap) != matplotlib.colors.LinearSegmentedColormap:
-        raise Exception(error_msg)
 
-    return cmap
 
 @_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_het_plot)
 def het_plot(

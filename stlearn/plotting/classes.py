@@ -20,7 +20,7 @@ import networkx as nx
 
 from ..classes import Spatial
 from ..utils import _AxesSubplot, Axes, _read_graph
-from .utils import centroidpython, get_cluster, get_node, check_sublist
+from .utils import centroidpython, get_cluster, get_node, check_sublist, get_cmap
 
 ################################################################
 #                                                              #
@@ -551,32 +551,8 @@ class ClusterPlot(SpatialBasePlot):
             )
 
     def _get_cmap(self, cmap):
-        from scanpy.plotting import palettes
-        from stlearn.plotting import palettes_st
-
-        if cmap == "vega_10_scanpy":
-            cmap = palettes.vega_10_scanpy
-        elif cmap == "vega_20_scanpy":
-            cmap = palettes.vega_20_scanpy
-        elif cmap == "default_102":
-            cmap = palettes.default_102
-        elif cmap == "default_28":
-            cmap = palettes.default_28
-        elif cmap == "jana_40":
-            cmap = palettes_st.jana_40
-        elif cmap == "default":
-            cmap = palettes_st.default
-        elif type(cmap) == str: #If refers to matplotlib cmap
-            self.cmap_n = plt.get_cmap(cmap).N
-            return plt.get_cmap(cmap)
-        elif type(cmap) == matplotlib.colors.LinearSegmentedColormap: #already cmap
-            self.cmap_n = cmap.N
-            return cmap
-
-        self.cmap_n = len(cmap)
-        cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
-
-        cmap_ = plt.cm.get_cmap(cmaps)
+        cmap_, cmap_n = get_cmap(cmap)
+        self.cmap_n = cmap_n
         return cmap_
 
     def _add_cluster_bar(self, bbox_to_anchor):
