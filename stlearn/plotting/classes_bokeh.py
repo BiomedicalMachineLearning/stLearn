@@ -35,7 +35,14 @@ from bokeh.models import (
 
 from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
 from anndata import AnnData
-from bokeh.palettes import Spectral11, Category20
+from bokeh.palettes import (
+    Spectral11,
+    Viridis256,
+    Reds256,
+    Blues256,
+    Magma256,
+    Category20,
+)
 from bokeh.layouts import column, row, grid
 from collections import OrderedDict
 from bokeh.application import Application
@@ -86,8 +93,18 @@ class BokehGenePlot(Spatial):
         self.gene_select = AutocompleteInput(
             title="Gene:", value=gene_list[0], completions=gene_list, min_characters=1
         )
+
+        color_list = ["Spectral", "Viridis", "Reds", "Blues", "Magma"]
+        self.cmap_select = Select(
+            title="Select color map:", value=color_list[0], options=color_list
+        )
+
         inputs = column(
-            self.gene_select, self.data_alpha, self.tissue_alpha, self.spot_size
+            self.gene_select,
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+            self.cmap_select,
         )
 
         self.layout = row(inputs, self.make_fig())
@@ -103,6 +120,7 @@ class BokehGenePlot(Spatial):
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
             self.gene_select.on_change("value", self.update_data)
+            self.cmap_select.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
 
@@ -129,9 +147,21 @@ class BokehGenePlot(Spatial):
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
         )
+        if self.cmap_select.value == "Spectral":
+            cmap = Spectral11
+        elif self.cmap_select.value == "Viridis":
+            cmap = Viridis256
+        elif self.cmap_select.value == "Reds":
+            cmap = list(Reds256)
+            cmap.reverse()
+        elif self.cmap_select.value == "Blues":
+            cmap = list(Blues256)
+            cmap.reverse()
+        elif self.cmap_select.value == "Magma":
+            cmap = Magma256
 
         color_mapper = LinearColorMapper(
-            palette=Spectral11, low=min(s1.data["color"]), high=max(s1.data["color"])
+            palette=cmap, low=min(s1.data["color"]), high=max(s1.data["color"])
         )
 
         fig.circle(
