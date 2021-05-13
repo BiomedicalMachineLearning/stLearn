@@ -114,7 +114,7 @@ class BokehGenePlot(Spatial):
             title=self.gene_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="webgl",
+            output_backend="svg",
         )
 
         colors = self._get_gene_expression([self.gene_select.value])
@@ -318,7 +318,7 @@ class BokehClusterPlot(Spatial):
             title="Cluster plot",
             x_range=(0, self.dim),
             y_range=(self.dim, 0),
-            output_backend="webgl"
+            output_backend="svg"
             # Specifying xdim/ydim isn't quire right :-(
             # width=xdim, height=ydim,
         )
@@ -513,7 +513,7 @@ class BokehCciPlot(Spatial):
             title=self.het_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="webgl",
+            output_backend="svg",
         )
 
         colors = self._get_het(self.het_select.value)
@@ -645,7 +645,7 @@ class Annotate(Spatial):
 
     def make_fig(self):
         fig = figure(
-            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="webgl"
+            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="svg"
         )
 
         colors = np.repeat("black", len(self.imagecol))
@@ -762,7 +762,10 @@ class Annotate(Spatial):
                 args={},
                 code="""
                 alert("The annotated labels stored in adata.obs.annotation")
-
+                try {
+                        $( "#cluster_plot" ).removeClass( "disabled" )
+                    }
+                    catch (e) {}
                 """,
             )
         )
