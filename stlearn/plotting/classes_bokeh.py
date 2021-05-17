@@ -30,18 +30,26 @@ from bokeh.models import (
     Arrow,
     VeeHead,
     Button,
+    Dropdown,
 )
 
 from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
 from anndata import AnnData
-from bokeh.palettes import Spectral11, Category20
+from bokeh.palettes import (
+    Spectral11,
+    Viridis256,
+    Reds256,
+    Blues256,
+    Magma256,
+    Category20,
+)
 from bokeh.layouts import column, row, grid
 from collections import OrderedDict
 from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
-from ..classes import Spatial
+from stlearn.classes import Spatial
 from typing import Optional
-from ..utils import _read_graph
+from stlearn.utils import _read_graph
 
 
 class BokehGenePlot(Spatial):
@@ -85,8 +93,18 @@ class BokehGenePlot(Spatial):
         self.gene_select = AutocompleteInput(
             title="Gene:", value=gene_list[0], completions=gene_list, min_characters=1
         )
+
+        color_list = ["Spectral", "Viridis", "Reds", "Blues", "Magma"]
+        self.cmap_select = Select(
+            title="Select color map:", value=color_list[0], options=color_list
+        )
+
         inputs = column(
-            self.gene_select, self.data_alpha, self.tissue_alpha, self.spot_size
+            self.gene_select,
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+            self.cmap_select,
         )
 
         self.layout = row(inputs, self.make_fig())
@@ -102,6 +120,7 @@ class BokehGenePlot(Spatial):
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
             self.gene_select.on_change("value", self.update_data)
+            self.cmap_select.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
 
@@ -113,6 +132,7 @@ class BokehGenePlot(Spatial):
             title=self.gene_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
+            output_backend="svg",
         )
 
         colors = self._get_gene_expression([self.gene_select.value])
@@ -127,9 +147,21 @@ class BokehGenePlot(Spatial):
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
         )
+        if self.cmap_select.value == "Spectral":
+            cmap = Spectral11
+        elif self.cmap_select.value == "Viridis":
+            cmap = Viridis256
+        elif self.cmap_select.value == "Reds":
+            cmap = list(Reds256)
+            cmap.reverse()
+        elif self.cmap_select.value == "Blues":
+            cmap = list(Blues256)
+            cmap.reverse()
+        elif self.cmap_select.value == "Magma":
+            cmap = Magma256
 
         color_mapper = LinearColorMapper(
-            palette=Spectral11, low=min(s1.data["color"]), high=max(s1.data["color"])
+            palette=cmap, low=min(s1.data["color"]), high=max(s1.data["color"])
         )
 
         fig.circle(
@@ -189,10 +221,9 @@ class BokehClusterPlot(Spatial):
         self,
         # plotting param
         adata: AnnData,
-        use_label: Optional[str] = None,
     ):
-        super().__init__(adata, use_label=use_label)
-        self.use_label = use_label
+        super().__init__(adata)
+
         # Open image, and make sure it's RGB*A*
         image = (self.img * 255).astype(np.uint8)
 
@@ -211,6 +242,20 @@ class BokehClusterPlot(Spatial):
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
 
+        menu = []
+
+        for col in adata.obs.columns:
+            if adata.obs[col].dtype.name == "category":
+                if col != "sub_cluster_labels":
+                    menu.append(col)
+
+        self.use_label = Select(title="Select use_label:", value=menu[0], options=menu)
+
+        # Initialize the color
+        from stlearn.plotting.cluster_plot import cluster_plot
+
+        cluster_plot(adata, use_label=self.use_label.value, show_plot=False)
+
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
         )
@@ -227,26 +272,32 @@ class BokehClusterPlot(Spatial):
             labels=["Show spatial trajectories"], active=[]
         )
 
-        p = Paragraph(text="""Choose clusters:""", width=400, height=20)
+        self.p = Paragraph(text="""Choose clusters:""", width=400, height=20)
         self.list_cluster = CheckboxGroup(
-            labels=list(self.adata[0].obs[self.use_label].cat.categories),
+            labels=list(self.adata[0].obs[self.use_label.value].cat.categories),
             active=list(
-                np.array(range(0, len(self.adata[0].obs[self.use_label].unique())))
+                np.array(
+                    range(0, len(self.adata[0].obs[self.use_label.value].unique()))
+                )
             ),
         )
 
-        inputs = column(
+        self.inputs = column(
+            self.use_label,
             self.data_alpha,
             self.tissue_alpha,
             self.spot_size,
-            p,
+            self.p,
             self.list_cluster,
             self.checkbox_group,
         )
-        self.layout = row(inputs, self.make_fig())
+        self.layout = row(self.inputs, self.make_fig())
 
         def modify_fig(doc):
             doc.add_root(row(self.layout, width=800))
+            self.use_label.on_change("value", self.update_list)
+            self.use_label.on_change("value", self.update_data)
+
             self.data_alpha.on_change("value", self.update_data)
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
@@ -256,7 +307,40 @@ class BokehClusterPlot(Spatial):
         handler = FunctionHandler(modify_fig)
         self.app = Application(handler)
 
+    def update_list(self, attrname, old, name):
+
+        # Initialize the color
+        from stlearn.plotting.cluster_plot import cluster_plot
+
+        cluster_plot(self.adata[0], use_label=self.use_label.value, show_plot=False)
+
+        # self.list_cluster = CheckboxGroup(
+        #     labels=list(self.adata[0].obs[self.use_label.value].cat.categories),
+        #     active=list(
+        #         np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
+        #     ),
+        # )
+        self.list_cluster.labels = list(
+            self.adata[0].obs[self.use_label.value].cat.categories
+        )
+        self.list_cluster.active = list(
+            np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
+        )
+
+        self.inputs = column(
+            self.use_label,
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+            self.p,
+            self.list_cluster,
+            self.checkbox_group,
+        )
+
+        self.layout.children[0] = self.inputs
+
     def update_data(self, attrname, old, new):
+
         self.layout.children[1] = self.make_fig()
 
     def make_fig(self):
@@ -264,6 +348,7 @@ class BokehClusterPlot(Spatial):
             title="Cluster plot",
             x_range=(0, self.dim),
             y_range=(self.dim, 0),
+            output_backend="svg"
             # Specifying xdim/ydim isn't quire right :-(
             # width=xdim, height=ydim,
         )
@@ -281,9 +366,9 @@ class BokehClusterPlot(Spatial):
         command = []
         for i in self.list_cluster.active:
             command.append(
-                self.use_label
+                self.use_label.value
                 + ' == "'
-                + self.adata[0].obs[self.use_label].cat.categories[i]
+                + self.adata[0].obs[self.use_label.value].cat.categories[i]
                 + '"'
             )
         tmp = self.adata[0].obs.query(" or ".join(command))
@@ -293,11 +378,11 @@ class BokehClusterPlot(Spatial):
         x = tmp_adata.obsm["spatial"][:, 0] * self.scale_factor
         y = tmp_adata.obsm["spatial"][:, 1] * self.scale_factor
 
-        category_items = self.adata[0].obs[self.use_label].cat.categories
-        palette = self.adata[0].uns[self.use_label + "_colors"]
+        category_items = self.adata[0].obs[self.use_label.value].cat.categories
+        palette = self.adata[0].uns[self.use_label.value + "_colors"]
         colormap = dict(zip(category_items, palette))
-        color = list(tmp[self.use_label].map(colormap))
-        cluster = list(tmp[self.use_label])
+        color = list(tmp[self.use_label.value].map(colormap))
+        cluster = list(tmp[self.use_label.value])
 
         s1 = ColumnDataSource(data=dict(x=x, y=y, color=color, cluster=cluster))
         if len(category_items[0]) > 5:
@@ -458,6 +543,7 @@ class BokehCciPlot(Spatial):
             title=self.het_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
+            output_backend="svg",
         )
 
         colors = self._get_het(self.het_select.value)
@@ -589,9 +675,7 @@ class Annotate(Spatial):
 
     def make_fig(self):
         fig = figure(
-            x_range=(0, self.dim - 150),
-            y_range=(self.dim, 0),
-            tools=["lasso_select", "undo", "redo", "reset", "save"],
+            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="svg"
         )
 
         colors = np.repeat("black", len(self.imagecol))
@@ -621,6 +705,15 @@ class Annotate(Spatial):
             line_alpha=self.data_alpha.value,
         )
 
+        fig.toolbar.logo = None
+        fig.xaxis.visible = False
+        fig.yaxis.visible = False
+        fig.xgrid.grid_line_color = None
+        fig.ygrid.grid_line_color = None
+        fig.outline_line_alpha = 0
+        fig.add_tools(LassoSelectTool())
+        fig.add_tools(BoxSelectTool())
+
         self.s2 = ColumnDataSource(data=dict(spot=[], label=[]))
         columns = [
             TableColumn(field="spot", title="Spots"),
@@ -630,7 +723,7 @@ class Annotate(Spatial):
             source=self.s2,
             columns=columns,
             width=400,
-            height=600,
+            height=200,
             reorderable=False,
             editable=True,
         )
@@ -689,16 +782,24 @@ class Annotate(Spatial):
                 empty_array[
                     [np.array(self.adata[0].uns["annotation"]["spot"][i])]
                 ] = str(self.adata[0].uns["annotation"]["label"][i])
+
+            empty_array = pd.Series(empty_array).fillna("other")
             self.adata[0].obs["annotation"] = pd.Categorical(empty_array)
 
         submitbutton.on_click(change_click)
         submitbutton.js_on_click(
             CustomJS(
                 args={},
-                code='alert("The annotated labels stored in adata.obs.annotation")',
+                code="""
+                alert("The annotated labels stored in adata.obs.annotation")
+                try {
+                        $( "#cluster_plot" ).removeClass( "disabled" )
+                    }
+                    catch (e) {}
+                """,
             )
         )
 
-        layout = grid([fig, table, savebutton, submitbutton], ncols=3)
+        layout = column([fig, row(table, column(savebutton, submitbutton))])
 
         return layout

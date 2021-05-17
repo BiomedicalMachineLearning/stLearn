@@ -953,7 +953,6 @@ class CciPlot(GenePlot):
     ):
         super().__init__(
             adata=adata,
-            title=title,
             figsize=figsize,
             cmap=cmap,
             use_label=use_label,
@@ -975,6 +974,10 @@ class CciPlot(GenePlot):
             contour=contour,
             step_size=step_size,
         )
+
+        self.title = title
+
+        self._add_title()
 
     def _get_gene_expression(self):
         return self.query_adata.obsm[self.gene_symbols[0]]
