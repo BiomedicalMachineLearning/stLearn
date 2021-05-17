@@ -16,3 +16,4 @@ tiling/
 .pytest_cache
 figures/
 *.h5ad
+inferCNV/

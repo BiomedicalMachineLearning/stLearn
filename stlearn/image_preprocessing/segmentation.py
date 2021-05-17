@@ -13,10 +13,10 @@ from tqdm import tqdm
 
 
 def morph_watershed(
-        adata: AnnData,
-        library_id: str = None,
-        verbose: bool = False,
-        copy: bool = False,
+    adata: AnnData,
+    library_id: str = None,
+    verbose: bool = False,
+    copy: bool = False,
 ) -> Optional[AnnData]:
     """\
     Watershed method to segment nuclei and calculate morphological statistics
@@ -73,23 +73,25 @@ def morph_watershed(
     mean_pix_list_b = []
     std_pix_list_b = []
     with tqdm(
-            total=len(adata),
-            desc="calculate morphological stats",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        total=len(adata),
+        desc="calculate morphological stats",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for tile in adata.obs["tile_path"]:
-            n_nuclei, \
-            nuclei_total_area, \
-            nuclei_mean_area, \
-            nuclei_std_area, \
-            eccentricity, \
-            solidity, \
-            mean_pix_r, \
-            std_pix_r, \
-            mean_pix_g, \
-            std_pix_g, \
-            mean_pix_b, \
-            std_pix_b = _calculate_morph_stats(tile)
+            (
+                n_nuclei,
+                nuclei_total_area,
+                nuclei_mean_area,
+                nuclei_std_area,
+                eccentricity,
+                solidity,
+                mean_pix_r,
+                std_pix_r,
+                mean_pix_g,
+                std_pix_g,
+                mean_pix_b,
+                std_pix_b,
+            ) = _calculate_morph_stats(tile)
             n_nuclei_list.append(n_nuclei)
             nuclei_total_area_list.append(nuclei_total_area)
             nuclei_mean_area_list.append(nuclei_mean_area)
@@ -121,22 +123,30 @@ def morph_watershed(
 def _calculate_morph_stats(tile_path):
     imInput = skimage.io.imread(tile_path)
     stain_color_map = htk.preprocessing.color_deconvolution.stain_color_map
-    stains = ['hematoxylin',  # nuclei stain
-              'eosin',  # cytoplasm stain
-              'null']  # set to null if input contains only two stains
-    w_est = htk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca(imInput, 255)
+    stains = [
+        "hematoxylin",  # nuclei stain
+        "eosin",  # cytoplasm stain
+        "null",
+    ]  # set to null if input contains only two stains
+    w_est = htk.preprocessing.color_deconvolution.rgb_separate_stains_macenko_pca(
+        imInput, 255
+    )
 
     # Perform color deconvolution
-    deconv_result = htk.preprocessing.color_deconvolution.color_deconvolution(imInput, w_est, 255)
+    deconv_result = htk.preprocessing.color_deconvolution.color_deconvolution(
+        imInput, w_est, 255
+    )
 
     channel = htk.preprocessing.color_deconvolution.find_stain_index(
-        stain_color_map[stains[0]], w_est)
+        stain_color_map[stains[0]], w_est
+    )
     im_nuclei_stain = deconv_result.Stains[:, :, channel]
 
     thresh = skimage.filters.threshold_otsu(im_nuclei_stain)
     # im_fgnd_mask = im_nuclei_stain < thresh
     im_fgnd_mask = sp.ndimage.morphology.binary_fill_holes(
-        im_nuclei_stain < 0.8 * thresh)
+        im_nuclei_stain < 0.8 * thresh
+    )
 
     distance = ndi.distance_transform_edt(im_fgnd_mask)
     coords = peak_local_max(distance, footprint=np.ones((3, 3)), labels=im_fgnd_mask)
@@ -147,7 +157,8 @@ def _calculate_morph_stats(tile_path):
     labels = watershed(im_nuclei_stain, markers, mask=im_fgnd_mask)
     min_nucleus_area = 60
     im_nuclei_seg_mask = htk.segmentation.label.area_open(
-        labels, min_nucleus_area).astype(np.int)
+        labels, min_nucleus_area
+    ).astype(np.int)
 
     # compute nuclei properties
     objProps = skimage.measure.regionprops(im_nuclei_seg_mask)
@@ -172,5 +183,17 @@ def _calculate_morph_stats(tile_path):
 
     solidity = np.mean(list(map(lambda x: x.solidity, objProps)))
 
-    return n_nuclei, nuclei_total_area, nuclei_mean_area, nuclei_std_area, eccentricity, solidity, mean_pix[0], std_pix[
-        0], mean_pix[1], std_pix[1], mean_pix[2], std_pix[2]
+    return (
+        n_nuclei,
+        nuclei_total_area,
+        nuclei_mean_area,
+        nuclei_std_area,
+        eccentricity,
+        solidity,
+        mean_pix[0],
+        std_pix[0],
+        mean_pix[1],
+        std_pix[1],
+        mean_pix[2],
+        std_pix[2],
+    )
