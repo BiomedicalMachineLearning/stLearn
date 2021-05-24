@@ -1,7 +1,10 @@
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import matplotlib
 import pandas as pd
 import numpy as np
+from numba.typed import List
 import seaborn as sns
 import sys
 from anndata import AnnData
@@ -21,6 +24,7 @@ from .utils import get_cmap, check_cmap
 from .cluster_plot import cluster_plot
 from .deconvolution_plot import deconvolution_plot
 from .gene_plot import gene_plot
+from ..tools.microenv.cci.het import get_between_spot_edge_array
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
@@ -33,7 +37,8 @@ def lr_plot(
     l_cmap=None, r_cmap=None, lr_cmap=None, inner_cmap=None,
     inner_size_prop: float=0.25, middle_size_prop: float=0.5,
     outer_size_prop: float=1, pt_scale: int=100, title='',
-    show_image: bool=True,
+    show_image: bool=True, show_arrows: bool=False,
+    fig: Figure = None, ax: Axes=None, crop: bool = True, margin: float = 100,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -86,14 +91,20 @@ def lr_plot(
     # Whether to show just the significant spots or all spots
     if sig_spots:
         lr_results = adata.uns['per_lr_results'][lr]
-        sig_spots = lr_results.loc[:, 'lr_sig_scores'].values != 0
-        adata = adata[sig_spots, :]
+        sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
+        adata_full = adata
+        adata = adata[sig_bool,:]
+    else:
+        sig_bool = np.array([True]*len(adata))
+        adata_full = adata
 
     # Dealing with the axis #
-    fig, ax = plt.subplots()
+    if type(fig)==type(None) or type(ax)==type(None):
+        fig, ax = plt.subplots()
 
     l_expr = adata[:, l].X.toarray()[:, 0]
     r_expr = adata[:, r].X.toarray()[:, 0]
+    # Adding binary points of the ligand/receptor pair #
     if outer_mode == 'binary':
         l_bool, r_bool = l_expr > min_expr, r_expr > min_expr
         lr_binary_labels = []
@@ -120,9 +131,10 @@ def lr_plot(
             lr_cmap = check_cmap(lr_cmap)
 
         cluster_plot(adata, use_label=f'{lr}_binary_labels', cmap=lr_cmap,
-                           size=outer_size_prop * pt_scale,
+                           size=outer_size_prop * pt_scale, crop=False,
                            ax=ax, fig=fig, show_image=show_image, **kwargs)
 
+    # Showing continuous gene expression of the LR pair #
     elif outer_mode == 'continuous':
         if type(l_cmap)==type(None):
             l_cmap = matplotlib.colors.LinearSegmentedColormap.from_list('lcmap',
@@ -142,28 +154,106 @@ def lr_plot(
             r_cmap = check_cmap(r_cmap)
 
         gene_plot(adata, gene_symbols=l, size=outer_size_prop * pt_scale,
-               cmap=l_cmap, color_bar_label=l, ax=ax, fig=fig,
+               cmap=l_cmap, color_bar_label=l, ax=ax, fig=fig, crop=False,
                                                 show_image=show_image, **kwargs)
         gene_plot(adata, gene_symbols=r, size=middle_size_prop * pt_scale,
-               cmap=r_cmap, color_bar_label=r, ax=ax, fig=fig,
+               cmap=r_cmap, color_bar_label=r, ax=ax, fig=fig, crop=False,
                                                 show_image=show_image, **kwargs)
 
+    # Adding the cell type labels #
     if type(use_label) != type(None):
         if use_label in lr_use_labels:
             inner_cmap = inner_cmap if type(inner_cmap) != type(None) else "copper"
             adata.obsm[f'{lr}_{use_label}'] = adata.uns['per_lr_results'][
                                      lr].loc[adata.obs_names,use_label].values
             het_plot(adata, use_het=f'{lr}_{use_label}', show_image=show_image,
-                     cmap=inner_cmap,
+                     cmap=inner_cmap, crop=False,
                      ax=ax, fig=fig, size=inner_size_prop * pt_scale, **kwargs)
         else:
             inner_cmap = inner_cmap if type(inner_cmap)!=type(None) else "default"
             cluster_plot(adata, use_label=use_label, cmap=inner_cmap,
-                         size=inner_size_prop * pt_scale,
+                         size=inner_size_prop * pt_scale, crop=False,
                          ax=ax, fig=fig, show_image=show_image, **kwargs)
+
+    # Adding in labels which show the interactions between signicant spots &
+    # neighbours
+    if show_arrows:
+        l_expr = adata_full[:, l].X.toarray()[:, 0]
+        r_expr = adata_full[:, r].X.toarray()[:, 0]
+        add_arrows(adata_full, l_expr > min_expr, r_expr>min_expr, sig_bool, ax)
+
+    # Cropping #
+    if crop:
+        image_coor = adata.obsm["spatial"]
+        imagecol = image_coor[:, 0]
+        imagerow = image_coor[:, 1]
+        ax.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
+        ax.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
+        ax.set_ylim(ax.get_ylim()[::-1])
+
     plt.title(title)
 
+def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
+               sig_bool: np.array, ax: Axes):
+    """ Adds arrows to the current plot for significant spots to neighbours \
+        which is interacting with.
+        Parameters
+        ----------
+        adata: AnnData          The anndata object.
+        L_bool: np.array
+        Returns
+        -------
+        counts: int   Total number of interactions satisfying the conditions, \
+                      or np.array<set> if return_edges=True, where each set is \
+                      an edge, only returns unique edges.
+    """
+    # Determining the neighbour spots used for significance testing #
+    neighbours = List()
+    for i in range(adata.uns['spot_neighbours'].shape[0]):
+        neighs = np.array(adata.uns['spot_neighbours'].values[i,
+                          :][0].split(','))
+        neighs = neighs[neighs != ''].astype(int)
+        neighbours.append(neighs)
 
+    library_id = list(adata.uns["spatial"].keys())[0]
+    # TODO the below could cause issues by hardcoding tissue res. #
+    scale_factor = adata.uns['spatial'][library_id]['scalefactors'] \
+                                                        ['tissue_lowres_scalef']
+    scale_factor = 1
+
+    # Getting the edges to draw in-between #
+    L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
+    R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
+
+    gene_bools = [L_bool, R_bool]
+    all_edges = []
+    for i, spot_indices in enumerate([L_spot_indices, R_spot_indices]):
+        neigh_zip_indices = [(spot_i, neighbours[spot_i]) for spot_i in
+                             spot_indices]
+        # Getting the barcodes #
+        neigh_zip_bcs = [(adata.obs_names[spot_i], adata.obs_names[neigh_indices])
+                         for spot_i, neigh_indices in neigh_zip_indices]
+        neigh_zip = zip(neigh_zip_bcs, neigh_zip_indices)
+
+        edges = get_between_spot_edge_array(neigh_zip, gene_bools[i],
+                                                               undirected=False)
+        if i == 1: # Need to reverse the order of the edges #
+            edges = [edge[::-1] for edge in edges]
+        all_edges.extend( edges )
+    all_edges_unique = []
+    for edge in all_edges:
+        if edge not in all_edges_unique:
+            all_edges_unique.append(edge)
+
+    # Now performing the plotting #
+    # The arrows #
+    # Now converting the edges to coordinates #
+    for edge in all_edges_unique:
+        cols = ['imagecol', 'imagerow']
+        x1, y1 = adata.obs.loc[edge[0], cols].values.astype(float) * scale_factor
+        x2, y2 = adata.obs.loc[edge[1], cols].values.astype(float) * scale_factor
+        dx, dy = x2-x1, y2-y1
+        ax.arrow(x1, y1, dx, dy, head_width=4)
 
 @_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_het_plot)
 def het_plot(

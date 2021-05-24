@@ -61,11 +61,6 @@ Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']
 # Looking at which LR pairs were significant across the most spots #
 print(data.uns['lr_summary']) #Rank-ordered by pairs with most significant spots
 
-# Visualising the cell heterogeneity, if we included this information #
-if 'cell_het' in data.obsm:
-    st.pl.het_plot(data, use_het='merged', cell_alpha=0.7)
-    plt.show()
-
 # Now looking at the LR pair with the highest number of sig. spots #
 best_lr = data.uns['lr_summary'].index.values[0]
 

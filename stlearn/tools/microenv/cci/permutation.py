@@ -9,6 +9,7 @@ from anndata import AnnData
 from .base import lr, calc_neighbours, lr_core, get_spot_lrs
 from .merge import merge
 
+# No longer in use #
 def permutation(
     adata: AnnData,
     n_pairs: int = 200,
@@ -125,7 +126,7 @@ def permutation(
 
 def get_stats(scores: np.array, background: np.array, total_bg: int,
               neg_binom: bool = False, adj_method: str = 'fdr_bh',
-              pval_adj_cutoff: float = 0.01,
+              pval_adj_cutoff: float = 0.01, return_negbinom_params: bool=False,
               ):
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
@@ -141,6 +142,8 @@ def get_stats(scores: np.array, background: np.array, total_bg: int,
     """
     ##### Negative Binomial fit - dosn't make sense, distribution not neg binom
     if neg_binom:
+        # Need to make full background for fitting !!!
+        background = np.array( list(background)+[0]*(total_bg-len(background)))
         pmin, pmax = min(background), max(background)
         background2 = [item - pmin for item in background]
         x = np.linspace(pmin, pmax, 1000)
@@ -153,6 +156,9 @@ def get_stats(scores: np.array, background: np.array, total_bg: int,
         Q = 0
         size = 1.0 / alpha * mu ** Q
         prob = size / (size + mu)
+
+        if return_negbinom_params: # For testing purposes #
+            return size, prob
 
         # Calculate probability for all spots
         pvals = 1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob)

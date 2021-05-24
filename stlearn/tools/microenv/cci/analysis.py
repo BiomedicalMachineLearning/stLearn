@@ -11,7 +11,7 @@ from numba.typed import List
 from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_spot_lrs, calc_distance
-from .het import count, count_core, count_interactions
+from .het import count, count_interactions, get_interactions
 from .permutation import get_scores, get_stats, get_valid_genes, get_ordered, \
                                                 get_median_index, get_rand_pairs
 
@@ -242,7 +242,7 @@ def run_cci(adata: AnnData, use_label: str,
     else:
         obs_key, uns_key = use_label, use_label
 
-    # Determining the neighbour spots used form significance testing #
+    # Determining the neighbour spots used for significance testing #
     neighbours = List()
     for i in range(adata.uns['spot_neighbours'].shape[0]):
         neighs = np.array(adata.uns['spot_neighbours'].values[i,
@@ -268,32 +268,37 @@ def run_cci(adata: AnnData, use_label: str,
 
         L_bool = adata[:, l].X.toarray()[:, 0] > 0
         R_bool = adata[:, r].X.toarray()[:, 0] > 0
-        # L_bool_ = adata[:, l].X.toarray()[:, 0] > 0
-        # R_bool_ = adata[:, r].X.toarray()[:, 0] > 0
-        # L_bool[R_bool_] = False
-        # R_bool[L_bool_] = False
-
         sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
         # Now counting the interactions under 3 situations:
         # 1) sig spot with ligand, only neighbours with receptor relevant
         # 2) sig spot with receptor, only neighbours with ligand relevant
-        # NOTE, A<->B is double counted
-        # (if bidirectional interaction between two spots, counts as two interactions).
-        ## 3) sig spot with both ligand and receptor, counting just R neighbours
-        ## 4) sig spot with both ligand and receptor, counting just L neighbours
-        int_mat1 = count_interactions(
+        # NOTE, A<->B is double counted, but on different side of matrix.
+        # (if bidirectional interaction between two spots, counts as two seperate interactions).
+        LR_edges = get_interactions(
                     adata, all_set, mix_mode, neighbours, obs_key, sig_bool, L_bool, R_bool,
                      tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
                      trans_dir=True, #sig ligand->receptor mode
                      )
-        int_mat2 = count_interactions(
+        RL_edges = get_interactions(
                     adata, all_set, mix_mode, neighbours, obs_key, sig_bool, R_bool, L_bool,
                      tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
                      trans_dir=False, #sig receptor->ligand mode
                      )
 
-        int_matrix = int_mat1 + int_mat2
+        # Counting the number of unique interacting edges
+        # between different cell type via indicate LR
+        int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+        for i, cell_A in enumerate(all_set):
+            RL_Atrans_edges = RL_edges[cell_A]
+            LR_Atrans_edges = LR_edges[cell_A]
+            for j, cell_B in enumerate(all_set):
+                RL_Atrans_Bedges = RL_Atrans_edges[cell_B]
+                LR_Atrans_Bedges = LR_Atrans_edges[cell_B]
+                Atrans_Bedges = np.unique( RL_Atrans_Bedges+LR_Atrans_Bedges )
+                int_matrix[i, j] = len(Atrans_Bedges)
+
+        all_matrix += int_matrix
         int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
         per_lr_cci[best_lr] = int_matrix
 
