@@ -1,12 +1,17 @@
 import sys, os, random, scipy
 import numpy as np
+import pandas as pd
 from numba import njit, prange
 from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
 
+
+from tqdm import tqdm
+from sklearn.cluster import AgglomerativeClustering
+
 from anndata import AnnData
-from .base import lr, calc_neighbours, lr_core, get_spot_lrs
+from .base import lr, calc_neighbours, get_spot_lrs, get_lrs_scores, get_scores
 from .merge import merge
 
 # No longer in use #
@@ -124,6 +129,106 @@ def permutation(
     # return adata
     return background
 
+# Newer version #
+def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,
+                         n_pairs: int, lrs: np.array,
+                         lr_mid_dist: int, verbose: float, neighbours: List,
+                         het_vals: np.array, min_expr: float,
+                         neg_binom: bool, adj_method: str,
+                         pval_adj_cutoff: float,
+                         ):
+    """ Performs the grouped permutation testing when taking the stats approach.
+    """
+    if n_pairs != 0:  # Perform permutation testing
+        # Grouping spots with similar mean expression point #
+        genes = get_valid_genes(adata, n_pairs)
+        means_ordered, genes_ordered = get_ordered(adata, genes)
+        ims = np.array(
+                     [get_median_index(lr_.split('_')[0], lr_.split('_')[1],
+                                        means_ordered.values, genes_ordered)
+                        for lr_ in lrs]).reshape(-1, 1)
+
+        if len(lrs) > 1: # Multi-LR pair mode, group LRs to generate backgrounds
+            clusterer = AgglomerativeClustering(n_clusters=None,
+                                                distance_threshold=lr_mid_dist,
+                                                affinity='manhattan',
+                                                linkage='single')
+            lr_groups = clusterer.fit_predict(ims)
+            lr_group_set = np.unique(lr_groups)
+            if verbose:
+                print(f'{len(lr_group_set)} lr groups with similar expression levels.')
+
+        else: #Single LR pair mode, generate background for the LR.
+            lr_groups = np.array([0])
+            lr_group_set = lr_groups
+
+        res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
+                                                                'lr_sig_scores']
+        n_, n_sigs = np.array([0]*len(lrs)), np.array([0]*len(lrs))
+        per_lr_results = {}
+        with tqdm(
+                total=len(lr_group_set),
+                desc="Generating background distributions for the LR pair groups..",
+                bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        ) as pbar:
+            for group in lr_group_set:
+                # Determining common mid-point for each group #
+                group_bool = lr_groups==group
+                group_im = int(np.median(ims[group_bool, 0]))
+
+                # Calculating the background #
+                rand_pairs = get_rand_pairs(adata, genes, n_pairs,
+                                                           lrs=lrs, im=group_im)
+                background = get_lrs_scores(adata, rand_pairs, neighbours,
+                                            het_vals, min_expr,
+                                                     filter_pairs=False).ravel()
+                total_bg = len(background)
+                background = background[background!=0] #Filtering for increase speed
+
+                # Getting stats for each lr in group #
+                group_lr_indices = np.where(group_bool)[0]
+                for lr_i in group_lr_indices:
+                    lr_ = lrs[lr_i]
+                    lr_results = pd.DataFrame(index=adata.obs_names,
+                                                               columns=res_info)
+                    scores = lr_scores[:, lr_i]
+                    stats = get_stats(scores, background, total_bg, neg_binom,
+                                    adj_method, pval_adj_cutoff=pval_adj_cutoff)
+                    full_stats = [scores]+list(stats)
+                    for vals, colname in zip(full_stats, res_info):
+                        lr_results[colname] = vals
+
+                    n_[lr_i] = len(np.where(scores>0)[0])
+                    n_sigs[lr_i] = len(np.where(
+                                 lr_results['p_adj'].values<pval_adj_cutoff)[0])
+                    if n_sigs[lr_i] > 0:
+                        per_lr_results[lr_] = lr_results
+                pbar.update(1)
+
+        print(f"{len(per_lr_results)} LR pairs with significant interactions.")
+
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots', 'n_spots_sig'])
+        lr_summary['n_spots'] = n_
+        lr_summary['n_spots_sig'] = n_sigs
+        lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
+
+    else: #Simply store the scores
+        per_lr_results = {}
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots'])
+        for i, lr_ in enumerate(lrs):
+            lr_results = pd.DataFrame(index=adata.obs_names,
+                                                          columns=['lr_scores'])
+            lr_results['lr_scores'] = lr_scores[:, i]
+            per_lr_results[lr_] = lr_results
+            lr_summary.loc[lr_, 'n_spots'] = len(np.where(lr_scores[:, i]>0)[0])
+        lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:,0]),:]
+
+    adata.uns['lr_summary'] = lr_summary
+    adata.uns['per_lr_results'] = per_lr_results
+    if verbose:
+        print("Summary of significant spots for each lr pair in adata.uns['lr_summary'].")
+        print("Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']")
+
 def get_stats(scores: np.array, background: np.array, total_bg: int,
               neg_binom: bool = False, adj_method: str = 'fdr_bh',
               pval_adj_cutoff: float = 0.01, return_negbinom_params: bool=False,
@@ -164,9 +269,14 @@ def get_stats(scores: np.array, background: np.array, total_bg: int,
         pvals = 1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob)
 
     else:  ###### Using the actual values to estimate p-values
-        pvals = np.array([len(np.where(background >= score)[0])/total_bg
-                          if score!= 0 else (total_bg-len(background))/total_bg
-                                                           for score in scores])
+        pvals = np.zeros((1, len(scores)), dtype=np.float)[0,:]
+        nonzero_score_bool = scores > 0
+        nonzero_score_indices = np.where(nonzero_score_bool)[0]
+        zero_score_indices = np.where(nonzero_score_bool==False)[0]
+        pvals[zero_score_indices] = (total_bg-len(background))/total_bg
+        pvals[nonzero_score_indices] = \
+                            [len(np.where(background >= scores[i])[0])/total_bg
+                                                 for i in nonzero_score_indices]
 
     pvals_adj = multipletests(pvals, method=adj_method)[1]
     log10_pvals_adj = -np.log10(pvals_adj)
@@ -279,37 +389,6 @@ def get_median_index(l, r, means_ordered, genes_ordered):
     #
     # # get the position of the median of the means between the two genes
     # im = np.argmin(abs(means.values - means.iloc[i1:i2]))
-
-@njit(parallel=True)
-def get_scores(
-        spot_lr1s: np.ndarray,
-        spot_lr2s: np.ndarray,
-        neighbours: List,
-        het_vals: np.array,
-        min_expr: float,
-) -> np.array:
-    """Permutation test for merged result
-    Parameters
-    ----------
-    spot_lr1s: np.ndarray   Spots*GeneOrder1, in format l1, r1, ... ln, rn
-    spot_lr2s: np.ndarray   Spots*GeneOrder2, in format r1, l1, ... rn, ln
-    het_vals:  np.ndarray   Spots*Het counts
-    neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
-    min_expr: float               Minimum expression for gene to be considered expressed.
-    Returns
-    -------
-    spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
-    """
-    spot_scores = np.zeros((spot_lr1s.shape[0], spot_lr1s.shape[1]//2),
-                                                                     np.float64)
-    for i in prange(0, spot_lr1s.shape[1]//2):
-        i_ = i*2 # equivalent to range(0, spot_lr1s.shape[1], 2)
-        spot_lr1, spot_lr2 = spot_lr1s[:,i_:(i_+2)], spot_lr2s[:,i_:(i_+2)]
-        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr)
-        # The merge scores #
-        lr_scores = np.multiply(het_vals, lr_scores)
-        spot_scores[:, i] = lr_scores
-    return spot_scores
 
 # Disable printing
 def blockPrint():

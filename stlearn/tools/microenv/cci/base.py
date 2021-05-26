@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy as sc
-from numba import njit
+from numba import njit, prange
 from numba.typed import List
 import scipy.spatial as spatial
 from anndata import AnnData
@@ -84,6 +84,40 @@ def calc_distance(adata: AnnData, distance: float):
             * 2
         )
     return distance
+
+def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
+                   het_vals: np.array, min_expr: float,
+                   filter_pairs: bool = True
+                   ):
+    """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
+    Parameters
+    ----------
+    adata: AnnData   See run() doc-string.
+    lrs: np.array    See run() doc-string.
+    neighbours: np.array    Array of arrays with indices specifying neighbours of each spot.
+    het_vals: np.array      Cell heterogeneity counts per spot.
+    min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
+    filter_pairs: bool      Whether to filter to valid pairs or not.
+    Returns
+    -------
+    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    """
+    spot_lr1s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=True,
+                                                      filter_pairs=filter_pairs)
+    spot_lr2s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=False,
+                                                      filter_pairs=filter_pairs)
+    if filter_pairs:
+        lrs = np.array(['_'.join(spot_lr1s.columns.values[i:i + 2])
+                        for i in range(0, spot_lr1s.shape[1], 2)])
+
+    # Calculating the lr_scores across spots for the inputted lrs #
+    lr_scores = get_scores(spot_lr1s.values, spot_lr2s.values,
+                                                 neighbours, het_vals, min_expr)
+
+    if filter_pairs:
+        return lr_scores, lrs
+    else:
+        return lr_scores
 
 def get_spot_lrs(adata: AnnData,
                  lr_pairs: list,
@@ -241,6 +275,39 @@ def lr_pandas(spot_lr1: np.ndarray,
         spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values,
     ).sum(axis=1)
     return spot_lr.values / 2
+
+@njit(parallel=True)
+def get_scores(
+        spot_lr1s: np.ndarray,
+        spot_lr2s: np.ndarray,
+        neighbours: List,
+        het_vals: np.array,
+        min_expr: float,
+) -> np.array:
+    """Calculates the scores.
+    Parameters
+    ----------
+    spot_lr1s: np.ndarray   Spots*GeneOrder1, in format l1, r1, ... ln, rn
+    spot_lr2s: np.ndarray   Spots*GeneOrder2, in format r1, l1, ... rn, ln
+    het_vals:  np.ndarray   Spots*Het counts
+    neighbours: numba.typed.List          List of np.array's indicating neighbours by indices for each spot.
+    min_expr: float               Minimum expression for gene to be considered expressed.
+    Returns
+    -------
+    spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
+    """
+    spot_scores = np.zeros((spot_lr1s.shape[0], spot_lr1s.shape[1]//2),
+                                                                     np.float64)
+    for i in prange(0, spot_lr1s.shape[1]//2):
+        i_ = i*2 # equivalent to range(0, spot_lr1s.shape[1], 2)
+        spot_lr1, spot_lr2 = spot_lr1s[:,i_:(i_+2)], spot_lr2s[:,i_:(i_+2)]
+        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr)
+        # The merge scores #
+        lr_scores = np.multiply(het_vals, lr_scores)
+        spot_scores[:, i] = lr_scores
+    return spot_scores
+
+
 
 def lr_grid(
     adata: AnnData,
