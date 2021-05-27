@@ -16,7 +16,7 @@ from typing import Tuple  # Classes
 
 import warnings
 
-from .classes import CciPlot
+from .classes import CciPlot, LrResultPlot
 from .classes_bokeh import BokehCciPlot
 from ._docs import doc_spatial_base_plot, doc_het_plot, doc_lr_plot
 from ..utils import Empty, _empty, _AxesSubplot, _docs_params
@@ -330,6 +330,63 @@ def het_plot(
         contour=contour,
         step_size=step_size,
         vmin=vmin, vmax=vmax,
+    )
+
+def lr_result_plot(
+        adata: AnnData,
+        use_lr: Optional["str"] = None,
+        use_result: Optional["str"] = "lr_sig_scores",
+        # plotting param
+        title: Optional["str"] = None,
+        figsize: Optional[Tuple[float, float]] = None,
+        cmap: Optional[str] = "Spectral_r",
+        list_clusters: Optional[list] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
+        show_plot: Optional[bool] = True,
+        show_axis: Optional[bool] = False,
+        show_image: Optional[bool] = True,
+        show_color_bar: Optional[bool] = True,
+        crop: Optional[bool] = True,
+        margin: Optional[bool] = 100,
+        size: Optional[float] = 7,
+        image_alpha: Optional[float] = 1.0,
+        cell_alpha: Optional[float] = 1.0,
+        use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
+        # cci param
+        contour: bool = False,
+        step_size: Optional[int] = None,
+        vmin: float = None, vmax: float = None,
+):
+    LrResultPlot(
+        adata,
+        use_lr,
+        use_result,
+        # plotting param
+        title,
+        figsize,
+        cmap,
+        list_clusters,
+        ax,
+        fig,
+        show_plot,
+        show_axis,
+        show_image,
+        show_color_bar,
+        crop,
+        margin,
+        size,
+        image_alpha,
+        cell_alpha,
+        use_raw,
+        fname,
+        dpi,
+        # cci param
+        contour,
+        step_size,
+        vmin, vmax,
     )
 
 

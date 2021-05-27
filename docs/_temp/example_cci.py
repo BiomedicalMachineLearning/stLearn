@@ -33,11 +33,9 @@ st.tl.cci.run(data, lrs,
                   use_label = None, #Need to add the label transfer results to object first, above code puts into 'label_transfer'
                   use_het = 'cell_het', #Slot for cell het. results in adata.obsm, only if use_label specified
                   min_spots = 6, #Filter out any LR pairs with no scores for less than 6 spots
-                  distance=0, #distance=0 for within-spot mode
+                  distance=None, #distance=0 for within-spot mode, None to auto-select distance to nearest neighbourhood.
                   n_pairs=1000, #Number of random pairs to generate
                   adj_method='fdr_bh', #MHT correction method
-                  lr_mid_dist = 150, #Controls how LR pairs grouped when creating bg distribs, higher number results in less groups
-                                    #Recommended to re-run a few times with different values to ensure results robust to this parameter.
                   min_expr=0, #min expression for gene to be considered expressed.
                   pval_adj_cutoff=.05,
                   )
@@ -45,19 +43,43 @@ st.tl.cci.run(data, lrs,
 Example output:
 
 Calculating neighbours...
-0 spots with no neighbours, 1 median spot neighbours.
+0 spots with no neighbours, 6 median spot neighbours.
 Spot neighbour indices stored in adata.uns['spot_neighbours']
-Altogether 115 valid L-R pairs
-9 lr groups with similar expression levels.
-Generating background distributions for the LR pair groups..: 100%|██████████ [ time left: 00:00 ]
-28 LR pairs with significant interactions.
-Summary of significant spots for each lr pair in adata.uns['lr_summary'].
-Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']
+Altogether 1393 valid L-R pairs
+Generating random gene pairs...
+Generating the background...
+Calculating p-values for each LR pair in each spot...: 100%|██████████ [ time left: 00:00 ]
+
+Storing results:
+
+lr_scores stored in adata.obsm['lr_scores'].
+p_vals stored in adata.obsm['p_vals'].
+p_adjs stored in adata.obsm['p_adjs'].
+-log10(p_adjs) stored in adata.obsm['-log10(p_adjs)'].
+lr_sig_scores stored in adata.obsm['lr_sig_scores'].
+
+Per-spot results in adata.obsm have columns in same order as rows in adata.uns['lr_summary'].
+Summary of LR results in adata.uns['lr_summary'].
 """
 
 ################################################################################
                     # Visualising results #
 ################################################################################
+# Plotting the -log10(p_adjs) for the lr with the highest number of spots.
+# Set use_lr to any listed in data.uns['lr_summary'] to visualise alternate lrs.
+st.pl.lr_result_plot(data,
+                     use_lr=None, #Which LR to use, if None then uses top resuls from data.uns['lr_results']
+                     use_result='-log10(p_adjs)', # Which result to visualise, must be one of
+                                                  # p_vals, p_adjs, -log10(p_adjs), lr_sig_scores
+                     )
+plt.show()
+
+################################################################################
+                # Extra diagnostic plots for results #
+################################################################################
+# TODO:
+#  Below needs to be updated with new way of storing results.
+
 # Looking at which LR pairs were significant across the most spots #
 print(data.uns['lr_summary']) #Rank-ordered by pairs with most significant spots
 

@@ -25,6 +25,12 @@ def perform_spot_testing(adata: AnnData,
     lr_genes = np.unique([lr_.split('_') for lr_ in lrs])
     genes = [gene for gene in adata.var_names if gene not in lr_genes]
 
+    minimum_genes = round(np.sqrt(n_pairs)+1)
+    if len(genes) < minimum_genes:
+        print("Exiting since need atleast "
+              f"{minimum_genes} genes to generate {n_pairs} pairs.")
+        return
+
     if n_pairs < 100:
         print("Exiting since n_pairs<100, need much larger number of pairs to "
               "get accurate backgrounds (e.g. 1000).")
@@ -96,18 +102,21 @@ def perform_spot_testing(adata: AnnData,
     lr_sig_scores = lr_sig_scores[:, order]
 
     # Saving the results in AnnData #
-    adata.uns['lr_summary'] = lr_summary
     if verbose:
-        print("Summary of LR results in adata.uns['lr_summary'].")
-        print("Storing per-spot results in data.obsm; columns of these matrices "
-              "are in same order as rows of adata.uns['lr_summary'].")
+        print("\nStoring results:\n")
 
+    adata.uns['lr_summary'] = lr_summary
     res_info = ['lr_scores', 'p_vals', 'p_adjs', '-log10(p_adjs)', 'lr_sig_scores']
     mats = [lr_scores, pvals, pvals_adj, log10pvals_adj, lr_sig_scores]
     for i, info_name in enumerate(res_info):
         adata.obsm[info_name] = mats[i]
         if verbose:
             print(f"{info_name} stored in adata.obsm['{info_name}'].")
+
+    if verbose:
+        print("\nPer-spot results in adata.obsm have columns in same order as rows "
+              "in adata.uns['lr_summary'].")
+        print("Summary of LR results in adata.uns['lr_summary'].")
 
 # Version 2, no longer in use, see above for newest method #
 def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,

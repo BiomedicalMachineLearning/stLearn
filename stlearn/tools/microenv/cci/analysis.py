@@ -19,7 +19,7 @@ def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
         distance: int = 0, n_pairs: int = 1000, neg_binom: bool = False,
         adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
-        lr_mid_dist: int = 150, min_spots: int = 5, min_expr: float = 0,
+        lr_mid_dist: int = 150, min_spots: int = 10, min_expr: float = 0,
         verbose: bool = True, method: str='spot_sig', quantile=0.05,
         plot_diagnostics: bool = False, show_plot=False,
         ):

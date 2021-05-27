@@ -11,4 +11,5 @@ from .plotting.cci_plot import het_plot
 from .plotting.cci_plot import het_plot_interactive
 from .plotting.cci_plot import grid_plot
 from .plotting.cci_plot import lr_plot
+from .plotting.cci_plot import lr_result_plot
 from .plotting.mask_plot import plot_mask

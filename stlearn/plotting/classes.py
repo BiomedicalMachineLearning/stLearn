@@ -1005,3 +1005,88 @@ class CciPlot(GenePlot):
 
     def _get_gene_expression(self):
         return self.query_adata.obsm[self.gene_symbols[0]]
+
+
+class LrResultPlot(GenePlot):
+    def __init__(
+        self,
+        adata: AnnData,
+        use_lr: Optional["str"] = None,
+        use_result: Optional["str"] = "lr_sig_scores",
+        # plotting param
+        title: Optional["str"] = None,
+        figsize: Optional[Tuple[float, float]] = None,
+        cmap: Optional[str] = "Spectral_r",
+        list_clusters: Optional[list] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
+        show_plot: Optional[bool] = True,
+        show_axis: Optional[bool] = False,
+        show_image: Optional[bool] = True,
+        show_color_bar: Optional[bool] = True,
+        crop: Optional[bool] = True,
+        margin: Optional[bool] = 100,
+        size: Optional[float] = 7,
+        image_alpha: Optional[float] = 1.0,
+        cell_alpha: Optional[float] = 1.0,
+        use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
+        # cci param
+        contour: bool = False,
+        step_size: Optional[int] = None,
+        vmin: float = None, vmax: float = None,
+        **kwargs
+    ):
+        # Making sure cci has been run first #
+        if 'lr_summary' not in adata.uns:
+            raise Exception(f'To visualise LR interaction results, must run'
+                            f'st.pl.cci.run first.')
+
+        # By default, using the LR with most significant spots #
+        if type(use_lr) == type(None):
+            use_lr = adata.uns['lr_summary'].index.values[0]
+        elif use_lr not in adata.uns['lr_summary'].index:
+            raise Exception(f'use_lr must be one of:\n' 
+                            f'{adata.uns["lr_summary"].index}')
+
+        # Checking is a valid result #
+        res_info = ['lr_scores', 'p_vals', 'p_adjs',
+                    '-log10(p_adjs)', 'lr_sig_scores']
+        if use_result not in res_info:
+            raise Exception(f'use_result must be one of:\n{res_info}')
+        else:
+            self.use_result = use_result
+
+        super().__init__(
+            adata=adata,
+            title=title,
+            figsize=figsize,
+            cmap=cmap,
+            list_clusters=list_clusters,
+            ax=ax,
+            fig=fig,
+            show_plot=show_plot,
+            show_axis=show_axis,
+            show_image=show_image,
+            show_color_bar=show_color_bar,
+            crop=crop,
+            margin=margin,
+            size=size,
+            image_alpha=image_alpha,
+            cell_alpha=cell_alpha,
+            use_raw=use_raw,
+            fname=fname,
+            dpi=dpi,
+            gene_symbols=use_lr,
+            contour=contour,
+            step_size=step_size,
+            vmin=vmin, vmax=vmax,
+        )
+
+    def _get_gene_expression(self):
+        use_lr = self.gene_symbols[0]
+        index = np.where(self.query_adata.uns['lr_summary'].index.values == \
+                         use_lr
+                         )[0][0]
+        return self.query_adata.obsm[self.use_result][:,index]
