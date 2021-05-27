@@ -665,3 +665,60 @@ def _correlation_test_helper(
     pvals = 2 * norm.cdf(-np.abs(z_score))
 
     return corr, pvals, corr_ci_low, corr_ci_high
+
+
+def _mat_mat_corr_dense(X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+    n = X.shape[1]
+
+    X_bar = np.reshape(np_mean(X, axis=1), (-1, 1))
+    X_std = np.reshape(np_std(X, axis=1), (-1, 1))
+
+    y_bar = np.reshape(np_mean(Y, axis=0), (1, -1))
+    y_std = np.reshape(np_std(Y, axis=0), (1, -1))
+
+    with np.warnings.catch_warnings():
+        np.warnings.filterwarnings(
+            "ignore", r"invalid value encountered in true_divide"
+        )
+        return (X @ Y - (n * X_bar * y_bar)) / ((n - 1) * X_std * y_std)
+
+
+def _np_apply_along_axis(func1d, axis: int, arr: np.ndarray) -> np.ndarray:
+    """
+    Apply a reduction function over a given axis.
+    Parameters
+    ----------
+    func1d
+        Reduction function that operates only on 1 dimension.
+    axis
+        Axis over which to apply the reduction.
+    arr
+        The array to be reduced.
+    Returns
+    -------
+    :class:`numpy.ndarray`
+        The reduced array.
+    """
+
+    assert arr.ndim == 2
+    assert axis in [0, 1]
+
+    if axis == 0:
+        result = np.empty(arr.shape[1])
+        for i in range(len(result)):
+            result[i] = func1d(arr[:, i])
+        return result
+
+    result = np.empty(arr.shape[0])
+    for i in range(len(result)):
+        result[i] = func1d(arr[i, :])
+
+    return result
+
+
+def np_mean(array: np.ndarray, axis: int) -> np.ndarray:  # noqa
+    return _np_apply_along_axis(np.mean, axis, array)
+
+
+def np_std(array: np.ndarray, axis: int) -> np.ndarray:  # noqa
+    return _np_apply_along_axis(np.std, axis, array)

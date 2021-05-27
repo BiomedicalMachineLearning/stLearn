@@ -9,14 +9,14 @@ from typing import Optional, Union
 from anndata import AnnData
 import warnings
 
-from ...utils import _read_graph
+from stlearn.utils import _read_graph
 
 
 def pseudotime_plot(
     adata: AnnData,
     library_id: str = None,
     use_label: str = "louvain",
-    use_pseudotime: str = "dpt_pseudotime",
+    pseudotime_key: str = "pseudotime_key",
     list_clusters: Union[str, list] = None,
     cell_alpha: float = 1.0,
     image_alpha: float = 1.0,
@@ -37,6 +37,7 @@ def pseudotime_plot(
     output: str = None,
     name: str = None,
     copy: bool = False,
+    ax=None,
 ) -> Optional[AnnData]:
 
     """\
@@ -93,7 +94,9 @@ def pseudotime_plot(
     imagerow = adata.obs["imagerow"]
 
     if list_clusters == None:
-        list_clusters = list(range(0, len(adata.obs[use_label].unique())))
+        list_clusters = np.array(range(0, len(adata.obs[use_label].unique()))).astype(
+            int
+        )
     # Get query clusters
     command = []
     # for i in list_clusters:
@@ -118,6 +121,8 @@ def pseudotime_plot(
             result2.append(labels[edge[::-1]] + 0.5)
 
     fig, a = plt.subplots()
+    if ax != None:
+        a = ax
     centroid_dict = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     dpt = adata.obs[use_pseudotime]
@@ -300,5 +305,5 @@ def get_cluster(search, dictionary):
 def get_node(node_list, split_node):
     result = np.array([])
     for node in node_list:
-        result = np.append(result, np.array(split_node[str(node)]).astype(int))
+        result = np.append(result, np.array(split_node[int(node)]).astype(int))
     return result.astype(int)
