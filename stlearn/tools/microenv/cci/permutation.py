@@ -14,6 +14,201 @@ from anndata import AnnData
 from .base import lr, calc_neighbours, get_spot_lrs, get_lrs_scores, get_scores
 from .merge import merge
 
+# Newest method #
+def perform_spot_testing(adata: AnnData,
+                         lr_scores: np.ndarray, lrs: np.array, n_pairs: int,
+                         neighbours: List, het_vals: np.array, min_expr: float,
+                         adj_method: str='fdr_bh', pval_adj_cutoff: float=0.05,
+                         verbose: bool = True,
+                         ):
+
+    lr_genes = np.unique([lr_.split('_') for lr_ in lrs])
+    genes = [gene for gene in adata.var_names if gene not in lr_genes]
+
+    if n_pairs < 100:
+        print("Exiting since n_pairs<100, need much larger number of pairs to "
+              "get accurate backgrounds (e.g. 1000).")
+        return
+
+    if verbose:
+        print("Generating random gene pairs...")
+
+    rand_genes = genes
+    rand_pairs = []
+    for i in range(n_pairs):
+        rand_pair = '_'.join(np.random.choice(rand_genes, 2))
+        while rand_pair in rand_pairs:
+            rand_pair = '_'.join(np.random.choice(rand_genes, 2))
+            print(rand_pair)
+        rand_pairs.append(rand_pair)
+
+    if verbose:
+        print("Generating the background...")
+
+    # Per spot background #
+    background = get_lrs_scores(adata, rand_pairs, neighbours,
+                                het_vals, min_expr, filter_pairs=False
+                                )
+
+    cols = ['n_spots', 'n_spots_sig']
+    lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
+    pvals = np.zeros(lr_scores.shape, dtype=np.float64)
+    pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
+    log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
+    lr_sig_scores = lr_scores.copy()
+    with tqdm(
+            total=lr_scores.shape[0],
+            desc="Calculating p-values for each LR pair in each spot...",
+            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+            disable= verbose==False
+    ) as pbar:
+        for spot_i in range(lr_scores.shape[0]):
+            for lr_j in range(lr_scores.shape[1]):
+                n_greater = len(np.where(background[spot_i, :] >=
+                                                    lr_scores[spot_i, lr_j])[0])
+                n_greater = n_greater if n_greater!=0 else 1 #pseudocount
+                pvals[spot_i, lr_j] = n_greater / background.shape[1]
+
+            # MHT correction #
+            pvals_adj[spot_i,:] = multipletests(pvals[spot_i,:],
+                                                method=adj_method)[1]
+            log10pvals_adj[spot_i,:] = -np.log10(pvals_adj[spot_i,:])
+
+            # Recording per lr results for this LR #
+            lrs_in_spot = lr_scores[spot_i] > min_expr
+            sig_lrs_in_spot = pvals_adj[spot_i,:] < pval_adj_cutoff
+            lr_summary[lrs_in_spot, 0] += 1
+            lr_summary[sig_lrs_in_spot, 1] += 1
+
+            lr_sig_scores[spot_i,sig_lrs_in_spot==False] = 0
+
+            pbar.update(1)
+
+    # Ordering the results according to number of significant spots per LR#
+    order = np.argsort(-lr_summary[:,1])
+    lrs_ordered = lrs[order]
+    lr_summary = lr_summary[order,:]
+    lr_summary = pd.DataFrame(lr_summary, index=lrs_ordered, columns=cols)
+    lr_scores = lr_scores[:, order]
+    pvals = pvals[:, order]
+    pvals_adj = pvals_adj[:, order]
+    log10pvals_adj = log10pvals_adj[:, order]
+    lr_sig_scores = lr_sig_scores[:, order]
+
+    # Saving the results in AnnData #
+    adata.uns['lr_summary'] = lr_summary
+    if verbose:
+        print("Summary of LR results in adata.uns['lr_summary'].")
+        print("Storing per-spot results in data.obsm; columns of these matrices "
+              "are in same order as rows of adata.uns['lr_summary'].")
+
+    res_info = ['lr_scores', 'p_vals', 'p_adjs', '-log10(p_adjs)', 'lr_sig_scores']
+    mats = [lr_scores, pvals, pvals_adj, log10pvals_adj, lr_sig_scores]
+    for i, info_name in enumerate(res_info):
+        adata.obsm[info_name] = mats[i]
+        if verbose:
+            print(f"{info_name} stored in adata.obsm['{info_name}'].")
+
+# Version 2, no longer in use, see above for newest method #
+def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,
+                         n_pairs: int, lrs: np.array,
+                         lr_mid_dist: int, verbose: float, neighbours: List,
+                         het_vals: np.array, min_expr: float,
+                         neg_binom: bool, adj_method: str,
+                         pval_adj_cutoff: float,
+                         ):
+    """ Performs the grouped permutation testing when taking the stats approach.
+    """
+    if n_pairs != 0:  # Perform permutation testing
+        # Grouping spots with similar mean expression point #
+        genes = get_valid_genes(adata, n_pairs)
+        means_ordered, genes_ordered = get_ordered(adata, genes)
+        ims = np.array(
+                     [get_median_index(lr_.split('_')[0], lr_.split('_')[1],
+                                        means_ordered.values, genes_ordered)
+                        for lr_ in lrs]).reshape(-1, 1)
+
+        if len(lrs) > 1: # Multi-LR pair mode, group LRs to generate backgrounds
+            clusterer = AgglomerativeClustering(n_clusters=None,
+                                                distance_threshold=lr_mid_dist,
+                                                affinity='manhattan',
+                                                linkage='single')
+            lr_groups = clusterer.fit_predict(ims)
+            lr_group_set = np.unique(lr_groups)
+            if verbose:
+                print(f'{len(lr_group_set)} lr groups with similar expression levels.')
+
+        else: #Single LR pair mode, generate background for the LR.
+            lr_groups = np.array([0])
+            lr_group_set = lr_groups
+
+        res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
+                                                                'lr_sig_scores']
+        n_, n_sigs = np.array([0]*len(lrs)), np.array([0]*len(lrs))
+        per_lr_results = {}
+        with tqdm(
+                total=len(lr_group_set),
+                desc="Generating background distributions for the LR pair groups..",
+                bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        ) as pbar:
+            for group in lr_group_set:
+                # Determining common mid-point for each group #
+                group_bool = lr_groups==group
+                group_im = int(np.median(ims[group_bool, 0]))
+
+                # Calculating the background #
+                rand_pairs = get_rand_pairs(adata, genes, n_pairs,
+                                                           lrs=lrs, im=group_im)
+                background = get_lrs_scores(adata, rand_pairs, neighbours,
+                                            het_vals, min_expr,
+                                                     filter_pairs=False).ravel()
+                total_bg = len(background)
+                background = background[background!=0] #Filtering for increase speed
+
+                # Getting stats for each lr in group #
+                group_lr_indices = np.where(group_bool)[0]
+                for lr_i in group_lr_indices:
+                    lr_ = lrs[lr_i]
+                    lr_results = pd.DataFrame(index=adata.obs_names,
+                                                               columns=res_info)
+                    scores = lr_scores[:, lr_i]
+                    stats = get_stats(scores, background, total_bg, neg_binom,
+                                    adj_method, pval_adj_cutoff=pval_adj_cutoff)
+                    full_stats = [scores]+list(stats)
+                    for vals, colname in zip(full_stats, res_info):
+                        lr_results[colname] = vals
+
+                    n_[lr_i] = len(np.where(scores>0)[0])
+                    n_sigs[lr_i] = len(np.where(
+                                 lr_results['p_adj'].values<pval_adj_cutoff)[0])
+                    if n_sigs[lr_i] > 0:
+                        per_lr_results[lr_] = lr_results
+                pbar.update(1)
+
+        print(f"{len(per_lr_results)} LR pairs with significant interactions.")
+
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots', 'n_spots_sig'])
+        lr_summary['n_spots'] = n_
+        lr_summary['n_spots_sig'] = n_sigs
+        lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
+
+    else: #Simply store the scores
+        per_lr_results = {}
+        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots'])
+        for i, lr_ in enumerate(lrs):
+            lr_results = pd.DataFrame(index=adata.obs_names,
+                                                          columns=['lr_scores'])
+            lr_results['lr_scores'] = lr_scores[:, i]
+            per_lr_results[lr_] = lr_results
+            lr_summary.loc[lr_, 'n_spots'] = len(np.where(lr_scores[:, i]>0)[0])
+        lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:,0]),:]
+
+    adata.uns['lr_summary'] = lr_summary
+    adata.uns['per_lr_results'] = per_lr_results
+    if verbose:
+        print("Summary of significant spots for each lr pair in adata.uns['lr_summary'].")
+        print("Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']")
+
 # No longer in use #
 def permutation(
     adata: AnnData,
@@ -128,106 +323,6 @@ def permutation(
 
     # return adata
     return background
-
-# Newer version #
-def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,
-                         n_pairs: int, lrs: np.array,
-                         lr_mid_dist: int, verbose: float, neighbours: List,
-                         het_vals: np.array, min_expr: float,
-                         neg_binom: bool, adj_method: str,
-                         pval_adj_cutoff: float,
-                         ):
-    """ Performs the grouped permutation testing when taking the stats approach.
-    """
-    if n_pairs != 0:  # Perform permutation testing
-        # Grouping spots with similar mean expression point #
-        genes = get_valid_genes(adata, n_pairs)
-        means_ordered, genes_ordered = get_ordered(adata, genes)
-        ims = np.array(
-                     [get_median_index(lr_.split('_')[0], lr_.split('_')[1],
-                                        means_ordered.values, genes_ordered)
-                        for lr_ in lrs]).reshape(-1, 1)
-
-        if len(lrs) > 1: # Multi-LR pair mode, group LRs to generate backgrounds
-            clusterer = AgglomerativeClustering(n_clusters=None,
-                                                distance_threshold=lr_mid_dist,
-                                                affinity='manhattan',
-                                                linkage='single')
-            lr_groups = clusterer.fit_predict(ims)
-            lr_group_set = np.unique(lr_groups)
-            if verbose:
-                print(f'{len(lr_group_set)} lr groups with similar expression levels.')
-
-        else: #Single LR pair mode, generate background for the LR.
-            lr_groups = np.array([0])
-            lr_group_set = lr_groups
-
-        res_info = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)',
-                                                                'lr_sig_scores']
-        n_, n_sigs = np.array([0]*len(lrs)), np.array([0]*len(lrs))
-        per_lr_results = {}
-        with tqdm(
-                total=len(lr_group_set),
-                desc="Generating background distributions for the LR pair groups..",
-                bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-        ) as pbar:
-            for group in lr_group_set:
-                # Determining common mid-point for each group #
-                group_bool = lr_groups==group
-                group_im = int(np.median(ims[group_bool, 0]))
-
-                # Calculating the background #
-                rand_pairs = get_rand_pairs(adata, genes, n_pairs,
-                                                           lrs=lrs, im=group_im)
-                background = get_lrs_scores(adata, rand_pairs, neighbours,
-                                            het_vals, min_expr,
-                                                     filter_pairs=False).ravel()
-                total_bg = len(background)
-                background = background[background!=0] #Filtering for increase speed
-
-                # Getting stats for each lr in group #
-                group_lr_indices = np.where(group_bool)[0]
-                for lr_i in group_lr_indices:
-                    lr_ = lrs[lr_i]
-                    lr_results = pd.DataFrame(index=adata.obs_names,
-                                                               columns=res_info)
-                    scores = lr_scores[:, lr_i]
-                    stats = get_stats(scores, background, total_bg, neg_binom,
-                                    adj_method, pval_adj_cutoff=pval_adj_cutoff)
-                    full_stats = [scores]+list(stats)
-                    for vals, colname in zip(full_stats, res_info):
-                        lr_results[colname] = vals
-
-                    n_[lr_i] = len(np.where(scores>0)[0])
-                    n_sigs[lr_i] = len(np.where(
-                                 lr_results['p_adj'].values<pval_adj_cutoff)[0])
-                    if n_sigs[lr_i] > 0:
-                        per_lr_results[lr_] = lr_results
-                pbar.update(1)
-
-        print(f"{len(per_lr_results)} LR pairs with significant interactions.")
-
-        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots', 'n_spots_sig'])
-        lr_summary['n_spots'] = n_
-        lr_summary['n_spots_sig'] = n_sigs
-        lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
-
-    else: #Simply store the scores
-        per_lr_results = {}
-        lr_summary = pd.DataFrame(index=lrs, columns=['n_spots'])
-        for i, lr_ in enumerate(lrs):
-            lr_results = pd.DataFrame(index=adata.obs_names,
-                                                          columns=['lr_scores'])
-            lr_results['lr_scores'] = lr_scores[:, i]
-            per_lr_results[lr_] = lr_results
-            lr_summary.loc[lr_, 'n_spots'] = len(np.where(lr_scores[:, i]>0)[0])
-        lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:,0]),:]
-
-    adata.uns['lr_summary'] = lr_summary
-    adata.uns['per_lr_results'] = per_lr_results
-    if verbose:
-        print("Summary of significant spots for each lr pair in adata.uns['lr_summary'].")
-        print("Spot enrichment statistics of LR interactions in adata.uns['per_lr_results']")
 
 def get_stats(scores: np.array, background: np.array, total_bg: int,
               neg_binom: bool = False, adj_method: str = 'fdr_bh',
