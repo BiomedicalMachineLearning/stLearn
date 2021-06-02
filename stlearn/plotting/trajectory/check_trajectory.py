@@ -2,6 +2,7 @@ from anndata import AnnData
 from typing import Optional, Union
 import matplotlib.pyplot as plt
 import scanpy as sc
+import numpy as np
 
 
 def check_trajectory(
@@ -16,15 +17,18 @@ def check_trajectory(
     size_spatial: int = 1.5,
     img_key: str = "hires",
 ) -> Optional[AnnData]:
-
-    assert trajectory in adata.uns["available_paths"], "Please choose the right path!"
+    trajectory = np.array(trajectory).astype(int)
+    assert (
+        list(trajectory) in adata.uns["available_paths"]
+    ), "Please choose the right path!"
+    trajectory = trajectory.astype(str)
     assert (
         pseudotime_key in adata.obs.columns
     ), "Please run the pseudotime or choose the right one!"
     assert (
         use_label in adata.obs.columns
     ), "Please run the clustering or choose the right label!"
-    assert basis not in adata.obsm, (
+    assert basis in adata.obsm, (
         "Please run the " + basis + "before you check the trajectory!"
     )
     if library_id is None:
@@ -66,6 +70,6 @@ def check_trajectory(
         adata.uns["spatial"][library_id]["images"][img_key], alpha=0, zorder=-1
     )
 
-    plt.show_plot()
+    plt.show()
 
     del adata.obsm["X_spatial"]
