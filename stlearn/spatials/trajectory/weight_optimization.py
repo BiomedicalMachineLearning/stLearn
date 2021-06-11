@@ -65,6 +65,9 @@ def weight_optimizing_global(
     )
 
     adata.uns["screening_result_global"] = screening_result
+    if np.all(np.array(result) == 0.0):
+        print("The optimized weighting is: 0.5", str(opt_w))
+        return 0.5
 
     def NormalizeData(data):
         return (data - np.min(data)) / (np.max(data) - np.min(data))

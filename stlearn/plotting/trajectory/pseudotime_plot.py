@@ -125,7 +125,7 @@ def pseudotime_plot(
         a = ax
     centroid_dict = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
-    dpt = adata.obs[use_pseudotime]
+    dpt = adata.obs[pseudotime_key]
 
     colors = adata.obs[use_label].astype(int)
     vmin = min(dpt)
@@ -134,7 +134,7 @@ def pseudotime_plot(
     from sklearn.preprocessing import MinMaxScaler
 
     scaler = MinMaxScaler()
-    scale = scaler.fit_transform(tmp[use_pseudotime].values.reshape(-1, 1)).reshape(
+    scale = scaler.fit_transform(tmp[pseudotime_key].values.reshape(-1, 1)).reshape(
         -1, 1
     )
 
