@@ -84,10 +84,14 @@ def weight_optimizing_global(
 
     result = NormalizeData(result)
 
-    optimized_ind = np.where(result == np.amin(result))[0][0]
-    opt_w = round(indx[optimized_ind], 2)
-    print("The optimized weighting is:", str(opt_w))
-    return opt_w
+    try:
+        optimized_ind = np.where(result == np.amin(result))[0][0]
+        opt_w = round(indx[optimized_ind], 2)
+        print("The optimized weighting is:", str(opt_w))
+        return opt_w
+    except:
+        print("The optimized weighting is: 0.5")
+        return 0.5
 
 
 def weight_optimizing_local(adata, use_label=None, cluster=None, step=0.01):
