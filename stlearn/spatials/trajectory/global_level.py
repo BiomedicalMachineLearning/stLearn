@@ -4,12 +4,15 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from scipy.spatial.distance import cdist
-from ...utils import _read_graph
+from stlearn.utils import _read_graph
+from sklearn.metrics import pairwise_distances
 
 
 def global_level(
     adata: AnnData,
     use_label: str = "louvain",
+    use_rep: str = "X_pca",
+    n_dims: int = 40,
     list_clusters: list = [],
     return_graph: bool = False,
     w: float = None,
@@ -57,7 +60,7 @@ def global_level(
     if verbose:
         print(
             "Start to construct the trajectory: "
-            + " -> ".join(np.array(list_clusters).astype(str))
+            + " -> ".join(np.array(query_nodes).astype(str))
         )
 
     query_dict = {}
@@ -87,11 +90,13 @@ def global_level(
 
         # Calculate DPT distance matrix
         dm_list.append(
-            dpt_distance_matrix(
+            ge_distance_matrix(
                 adata,
                 inds_cat[query_nodes[i]],
                 inds_cat[query_nodes[i + 1]],
                 use_label=use_label,
+                use_rep=use_rep,
+                n_dims=n_dims,
             )
         )
         # Calculate Spatial distance matrix
@@ -188,46 +193,46 @@ def ordering_nodes(node_list, use_label, adata):
     mean_dpt = []
     for node in node_list:
         mean_dpt.append(
-            adata.obs[adata.obs[use_label] == str(node)]["dpt_pseudotime"].max()
+            adata.obs[adata.obs[use_label] == str(node)]["dpt_pseudotime"].median()
         )
 
     return list(np.array(node_list)[np.argsort(mean_dpt)])
 
 
-def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
-    tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
-    chosen_adata1 = adata[list(tmp.index)]
-    tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
-    chosen_aadata = adata[list(tmp.index)]
+# def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
+#     tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
+#     chosen_adata1 = adata[list(tmp.index)]
+#     tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
+#     chosen_aadata = adata[list(tmp.index)]
 
-    sub_dpt1 = []
-    chosen_sub1 = chosen_adata1.obs["sub_cluster_labels"].unique()
-    for i in range(0, len(chosen_sub1)):
-        sub_dpt1.append(
-            chosen_adata1.obs[
-                chosen_adata1.obs["sub_cluster_labels"] == chosen_sub1[i]
-            ]["dpt_pseudotime"].max()
-        )
+#     sub_dpt1 = []
+#     chosen_sub1 = chosen_adata1.obs["sub_cluster_labels"].unique()
+#     for i in range(0, len(chosen_sub1)):
+#         sub_dpt1.append(
+#             chosen_adata1.obs[
+#                 chosen_adata1.obs["sub_cluster_labels"] == chosen_sub1[i]
+#             ]["dpt_pseudotime"].median()
+#         )
 
-    sub_dpt2 = []
-    chosen_sub2 = chosen_aadata.obs["sub_cluster_labels"].unique()
-    for i in range(0, len(chosen_sub2)):
-        sub_dpt2.append(
-            chosen_aadata.obs[
-                chosen_aadata.obs["sub_cluster_labels"] == chosen_sub2[i]
-            ]["dpt_pseudotime"].max()
-        )
+#     sub_dpt2 = []
+#     chosen_sub2 = chosen_aadata.obs["sub_cluster_labels"].unique()
+#     for i in range(0, len(chosen_sub2)):
+#         sub_dpt2.append(
+#             chosen_aadata.obs[
+#                 chosen_aadata.obs["sub_cluster_labels"] == chosen_sub2[i]
+#             ]["dpt_pseudotime"].median()
+#         )
 
-    dm = cdist(
-        np.array(sub_dpt1).reshape(-1, 1),
-        np.array(sub_dpt2).reshape(-1, 1),
-        lambda u, v: v - u,
-    )
-    # from sklearn.preprocessing import MinMaxScaler
-    # scaler = MinMaxScaler()
-    # scale_dm = scaler.fit_transform(dm)
-    scale_dm = (dm + (-np.min(dm))) / np.max(dm)
-    return scale_dm
+#     dm = cdist(
+#         np.array(sub_dpt1).reshape(-1, 1),
+#         np.array(sub_dpt2).reshape(-1, 1),
+#         lambda u, v: v - u,
+#     )
+#     from sklearn.preprocessing import MinMaxScaler
+#     scaler = MinMaxScaler()
+#     scale_dm = scaler.fit_transform(dm)
+#     # scale_dm = (dm + (-np.min(dm))) / np.max(dm)
+#     return scale_dm
 
 
 def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
@@ -252,10 +257,58 @@ def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
 
     sdm = cdist(np.array(sub_coord1), np.array(sub_coord2), "euclidean")
 
-    # from sklearn.preprocessing import MinMaxScaler
+    from sklearn.preprocessing import MinMaxScaler
+
     # scaler = MinMaxScaler()
     # scale_sdm = scaler.fit_transform(sdm)
     scale_sdm = sdm / np.max(sdm)
+
+    return scale_sdm
+
+
+def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
+
+    tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
+    chosen_adata1 = adata[list(tmp.index)]
+    tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
+    chosen_aadata = adata[list(tmp.index)]
+
+    centroid_dict = adata.uns["centroid_dict"]
+    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
+
+    sub_coord1 = []
+    chosen_sub1 = chosen_adata1.obs["sub_cluster_labels"].unique()
+    for i in chosen_sub1:
+        sub_coord1.append(
+            np.array(
+                chosen_adata1[chosen_adata1.obs["sub_cluster_labels"].isin([i])].obsm[
+                    use_rep
+                ][:, :n_dims]
+            )
+        )
+
+    sub_coord2 = []
+    chosen_sub2 = chosen_aadata.obs["sub_cluster_labels"].unique()
+    for i in chosen_sub2:
+        sub_coord2.append(
+            np.array(
+                chosen_aadata[chosen_aadata.obs["sub_cluster_labels"].isin([i])].obsm[
+                    use_rep
+                ][:, :n_dims]
+            )
+        )
+
+    results = []
+    for i in range(0, len(sub_coord1)):
+        for j in range(0, len(sub_coord2)):
+            results.append(cdist(sub_coord1[i], sub_coord2[j], "cosine").mean())
+    results = np.array(results).reshape(len(sub_coord1), len(sub_coord2))
+
+    from sklearn.preprocessing import MinMaxScaler
+
+    # scaler = MinMaxScaler()
+    # scale_sdm = scaler.fit_transform(results)
+    scale_sdm = results / np.max(results)
 
     return scale_sdm
 
