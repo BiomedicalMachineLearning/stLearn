@@ -8,7 +8,13 @@ from tqdm import tqdm
 
 
 def weight_optimizing_global(
-    adata, use_label=None, list_clusters=None, step=0.01, k=10
+    adata,
+    use_label=None,
+    list_clusters=None,
+    step=0.01,
+    k=10,
+    use_rep="X_pca",
+    n_dims=40,
 ):
     # Screening PTS graph
     print("Screening PTS global graph...")
@@ -28,6 +34,8 @@ def weight_optimizing_global(
                         adata,
                         use_label=use_label,
                         list_clusters=list_clusters,
+                        use_rep=use_rep,
+                        n_dims=n_dims,
                         w=round(j, 2),
                         return_graph=True,
                         verbose=False,
@@ -45,6 +53,11 @@ def weight_optimizing_global(
     a2_list = []
     indx = []
     w = 0
+    k = len(
+        adata.obs[adata.obs[use_label].isin(list_clusters)][
+            "sub_cluster_labels"
+        ].unique()
+    )
     with tqdm(
         total=int(1 / step - 1),
         desc="Calculating",
@@ -65,9 +78,6 @@ def weight_optimizing_global(
     )
 
     adata.uns["screening_result_global"] = screening_result
-    if np.all(np.array(result) == 0.0):
-        print("The optimized weighting is: 0.5", str(opt_w))
-        return 0.5
 
     def NormalizeData(data):
         return (data - np.min(data)) / (np.max(data) - np.min(data))
@@ -77,7 +87,6 @@ def weight_optimizing_global(
     optimized_ind = np.where(result == np.amin(result))[0][0]
     opt_w = round(indx[optimized_ind], 2)
     print("The optimized weighting is:", str(opt_w))
-
     return opt_w
 
 

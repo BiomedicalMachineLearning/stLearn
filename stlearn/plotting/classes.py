@@ -89,7 +89,13 @@ class SpatialBasePlot(Spatial):
                 if type(self.list_clusters) != list:
                     self.list_clusters = [self.list_clusters]
 
-                self.list_clusters = np.array(self.list_clusters).astype(str)
+                clusters_indexes = [
+                    np.where(adata.obs[use_label].cat.categories == i)[0][0]
+                    for i in self.list_clusters
+                ]
+                self.list_clusters = np.array(self.list_clusters)[
+                    np.argsort(clusters_indexes)
+                ]
 
             self.query_indexes = self._get_query_clusters_index()
 

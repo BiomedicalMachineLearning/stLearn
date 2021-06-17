@@ -11,7 +11,7 @@ from sklearn.metrics import pairwise_distances
 def global_level(
     adata: AnnData,
     use_label: str = "louvain",
-    use_rep: str = "X_diffmap",
+    use_rep: str = "X_pca",
     n_dims: int = 40,
     list_clusters: list = [],
     return_graph: bool = False,
@@ -60,7 +60,7 @@ def global_level(
     if verbose:
         print(
             "Start to construct the trajectory: "
-            + " -> ".join(np.array(list_clusters).astype(str))
+            + " -> ".join(np.array(query_nodes).astype(str))
         )
 
     query_dict = {}
@@ -259,9 +259,9 @@ def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
 
     from sklearn.preprocessing import MinMaxScaler
 
-    scaler = MinMaxScaler()
-    scale_sdm = scaler.fit_transform(sdm)
-    # scale_sdm = sdm / np.max(sdm)
+    # scaler = MinMaxScaler()
+    # scale_sdm = scaler.fit_transform(sdm)
+    scale_sdm = sdm / np.max(sdm)
 
     return scale_sdm
 
@@ -306,9 +306,9 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
 
     from sklearn.preprocessing import MinMaxScaler
 
-    scaler = MinMaxScaler()
-    scale_sdm = scaler.fit_transform(results)
-    # scale_sdm = sdm / np.max(sdm)
+    # scaler = MinMaxScaler()
+    # scale_sdm = scaler.fit_transform(results)
+    scale_sdm = results / np.max(results)
 
     return scale_sdm
 
