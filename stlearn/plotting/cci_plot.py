@@ -164,9 +164,9 @@ def lr_plot(
     if type(use_label) != type(None):
         if use_label in lr_use_labels:
             inner_cmap = inner_cmap if type(inner_cmap) != type(None) else "copper"
-            adata.obsm[f'{lr}_{use_label}'] = adata.uns['per_lr_results'][
-                                     lr].loc[adata.obs_names,use_label].values
-            het_plot(adata, use_het=f'{lr}_{use_label}', show_image=show_image,
+            # adata.obsm[f'{lr}_{use_label}'] = adata.uns['per_lr_results'][
+            #                          lr].loc[adata.obs_names,use_label].values
+            lr_result_plot(adata, use_lr=lr, show_image=show_image,
                      cmap=inner_cmap, crop=False,
                      ax=ax, fig=fig, size=inner_size_prop * pt_scale, **kwargs)
         else:

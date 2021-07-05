@@ -26,7 +26,7 @@ st.pl.cluster_plot(data, use_label="predictions")
 ################################################################################
                 # Performing cci analysis #
 ################################################################################
-# Load the NATMI literature-curated database of LR pairs, human formatted #
+# Load the NATMI literature-curated database of LR pairs, data formatted #
 lrs = st.tl.cci.load_lrs(['connectomeDB2020_lit'])
 
 st.tl.cci.run(data, lrs,
