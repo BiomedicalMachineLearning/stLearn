@@ -2,11 +2,6 @@ from typing import Optional, Union
 from anndata import AnnData
 import pandas as pd
 
-try:
-    import plotly.express as px
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("Please install plotly by `pip install plotly`")
-
 
 def stack_3d_plot(
     adata: AnnData,
@@ -40,6 +35,10 @@ def stack_3d_plot(
     -------
     Nothing
     """
+    try:
+        import plotly.express as px
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError("Please install plotly by `pip install plotly`")
 
     assert (
         slide_col in adata.obs.columns
