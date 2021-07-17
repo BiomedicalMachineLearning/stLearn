@@ -9,16 +9,18 @@ import scanpy
 
 def pseudotime(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = None,
     eps: float = 20,
     n_neighbors: int = 25,
-    use_rep: str = "X_pca_morphology",
+    use_rep: str = "X_pca",
     threshold: float = 0.01,
     radius: int = 50,
     method: str = "mean",
     threshold_spots: int = 5,
     use_sme: bool = False,
     reverse: bool = False,
+    pseudotime_key: str = "dpt_pseudotime",
+    max_nodes: int = 4,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -44,6 +46,12 @@ def pseudotime(
         method to adjust the data.
     use_sme
         Use adjusted feature by SME normalization or not
+    reverse
+        Reverse the pseudotime score
+    pseudotime_key
+        Key to store pseudotime
+    max_nodes
+        Maximum number of node in available paths
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -59,6 +67,8 @@ def pseudotime(
         del adata.obsm["X_draw_graph_fr"]
     except:
         pass
+
+    assert use_label != None, "Please choose the right `use_label`!"
 
     # Localize
     from stlearn.spatials.clustering import localization
@@ -170,7 +180,9 @@ def pseudotime(
     scanpy.tl.dpt(adata)
 
     if reverse:
-        adata.obs["dpt_pseudotime"] = 1 - adata.obs["dpt_pseudotime"]
+        adata.obs[pseudotime_key] = 1 - adata.obs[pseudotime_key]
+
+    store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key)
 
     return adata if copy else None
 
@@ -194,3 +206,47 @@ def selection_sort(x):
         swap = i + np.argmin(x[i:])
         (x[i], x[swap]) = (x[swap], x[i])
     return x
+
+
+def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key):
+
+    # Read original PAGA graph
+    G = nx.from_numpy_matrix(adata.uns["paga"]["connectivities"].toarray())
+    edge_weights = nx.get_edge_attributes(G, "weight")
+    G.remove_edges_from((e for e, w in edge_weights.items() if w < threshold))
+
+    H = G.to_directed()
+
+    # Calculate pseudotime for each node
+    node_pseudotime = {}
+
+    for node in H.nodes:
+        node_pseudotime[node] = adata.obs.query(use_label + " == '" + str(node) + "'")[
+            pseudotime_key
+        ].max()
+
+    # Force original PAGA to directed PAGA based on pseudotime
+    edge_to_remove = []
+    for edge in H.edges:
+        if node_pseudotime[edge[0]] - node_pseudotime[edge[1]] > 0:
+            edge_to_remove.append(edge)
+    H.remove_edges_from(edge_to_remove)
+
+    # Extract all available paths
+    all_paths = []
+    for source in H.nodes:
+        for target in H.nodes:
+            paths = nx.all_simple_paths(H, source=source, target=target)
+            for path in paths:
+                if len(path) < max_nodes:
+                    all_paths.append(path)
+    all_paths.sort()
+    # all_paths = list(map(lambda x: " - ".join(np.array(x).astype(str)),all_paths))
+
+    adata.uns["available_paths"] = all_paths
+
+    print(
+        "All available trajectory paths are stored in adata.uns['available_paths'] with length < "
+        + str(max_nodes)
+        + " nodes"
+    )

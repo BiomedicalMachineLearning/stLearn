@@ -8,6 +8,8 @@ from .local_level import local_level
 def pseudotimespace_global(
     adata: AnnData,
     use_label: str = "louvain",
+    use_rep: str = "X_pca",
+    n_dims: int = 40,
     list_clusters: list = [],
     w: float = None,
     step=0.01,
@@ -42,7 +44,14 @@ def pseudotimespace_global(
             adata, use_label=use_label, list_clusters=list_clusters, step=step, k=k
         )
 
-    global_level(adata, use_label=use_label, list_clusters=list_clusters, w=w)
+    global_level(
+        adata,
+        use_label=use_label,
+        list_clusters=list_clusters,
+        w=w,
+        use_rep=use_rep,
+        n_dims=n_dims,
+    )
 
 
 def pseudotimespace_local(

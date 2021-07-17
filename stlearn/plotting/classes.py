@@ -91,7 +91,13 @@ class SpatialBasePlot(Spatial):
                 if type(self.list_clusters) != list:
                     self.list_clusters = [self.list_clusters]
 
-                self.list_clusters = np.array(self.list_clusters).astype(str)
+                clusters_indexes = [
+                    np.where(adata.obs[use_label].cat.categories == i)[0][0]
+                    for i in self.list_clusters
+                ]
+                self.list_clusters = np.array(self.list_clusters)[
+                    np.argsort(clusters_indexes)
+                ]
 
             self.query_indexes = self._get_query_clusters_index()
 
@@ -978,7 +984,6 @@ class CciPlot(GenePlot):
     ):
         super().__init__(
             adata=adata,
-            title=title,
             figsize=figsize,
             cmap=cmap,
             use_label=use_label,
@@ -1002,6 +1007,10 @@ class CciPlot(GenePlot):
             step_size=step_size,
             vmin=vmin, vmax=vmax,
         )
+
+        self.title = title
+
+        self._add_title()
 
     def _get_gene_expression(self):
         return self.query_adata.obsm[self.gene_symbols[0]]

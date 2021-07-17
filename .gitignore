@@ -16,4 +16,5 @@ tiling/
 .pytest_cache
 figures/
 *.h5ad
+inferCNV/
 stlearn/tools/microenv/cci/junk_code.py

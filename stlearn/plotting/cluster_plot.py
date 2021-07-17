@@ -12,10 +12,10 @@ from typing import Tuple  # Classes
 from anndata import AnnData
 import warnings
 
-from .classes import ClusterPlot
-from .classes_bokeh import BokehClusterPlot
-from ._docs import doc_spatial_base_plot, doc_cluster_plot
-from ..utils import _AxesSubplot, Axes, _docs_params
+from stlearn.plotting.classes import ClusterPlot
+from stlearn.plotting.classes_bokeh import BokehClusterPlot
+from stlearn.plotting._docs import doc_spatial_base_plot, doc_cluster_plot
+from stlearn.utils import _AxesSubplot, Axes, _docs_params
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
@@ -111,13 +111,8 @@ def cluster_plot(
 
 def cluster_plot_interactive(
     adata: AnnData,
-    use_label: Optional[str] = None,
 ):
-    assert (
-        use_label + "_colors" in adata.uns.keys()
-    ), "Please run the `stlearn.pl.cluster_plot` to initialize the colors!"
-    assert use_label != None, "Please select `use_label` parameter"
 
-    bokeh_object = BokehClusterPlot(adata, use_label)
+    bokeh_object = BokehClusterPlot(adata)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
