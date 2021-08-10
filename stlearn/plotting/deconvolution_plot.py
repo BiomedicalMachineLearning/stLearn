@@ -16,6 +16,7 @@ def deconvolution_plot(
     data_alpha: float = 1.0,
     threshold: float = 0.0,
     cmap: str = "tab20",
+    colors: list = None, # The colors to use for each label...
     tissue_alpha: float = 1.0,
     title: str = None,
     spot_size: Union[float, int] = 10,
@@ -99,14 +100,16 @@ def deconvolution_plot(
 
     label_filter_ = label_filter[base.index]
 
-    color_vals = list(range(0, len(label_filter_), 1))
-    my_norm = mpl.colors.Normalize(0, len(label_filter_))
-    my_cmap = mpl.cm.get_cmap(cmap, len(color_vals))
+    if type(colors) == type(None):
+        color_vals = list(range(0, len(label_filter_), 1))
+        my_norm = mpl.colors.Normalize(0, len(label_filter_))
+        my_cmap = mpl.cm.get_cmap(cmap, len(color_vals))
+        colors = my_cmap.colors
 
     for i, xy in enumerate(base.values):
         _ = ax.pie(
             label_filter_.T.iloc[i].values,
-            colors=my_cmap.colors,
+            colors=colors,
             center=(xy[0], xy[1]),
             radius=spot_size,
             frame=True,
@@ -128,7 +131,7 @@ def deconvolution_plot(
 
         ax_pie.pie(
             label_filter_.sum(axis=1),
-            colors=my_cmap.colors,
+            colors=colors,
             radius=5,
             frame=True,
             autopct=my_autopct,
@@ -140,14 +143,16 @@ def deconvolution_plot(
 
         ax_pie.set_axis_off()
 
-    ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
-    cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals)
+    if type(colors) == type(None):
+        ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
+        cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals)
 
-    cb.ax.tick_params(size=0)
-    loc = np.array(color_vals) + 0.5
-    cb.set_ticks(loc)
-    cb.set_ticklabels(label_filter_.index)
-    cb.outline.set_visible(False)
+        cb.ax.tick_params(size=0)
+        loc = np.array(color_vals) + 0.5
+        cb.set_ticks(loc)
+        cb.set_ticklabels(label_filter_.index)
+        cb.outline.set_visible(False)
+
     # Overlay the tissue image
     ax.imshow(
         image,

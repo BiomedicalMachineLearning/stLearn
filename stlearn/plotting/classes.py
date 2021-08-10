@@ -513,16 +513,16 @@ class ClusterPlot(SpatialBasePlot):
             self._save_output()
 
     def _add_cluster_colors(self):
-        #if self.use_label + "_colors" not in self.adata[0].uns:
-        #self.adata[0].uns[self.use_label + "_set"] = []
-        self.adata[0].uns[self.use_label + "_colors"] = []
+        if self.use_label + "_colors" not in self.adata[0].uns:
+            #self.adata[0].uns[self.use_label + "_set"] = []
+            self.adata[0].uns[self.use_label + "_colors"] = []
 
-        for i, cluster in \
-                enumerate(self.adata[0].obs.groupby(self.use_label)):
-            self.adata[0].uns[self.use_label + "_colors"].append(
-                matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
-            )
-            #self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
+            for i, cluster in \
+                    enumerate(self.adata[0].obs.groupby(self.use_label)):
+                self.adata[0].uns[self.use_label + "_colors"].append(
+                    matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
+                )
+                #self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
 
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
