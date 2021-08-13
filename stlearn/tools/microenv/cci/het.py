@@ -74,6 +74,58 @@ def count(
 
     return adata
 
+def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
+               sig_bool: np.array):
+    """ Gets a list edges representing significant interactions.
+
+    Parameters
+    ----------
+    adata: AnnData
+    L_bool: np.array<bool>  len(L_bool)==len(adata), True if ligand expressed in that spot.
+    R_bool: np.array<bool>  len(R_bool)==len(adata), True if receptor expressed in that spot.
+    sig_bool np.array<bool>:   len(sig_bool)==len(adata), True if spot has significant LR interactions.
+    Returns
+    -------
+    edge_list_unique:   list<list<str>> Either a list of tuples (directed), or
+                        list of sets (undirected), indicating unique significant
+                        interactions between spots.
+    """
+    # Determining the neighbour spots used for significance testing #
+    neighbours = List()
+    for i in range(adata.uns['spot_neighbours'].shape[0]):
+        neighs = np.array(adata.uns['spot_neighbours'].values[i,
+                          :][0].split(','))
+        neighs = neighs[neighs != ''].astype(int)
+        neighbours.append(neighs)
+
+    # Getting the edges to draw in-between #
+    L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
+    R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
+
+    gene_bools = [L_bool, R_bool]
+    all_edges = []
+    for i, spot_indices in enumerate([L_spot_indices, R_spot_indices]):
+        neigh_zip_indices = [(spot_i, neighbours[spot_i]) for spot_i in
+                             spot_indices]
+        # Getting the barcodes #
+        neigh_zip_bcs = [(adata.obs_names[spot_i], adata.obs_names[neigh_indices])
+                         for spot_i, neigh_indices in neigh_zip_indices]
+        neigh_zip = zip(neigh_zip_bcs, neigh_zip_indices)
+
+        edges = get_between_spot_edge_array(neigh_zip, gene_bools[i],
+                                                               undirected=False)
+        if i == 1: # Need to reverse the order of the edges #
+            edges = [edge[::-1] for edge in edges]
+        all_edges.extend( edges )
+
+    # Removing any duplicates #
+    all_edges_unique = []
+    for edge in all_edges:
+        if edge not in all_edges_unique:
+            all_edges_unique.append(edge)
+
+    return all_edges_unique
+
 def get_between_spot_edge_array(neigh_zip, neigh_bool, cell_data=None,
                                 label_set=None, cutoff=None, undirected=True):
     """undirected=False uses list instead of set to store edgees, thereby giving direction"""
@@ -108,7 +160,7 @@ def get_between_spot_edge_array(neigh_zip, neigh_bool, cell_data=None,
     edge_list_unique = []
     for edge in edge_list:
         if edge not in edge_list_unique:
-            edge_list_unique.append(edge)
+            edge_list_unique.append( edge )
 
     return edge_list_unique
 

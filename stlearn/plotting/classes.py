@@ -1058,6 +1058,8 @@ class LrResultPlot(GenePlot):
         elif use_lr not in adata.uns['lr_summary'].index:
             raise Exception(f'use_lr must be one of:\n' 
                             f'{adata.uns["lr_summary"].index}')
+        else:
+            use_lr = str(use_lr)
 
         # Checking is a valid result #
         res_info = ['lr_scores', 'p_vals', 'p_adjs',
@@ -1096,6 +1098,5 @@ class LrResultPlot(GenePlot):
     def _get_gene_expression(self):
         use_lr = self.gene_symbols[0]
         index = np.where(self.query_adata.uns['lr_summary'].index.values == \
-                         use_lr
-                         )[0][0]
+                         use_lr)[0][0]
         return self.query_adata.obsm[self.use_result][:,index]

@@ -55,6 +55,8 @@ def perform_spot_testing(adata: AnnData,
     background = get_lrs_scores(adata, rand_pairs, neighbours,
                                 het_vals, min_expr, filter_pairs=False
                                 )
+    adata.obsm['spot_bgs'] = background
+    print("Added the background distribution per-spot to adata.obsm['spot_bgs']")
 
     cols = ['n_spots', 'n_spots_sig']
     lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)

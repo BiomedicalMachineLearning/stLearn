@@ -135,7 +135,6 @@ def run_cci(adata: AnnData, use_label: str,
             spot_mixtures: bool = True, cell_prop_cutoff: float = 0.2,
             verbose: bool = True,
             ):
-
     ran_lr = 'lr_summary' in adata.uns
     ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
     if not ran_lr and not ran_sig:
@@ -170,11 +169,13 @@ def run_cci(adata: AnnData, use_label: str,
     per_lr_cci = {}
     for best_lr in best_lrs:
         l, r = best_lr.split('_')
-        lr_results = adata.uns['per_lr_results'][best_lr]
+        #lr_results = adata.uns['per_lr_results'][best_lr]
 
         L_bool = adata[:, l].X.toarray()[:, 0] > 0
         R_bool = adata[:, r].X.toarray()[:, 0] > 0
-        sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
+        lr_index = np.where(adata.uns['lr_summary'].index.values==best_lr)[0][0]
+        sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] != 0
+        #sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
         # Now counting the interactions under 3 situations:
         # 1) sig spot with ligand, only neighbours with receptor relevant
@@ -182,14 +183,16 @@ def run_cci(adata: AnnData, use_label: str,
         # NOTE, A<->B is double counted, but on different side of matrix.
         # (if bidirectional interaction between two spots, counts as two seperate interactions).
         LR_edges = get_interactions(
-                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool, L_bool, R_bool,
-                     tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
-                     trans_dir=True, #sig ligand->receptor mode
+                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
+                    L_bool, R_bool,
+                     tissue_types=tissue_types, cell_type_props=cell_type_props,
+                    cell_prop_cutoff=cell_prop_cutoff, trans_dir=True, #sig ligand->receptor mode
                      )
         RL_edges = get_interactions(
-                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool, R_bool, L_bool,
-                     tissue_types=tissue_types, cell_type_props=cell_type_props, cell_prop_cutoff=cell_prop_cutoff,
-                     trans_dir=False, #sig receptor->ligand mode
+                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
+                    R_bool, L_bool,
+                     tissue_types=tissue_types, cell_type_props=cell_type_props,
+                    cell_prop_cutoff=cell_prop_cutoff, trans_dir=False, #sig receptor->ligand mode
                      )
 
         # Counting the number of unique interacting edges
@@ -215,23 +218,10 @@ def run_cci(adata: AnnData, use_label: str,
         print(f"Counts of cci interactions for all LR pairs in {f'lr_cci_{use_label}'}")
         print(f"Counts of cci interactions for each LR pair stored in dictionary {f'per_lr_cci_{use_label}'}")
 
-# Junk Code #
-"""
-@njit(parallel=True)
-def calc_expr_filter(lr_expr: np.array, lr_indices: np.array, min_expr: float):
-    # Determining spots to filter scores if insignificantly express L or R #
-    expr_filter = np.zeros((lr_expr.shape[0], lr_indices.shape[0]),
-                                                                  dtype=np.int_)
-    for j in prange(expr_filter.shape[1]):
-        l_bool = lr_expr[:,lr_indices[j,0]] > min_expr
-        r_bool = lr_expr[:,lr_indices[j,1]] > min_expr
-        for i in range(expr_filter.shape[0]):
-            if l_bool[i] or r_bool[i]:
-                expr_filter[i, j] = 1
-            else:
-                expr_filter[i, j] = 0
-    return expr_filter
-"""
+
+
+
+
 
 
 

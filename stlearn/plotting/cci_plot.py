@@ -4,6 +4,9 @@ from matplotlib.figure import Figure
 import matplotlib
 import pandas as pd
 import numpy as np
+import networkx as nx
+import math
+import matplotlib.patches as patches
 from numba.typed import List
 import seaborn as sns
 import sys
@@ -24,7 +27,7 @@ from .utils import get_cmap, check_cmap
 from .cluster_plot import cluster_plot
 from .deconvolution_plot import deconvolution_plot
 from .gene_plot import gene_plot
-from ..tools.microenv.cci.het import get_between_spot_edge_array
+from ..tools.microenv.cci.het import get_edges
 
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
@@ -90,8 +93,8 @@ def lr_plot(
 
     # Whether to show just the significant spots or all spots
     if sig_spots:
-        lr_results = adata.uns['per_lr_results'][lr]
-        sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
+        lr_index = np.where(adata.uns['lr_summary'].index.values==lr)[0][0]
+        sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] > 0
         adata_full = adata
         adata = adata[sig_bool,:]
     else:
@@ -123,10 +126,13 @@ def lr_plot(
 
         if type(lr_cmap) == type(None):
             lr_cmap = "default" #This gets ignored due to setting colours below
-            adata.uns[f'{lr}_binary_labels_set'] = [l, r, lr, '']
-            adata.uns[f'{lr}_binary_labels_colors'] = \
-                [matplotlib.colors.to_hex('r'), matplotlib.colors.to_hex('limegreen'),
-                 matplotlib.colors.to_hex('b'), matplotlib.colors.to_hex('k')]
+            colors = {l: matplotlib.colors.to_hex('r'),
+                      r: matplotlib.colors.to_hex('limegreen'),
+                      lr: matplotlib.colors.to_hex('b'),
+                      '': matplotlib.colors.to_hex('k')}
+            label_set = adata.obs[f'{lr}_binary_labels'].cat.categories
+            adata.uns[f'{lr}_binary_labels_colors'] = [colors[label]
+                                                         for label in label_set]
         else:
             lr_cmap = check_cmap(lr_cmap)
 
@@ -207,13 +213,6 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
                       or np.array<set> if return_edges=True, where each set is \
                       an edge, only returns unique edges.
     """
-    # Determining the neighbour spots used for significance testing #
-    neighbours = List()
-    for i in range(adata.uns['spot_neighbours'].shape[0]):
-        neighs = np.array(adata.uns['spot_neighbours'].values[i,
-                          :][0].split(','))
-        neighs = neighs[neighs != ''].astype(int)
-        neighbours.append(neighs)
 
     library_id = list(adata.uns["spatial"].keys())[0]
     # TODO the below could cause issues by hardcoding tissue res. #
@@ -221,29 +220,8 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
                                                         ['tissue_lowres_scalef']
     scale_factor = 1
 
-    # Getting the edges to draw in-between #
-    L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
-    R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
-
-    gene_bools = [L_bool, R_bool]
-    all_edges = []
-    for i, spot_indices in enumerate([L_spot_indices, R_spot_indices]):
-        neigh_zip_indices = [(spot_i, neighbours[spot_i]) for spot_i in
-                             spot_indices]
-        # Getting the barcodes #
-        neigh_zip_bcs = [(adata.obs_names[spot_i], adata.obs_names[neigh_indices])
-                         for spot_i, neigh_indices in neigh_zip_indices]
-        neigh_zip = zip(neigh_zip_bcs, neigh_zip_indices)
-
-        edges = get_between_spot_edge_array(neigh_zip, gene_bools[i],
-                                                               undirected=False)
-        if i == 1: # Need to reverse the order of the edges #
-            edges = [edge[::-1] for edge in edges]
-        all_edges.extend( edges )
-    all_edges_unique = []
-    for edge in all_edges:
-        if edge not in all_edges_unique:
-            all_edges_unique.append(edge)
+    # Getting the edges #
+    all_edges_unique = get_edges(adata, L_bool, R_bool, sig_bool)
 
     # Now performing the plotting #
     # The arrows #
@@ -254,6 +232,135 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
         x2, y2 = adata.obs.loc[edge[1], cols].values.astype(float) * scale_factor
         dx, dy = x2-x1, y2-y1
         ax.arrow(x1, y1, dx, dy, head_width=4)
+
+def ccinet_plot(adata: AnnData, use_label: str, best_lr: str = None,
+                pos: dict = None, return_pos: bool = False, cmap='default',
+                node_colors: dict = None,
+             node_size_exp=1, min_counts=3, figsize=(20, 15), fig=None, ax=None,
+             title=None, node_size_scaler=1):
+    """ Plots a cell-cell interaction network based on LR analysis.
+        Parameters
+        ----------
+        adata: AnnData
+        best_lr: str    The LR pair to visualise the cci network for. If None, use adata.uns['lr_cci'].
+        pos: Positions to draw each cell type, format as outputted from running networkx.circular_layout(graph).
+
+        Returns
+        -------
+        lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    """
+    cmap, cmap_n = get_cmap(cmap)
+    # Making sure adata in correct state that this function should run #
+    if f'lr_cci_{use_label}' not in adata.uns:
+        raise Exception("Need to first call st.tl.run_cci with the equivalnt "
+                        "use_label to visualise cell-cell interactions.")
+    elif type(best_lr) != type(None) and \
+              best_lr not in adata.uns[f'per_lr_cci_{use_label}']:
+        raise Exception(f"{best_lr} not found in {f'per_lr_cci_{use_label}'}, "
+                        "suggesting no significant interactions.")
+
+    # Either plotting overall interactions, or just for a particular LR #
+    if type(best_lr) == type(None):
+        int_df = adata.uns[f'lr_cci_{use_label}']
+        title = f'lr_cci_{use_label}' if type(title)==type(None) else title
+    else:
+        int_df = adata.uns[f'per_lr_cci_{use_label}'][best_lr]
+        title = best_lr if type(title) == type(None) else title
+
+    # Creating the interaction graph #
+    all_set = int_df.index.values
+    int_matrix = int_df.values
+    graph = nx.MultiDiGraph()
+    int_bool = int_matrix > min_counts
+    int_matrix = int_matrix * int_bool
+    for i, cell_A in enumerate(all_set):
+        if cell_A not in graph:
+            graph.add_node(cell_A)
+        for j, cell_B in enumerate(all_set):
+            if int_bool[i, j]:
+                count = int_matrix[i, j]
+                graph.add_edge(cell_A, cell_B, weight=count)
+
+    # Determining graph layout, node sizes, & edge colours #
+    if type(pos) == type(None):
+        pos = nx.circular_layout(graph)  # position the nodes using the spring layout
+    total = sum(sum(int_matrix))
+    node_names = list(graph.nodes.keys())
+    node_indices = [np.where(all_set==node_name)[0][0]
+                                                    for node_name in node_names]
+    node_sizes = [(((sum(int_matrix[i,:]+int_matrix[:,i])-
+                int_matrix[i,i])/total)*10000*node_size_scaler)**(node_size_exp)
+                                                          for i in node_indices]
+    edges = list(graph.edges.items())
+    e_totals = []
+    for i, edge in enumerate(edges):
+        trans_i = np.where(all_set==edge[0][0])[0][0]
+        receive_i = np.where(all_set==edge[0][1])[0][0]
+        e_total = sum(list(int_matrix[trans_i,:])+
+                      list(int_matrix[:,receive_i]))\
+                  -int_matrix[trans_i,receive_i] #so don't double count
+        e_totals.append( e_total )
+    edge_weights = [edge[1]['weight']/e_totals[i] for i, edge in enumerate(edges)]
+
+    # Determining node colors #
+    if type(node_colors) == type(None): #No inputted dictionary
+        nodes = np.unique(list(graph.nodes.keys()))
+        node_colors = []
+        for i, node in enumerate(nodes):
+            if use_label + '_colors' in adata.uns:
+                label_set = adata.uns[use_label + '_set']
+                col_index = [index for index, label in enumerate(label_set)
+                             if label == node][0]
+                color = adata.uns[use_label + '_colors'][col_index]
+            else:
+                color = cmap(i / (len(nodes) - 1))
+            node_colors.append( color )
+        if not np.all(np.array(node_names)==nodes):
+            nodes_indices = [np.where(nodes == node)[0][0] for node in node_names]
+            node_colors = np.array(node_colors)[nodes_indices]
+    else:
+        node_colors = [node_colors[node] for node in node_names]
+
+    #### Drawing the graph #####
+    if type(fig)==type(None) or type(ax)==type(None):
+        fig, ax = plt.subplots(figsize=figsize, facecolor=[0.7, 0.7, 0.7, 0.4])
+
+    # Adding in the self-loops #
+    z = 55
+    for i, edge in enumerate(edges):
+        cell_type = edge[0][0]
+        if cell_type != edge[0][1]:
+            continue
+        x, y = pos[cell_type]
+        angle = math.degrees(math.atan(y / x))
+        if x > 0:
+            angle = angle+180
+        arc = patches.Arc(xy=(x, y),
+                          width=.3, height=.025, lw=5,
+                          ec=plt.cm.get_cmap('Blues')(edge_weights[i]),
+                          angle=angle, theta1=z, theta2=360 - z
+                          )
+        ax.add_patch(arc)
+
+    # Drawing the main components of the graph #
+    edges = nx.draw_networkx(
+        graph,
+        pos,
+        node_size=node_sizes,
+        node_color=node_colors,
+        arrowstyle="->",
+        arrowsize=50,
+        width=5,
+        font_size=15,
+        font_weight='bold',
+        edge_color=edge_weights,
+        edge_cmap=plt.cm.Blues,
+        ax=ax,
+    )
+    fig.suptitle(title, fontsize=30)
+
+    if return_pos:
+        return pos
 
 @_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_het_plot)
 def het_plot(
