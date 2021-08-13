@@ -10,6 +10,7 @@ import stlearn
 from .._compat import Literal
 import scanpy
 import scipy
+import matplotlib.pyplot as plt
 
 _QUALITY = Literal["fulres", "hires", "lowres"]
 _background = ["black", "white"]
@@ -22,6 +23,7 @@ def Read10X(
     library_id: str = None,
     load_images: Optional[bool] = True,
     quality: _QUALITY = "hires",
+    image_path: Union[str, Path] = None,
 ) -> AnnData:
 
     """\
@@ -49,6 +51,8 @@ def Read10X(
         Load image or not.
     quality
         Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+    image_path
+        Path to image. Only need when loading full resolution image.
 
 
     Returns
@@ -93,6 +97,8 @@ def Read10X(
 
     if quality == "fulres":
         image_coor = adata.obsm["spatial"]
+        img = plt.imread(image_path, 0)
+        adata.uns["spatial"][library_id]["images"]["fulres"] = img
     else:
         scale = adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
