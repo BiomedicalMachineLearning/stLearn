@@ -1,11 +1,11 @@
 import sys, os, random, scipy
 import numpy as np
 import pandas as pd
+from scipy.spatial.distance import euclidean
 from numba import njit, prange
 from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
-
 
 from tqdm import tqdm
 from sklearn.cluster import AgglomerativeClustering
@@ -19,13 +19,14 @@ def perform_spot_testing(adata: AnnData,
                          lr_scores: np.ndarray, lrs: np.array, n_pairs: int,
                          neighbours: List, het_vals: np.array, min_expr: float,
                          adj_method: str='fdr_bh', pval_adj_cutoff: float=0.05,
-                         verbose: bool = True,
+                         verbose: bool = True, save_bg=False,
                          ):
 
     lr_genes = np.unique([lr_.split('_') for lr_ in lrs])
-    genes = [gene for gene in adata.var_names if gene not in lr_genes]
+    genes = np.array([gene for gene in adata.var_names if gene not in lr_genes])
+    candidate_expr = adata[:, genes].to_df().values
 
-    minimum_genes = round(np.sqrt(n_pairs)+1)
+    minimum_genes = round(np.sqrt(n_pairs)*2)
     if len(genes) < minimum_genes:
         print("Exiting since need atleast "
               f"{minimum_genes} genes to generate {n_pairs} pairs.")
@@ -39,24 +40,25 @@ def perform_spot_testing(adata: AnnData,
     if verbose:
         print("Generating random gene pairs...")
 
-    rand_genes = genes
-    rand_pairs = []
-    for i in range(n_pairs):
-        rand_pair = '_'.join(np.random.choice(rand_genes, 2))
-        while rand_pair in rand_pairs:
-            rand_pair = '_'.join(np.random.choice(rand_genes, 2))
-            print(rand_pair)
-        rand_pairs.append(rand_pair)
-
-    if verbose:
-        print("Generating the background...")
-
-    # Per spot background #
-    background = get_lrs_scores(adata, rand_pairs, neighbours,
-                                het_vals, min_expr, filter_pairs=False
-                                )
-    adata.obsm['spot_bgs'] = background
-    print("Added the background distribution per-spot to adata.obsm['spot_bgs']")
+    ######## From generating same background for each spot ########
+    # rand_genes = genes
+    # rand_pairs = []
+    # for i in range(n_pairs):
+    #     rand_pair = '_'.join(np.random.choice(rand_genes, 2))
+    #     while rand_pair in rand_pairs:
+    #         rand_pair = '_'.join(np.random.choice(rand_genes, 2))
+    #         print(rand_pair)
+    #     rand_pairs.append(rand_pair)
+    #
+    # if verbose:
+    #     print("Generating the background...")
+    #
+    # # Per spot background #
+    # background = get_lrs_scores(adata, rand_pairs, neighbours,
+    #                             het_vals, min_expr, filter_pairs=False
+    #                             )
+    # adata.obsm['spot_bgs'] = background
+    # print("Added the background distribution per-spot to adata.obsm['spot_bgs']")
 
     cols = ['n_spots', 'n_spots_sig']
     lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
@@ -65,19 +67,49 @@ def perform_spot_testing(adata: AnnData,
     log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
     lr_sig_scores = lr_scores.copy()
     with tqdm(
-            total=lr_scores.shape[0],
+            total=lr_scores.shape[1],
             desc="Calculating p-values for each LR pair in each spot...",
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
             disable= verbose==False
     ) as pbar:
-        for spot_i in range(lr_scores.shape[0]):
-            for lr_j in range(lr_scores.shape[1]):
+        for lr_j in range(lr_scores.shape[1]):
+            # Generating the background #
+            l_, r_ = lrs[lr_j].split('_')
+            l_expr = adata[:, l_].to_df().values[:, 0]
+            r_expr = adata[:, r_].to_df().values[:, 0]
+            l_genes = get_similar_genes(l_expr, minimum_genes,
+                                        candidate_expr, genes)
+            r_genes = get_similar_genes(r_expr, minimum_genes,
+                                        candidate_expr, genes)
+
+            rand_pairs = []
+            for i in range(n_pairs):
+                l_rand = np.random.choice(l_genes, 1)[0]
+                r_rand = np.random.choice(r_genes, 1)[0]
+                rand_pair = '_'.join([l_rand, r_rand])
+                while rand_pair in rand_pairs:
+                    l_rand = np.random.choice(l_genes, 1)[0]
+                    r_rand = np.random.choice(r_genes, 1)[0]
+                    rand_pair = '_'.join([l_rand, r_rand])
+                rand_pairs.append(rand_pair)
+
+            background = get_lrs_scores(adata, rand_pairs, neighbours,
+                                        het_vals, min_expr, filter_pairs=False
+                                        )
+            if save_bg:
+                adata.obsm[f'{lrs[lr_j]}_spot_bgs'] = background
+
+            for spot_i in range(lr_scores.shape[0]):
                 n_greater = len(np.where(background[spot_i, :] >=
                                                     lr_scores[spot_i, lr_j])[0])
                 n_greater = n_greater if n_greater!=0 else 1 #pseudocount
                 pvals[spot_i, lr_j] = n_greater / background.shape[1]
 
-            # MHT correction #
+            pbar.update(1)
+
+        # MHT correction # filling in other stats #
+        for spot_i in range(lr_scores.shape[0]):
+
             pvals_adj[spot_i,:] = multipletests(pvals[spot_i,:],
                                                 method=adj_method)[1]
             log10pvals_adj[spot_i,:] = -np.log10(pvals_adj[spot_i,:])
@@ -89,8 +121,6 @@ def perform_spot_testing(adata: AnnData,
             lr_summary[sig_lrs_in_spot, 1] += 1
 
             lr_sig_scores[spot_i,sig_lrs_in_spot==False] = 0
-
-            pbar.update(1)
 
     # Ordering the results according to number of significant spots per LR#
     order = np.argsort(-lr_summary[:,1])
@@ -119,6 +149,39 @@ def perform_spot_testing(adata: AnnData,
         print("\nPer-spot results in adata.obsm have columns in same order as rows "
               "in adata.uns['lr_summary'].")
         print("Summary of LR results in adata.uns['lr_summary'].")
+
+def get_similar_genes(gene_expr: np.array, n_genes: int,
+                      candidate_expr: np.ndarray, candidate_genes: np.array,
+                      quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)):
+    """ Gets genes with a similar expression distribution as the inputted gene,
+        by measuring distance between the gene expression quantiles.
+    Parameters
+    ----------
+    gene_expr: np.array     Expression of the gene of interest.
+    n_genes: int            Number of equivalent genes to select.
+    candidate_expr: np.ndarray  Expression of gene candidates.
+    candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
+    quantiles: tuple    The quantile to use
+    Returns
+    -------
+
+    """
+    quantiles = np.array(quantiles)
+
+    # Getting the quantiles for the gene #
+    ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
+    # Query quants #
+    query_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
+                                           q=quantiles, interpolation='nearest')
+
+    # Measuring distances from the desired gene #
+    dists = np.apply_along_axis(euclidean, 0, query_quants, ref_quants)
+
+    # Retrieving desired number of genes #
+    order = np.argsort(dists)
+    similar_genes = candidate_genes[order[0:n_genes]]
+
+    return similar_genes
 
 # Version 2, no longer in use, see above for newest method #
 def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,

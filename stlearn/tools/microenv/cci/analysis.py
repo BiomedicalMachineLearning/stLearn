@@ -21,7 +21,7 @@ def run(adata: AnnData, lrs: np.array,
         adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
         lr_mid_dist: int = 150, min_spots: int = 10, min_expr: float = 0,
         verbose: bool = True, method: str='spot_sig', quantile=0.05,
-        plot_diagnostics: bool = False, show_plot=False,
+        plot_diagnostics: bool = False, show_plot=False, save_bg=False,
         ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
         on the inputted data / state of the anndata object.
@@ -81,7 +81,8 @@ def run(adata: AnnData, lrs: np.array,
         """
         perform_spot_testing(adata, lr_scores, lrs, n_pairs, neighbours,
                              het_vals, min_expr, adj_method, pval_adj_cutoff,
-                                                                        verbose)
+                                                                        verbose,
+                             save_bg=save_bg)
 
     elif method == 'lr_sig':
         """ Permutation based method generating backgrounds per lr/lr group.
