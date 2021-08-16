@@ -157,11 +157,20 @@ def perform_spot_testing(adata: AnnData,
               "rows in adata.uns['lr_summary'].")
         print("Summary of LR results in adata.uns['lr_summary'].")
 
+def nonzero_quantile(expr, q, interpolation):
+    """ Calculating the non-zero quantiles. """
+    nonzero_expr = expr[ expr>0 ]
+    quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation )
+    if type(quants) != np.array and type(quants) != np.ndarray:
+        quants = np.array( [quants] )
+    return quants
+
 def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
                            n_genes: int, n_pairs: int,
                            candidate_expr: np.ndarray, genes: np.array,
                            adata: AnnData, neighbours: List, het_vals, min_expr,
-                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)):
+                           quantiles=(.5),#(.5, .75, .85, .9, .95, .97, .98, .99, 1)
+                           ):
     """ Groups LR pairs together if they have similar expression levels &
                                                 generates a background for each.
     Parameters
@@ -175,9 +184,10 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
     genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
     quantiles: tuple    The quantiles to calculate for each gene.
     """
+    quantiles = np.array(quantiles)
 
     # First getting the quantiles of gene expression #
-    gene_quants = np.apply_along_axis(np.quantile, 0, lr_expr.values,
+    gene_quants = np.apply_along_axis(nonzero_quantile, 0, lr_expr.values,
                                            q=quantiles, interpolation='nearest')
 
     # Now concatenating for the LR pairs #
@@ -192,13 +202,40 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
 
     lr_quants = np.concatenate((l_quants, r_quants), 0).transpose()
 
-    # Now cluster based on hierarchical clustering #
+    # Grouping the LR pairs #
     if len(lrs) > n_groups:
-        clusterer = AgglomerativeClustering(n_clusters=n_groups,
-                                            affinity='euclidean',
-                                            linkage='complete')
-        lr_groups = clusterer.fit_predict(lr_quants)
-        lr_group_set = np.unique(lr_groups)
+        #### From when was grouping by quantile ######
+        # Now cluster based on hierarchical clustering #
+        # clusterer = AgglomerativeClustering(n_clusters=n_groups,
+        #                                     affinity='euclidean',
+        #                                     linkage='complete')
+        # lr_groups = clusterer.fit_predict(lr_quants)
+        # lr_group_set = np.unique(lr_groups)
+
+        # Grouping based on median #
+        lr_means = lr_quants.mean(axis=1)
+        bin_bounds = np.histogram(lr_means, bins=n_groups)[1]
+        bins = np.array([(bin_bounds[i], bin_bounds[i+1])
+                                             for i in range(len(bin_bounds)-1)])
+
+        lr_bins = []
+        for lr_mean in lr_means:
+            if np.any(bin_bounds==lr_mean):
+                lr_i = np.where(bin_bounds==lr_mean)[0][0]
+                if lr_mean==max(lr_means):
+                    lr_lower = bin_bounds[-2]
+                    lr_upper = bin_bounds[-1]
+                else:
+                    lr_lower = bin_bounds[lr_i]
+                    lr_upper = bin_bounds[lr_i+1]
+            else:
+                lr_lower = bin_bounds[np.where(bin_bounds<lr_mean)[0][-1]]
+                lr_upper = bin_bounds[np.where(bin_bounds>lr_mean)[0][0]]
+            lr_bins.append( (lr_lower, lr_upper) )
+
+        lr_groups = np.array([np.where(bins==lr_bin)[0][0]
+                                                         for lr_bin in lr_bins])
+        lr_group_set = np.unique( lr_groups )
     else:
         lr_groups = np.array( [0]*len(lrs) )
         lr_group_set = np.array( [0] )
@@ -248,7 +285,8 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
 
 def get_similar_genes(gene_expr: np.array, n_genes: int,
                       candidate_expr: np.ndarray, candidate_genes: np.array,
-                      quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)):
+                      quantiles=(.5),#(.5, .75, .85, .9, .95, .97, .98, .99, 1)
+                      ):
     """ Gets genes with a similar expression distribution as the inputted gene,
         by measuring distance between the gene expression quantiles.
     Parameters
@@ -262,16 +300,23 @@ def get_similar_genes(gene_expr: np.array, n_genes: int,
     -------
     similar_genes: np.array Array of strings for gene names.
     """
-    quantiles = np.array(quantiles)
+    if type(quantiles)==float:
+        quantiles = np.array([quantiles])
+    else:
+        quantiles = np.array(quantiles)
 
     # Getting the quantiles for the gene #
     if len(gene_expr) != len(quantiles):
-        ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
+        #ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
+        ref_quants = nonzero_quantile(gene_expr, q=quantiles,
+                                                        interpolation='nearest')
     else:
         ref_quants = gene_expr
 
     # Query quants #
-    query_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
+    # query_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
+    #                                        q=quantiles, interpolation='nearest')
+    query_quants = np.apply_along_axis(nonzero_quantile, 0, candidate_expr,
                                            q=quantiles, interpolation='nearest')
 
     # Measuring distances from the desired gene #
