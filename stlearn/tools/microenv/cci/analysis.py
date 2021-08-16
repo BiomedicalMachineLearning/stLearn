@@ -22,6 +22,7 @@ def run(adata: AnnData, lrs: np.array,
         lr_mid_dist: int = 150, min_spots: int = 10, min_expr: float = 0,
         verbose: bool = True, method: str='spot_sig', quantile=0.05,
         plot_diagnostics: bool = False, show_plot=False, save_bg=False,
+        n_groups: int=5,
         ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
         on the inputted data / state of the anndata object.
@@ -38,6 +39,7 @@ def run(adata: AnnData, lrs: np.array,
     lr_mid_dist: int        The distance between the mid-points of the average expression of the two genes in an LR pair for it to be group with other pairs via AgglomerativeClustering to generate a common background distribution.
     min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
     min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
+    n_groups:               If in spot_sig mode, then groups LRs into groups of 10, then generate background for each.
     method: str             One of spot_sig, lr_sig, or hotspot; former generates background for each spot, middle generates bg for each lr, and latter identifies hotspots. 'lr_sig'/'hotspot' will be removed in future pushes.
     Returns
     -------
@@ -82,7 +84,7 @@ def run(adata: AnnData, lrs: np.array,
         perform_spot_testing(adata, lr_scores, lrs, n_pairs, neighbours,
                              het_vals, min_expr, adj_method, pval_adj_cutoff,
                                                                         verbose,
-                             save_bg=save_bg)
+                             save_bg=save_bg, n_groups=n_groups)
 
     elif method == 'lr_sig':
         """ Permutation based method generating backgrounds per lr/lr group.

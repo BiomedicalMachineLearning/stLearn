@@ -2,7 +2,6 @@ import sys, os, random, scipy
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import euclidean
-from numba import njit, prange
 from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
@@ -19,7 +18,7 @@ def perform_spot_testing(adata: AnnData,
                          lr_scores: np.ndarray, lrs: np.array, n_pairs: int,
                          neighbours: List, het_vals: np.array, min_expr: float,
                          adj_method: str='fdr_bh', pval_adj_cutoff: float=0.05,
-                         verbose: bool = True, save_bg=False,
+                         verbose: bool = True, save_bg=False, n_groups=10,
                          ):
 
     lr_genes = np.unique([lr_.split('_') for lr_ in lrs])
@@ -60,6 +59,12 @@ def perform_spot_testing(adata: AnnData,
     # adata.obsm['spot_bgs'] = background
     # print("Added the background distribution per-spot to adata.obsm['spot_bgs']")
 
+    ####### Grouping the LRs to generate common backgrounds #######
+    lr_expr = adata[:, lr_genes].to_df()
+    grouped_lr_backgrounds(lrs, lr_expr, n_groups, minimum_genes, n_pairs,
+                           candidate_expr, genes, adata, neighbours,
+                                                             het_vals, min_expr)
+
     cols = ['n_spots', 'n_spots_sig']
     lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
     pvals = np.zeros(lr_scores.shape, dtype=np.float64)
@@ -73,31 +78,33 @@ def perform_spot_testing(adata: AnnData,
             disable= verbose==False
     ) as pbar:
         for lr_j in range(lr_scores.shape[1]):
-            # Generating the background #
-            l_, r_ = lrs[lr_j].split('_')
-            l_expr = adata[:, l_].to_df().values[:, 0]
-            r_expr = adata[:, r_].to_df().values[:, 0]
-            l_genes = get_similar_genes(l_expr, minimum_genes,
-                                        candidate_expr, genes)
-            r_genes = get_similar_genes(r_expr, minimum_genes,
-                                        candidate_expr, genes)
-
-            rand_pairs = []
-            for i in range(n_pairs):
-                l_rand = np.random.choice(l_genes, 1)[0]
-                r_rand = np.random.choice(r_genes, 1)[0]
-                rand_pair = '_'.join([l_rand, r_rand])
-                while rand_pair in rand_pairs:
-                    l_rand = np.random.choice(l_genes, 1)[0]
-                    r_rand = np.random.choice(r_genes, 1)[0]
-                    rand_pair = '_'.join([l_rand, r_rand])
-                rand_pairs.append(rand_pair)
-
-            background = get_lrs_scores(adata, rand_pairs, neighbours,
-                                        het_vals, min_expr, filter_pairs=False
-                                        )
-            if save_bg:
-                adata.obsm[f'{lrs[lr_j]}_spot_bgs'] = background
+            # # Generating the background, from before grouping LRs #
+            # l_, r_ = lrs[lr_j].split('_')
+            # l_expr = adata[:, l_].to_df().values[:, 0]
+            # r_expr = adata[:, r_].to_df().values[:, 0]
+            # l_genes = get_similar_genes(l_expr, minimum_genes,
+            #                             candidate_expr, genes)
+            # r_genes = get_similar_genes(r_expr, minimum_genes,
+            #                             candidate_expr, genes)
+            #
+            # rand_pairs = []
+            # for i in range(n_pairs):
+            #     l_rand = np.random.choice(l_genes, 1)[0]
+            #     r_rand = np.random.choice(r_genes, 1)[0]
+            #     rand_pair = '_'.join([l_rand, r_rand])
+            #     while rand_pair in rand_pairs:
+            #         l_rand = np.random.choice(l_genes, 1)[0]
+            #         r_rand = np.random.choice(r_genes, 1)[0]
+            #         rand_pair = '_'.join([l_rand, r_rand])
+            #     rand_pairs.append(rand_pair)
+            #
+            # background = get_lrs_scores(adata, rand_pairs, neighbours,
+            #                             het_vals, min_expr, filter_pairs=False
+            #                             )
+            # if save_bg:
+            #     adata.obsm[f'{lrs[lr_j]}_spot_bgs'] = background
+            lr_ = lrs[lr_j]
+            background = adata.uns['lrs_to_bg'][lr_]
 
             for spot_i in range(lr_scores.shape[0]):
                 n_greater = len(np.where(background[spot_i, :] >=
@@ -146,9 +153,98 @@ def perform_spot_testing(adata: AnnData,
             print(f"{info_name} stored in adata.obsm['{info_name}'].")
 
     if verbose:
-        print("\nPer-spot results in adata.obsm have columns in same order as rows "
-              "in adata.uns['lr_summary'].")
+        print("\nPer-spot results in adata.obsm have columns in same order as "
+              "rows in adata.uns['lr_summary'].")
         print("Summary of LR results in adata.uns['lr_summary'].")
+
+def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
+                           n_genes: int, n_pairs: int,
+                           candidate_expr: np.ndarray, genes: np.array,
+                           adata: AnnData, neighbours: List, het_vals, min_expr,
+                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)):
+    """ Groups LR pairs together if they have similar expression levels &
+                                                generates a background for each.
+    Parameters
+    ----------
+    lrs: np.array   LR pairs, which will be grouped after calculating quantiles.
+    lr_expr: pd.DataFrame   Gene expression for just the LR pairs.
+    n_groups: int           The number of groups to make for the LR pairs.
+    n_genes: int            Number of equivalent genes to select to generate bg.
+    n_pairs: int            Number of random pairs to generate.
+    candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
+    genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
+    quantiles: tuple    The quantiles to calculate for each gene.
+    """
+
+    # First getting the quantiles of gene expression #
+    gene_quants = np.apply_along_axis(np.quantile, 0, lr_expr.values,
+                                           q=quantiles, interpolation='nearest')
+
+    # Now concatenating for the LR pairs #
+    l_indices, r_indices = [], []
+    for lr in lrs:
+        l_, r_ = lr.split('_')
+        l_indices.extend( np.where( lr_expr.columns.values == l_ )[0] )
+        r_indices.extend( np.where( lr_expr.columns.values == r_ )[0] )
+
+    l_quants = gene_quants[:, l_indices]
+    r_quants = gene_quants[:, r_indices]
+
+    lr_quants = np.concatenate((l_quants, r_quants), 0).transpose()
+
+    # Now cluster based on hierarchical clustering #
+    if len(lrs) > n_groups:
+        clusterer = AgglomerativeClustering(n_clusters=n_groups,
+                                            affinity='euclidean',
+                                            linkage='complete')
+        lr_groups = clusterer.fit_predict(lr_quants)
+        lr_group_set = np.unique(lr_groups)
+    else:
+        lr_groups = np.array( [0]*len(lrs) )
+        lr_group_set = np.array( [0] )
+
+    # Now grouping the LRs & getting the mean for the quantiles of each group #
+    grouped_lr_indices = [np.where(lr_groups==lr_group)[0]
+                                                   for lr_group in lr_group_set]
+
+    # Now getting the background for each group #
+    lrs_to_bg = {}
+    grouped_lrs = {}
+    for i, lr_indices in enumerate(grouped_lr_indices):
+        lrs_ = lrs[lr_indices]
+        grouped_lrs[f'group_{i}'] = lrs_
+        group_l_quants = np.apply_along_axis(np.median, 1,
+                                                        l_quants[:, lr_indices])
+        group_r_quants = np.apply_along_axis(np.median, 1,
+                                                        r_quants[:, lr_indices])
+
+        l_genes = get_similar_genes(group_l_quants, n_genes,
+                                    candidate_expr, genes)
+        remaining = [gene not in l_genes for gene in genes]
+        r_genes = get_similar_genes(group_r_quants, n_genes,
+                                 candidate_expr[:, remaining], genes[remaining])
+        rand_pairs = []
+        for i in range(n_pairs):
+            l_rand = np.random.choice(l_genes, 1)[0]
+            r_rand = np.random.choice(r_genes, 1)[0]
+            rand_pair = '_'.join([l_rand, r_rand])
+            while rand_pair in rand_pairs:
+                l_rand = np.random.choice(l_genes, 1)[0]
+                r_rand = np.random.choice(r_genes, 1)[0]
+                rand_pair = '_'.join([l_rand, r_rand])
+            rand_pairs.append(rand_pair)
+
+        background = get_lrs_scores(adata, rand_pairs, neighbours,
+                                    het_vals, min_expr, filter_pairs=False
+                                    )
+        for lr_ in lrs_:
+            lrs_to_bg[lr_] = background
+
+    # Adding the information to the adata #
+    adata.uns['lrs_to_bg'] = lrs_to_bg
+    adata.uns['grouped_lrs'] = grouped_lrs
+    print("Background information added to 'lrs_to_bg' & 'grouped_lrs' "
+          "in adata.uns")
 
 def get_similar_genes(gene_expr: np.array, n_genes: int,
                       candidate_expr: np.ndarray, candidate_genes: np.array,
@@ -157,19 +253,23 @@ def get_similar_genes(gene_expr: np.array, n_genes: int,
         by measuring distance between the gene expression quantiles.
     Parameters
     ----------
-    gene_expr: np.array     Expression of the gene of interest.
+    gene_expr: np.array     Expression of the gene of interest, or, if the same length as quantiles, then assumes is the pre-calculated quantiles.
     n_genes: int            Number of equivalent genes to select.
-    candidate_expr: np.ndarray  Expression of gene candidates.
+    candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
     candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
     quantiles: tuple    The quantile to use
     Returns
     -------
-
+    similar_genes: np.array Array of strings for gene names.
     """
     quantiles = np.array(quantiles)
 
     # Getting the quantiles for the gene #
-    ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
+    if len(gene_expr) != len(quantiles):
+        ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
+    else:
+        ref_quants = gene_expr
+
     # Query quants #
     query_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
                                            q=quantiles, interpolation='nearest')
