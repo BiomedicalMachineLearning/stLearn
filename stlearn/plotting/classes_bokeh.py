@@ -50,6 +50,7 @@ from bokeh.application.handlers import FunctionHandler
 from stlearn.classes import Spatial
 from typing import Optional
 from stlearn.utils import _read_graph
+import scanpy as sc
 
 
 class BokehGenePlot(Spatial):
@@ -99,15 +100,34 @@ class BokehGenePlot(Spatial):
             title="Select color map:", value=color_list[0], options=color_list
         )
 
-        inputs = column(
-            self.gene_select,
-            self.data_alpha,
-            self.tissue_alpha,
-            self.spot_size,
-            self.cmap_select,
-        )
+        self.menu = []
 
-        self.layout = row(inputs, self.make_fig())
+        for col in adata.obs.columns:
+            if adata.obs[col].dtype.name == "category":
+                if col != "sub_cluster_labels":
+                    self.menu.append(col)
+        if len(self.menu) != 0:
+            self.use_label = Select(
+                title="Select use_label:", value=self.menu[0], options=self.menu
+            )
+            inputs = column(
+                self.gene_select,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.cmap_select,
+                self.use_label,
+            )
+            self.layout = column(row(inputs, self.make_fig()), self.add_violin())
+        else:
+            inputs = column(
+                self.gene_select,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.cmap_select,
+            )
+            self.layout = row(inputs, self.make_fig())
 
         # Make a tab with the layout
         # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
@@ -121,6 +141,8 @@ class BokehGenePlot(Spatial):
             self.spot_size.on_change("value", self.update_data)
             self.gene_select.on_change("value", self.update_data)
             self.cmap_select.on_change("value", self.update_data)
+            if len(self.menu) != 0:
+                self.use_label.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
 
@@ -130,9 +152,11 @@ class BokehGenePlot(Spatial):
 
         fig = figure(
             title=self.gene_select.value,
-            x_range=(0, self.dim - 150),
+            x_range=(0, self.dim),
             y_range=(self.dim, 0),
             output_backend="svg",
+            name="GenePlot",
+            active_scroll="wheel_zoom",
         )
 
         colors = self._get_gene_expression([self.gene_select.value])
@@ -175,7 +199,7 @@ class BokehGenePlot(Spatial):
         )
 
         color_bar = ColorBar(
-            color_mapper=color_mapper, ticker=BasicTicker(), location=(10, 0)
+            color_mapper=color_mapper, ticker=BasicTicker(), location=(-20, 0)
         )
         fig.add_layout(color_bar, "right")
 
@@ -201,8 +225,52 @@ class BokehGenePlot(Spatial):
 
         return fig
 
+    def add_violin(self):
+        violin = self.create_violin(
+            self.adata[0],
+            gene_symbol=self.gene_select.value,
+            use_label=self.use_label.value,
+        )
+
+        violin = (np.array(violin)).astype(np.uint8)
+
+        img_pillow2 = Image.fromarray(violin).convert("RGBA")
+
+        xdim, ydim = img_pillow2.size
+
+        # Create an array representation for the image `img`, and an 8-bit "4
+        # layer/RGBA" version of it `view`.
+        image2 = np.empty((ydim, xdim), dtype=np.uint32)
+        view2 = image2.view(dtype=np.uint8).reshape((ydim, xdim, 4))
+        # Copy the RGBA image into view, flipping it so it comes right-side up
+        # with a lower-left origin
+        view2[:, :, :] = np.flipud(np.asarray(img_pillow2))
+
+        p = figure(
+            plot_width=910,
+            plot_height=int(910 / xdim * ydim) + 5,
+            output_backend="svg",
+        )
+
+        # must give a vector of images
+        p.image_rgba(image=[image2], x=0, y=1, dw=xdim, dh=ydim)
+
+        p.toolbar.logo = None
+        p.xaxis.visible = False
+        p.yaxis.visible = False
+        p.xgrid.grid_line_color = None
+        p.ygrid.grid_line_color = None
+        p.outline_line_alpha = 0
+
+        return p
+
     def update_data(self, attrname, old, new):
-        self.layout.children[1] = self.make_fig()
+
+        if len(self.menu) != 0:
+            self.layout.children[0].children[1] = self.make_fig()
+            self.layout.children[1] = self.add_violin()
+        else:
+            self.layout.children[1] = self.make_fig()
 
     def _get_gene_expression(self, gene_symbols):
 
@@ -214,6 +282,41 @@ class BokehGenePlot(Spatial):
         colors = self.adata[0][:, gene_symbols].to_df().iloc[:, -1]
 
         return colors
+
+    def fig2img(self, fig):
+        """Convert a Matplotlib figure to a PIL Image and return it"""
+        import io
+
+        buf = io.BytesIO()
+        fig.savefig(buf, bbox_inches="tight", pad_inches=0, dpi=120)
+        buf.seek(0)
+        img = Image.open(buf)
+        return img
+
+    def create_violin(self, adata, gene_symbol, use_label):
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+
+        plt.rc("font", size=15)
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sc.pl.violin(
+            adata, keys=gene_symbol, groupby=use_label, rotation=45, ax=ax, show=False
+        )
+
+        # Hide the right and top spines
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position("left")
+        ax.xaxis.set_ticks_position("bottom")
+
+        plt.close(fig)
+
+        violin = self.fig2img(fig)
+
+        return violin
 
 
 class BokehClusterPlot(Spatial):
@@ -675,7 +778,7 @@ class Annotate(Spatial):
 
     def make_fig(self):
         fig = figure(
-            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="svg"
+            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="webgl"
         )
 
         colors = np.repeat("black", len(self.imagecol))
