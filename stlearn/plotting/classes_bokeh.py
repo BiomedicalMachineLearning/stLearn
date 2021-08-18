@@ -100,6 +100,10 @@ class BokehGenePlot(Spatial):
             title="Select color map:", value=color_list[0], options=color_list
         )
 
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
+        )
+
         self.menu = []
 
         for col in adata.obs.columns:
@@ -117,6 +121,7 @@ class BokehGenePlot(Spatial):
                 self.spot_size,
                 self.cmap_select,
                 self.use_label,
+                self.output_backend,
             )
             self.layout = column(row(inputs, self.make_fig()), self.add_violin())
         else:
@@ -126,6 +131,7 @@ class BokehGenePlot(Spatial):
                 self.tissue_alpha,
                 self.spot_size,
                 self.cmap_select,
+                self.output_backend,
             )
             self.layout = row(inputs, self.make_fig())
 
@@ -141,6 +147,7 @@ class BokehGenePlot(Spatial):
             self.spot_size.on_change("value", self.update_data)
             self.gene_select.on_change("value", self.update_data)
             self.cmap_select.on_change("value", self.update_data)
+            self.output_backend.on_change("value", self.update_data)
             if len(self.menu) != 0:
                 self.use_label.on_change("value", self.update_data)
 
@@ -152,9 +159,9 @@ class BokehGenePlot(Spatial):
 
         fig = figure(
             title=self.gene_select.value,
-            x_range=(0, self.dim),
+            x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg",
+            output_backend=self.output_backend.value,
             name="GenePlot",
             active_scroll="wheel_zoom",
         )
@@ -249,7 +256,7 @@ class BokehGenePlot(Spatial):
         p = figure(
             plot_width=910,
             plot_height=int(910 / xdim * ydim) + 5,
-            output_backend="svg",
+            output_backend=self.output_backend.value,
         )
 
         # must give a vector of images
@@ -385,15 +392,32 @@ class BokehClusterPlot(Spatial):
             ),
         )
 
-        self.inputs = column(
-            self.use_label,
-            self.data_alpha,
-            self.tissue_alpha,
-            self.spot_size,
-            self.p,
-            self.list_cluster,
-            self.checkbox_group,
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
         )
+
+        if "PTS_graph" in adata.uns:
+
+            self.inputs = column(
+                self.use_label,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.p,
+                self.list_cluster,
+                self.checkbox_group,
+                self.output_backend,
+            )
+        else:
+            self.inputs = column(
+                self.use_label,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.p,
+                self.list_cluster,
+                self.output_backend,
+            )
         self.layout = row(self.inputs, self.make_fig())
 
         def modify_fig(doc):
@@ -405,7 +429,10 @@ class BokehClusterPlot(Spatial):
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
             self.list_cluster.on_change("active", self.update_data)
-            self.checkbox_group.on_change("active", self.update_data)
+            if "PTS_graph" in adata.uns:
+                self.checkbox_group.on_change("active", self.update_data)
+
+            self.output_backend.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
         self.app = Application(handler)
@@ -438,6 +465,7 @@ class BokehClusterPlot(Spatial):
             self.p,
             self.list_cluster,
             self.checkbox_group,
+            self.output_backend,
         )
 
         self.layout.children[0] = self.inputs
@@ -449,9 +477,9 @@ class BokehClusterPlot(Spatial):
     def make_fig(self):
         fig = figure(
             title="Cluster plot",
-            x_range=(0, self.dim),
+            x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg"
+            output_backend=self.output_backend.value
             # Specifying xdim/ydim isn't quire right :-(
             # width=xdim, height=ydim,
         )
@@ -618,8 +646,17 @@ class BokehCciPlot(Spatial):
             completions=available_het,
             min_characters=1,
         )
+
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
+        )
+
         inputs = column(
-            self.het_select, self.data_alpha, self.tissue_alpha, self.spot_size
+            self.het_select,
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+            self.output_backend,
         )
 
         self.layout = row(inputs, self.make_fig())
@@ -646,7 +683,7 @@ class BokehCciPlot(Spatial):
             title=self.het_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg",
+            output_backend=self.output_backend.value,
         )
 
         colors = self._get_het(self.het_select.value)

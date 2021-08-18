@@ -19,7 +19,7 @@ def check_trajectory(
 ) -> Optional[AnnData]:
     trajectory = np.array(trajectory).astype(int)
     assert (
-        list(trajectory) in adata.uns["available_paths"]
+        trajectory in adata.uns["available_paths"].values()
     ), "Please choose the right path!"
     trajectory = trajectory.astype(str)
     assert (
