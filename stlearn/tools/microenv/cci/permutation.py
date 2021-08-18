@@ -226,8 +226,11 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         #                                            for lr_square in lr_squares])
 
         # Calculating mean rank #
+        rank_dir = 'prop_highestTolowest'
+        dir_ = 1 if 'lowestToHighest' in rank_dir else -1
         median_order = np.argsort( lr_median_means )
-        prop_order = np.argsort( lr_prop_means )
+        prop_order = np.argsort( lr_prop_means*dir_ )
+        #print(lr_prop_means[prop_order])
         median_ranks = [np.where(median_order==i)[0][0]
                                                        for i in range(len(lrs))]
         prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
@@ -260,6 +263,22 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
             rank_df.iloc[:, 4] = np.array(mean_ranks)[group_indices]
             lr_group_ranks[group] = rank_df
         print(lr_group_ranks)
+        
+        rank_df = pd.DataFrame(index=lrs,
+                                columns=['lr-group',
+                                        'nonzero-median', 'zero-prop',
+                                       'median_rank', 'prop_rank', 'mean_rank'])
+        rank_df.iloc[:, 0] = lr_groups                             
+        rank_df.iloc[:, 1] = lr_median_means
+        rank_df.iloc[:, 2] = lr_prop_means
+        rank_df.iloc[:, 3] = np.array(median_ranks)
+        rank_df.iloc[:, 4] = np.array(prop_ranks)
+        rank_df.iloc[:, 5] = np.array(mean_ranks)
+        rank_df = rank_df.iloc[np.argsort(mean_ranks),:] 
+        
+        rank_df.to_csv('data/bg_eval/'+\
+                        f'lrsfeatureranks_{rank_dir}_grouped_{n_pairs}_{n_groups}.txt',
+                  sep='\t')                      
         """ # Looks good...
     else:
         lr_groups = np.array( [0]*len(lrs) )
@@ -270,7 +289,6 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
                                                    for lr_group in lr_group_set]
 
     # Now getting the background for each group #
-    # TODO check the values for the selected genes against the summarised quantiles. #
     lrs_to_bg = {}
     grouped_lrs = {}
     for i, lr_indices in enumerate(grouped_lr_indices):

@@ -13,10 +13,10 @@ def nonzero_quantile(expr, q, interpolation):
 
 def getzero_prop(expr):
     """ Calculating the proportion of zeros. """
-    nonzero_bool = expr[ expr>0 ]
-    n_zeros = len(np.where(nonzero_bool)[0])
-    nonzero_prop = [n_zeros / len(expr)]
-    return nonzero_prop
+    zero_bool = expr==0
+    n_zeros = len( np.where(zero_bool)[0] )
+    zero_prop = [n_zeros / len(expr)]
+    return zero_prop
 
 def get_lr_quants(lr_expr: pd.DataFrame,
                   l_indices: list, r_indices: list, quantiles: np.array):
@@ -126,7 +126,7 @@ def get_similar_genes(ref_quants: np.array, ref_props: np.array, n_genes: int,
     import matplotlib.pyplot as plt
     cutoff = dists[order[n_genes]]
     plt.hist(dists, bins=100)
-    plt.vlines(cutoff, 0, 250, color='r')
+    plt.vlines(cutoff, 0, 500, color='r')
     plt.show()
     """
 
