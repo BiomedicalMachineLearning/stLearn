@@ -293,8 +293,8 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         #                                                                sep='\t')
         #"""
     else:
-        lr_groups = np.array( [0]*len(lrs) )
-        lr_group_set = np.array( [0] )
+        lr_groups = np.array( list(range(len(lrs))) )
+        lr_group_set = np.array( list(range(len(lrs))) )
 
     # Now grouping the LRs & getting the mean for the quantiles of each group #
     grouped_lr_indices = [np.where(lr_groups==lr_group)[0]
