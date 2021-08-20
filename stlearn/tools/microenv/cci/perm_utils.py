@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 def nonzero_quantile(expr, q, interpolation):
     """ Calculating the non-zero quantiles. """
     nonzero_expr = expr[ expr>0 ]
-    quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation )
+    quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation)
     if type(quants) != np.array and type(quants) != np.ndarray:
         quants = np.array( [quants] )
     return quants
@@ -19,15 +19,18 @@ def getzero_prop(expr):
     return zero_prop
 
 def get_lr_quants(lr_expr: pd.DataFrame,
-                  l_indices: list, r_indices: list, quantiles: np.array):
+                  l_indices: list, r_indices: list, quantiles: np.array,
+                  method=''):
     """ Gets the quantiles per gene in the LR pair, & then concatenates.
     Returns
     -------
     lr_quants, l_quants, r_quants: np.ndarray   First is concatenation of two latter. Each row is a quantile value, each column is a LR pair.
     """
 
+    quant_func = nonzero_quantile if method!='quantiles' else np.quantile
+
     # First getting the quantiles of gene expression #
-    gene_quants = np.apply_along_axis(nonzero_quantile, 0, lr_expr.values,
+    gene_quants = np.apply_along_axis(quant_func, 0, lr_expr.values,
                                            q=quantiles, interpolation='nearest')
 
     l_quants = gene_quants[:, l_indices]
@@ -132,23 +135,23 @@ def get_similar_genes(ref_quants: np.array, ref_props: np.array, n_genes: int,
 
     return similar_genes
 
-def get_similar_genes_OLD(gene_expr: np.array, n_genes: int,
-                      candidate_expr: np.ndarray, candidate_genes: np.array,
-                      quantiles=(.5),#(.5, .75, .85, .9, .95, .97, .98, .99, 1)
-                      ):
+def get_similar_genes_Quantiles(gene_expr: np.array, n_genes: int,
+                      candidate_quants: np.ndarray, candidate_genes: np.array,
+                      quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)):
     """ Gets genes with a similar expression distribution as the inputted gene,
         by measuring distance between the gene expression quantiles.
     Parameters
     ----------
     gene_expr: np.array     Expression of the gene of interest, or, if the same length as quantiles, then assumes is the pre-calculated quantiles.
     n_genes: int            Number of equivalent genes to select.
-    candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
+    candidate_quants: np.ndarray  Expression quantiles of gene candidates (quantiles*genes).
     candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
     quantiles: tuple    The quantile to use
     Returns
     -------
     similar_genes: np.array Array of strings for gene names.
     """
+
     if type(quantiles)==float:
         quantiles = np.array([quantiles])
     else:
@@ -162,17 +165,21 @@ def get_similar_genes_OLD(gene_expr: np.array, n_genes: int,
     else:
         ref_quants = gene_expr
 
-    # Query quants #
-    # query_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
-    #                                        q=quantiles, interpolation='nearest')
-    query_quants = np.apply_along_axis(nonzero_quantile, 0, candidate_expr,
-                                           q=quantiles, interpolation='nearest')
-
     # Measuring distances from the desired gene #
-    dists = np.apply_along_axis(euclidean, 0, query_quants, ref_quants)
+    dists = np.apply_along_axis(canberra, 0, candidate_quants, ref_quants)
+    order = np.argsort(dists)
+
+    """ During debugging, plotting distribution of distances & selected genes.
+    import matplotlib.pyplot as plt
+    cutoff = dists[order[n_genes]]
+    fig, ax = plt.subplots()
+    ax.hist(dists[order[0:28000]], bins=1000)
+    y_max = ax.get_ylim()[1]
+    ax.vlines(cutoff, 0, y_max/2, color='r')
+    plt.show()
+    """
 
     # Retrieving desired number of genes #
-    order = np.argsort(dists)
     similar_genes = candidate_genes[order[0:n_genes]]
 
     return similar_genes

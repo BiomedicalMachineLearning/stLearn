@@ -12,7 +12,8 @@ from anndata import AnnData
 from .base import lr, calc_neighbours, get_spot_lrs, get_lrs_scores, get_scores
 from .merge import merge
 from .perm_utils import nonzero_quantile, get_lr_quants, get_lr_zeroprops, \
-                        get_lr_bounds, get_similar_genes
+                        get_lr_bounds, get_similar_genes, \
+                        get_similar_genes_Quantiles
 
 # Newest method #
 def perform_spot_testing(adata: AnnData,
@@ -162,7 +163,7 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
                            n_genes: int, n_pairs: int,
                            candidate_expr: np.ndarray, genes: np.array,
                            adata: AnnData, neighbours: List, het_vals, min_expr,
-                           quantiles=(.5),#(.5, .75, .85, .9, .95, .97, .98, .99, 1)
+                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)
                            ):
     """ Groups LR pairs together if they have similar expression levels &
                                                 generates a background for each.
@@ -186,25 +187,31 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         l_indices.extend( np.where( lr_expr.columns.values == l_ )[0] )
         r_indices.extend( np.where( lr_expr.columns.values == r_ )[0] )
 
+    rank_dir = 'prop_highestTolowest'
+    method = 'quantiles'
+
     # The nonzero median when quantiles=.5 #
     lr_quants, l_quants, r_quants = get_lr_quants(lr_expr, l_indices, r_indices,
-                                                                      quantiles)
+                                                       quantiles, method=method)
 
-    # Now calculating the zero proportions #
+    # Calculating the zero proportions, for grouping based on median/zeros #
     lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
 
     # Grouping the LR pairs #
     if len(lrs) > n_groups:
         #### From when was grouping by quantile ######
         # Now cluster based on hierarchical clustering #
-        # clusterer = AgglomerativeClustering(n_clusters=n_groups,
-        #                                     affinity='euclidean',
-        #                                     linkage='complete')
-        # lr_groups = clusterer.fit_predict(lr_quants)
-        # lr_group_set = np.unique(lr_groups)
+        clusterer = AgglomerativeClustering(n_clusters=n_groups,
+                                            affinity='euclidean',
+                                            linkage='ward')
+        lr_groups = clusterer.fit_predict(lr_quants)
+        lr_group_set = np.unique(lr_groups)
 
-        # Grouping based on median/zero proportion #
-        lr_median_means = lr_quants.mean(axis=1)
+        ######## Grouping based on median/zero proportion #######
+        lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
+                                                       quantiles=np.array([.5]),
+                                                                      method='')
+        lr_median_means = lr_meds.mean(axis=1)
         lr_prop_means = lr_props.mean(axis=1)
 
         ####### From when was grouping by 2D binning ######
@@ -226,7 +233,6 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         #                                            for lr_square in lr_squares])
 
         # Calculating mean rank #
-        rank_dir = 'prop_highestTolowest'
         dir_ = 1 if 'lowestToHighest' in rank_dir else -1
         median_order = np.argsort( lr_median_means )
         prop_order = np.argsort( lr_prop_means*dir_ )
@@ -237,18 +243,18 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
 
         # Grouping based on bounds #
-        bounds = np.histogram(mean_ranks, bins=n_groups)[1]
-        bins = np.array([(bounds[i], bounds[i+1])
-                                                 for i in range(len(bounds)-1)])
-        lr_bins = []
-        for i in range(len(lrs)):
-            lr_mean_rank = mean_ranks[i]
-            lr_bin = get_lr_bounds(lr_mean_rank, bounds)
-            lr_bins.append( lr_bin )
-
-        lr_groups = np.array([np.where(bins==lr_bin)[0][0]
-                                                         for lr_bin in lr_bins])
-        lr_group_set = np.unique( lr_groups )
+        # bounds = np.histogram(mean_ranks, bins=n_groups)[1]
+        # bins = np.array([(bounds[i], bounds[i+1])
+        #                                          for i in range(len(bounds)-1)])
+        # lr_bins = []
+        # for i in range(len(lrs)):
+        #     lr_mean_rank = mean_ranks[i]
+        #     lr_bin = get_lr_bounds(lr_mean_rank, bounds)
+        #     lr_bins.append( lr_bin )
+        #
+        # lr_groups = np.array([np.where(bins==lr_bin)[0][0]
+        #                                                  for lr_bin in lr_bins])
+        # lr_group_set = np.unique( lr_groups )
         """For debugging, want to see the ranks of pairs in each group.
         lr_group_ranks = {}
         for group in lr_group_set:
@@ -263,23 +269,29 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
             rank_df.iloc[:, 4] = np.array(mean_ranks)[group_indices]
             lr_group_ranks[group] = rank_df
         print(lr_group_ranks)
-        
-        rank_df = pd.DataFrame(index=lrs,
-                                columns=['lr-group',
-                                        'nonzero-median', 'zero-prop',
-                                       'median_rank', 'prop_rank', 'mean_rank'])
+        """
+        #"""Saving the lrfeatures...
+        cols = ['lr-group', 'nonzero-median', 'zero-prop',
+                                        'median_rank', 'prop_rank', 'mean_rank']
+        rank_df = pd.DataFrame(index=lrs, columns=cols)
         rank_df.iloc[:, 0] = lr_groups                             
         rank_df.iloc[:, 1] = lr_median_means
         rank_df.iloc[:, 2] = lr_prop_means
         rank_df.iloc[:, 3] = np.array(median_ranks)
         rank_df.iloc[:, 4] = np.array(prop_ranks)
         rank_df.iloc[:, 5] = np.array(mean_ranks)
-        rank_df = rank_df.iloc[np.argsort(mean_ranks),:] 
-        
-        rank_df.to_csv('data/bg_eval/'+\
-                        f'lrsfeatureranks_{rank_dir}_grouped_{n_pairs}_{n_groups}.txt',
-                  sep='\t')                      
-        """ # Looks good...
+        rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
+        if method=='quantiles':
+            lr_cols = [f'L_{quant}' for quant in quantiles] +\
+                      [f'R_{quant}' for quant in quantiles]
+            quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
+            rank_df = pd.concat((rank_df, quant_df), axis=1)
+        adata.uns['lrfeatures'] = rank_df
+
+        # rank_df.to_csv('data/bg_eval/'+\
+        #         f'lrsfeatureranks_{rank_dir}_{method}_{n_pairs}_{n_groups}.txt',
+        #                                                                sep='\t')
+        #"""
     else:
         lr_groups = np.array( [0]*len(lrs) )
         lr_group_set = np.array( [0] )
@@ -291,6 +303,9 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
     # Now getting the background for each group #
     lrs_to_bg = {}
     grouped_lrs = {}
+    # Pre-computing the quantiles #
+    candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
+                                           q=quantiles, interpolation='nearest')
     for i, lr_indices in enumerate(grouped_lr_indices):
         lrs_ = lrs[lr_indices]
         grouped_lrs[f'group_{i}'] = lrs_
@@ -298,17 +313,18 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
                                                         l_quants[:, lr_indices])
         group_r_quants = np.apply_along_axis(np.median, 1,
                                                         r_quants[:, lr_indices])
-        group_l_props = np.apply_along_axis(np.median, 1,
-                                                         l_props[:, lr_indices])
-        group_r_props = np.apply_along_axis(np.median, 1,
-                                                         r_props[:, lr_indices])
+        # NOTE from when using the zero proportions #
+        # group_l_props = np.apply_along_axis(np.median, 1,
+        #                                                  l_props[:, lr_indices])
+        # group_r_props = np.apply_along_axis(np.median, 1,
+        #                                                  r_props[:, lr_indices])
 
-        # NOTE old version is get_similar_genes_OLD #
-        l_genes = get_similar_genes(group_l_quants, group_l_props,
-                                    n_genes, candidate_expr, genes)
+        # NOTE for quantile method get_similar_genes_Quantile #
+        l_genes = get_similar_genes_Quantiles(group_l_quants, #group_l_props,
+                                               n_genes, candidate_quants, genes)
         remaining = [gene not in l_genes for gene in genes]
-        r_genes = get_similar_genes(group_r_quants, group_r_props, n_genes,
-                                 candidate_expr[:, remaining], genes[remaining])
+        r_genes = get_similar_genes_Quantiles(group_r_quants, #group_r_props,
+                      n_genes, candidate_quants[:, remaining], genes[remaining])
         rand_pairs = []
         for j in range(n_pairs):
             l_rand = np.random.choice(l_genes, 1)[0]
