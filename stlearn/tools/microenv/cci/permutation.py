@@ -296,6 +296,40 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
         lr_groups = np.array( list(range(len(lrs))) )
         lr_group_set = np.array( list(range(len(lrs))) )
 
+    # Calculating LR features to evaluating grouping #
+    lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
+                                                   quantiles=np.array([.5]),
+                                                                  method='')
+    lr_median_means = lr_meds.mean(axis=1)
+    lr_prop_means = lr_props.mean(axis=1)
+
+    # Calculating mean rank #
+    dir_ = 1 if 'lowestToHighest' in rank_dir else -1
+    median_order = np.argsort( lr_median_means )
+    prop_order = np.argsort( lr_prop_means*dir_ )
+    #print(lr_prop_means[prop_order])
+    median_ranks = [np.where(median_order==i)[0][0]
+                                                   for i in range(len(lrs))]
+    prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
+    mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
+
+    cols = ['lr-group', 'nonzero-median', 'zero-prop',
+                                    'median_rank', 'prop_rank', 'mean_rank']
+    rank_df = pd.DataFrame(index=lrs, columns=cols)
+    rank_df.iloc[:, 0] = lr_groups
+    rank_df.iloc[:, 1] = lr_median_means
+    rank_df.iloc[:, 2] = lr_prop_means
+    rank_df.iloc[:, 3] = np.array(median_ranks)
+    rank_df.iloc[:, 4] = np.array(prop_ranks)
+    rank_df.iloc[:, 5] = np.array(mean_ranks)
+    rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
+    if method=='quantiles':
+        lr_cols = [f'L_{quant}' for quant in quantiles] +\
+                  [f'R_{quant}' for quant in quantiles]
+        quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
+        rank_df = pd.concat((rank_df, quant_df), axis=1)
+    adata.uns['lrfeatures'] = rank_df
+
     # Now grouping the LRs & getting the mean for the quantiles of each group #
     grouped_lr_indices = [np.where(lr_groups==lr_group)[0]
                                                    for lr_group in lr_group_set]
