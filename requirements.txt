@@ -2,5 +2,5 @@ bokeh == 2.3.0
 fa2 == 0.3.5
 Pillow==8.2.0
 scanpy==1.7.1
-scikit-image==0.17.2
+scikit-image==0.18.2
 tensorflow==2.5.0
