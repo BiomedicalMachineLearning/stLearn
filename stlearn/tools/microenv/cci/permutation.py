@@ -4,6 +4,7 @@ import pandas as pd
 from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
+from timeit import time
 
 from tqdm import tqdm
 from sklearn.cluster import AgglomerativeClustering
@@ -13,7 +14,8 @@ from .base import lr, calc_neighbours, get_spot_lrs, get_lrs_scores, get_scores
 from .merge import merge
 from .perm_utils import nonzero_quantile, get_lr_quants, get_lr_zeroprops, \
                         get_lr_bounds, get_similar_genes, \
-                        get_similar_genes_Quantiles
+                        get_similar_genes_Quantiles, gen_rand_pairs, \
+                        get_similar_genesFAST
 
 # Newest method #
 def perform_spot_testing(adata: AnnData,
@@ -63,14 +65,19 @@ def perform_spot_testing(adata: AnnData,
 
     ####### Grouping the LRs to generate common backgrounds #######
     lr_expr = adata[:, lr_genes].to_df()
-    grouped_lr_backgrounds(lrs, lr_expr, n_groups, minimum_genes, n_pairs,
+    grouped_lr_backgrounds(lrs, lr_expr, lr_scores, minimum_genes, n_pairs,
                            candidate_expr, genes, adata, neighbours,
                                                              het_vals, min_expr)
 
+    ######## Background per LR, but only for spots where LR has a score ########
+    # Determine the indices of the spots where each LR has a score #
+    print("here!")
+
+
     cols = ['n_spots', 'n_spots_sig']
     lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
-    pvals = np.zeros(lr_scores.shape, dtype=np.float64)
-    pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
+    pvals = np.ones(lr_scores.shape, dtype=np.float64)
+    pvals_adj = np.ones(lr_scores.shape, dtype=np.float64)
     log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
     lr_sig_scores = lr_scores.copy()
     with tqdm(
@@ -79,48 +86,30 @@ def perform_spot_testing(adata: AnnData,
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
             disable= verbose==False
     ) as pbar:
+
+        spot_lr_indices = [[] for i in range(lr_scores.shape[0])] #tracks the lrs tested in a given spot for MHT !!!!
         for lr_j in range(lr_scores.shape[1]):
-            # # Generating the background, from before grouping LRs #
-            # l_, r_ = lrs[lr_j].split('_')
-            # l_expr = adata[:, l_].to_df().values[:, 0]
-            # r_expr = adata[:, r_].to_df().values[:, 0]
-            # l_genes = get_similar_genes(l_expr, minimum_genes,
-            #                             candidate_expr, genes)
-            # r_genes = get_similar_genes(r_expr, minimum_genes,
-            #                             candidate_expr, genes)
-            #
-            # rand_pairs = []
-            # for i in range(n_pairs):
-            #     l_rand = np.random.choice(l_genes, 1)[0]
-            #     r_rand = np.random.choice(r_genes, 1)[0]
-            #     rand_pair = '_'.join([l_rand, r_rand])
-            #     while rand_pair in rand_pairs:
-            #         l_rand = np.random.choice(l_genes, 1)[0]
-            #         r_rand = np.random.choice(r_genes, 1)[0]
-            #         rand_pair = '_'.join([l_rand, r_rand])
-            #     rand_pairs.append(rand_pair)
-            #
-            # background = get_lrs_scores(adata, rand_pairs, neighbours,
-            #                             het_vals, min_expr, filter_pairs=False
-            #                             )
-            # if save_bg:
-            #     adata.obsm[f'{lrs[lr_j]}_spot_bgs'] = background
             lr_ = lrs[lr_j]
             background = adata.uns['lrs_to_bg'][lr_]
+            spot_indices = adata.uns['lr_spot_indices'][lr_]
 
-            for spot_i in range(lr_scores.shape[0]):
+            for spot_i, spot_index in enumerate(spot_indices):
                 n_greater = len(np.where(background[spot_i, :] >=
-                                                    lr_scores[spot_i, lr_j])[0])
+                                                lr_scores[spot_index, lr_j])[0])
                 n_greater = n_greater if n_greater!=0 else 1 #pseudocount
-                pvals[spot_i, lr_j] = n_greater / background.shape[1]
+                pvals[spot_index, lr_j] = n_greater / background.shape[1]
+                spot_lr_indices[spot_index].append( lr_j )
 
             pbar.update(1)
 
         # MHT correction # filling in other stats #
         for spot_i in range(lr_scores.shape[0]):
+            lr_indices = spot_lr_indices[spot_i]
+            if len(lr_indices) != 0:
+                pvals_adj[spot_i, lr_indices] = multipletests(
+                                                      pvals[spot_i, lr_indices],
+                                                           method=adj_method)[1]
 
-            pvals_adj[spot_i,:] = multipletests(pvals[spot_i,:],
-                                                method=adj_method)[1]
             log10pvals_adj[spot_i,:] = -np.log10(pvals_adj[spot_i,:])
 
             # Recording per lr results for this LR #
@@ -159,7 +148,8 @@ def perform_spot_testing(adata: AnnData,
               "rows in adata.uns['lr_summary'].")
         print("Summary of LR results in adata.uns['lr_summary'].")
 
-def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
+def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame,
+                           lr_scores: np.ndarray,
                            n_genes: int, n_pairs: int,
                            candidate_expr: np.ndarray, genes: np.array,
                            adata: AnnData, neighbours: List, het_vals, min_expr,
@@ -197,104 +187,40 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
     # Calculating the zero proportions, for grouping based on median/zeros #
     lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
 
-    # Grouping the LR pairs #
-    if len(lrs) > n_groups:
-        #### From when was grouping by quantile ######
-        # Now cluster based on hierarchical clustering #
-        clusterer = AgglomerativeClustering(n_clusters=n_groups,
-                                            affinity='euclidean',
-                                            linkage='ward')
-        lr_groups = clusterer.fit_predict(lr_quants)
-        lr_group_set = np.unique(lr_groups)
+    ######## Getting lr features for later diagnostics #######
+    lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
+                                                   quantiles=np.array([.5]),
+                                                                  method='')
+    lr_median_means = lr_meds.mean(axis=1)
+    lr_prop_means = lr_props.mean(axis=1)
 
-        ######## Grouping based on median/zero proportion #######
-        lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
-                                                       quantiles=np.array([.5]),
-                                                                      method='')
-        lr_median_means = lr_meds.mean(axis=1)
-        lr_prop_means = lr_props.mean(axis=1)
+    # Calculating mean rank #
+    dir_ = 1 if 'lowestToHighest' in rank_dir else -1
+    median_order = np.argsort( lr_median_means )
+    prop_order = np.argsort( lr_prop_means*dir_ )
+    #print(lr_prop_means[prop_order])
+    median_ranks = [np.where(median_order==i)[0][0]
+                                                   for i in range(len(lrs))]
+    prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
+    mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
 
-        ####### From when was grouping by 2D binning ######
-        # lr_means = lr_quants.mean(axis=1)
-        # mean_bounds, prop_bounds = np.histogram2d(lr_means, lr_prop_means,
-        #                                                       bins=n_groups)[1:]
-        # squares = np.array([(mean_bounds[i], mean_bounds[i+1],
-        #                      prop_bounds[i], prop_bounds[i+1])
-        #                                     for i in range(len(prop_bounds)-1)])
-        #
-        # lr_squares = []
-        # for i in range(len(lrs)):
-        #     lr_mean, lr_prop = lr_means[i], lr_prop_means[i]
-        #     lr_mean_bounds = get_lr_bounds(lr_mean, mean_bounds)
-        #     lr_prop_bounds = get_lr_bounds(lr_prop, prop_bounds)
-        #     lr_squares.append( lr_mean_bounds+lr_prop_bounds )
-        #
-        # lr_groups = np.array([np.where(squares==lr_square)[0][0]
-        #                                            for lr_square in lr_squares])
-
-        # Calculating mean rank #
-        dir_ = 1 if 'lowestToHighest' in rank_dir else -1
-        median_order = np.argsort( lr_median_means )
-        prop_order = np.argsort( lr_prop_means*dir_ )
-        #print(lr_prop_means[prop_order])
-        median_ranks = [np.where(median_order==i)[0][0]
-                                                       for i in range(len(lrs))]
-        prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
-        mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
-
-        # Grouping based on bounds #
-        # bounds = np.histogram(mean_ranks, bins=n_groups)[1]
-        # bins = np.array([(bounds[i], bounds[i+1])
-        #                                          for i in range(len(bounds)-1)])
-        # lr_bins = []
-        # for i in range(len(lrs)):
-        #     lr_mean_rank = mean_ranks[i]
-        #     lr_bin = get_lr_bounds(lr_mean_rank, bounds)
-        #     lr_bins.append( lr_bin )
-        #
-        # lr_groups = np.array([np.where(bins==lr_bin)[0][0]
-        #                                                  for lr_bin in lr_bins])
-        # lr_group_set = np.unique( lr_groups )
-        """For debugging, want to see the ranks of pairs in each group.
-        lr_group_ranks = {}
-        for group in lr_group_set:
-            group_indices = np.where(lr_groups==group)[0]
-            rank_df = pd.DataFrame(index=lrs[group_indices],
-                              columns=['nonzero-median', 'zero-prop',
-                                       'median_rank', 'prop_rank', 'mean_rank'])
-            rank_df.iloc[:, 0] = lr_median_means[group_indices]
-            rank_df.iloc[:, 1] = lr_prop_means[group_indices]
-            rank_df.iloc[:, 2] = np.array(median_ranks)[group_indices]
-            rank_df.iloc[:, 3] = np.array(prop_ranks)[group_indices]
-            rank_df.iloc[:, 4] = np.array(mean_ranks)[group_indices]
-            lr_group_ranks[group] = rank_df
-        print(lr_group_ranks)
-        """
-        #"""Saving the lrfeatures...
-        cols = ['lr-group', 'nonzero-median', 'zero-prop',
-                                        'median_rank', 'prop_rank', 'mean_rank']
-        rank_df = pd.DataFrame(index=lrs, columns=cols)
-        rank_df.iloc[:, 0] = lr_groups                             
-        rank_df.iloc[:, 1] = lr_median_means
-        rank_df.iloc[:, 2] = lr_prop_means
-        rank_df.iloc[:, 3] = np.array(median_ranks)
-        rank_df.iloc[:, 4] = np.array(prop_ranks)
-        rank_df.iloc[:, 5] = np.array(mean_ranks)
-        rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
-        if method=='quantiles':
-            lr_cols = [f'L_{quant}' for quant in quantiles] +\
-                      [f'R_{quant}' for quant in quantiles]
-            quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
-            rank_df = pd.concat((rank_df, quant_df), axis=1)
-        adata.uns['lrfeatures'] = rank_df
-
-        # rank_df.to_csv('data/bg_eval/'+\
-        #         f'lrsfeatureranks_{rank_dir}_{method}_{n_pairs}_{n_groups}.txt',
-        #                                                                sep='\t')
-        #"""
-    else:
-        lr_groups = np.array( list(range(len(lrs))) )
-        lr_group_set = np.array( list(range(len(lrs))) )
+    #"""Saving the lrfeatures...
+    cols = ['lr-group', 'nonzero-median', 'zero-prop',
+                                    'median_rank', 'prop_rank', 'mean_rank']
+    rank_df = pd.DataFrame(index=lrs, columns=cols)
+    rank_df.iloc[:, 0] = list(range(len(lrs)))
+    rank_df.iloc[:, 1] = lr_median_means
+    rank_df.iloc[:, 2] = lr_prop_means
+    rank_df.iloc[:, 3] = np.array(median_ranks)
+    rank_df.iloc[:, 4] = np.array(prop_ranks)
+    rank_df.iloc[:, 5] = np.array(mean_ranks)
+    rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
+    if method=='quantiles':
+        lr_cols = [f'L_{quant}' for quant in quantiles] +\
+                  [f'R_{quant}' for quant in quantiles]
+        quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
+        rank_df = pd.concat((rank_df, quant_df), axis=1)
+    adata.uns['lrfeatures'] = rank_df
 
     # Calculating LR features to evaluating grouping #
     lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
@@ -313,73 +239,72 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame, n_groups: int,
     prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
     mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
 
+    # Creating the actual LR features to add to .uns #
     cols = ['lr-group', 'nonzero-median', 'zero-prop',
                                     'median_rank', 'prop_rank', 'mean_rank']
     rank_df = pd.DataFrame(index=lrs, columns=cols)
-    rank_df.iloc[:, 0] = lr_groups
+    rank_df.iloc[:, 0] = list(range(len(lrs)))
     rank_df.iloc[:, 1] = lr_median_means
     rank_df.iloc[:, 2] = lr_prop_means
     rank_df.iloc[:, 3] = np.array(median_ranks)
     rank_df.iloc[:, 4] = np.array(prop_ranks)
     rank_df.iloc[:, 5] = np.array(mean_ranks)
     rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
-    if method=='quantiles':
-        lr_cols = [f'L_{quant}' for quant in quantiles] +\
-                  [f'R_{quant}' for quant in quantiles]
-        quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
-        rank_df = pd.concat((rank_df, quant_df), axis=1)
-    adata.uns['lrfeatures'] = rank_df
 
-    # Now grouping the LRs & getting the mean for the quantiles of each group #
-    grouped_lr_indices = [np.where(lr_groups==lr_group)[0]
-                                                   for lr_group in lr_group_set]
+    lr_cols = [f'L_{quant}' for quant in quantiles] +\
+              [f'R_{quant}' for quant in quantiles]
+    quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
+    rank_df = pd.concat((rank_df, quant_df), axis=1)
+    adata.uns['lrfeatures'] = rank_df
 
     # Now getting the background for each group #
     lrs_to_bg = {}
-    grouped_lrs = {}
+    lr_to_spot_indices = {}
     # Pre-computing the quantiles #
     candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
                                            q=quantiles, interpolation='nearest')
-    for i, lr_indices in enumerate(grouped_lr_indices):
-        lrs_ = lrs[lr_indices]
-        grouped_lrs[f'group_{i}'] = lrs_
-        group_l_quants = np.apply_along_axis(np.median, 1,
-                                                        l_quants[:, lr_indices])
-        group_r_quants = np.apply_along_axis(np.median, 1,
-                                                        r_quants[:, lr_indices])
-        # NOTE from when using the zero proportions #
-        # group_l_props = np.apply_along_axis(np.median, 1,
-        #                                                  l_props[:, lr_indices])
-        # group_r_props = np.apply_along_axis(np.median, 1,
-        #                                                  r_props[:, lr_indices])
+    with tqdm(
+            total=len(lrs),
+            desc="Calculating backgrounds for each LR pair...",
+            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+    ) as pbar:
+        for i, lr_ in enumerate(lrs):
+            l_quant = l_quants[:, i]
+            r_quant = r_quants[:, i]
 
-        # NOTE for quantile method get_similar_genes_Quantile #
-        l_genes = get_similar_genes_Quantiles(group_l_quants, #group_l_props,
+            spot_indices = np.where(lr_scores[:,i]>0)[0]
+
+            # NOTE for quantile method get_similar_genes_Quantile #
+            #start = time.time()
+            l_genes = get_similar_genesFAST(l_quant, #group_l_props,
                                                n_genes, candidate_quants, genes)
-        remaining = [gene not in l_genes for gene in genes]
-        r_genes = get_similar_genes_Quantiles(group_r_quants, #group_r_props,
-                      n_genes, candidate_quants[:, remaining], genes[remaining])
-        rand_pairs = []
-        for j in range(n_pairs):
-            l_rand = np.random.choice(l_genes, 1)[0]
-            r_rand = np.random.choice(r_genes, 1)[0]
-            rand_pair = '_'.join([l_rand, r_rand])
-            while rand_pair in rand_pairs:
-                l_rand = np.random.choice(l_genes, 1)[0]
-                r_rand = np.random.choice(r_genes, 1)[0]
-                rand_pair = '_'.join([l_rand, r_rand])
-            rand_pairs.append(rand_pair)
+            #remaining = [gene not in l_genes for gene in genes]
+            r_genes = get_similar_genesFAST(r_quant, #group_r_props,
+                                               n_genes, candidate_quants, genes)
+            #end = time.time()
+            #print(f'{end - start}secs for getting genes.')
+            #start = time.time()
+            rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
+            #end = time.time()
+            #print(f'{end-start}secs for rand pairs. e.g. {rand_pairs[0:2]}')
 
-        background = get_lrs_scores(adata, rand_pairs, neighbours,
-                                    het_vals, min_expr, filter_pairs=False
-                                    )
-        for lr_ in lrs_:
+            #start = time.time()
+            background = get_lrs_scores(adata, rand_pairs,
+                                        neighbours, het_vals,
+                                        min_expr, filter_pairs=False,
+                                        spot_indices=spot_indices)
+            #end = time.time()
+            #print(f'{end - start}secs for background.')
+
             lrs_to_bg[lr_] = background
+            lr_to_spot_indices[lr_] = spot_indices
+
+            pbar.update(1)
 
     # Adding the information to the adata #
     adata.uns['lrs_to_bg'] = lrs_to_bg
-    adata.uns['grouped_lrs'] = grouped_lrs
-    print("Background information added to 'lrs_to_bg' & 'grouped_lrs' "
+    adata.uns['lr_spot_indices'] = lr_to_spot_indices
+    print("Background information added to 'lrs_to_bg' & 'lr_spot_indices' "
           "in adata.uns")
 
 # Version 2, no longer in use, see above for newest method #

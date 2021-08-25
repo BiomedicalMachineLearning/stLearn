@@ -3,6 +3,9 @@ import pandas as pd
 from scipy.spatial.distance import euclidean, canberra
 from sklearn.preprocessing import MinMaxScaler
 
+from numba import njit, prange
+from numba.typed import List
+
 def nonzero_quantile(expr, q, interpolation):
     """ Calculating the non-zero quantiles. """
     nonzero_expr = expr[ expr>0 ]
@@ -177,10 +180,67 @@ def get_similar_genes_Quantiles(gene_expr: np.array, n_genes: int,
     y_max = ax.get_ylim()[1]
     ax.vlines(cutoff, 0, y_max/2, color='r')
     plt.show()
+    print(candidate_quants[:,order[0:3]]) # Showing the quantiles of selected
+    print(candidate_quants[:,order[n_genes-3:n_genes]])
+    print(ref_quants)
     """
 
     # Retrieving desired number of genes #
     similar_genes = candidate_genes[order[0:n_genes]]
 
     return similar_genes
+
+#@njit(parallel=True)
+def get_similar_genesFAST(ref_quants: np.array, n_genes: int,
+                       candidate_quants: np.ndarray, candidate_genes: np.array):
+    """Fast version of the above with parallelisation."""
+
+    # Measuring distances from the desired gene #
+    dists = np.zeros((candidate_quants.shape[1]), dtype=np.float64)
+    for i in prange(0, candidate_quants.shape[1]):
+        cand_quants = candidate_quants[:,i]
+        abs_diff = np.abs(ref_quants - cand_quants)
+        dists[i] = np.nansum( abs_diff / (ref_quants + cand_quants) )
+
+    order = np.argsort(dists)
+
+    """ During debugging, plotting distribution of distances & selected genes.
+    import matplotlib.pyplot as plt
+    cutoff = dists[order[n_genes]]
+    fig, ax = plt.subplots()
+    ax.hist(dists[order[0:28000]], bins=1000)
+    y_max = ax.get_ylim()[1]
+    ax.vlines(cutoff, 0, y_max/2, color='r')
+    plt.show()
+    print(candidate_quants[:,order[0:3]]) # Showing the quantiles of selected
+    print(candidate_quants[:,order[n_genes-3:n_genes]])
+    print(ref_quants)
+    """
+
+    # Retrieving desired number of genes #
+    similar_genes = candidate_genes[order[0:n_genes]]
+
+    return similar_genes
+
+@njit
+def gen_rand_pairs(genes1: np.array, genes2: np.array, n_pairs: int):
+    """Generates random pairs of genes."""
+    # genes1_ins = np.array(list(range(genes1)))
+    # genes2_ins = np.array(list(range(genes2)))
+
+    rand_pairs = List() #np.zeros((n_pairs, 2), dtype=np.float)
+    for j in prange(0, n_pairs):
+        l_rand = np.random.choice(genes1, 1)[0]
+        r_rand = np.random.choice(genes2, 1)[0]
+        rand_pair = '_'.join([l_rand, r_rand])
+        # l_rand_i = np.random.choice(genes1_ins, 1)
+        # r_rand_i = np.random.choice(genes2_ins, 1)
+        while rand_pair in rand_pairs and l_rand == r_rand:
+            l_rand = np.random.choice(genes1, 1)[0]
+            r_rand = np.random.choice(genes2, 1)[0]
+            rand_pair = '_'.join([l_rand, r_rand])
+        #rand_pairs[j] = rand_pair
+        rand_pairs.append(rand_pair)
+
+    return rand_pairs
 

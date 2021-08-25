@@ -87,7 +87,7 @@ def calc_distance(adata: AnnData, distance: float):
 
 def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
                    het_vals: np.array, min_expr: float,
-                   filter_pairs: bool = True
+                   filter_pairs: bool = True, spot_indices: np.array = None,
                    ):
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
@@ -98,10 +98,14 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
     het_vals: np.array      Cell heterogeneity counts per spot.
     min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
     filter_pairs: bool      Whether to filter to valid pairs or not.
+    spot_indices: np.array  Array of integers speci
     Returns
     -------
     lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
+    if type(spot_indices) == type(None):
+        spot_indices = np.array(list(range(len(adata))), dtype=np.int_)
+
     spot_lr1s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=True,
                                                       filter_pairs=filter_pairs)
     spot_lr2s = get_spot_lrs(adata, lr_pairs=lrs, lr_order=False,
@@ -112,7 +116,7 @@ def get_lrs_scores(adata: AnnData, lrs: np.array, neighbours: np.array,
 
     # Calculating the lr_scores across spots for the inputted lrs #
     lr_scores = get_scores(spot_lr1s.values, spot_lr2s.values,
-                                                 neighbours, het_vals, min_expr)
+                                   neighbours, het_vals, min_expr, spot_indices)
 
     if filter_pairs:
         return lr_scores, lrs
@@ -211,6 +215,7 @@ def lr_core(spot_lr1: np.ndarray,
             spot_lr2: np.ndarray,
             neighbours: List,
             min_expr: float,
+            spot_indices: np.array,
             ) -> np.ndarray:
     """Calculate the lr scores for each spot.
         Parameters
@@ -224,16 +229,18 @@ def lr_core(spot_lr1: np.ndarray,
         lr_scores: numpy.ndarray   Cells*LR-scores.
     """
     # Calculating mean of lr2 expressions from neighbours of each spot
-    nb_lr2 = np.zeros(spot_lr2.shape, np.float64)
-    for i in range(spot_lr2.shape[0]):
-        nb_expr = spot_lr2[neighbours[i], :]
+    nb_lr2 = np.zeros((len(spot_indices), spot_lr2.shape[1]), np.float64)
+    for i in range(len(spot_indices)):
+        spot_i = spot_indices[i]
+        nb_expr = spot_lr2[neighbours[spot_i], :]
         if nb_expr.shape[0] != 0: #Accounting for no neighbours
             nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
         else:
             nb_expr_mean = nb_expr.sum(axis=0)
         nb_lr2[i, :] = nb_expr_mean
 
-    scores = spot_lr1 * (nb_lr2 > min_expr) + (spot_lr1 > min_expr) * nb_lr2
+    scores = spot_lr1[spot_indices,:] * (nb_lr2 > min_expr) + \
+             (spot_lr1[spot_indices,:] > min_expr) * nb_lr2
     spot_lr = scores.sum(axis=1)
     return spot_lr / 2
 
@@ -283,6 +290,7 @@ def get_scores(
         neighbours: List,
         het_vals: np.array,
         min_expr: float,
+        spot_indices: np.array,
 ) -> np.array:
     """Calculates the scores.
     Parameters
@@ -296,18 +304,17 @@ def get_scores(
     -------
     spot_scores: np.ndarray   Spots*LR pair of the LR scores per spot.
     """
-    spot_scores = np.zeros((spot_lr1s.shape[0], spot_lr1s.shape[1]//2),
+    spot_scores = np.zeros((len(spot_indices), spot_lr1s.shape[1]//2),
                                                                      np.float64)
     for i in prange(0, spot_lr1s.shape[1]//2):
         i_ = i*2 # equivalent to range(0, spot_lr1s.shape[1], 2)
         spot_lr1, spot_lr2 = spot_lr1s[:,i_:(i_+2)], spot_lr2s[:,i_:(i_+2)]
-        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr)
+        lr_scores = lr_core(spot_lr1, spot_lr2, neighbours,
+                                                         min_expr, spot_indices)
         # The merge scores #
-        lr_scores = np.multiply(het_vals, lr_scores)
+        lr_scores = np.multiply(het_vals[spot_indices], lr_scores)
         spot_scores[:, i] = lr_scores
     return spot_scores
-
-
 
 def lr_grid(
     adata: AnnData,
