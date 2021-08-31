@@ -190,18 +190,24 @@ def get_similar_genes_Quantiles(gene_expr: np.array, n_genes: int,
 
     return similar_genes
 
-#@njit(parallel=True)
+@njit(parallel=True)
 def get_similar_genesFAST(ref_quants: np.array, n_genes: int,
                        candidate_quants: np.ndarray, candidate_genes: np.array):
     """Fast version of the above with parallelisation."""
 
     # Measuring distances from the desired gene #
-    dists = np.zeros((candidate_quants.shape[1]), dtype=np.float64)
+    dists = np.zeros((1, candidate_quants.shape[1]), dtype=np.float64)[0,:]
     for i in prange(0, candidate_quants.shape[1]):
         cand_quants = candidate_quants[:,i]
         abs_diff = np.abs(ref_quants - cand_quants)
         dists[i] = np.nansum( abs_diff / (ref_quants + cand_quants) )
 
+    # Need to remove the zero-dists since this indicates they are expressed
+    # exactly the same, & hence likely in the same spot !!!
+    nonzero_bool = dists > 0
+    dists = dists[nonzero_bool]
+    candidate_quants = candidate_quants[:,nonzero_bool]
+    candidate_genes = candidate_genes[nonzero_bool]
     order = np.argsort(dists)
 
     """ During debugging, plotting distribution of distances & selected genes.

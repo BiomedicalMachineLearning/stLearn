@@ -73,7 +73,6 @@ def perform_spot_testing(adata: AnnData,
     # Determine the indices of the spots where each LR has a score #
     print("here!")
 
-
     cols = ['n_spots', 'n_spots_sig']
     lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
     pvals = np.ones(lr_scores.shape, dtype=np.float64)
@@ -153,7 +152,7 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame,
                            n_genes: int, n_pairs: int,
                            candidate_expr: np.ndarray, genes: np.array,
                            adata: AnnData, neighbours: List, het_vals, min_expr,
-                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, 1)
+                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, .995, .9975, .999, 1)
                            ):
     """ Groups LR pairs together if they have similar expression levels &
                                                 generates a background for each.
@@ -263,38 +262,54 @@ def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame,
     # Pre-computing the quantiles #
     candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
                                            q=quantiles, interpolation='nearest')
+    gene_bg_genes = {} # Stores the background genes used for a gene if already
+                       # been tested in a different pair.
+    """ Checking distribution of genes which have each quantile as non-zero.
+    import matplotlib.pyplot as plt
+    plt.hist((candidate_quants>0).sum(axis=0), bins=100)
+    plt.show()
+    """
     with tqdm(
             total=len(lrs),
             desc="Calculating backgrounds for each LR pair...",
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i, lr_ in enumerate(lrs):
-            l_quant = l_quants[:, i]
-            r_quant = r_quants[:, i]
+            l_, r_ = lr_.split('_')
+            if l_ not in gene_bg_genes:
+                l_quant = l_quants[:, i]
+                l_genes = get_similar_genesFAST(l_quant,  # group_l_props,
+                                                n_genes, candidate_quants,
+                                                genes)
+                gene_bg_genes[l_] = l_genes
+            else:
+                l_genes = gene_bg_genes[l_]
 
-            spot_indices = np.where(lr_scores[:,i]>0)[0]
+            if r_ not in gene_bg_genes:
+                r_quant = r_quants[:, i]
+                r_genes = get_similar_genesFAST(r_quant,  # group_r_props,
+                                                n_genes, candidate_quants,
+                                                genes)
+                gene_bg_genes[r_] = r_genes
+            else:
+                r_genes = gene_bg_genes[r_]
 
-            # NOTE for quantile method get_similar_genes_Quantile #
-            #start = time.time()
-            l_genes = get_similar_genesFAST(l_quant, #group_l_props,
-                                               n_genes, candidate_quants, genes)
-            #remaining = [gene not in l_genes for gene in genes]
-            r_genes = get_similar_genesFAST(r_quant, #group_r_props,
-                                               n_genes, candidate_quants, genes)
-            #end = time.time()
-            #print(f'{end - start}secs for getting genes.')
-            #start = time.time()
+            """ Checking genes selected makes sense:
+            print(l_genes[0:5])
+            print(r_genes[0:5])
+            print(l_quant)
+            print(candidate_quants[:,np.where(genes==l_genes[0])[0][0]])
+            print(r_quant)
+            print(candidate_quants[:,np.where(genes==r_genes[0])[0][0]])
+            """
+
             rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
-            #end = time.time()
-            #print(f'{end-start}secs for rand pairs. e.g. {rand_pairs[0:2]}')
+            spot_indices = np.where(lr_scores[:, i] > 0)[0]
 
-            #start = time.time()
             background = get_lrs_scores(adata, rand_pairs,
                                         neighbours, het_vals,
                                         min_expr, filter_pairs=False,
                                         spot_indices=spot_indices)
-            #end = time.time()
-            #print(f'{end - start}secs for background.')
 
             lrs_to_bg[lr_] = background
             lr_to_spot_indices[lr_] = spot_indices
