@@ -304,7 +304,7 @@ class BokehGenePlot(Spatial):
     def create_violin(self, adata, gene_symbol, use_label):
         import matplotlib.pyplot as plt
 
-        plt.rc("font", size=15)
+        plt.rc("font", size=5)
 
         fig, ax = plt.subplots(figsize=(8, 5))
         sc.pl.violin(
@@ -364,7 +364,15 @@ class BokehClusterPlot(Spatial):
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
 
-        cluster_plot(adata, use_label=self.use_label.value, show_plot=False)
+        if len(adata.obs[self.use_label.value].cat.categories) <= 20:
+            cluster_plot(adata, use_label=self.use_label.value, show_plot=False)
+        else:
+            cluster_plot(
+                adata,
+                use_label=self.use_label.value,
+                show_plot=False,
+                cmap="default_102",
+            )
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
