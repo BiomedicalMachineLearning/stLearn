@@ -235,7 +235,7 @@ def gen_rand_pairs(genes1: np.array, genes2: np.array, n_pairs: int):
     # genes2_ins = np.array(list(range(genes2)))
 
     rand_pairs = List() #np.zeros((n_pairs, 2), dtype=np.float)
-    for j in prange(0, n_pairs):
+    for j in range(0, n_pairs):
         l_rand = np.random.choice(genes1, 1)[0]
         r_rand = np.random.choice(genes2, 1)[0]
         rand_pair = '_'.join([l_rand, r_rand])

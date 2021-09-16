@@ -114,3 +114,37 @@ def check_cmap(cmap):
         raise Exception(error_msg)
 
     return cmap
+
+def get_colors(adata, obs_key, cmap='default', label_set=None):
+    """ Retrieves colors if present in adata.uns, if not present then will set
+        them as per scanpy & return in order requested.
+    """
+    # Checking if colors are already set #
+    col_key = f'{obs_key}_colors'
+    if col_key in adata.uns:
+        labels_ordered = adata.obs[obs_key].cat.categories
+        colors_ordered = adata.uns[col_key]
+    else: # Colors not already present
+        check_cmap(cmap)
+        cmap, cmap_n = get_cmap(cmap)
+
+        if not hasattr(adata.obs[obs_key], 'cat'): # Ensure categorical
+            adata.obs[obs_key] = adata.obs[obs_key].astype('category')
+        labels_ordered = adata.obs[obs_key].cat.categories
+        colors_ordered = [matplotlib.colors.rgb2hex(
+                                            cmap(i / (len(labels_ordered) - 1)))
+                          for i in range(len(labels_ordered))]
+        adata.uns[col_key] = colors_ordered
+
+    # Returning the colors of the desired labels in indicated order #
+    if type(label_set) != type(None):
+        colors_ordered = \
+                        [colors_ordered[np.where(labels_ordered == label)[0][0]]
+                                                         for label in label_set]
+
+    return colors_ordered
+
+
+
+
+

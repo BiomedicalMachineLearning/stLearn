@@ -134,7 +134,7 @@ def load_lrs(names: str) -> np.array:
             # Functions for calling Celltype-Celltype interactions #
 ################################################################################
 def run_cci(adata: AnnData, use_label: str,
-            min_sig_spots: int = 3,
+            min_spots: int = 3, sig_spots: bool = True,
             spot_mixtures: bool = True, cell_prop_cutoff: float = 0.2,
             verbose: bool = True,
             ):
@@ -167,7 +167,9 @@ def run_cci(adata: AnnData, use_label: str,
     cell_type_props = None if not mix_mode else adata.uns[uns_key]
 
     lr_summary = adata.uns['lr_summary']
-    best_lrs = lr_summary.index.values[lr_summary.values[:,1] > min_sig_spots]
+    col_i = 1 if sig_spots else 0
+    col = 'lr_sig_scores'if sig_spots else 'lr_scores'
+    best_lrs = lr_summary.index.values[lr_summary.values[:,col_i] > min_spots]
     all_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
     per_lr_cci = {}
     for best_lr in best_lrs:
@@ -177,7 +179,7 @@ def run_cci(adata: AnnData, use_label: str,
         L_bool = adata[:, l].X.toarray()[:, 0] > 0
         R_bool = adata[:, r].X.toarray()[:, 0] > 0
         lr_index = np.where(adata.uns['lr_summary'].index.values==best_lr)[0][0]
-        sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] != 0
+        sig_bool = adata.obsm[col][:, lr_index] > 0
         #sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
         # Now counting the interactions under 3 situations:
@@ -218,8 +220,10 @@ def run_cci(adata: AnnData, use_label: str,
                                              index=all_set, columns=all_set)
     adata.uns[f'per_lr_cci_{use_label}'] = per_lr_cci
     if verbose:
-        print(f"Counts of cci interactions for all LR pairs in {f'lr_cci_{use_label}'}")
-        print(f"Counts of cci interactions for each LR pair stored in dictionary {f'per_lr_cci_{use_label}'}")
+        print(f"Counts of cci interactions for all LR pairs in "
+              f"{f'lr_cci_{use_label}'}")
+        print(f"Counts of cci interactions for each LR pair stored in dictionary"
+              f" {f'per_lr_cci_{use_label}'}")
 
 
 

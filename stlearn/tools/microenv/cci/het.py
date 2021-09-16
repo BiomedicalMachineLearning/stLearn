@@ -128,19 +128,27 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
 
 def get_between_spot_edge_array(neigh_zip, neigh_bool, cell_data=None,
                                 label_set=None, cutoff=None, undirected=True):
-    """undirected=False uses list instead of set to store edgees, thereby giving direction"""
+    """ undirected=False uses list instead of set to store edges,
+    thereby giving direction.
+    cell_data is either labels or label transfer scores.
+    """
     edge_list = []
     for bcs, indices in neigh_zip: #bc is cell barcode
         spot_bc, neigh_bcs = bcs
-        spot_i, neigh_indices = indices
+        neigh_indices = indices[1]
+        # Subset the neighbours to only those fitting indicated criteria #
         neigh_bcs = neigh_bcs[neigh_bool[neigh_indices]]
         neigh_indices = neigh_indices[neigh_bool[neigh_indices]]
+
+        if len(neigh_indices) == 0: # No cases where neighbours meet criteria
+            return [] # Returning an empty edge list.
 
         # If we have cell data, need to subset neighbours meeting criteria
         if type(cell_data) != type(None):
             # If cutoff specified, then means cell_data refers to cell proportions
             if type(cutoff) != type(None):
-                interact_neigh_bool = cell_data.values[neigh_indices, :] > cutoff
+                interact_bool = cell_data.values[neigh_indices, :] > cutoff
+                interact_neigh_bool = np.apply_along_axis(np.all, 1, interact_bool)
             else: # otherwise we are in absolute mode, so need to use label_set
                 neigh_cell_types = cell_data[neigh_indices]
                 interact_neigh_bool = [
@@ -189,13 +197,17 @@ def count_core(adata: AnnData, use_label: str, neighbours: List,
     else:
         obs_key, uns_key = use_label, use_label
 
+    # Just return an empty list if no spot indices #
+    if len(spot_indices)==0:
+        return [] if return_edges else 0
+
     # Setting label_set if not present
     if type(label_set) == type(None):
         label_set = np.unique(adata.obs.loc[:,obs_key].values)
 
     # Setting neigh_bool if not present, is used to filter which spots can be neighbours
     if type(neigh_bool) == type(None):
-        neigh_bool = np.array([1]*len(adata))
+        neigh_bool = np.array([True]*len(adata))
 
     # Setting the spot indices to do the counting
     if type(spot_indices) == type(None):
@@ -212,7 +224,7 @@ def count_core(adata: AnnData, use_label: str, neighbours: List,
         # Making sure the label_set in consistent format with columns of adata.uns
         cols = list(adata.uns[uns_key].columns)
         col_set = np.array([col for i, col in enumerate(cols)
-                                                        if label_set[i] in col])
+                                                           if col in label_set])
 
         # within-spot, will have only itself as a neighbour in this mode
         if np.all(np.array([spot_i in neighs for spot_i, neighs
