@@ -31,6 +31,7 @@ from bokeh.models import (
     VeeHead,
     Button,
     Dropdown,
+    Div,
 )
 
 from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
@@ -50,6 +51,7 @@ from bokeh.application.handlers import FunctionHandler
 from stlearn.classes import Spatial
 from typing import Optional
 from stlearn.utils import _read_graph
+import scanpy as sc
 
 
 class BokehGenePlot(Spatial):
@@ -99,15 +101,40 @@ class BokehGenePlot(Spatial):
             title="Select color map:", value=color_list[0], options=color_list
         )
 
-        inputs = column(
-            self.gene_select,
-            self.data_alpha,
-            self.tissue_alpha,
-            self.spot_size,
-            self.cmap_select,
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
         )
 
-        self.layout = row(inputs, self.make_fig())
+        self.menu = []
+
+        for col in adata.obs.columns:
+            if adata.obs[col].dtype.name == "category":
+                if col != "sub_cluster_labels":
+                    self.menu.append(col)
+        if len(self.menu) != 0:
+            self.use_label = Select(
+                title="Select use_label:", value=self.menu[0], options=self.menu
+            )
+            inputs = column(
+                self.gene_select,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.cmap_select,
+                self.use_label,
+                self.output_backend,
+            )
+            self.layout = column(row(inputs, self.make_fig()), self.add_violin())
+        else:
+            inputs = column(
+                self.gene_select,
+                self.data_alpha,
+                self.tissue_alpha,
+                self.spot_size,
+                self.cmap_select,
+                self.output_backend,
+            )
+            self.layout = row(inputs, self.make_fig())
 
         # Make a tab with the layout
         # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
@@ -121,6 +148,9 @@ class BokehGenePlot(Spatial):
             self.spot_size.on_change("value", self.update_data)
             self.gene_select.on_change("value", self.update_data)
             self.cmap_select.on_change("value", self.update_data)
+            self.output_backend.on_change("value", self.update_data)
+            if len(self.menu) != 0:
+                self.use_label.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
 
@@ -132,7 +162,9 @@ class BokehGenePlot(Spatial):
             title=self.gene_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg",
+            output_backend=self.output_backend.value,
+            name="GenePlot",
+            active_scroll="wheel_zoom",
         )
 
         colors = self._get_gene_expression([self.gene_select.value])
@@ -175,7 +207,7 @@ class BokehGenePlot(Spatial):
         )
 
         color_bar = ColorBar(
-            color_mapper=color_mapper, ticker=BasicTicker(), location=(10, 0)
+            color_mapper=color_mapper, ticker=BasicTicker(), location=(-20, 0)
         )
         fig.add_layout(color_bar, "right")
 
@@ -201,8 +233,52 @@ class BokehGenePlot(Spatial):
 
         return fig
 
+    def add_violin(self):
+        violin = self.create_violin(
+            self.adata[0],
+            gene_symbol=self.gene_select.value,
+            use_label=self.use_label.value,
+        )
+
+        violin = (np.array(violin)).astype(np.uint8)
+
+        img_pillow2 = Image.fromarray(violin).convert("RGBA")
+
+        xdim, ydim = img_pillow2.size
+
+        # Create an array representation for the image `img`, and an 8-bit "4
+        # layer/RGBA" version of it `view`.
+        image2 = np.empty((ydim, xdim), dtype=np.uint32)
+        view2 = image2.view(dtype=np.uint8).reshape((ydim, xdim, 4))
+        # Copy the RGBA image into view, flipping it so it comes right-side up
+        # with a lower-left origin
+        view2[:, :, :] = np.flipud(np.asarray(img_pillow2))
+
+        p = figure(
+            plot_width=910,
+            plot_height=int(910 / xdim * ydim) + 5,
+            output_backend=self.output_backend.value,
+        )
+
+        # must give a vector of images
+        p.image_rgba(image=[image2], x=0, y=1, dw=xdim, dh=ydim)
+
+        p.toolbar.logo = None
+        p.xaxis.visible = False
+        p.yaxis.visible = False
+        p.xgrid.grid_line_color = None
+        p.ygrid.grid_line_color = None
+        p.outline_line_alpha = 0
+
+        return p
+
     def update_data(self, attrname, old, new):
-        self.layout.children[1] = self.make_fig()
+
+        if len(self.menu) != 0:
+            self.layout.children[0].children[1] = self.make_fig()
+            self.layout.children[1] = self.add_violin()
+        else:
+            self.layout.children[1] = self.make_fig()
 
     def _get_gene_expression(self, gene_symbols):
 
@@ -214,6 +290,40 @@ class BokehGenePlot(Spatial):
         colors = self.adata[0][:, gene_symbols].to_df().iloc[:, -1]
 
         return colors
+
+    def fig2img(self, fig):
+        """Convert a Matplotlib figure to a PIL Image and return it"""
+        import io
+
+        buf = io.BytesIO()
+        fig.savefig(buf, bbox_inches="tight", pad_inches=0, dpi=120)
+        buf.seek(0)
+        img = Image.open(buf)
+        return img
+
+    def create_violin(self, adata, gene_symbol, use_label):
+        import matplotlib.pyplot as plt
+
+        plt.rc("font", size=5)
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sc.pl.violin(
+            adata, keys=gene_symbol, groupby=use_label, rotation=45, ax=ax, show=False
+        )
+
+        # Hide the right and top spines
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position("left")
+        ax.xaxis.set_ticks_position("bottom")
+
+        plt.close(fig)
+
+        violin = self.fig2img(fig)
+
+        return violin
 
 
 class BokehClusterPlot(Spatial):
@@ -254,7 +364,15 @@ class BokehClusterPlot(Spatial):
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
 
-        cluster_plot(adata, use_label=self.use_label.value, show_plot=False)
+        if len(adata.obs[self.use_label.value].cat.categories) <= 20:
+            cluster_plot(adata, use_label=self.use_label.value, show_plot=False)
+        else:
+            cluster_plot(
+                adata,
+                use_label=self.use_label.value,
+                show_plot=False,
+                cmap="default_102",
+            )
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
@@ -273,6 +391,7 @@ class BokehClusterPlot(Spatial):
         )
 
         self.p = Paragraph(text="""Choose clusters:""", width=400, height=20)
+
         self.list_cluster = CheckboxGroup(
             labels=list(self.adata[0].obs[self.use_label.value].cat.categories),
             active=list(
@@ -282,16 +401,90 @@ class BokehClusterPlot(Spatial):
             ),
         )
 
-        self.inputs = column(
-            self.use_label,
-            self.data_alpha,
-            self.tissue_alpha,
-            self.spot_size,
-            self.p,
-            self.list_cluster,
-            self.checkbox_group,
+        self.n_top_genes = Slider(
+            title="Number of top genes", value=5, start=1, end=10, step=1
         )
-        self.layout = row(self.inputs, self.make_fig())
+
+        color_list = ["bwr", "RdBu_r", "viridis", "Reds", "Blues", "magma"]
+        self.cmap_select = Select(
+            title="Select color map:", value=color_list[0], options=color_list
+        )
+
+        plot_types = ["dotplot", "stacked_violin", "matrixplot"]
+        self.plot_select = Select(
+            title="Select DEA plot type:", value=plot_types[0], options=plot_types
+        )
+
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
+        )
+
+        self.min_logfoldchange = TextInput(value="3", title="Min log fold-change")
+
+        if "PTS_graph" in adata.uns:
+            if "rank_genes_groups" in self.adata[0].uns:
+                self.inputs = column(
+                    self.use_label,
+                    self.data_alpha,
+                    self.tissue_alpha,
+                    self.spot_size,
+                    self.p,
+                    self.list_cluster,
+                    self.checkbox_group,
+                    self.n_top_genes,
+                    self.min_logfoldchange,
+                    self.cmap_select,
+                    self.plot_select,
+                    self.output_backend,
+                )
+            else:
+                self.inputs = column(
+                    self.use_label,
+                    self.data_alpha,
+                    self.tissue_alpha,
+                    self.spot_size,
+                    self.p,
+                    self.list_cluster,
+                    self.checkbox_group,
+                    self.output_backend,
+                )
+
+        else:
+            if "rank_genes_groups" in self.adata[0].uns:
+                self.inputs = column(
+                    self.use_label,
+                    self.data_alpha,
+                    self.tissue_alpha,
+                    self.spot_size,
+                    self.p,
+                    self.list_cluster,
+                    self.n_top_genes,
+                    self.min_logfoldchange,
+                    self.cmap_select,
+                    self.plot_select,
+                    self.output_backend,
+                )
+            else:
+                self.inputs = column(
+                    self.use_label,
+                    self.data_alpha,
+                    self.tissue_alpha,
+                    self.spot_size,
+                    self.p,
+                    self.list_cluster,
+                    self.output_backend,
+                )
+
+        if "rank_genes_groups" in self.adata[0].uns:
+            if (
+                self.use_label.value
+                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+            ):
+                self.layout = column(row(self.inputs, self.make_fig()), self.add_dea())
+            else:
+                self.layout = column(row(self.inputs, self.make_fig()), Div(text=""))
+        else:
+            self.layout = row(self.inputs, self.make_fig())
 
         def modify_fig(doc):
             doc.add_root(row(self.layout, width=800))
@@ -302,7 +495,15 @@ class BokehClusterPlot(Spatial):
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
             self.list_cluster.on_change("active", self.update_data)
-            self.checkbox_group.on_change("active", self.update_data)
+            if "PTS_graph" in self.adata[0].uns:
+                self.checkbox_group.on_change("active", self.update_data)
+
+            self.output_backend.on_change("value", self.update_data)
+            if "rank_genes_groups" in self.adata[0].uns:
+                self.n_top_genes.on_change("value", self.update_data)
+                self.cmap_select.on_change("value", self.update_data)
+                self.plot_select.on_change("value", self.update_data)
+                self.min_logfoldchange.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
         self.app = Application(handler)
@@ -327,28 +528,28 @@ class BokehClusterPlot(Spatial):
             np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
         )
 
-        self.inputs = column(
-            self.use_label,
-            self.data_alpha,
-            self.tissue_alpha,
-            self.spot_size,
-            self.p,
-            self.list_cluster,
-            self.checkbox_group,
-        )
-
-        self.layout.children[0] = self.inputs
-
     def update_data(self, attrname, old, new):
 
-        self.layout.children[1] = self.make_fig()
+        if "rank_genes_groups" in self.adata[0].uns:
+            if (
+                self.use_label.value
+                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+            ):
+                self.layout.children[0].children[1] = self.make_fig()
+                self.layout.children[1] = self.add_dea()
+            else:
+                if len(self.layout.children) > 1:
+                    self.layout.children[1] = Div(text="")
+                    self.layout.children[0].children[1] = self.make_fig()
+        else:
+            self.layout.children[1] = self.make_fig()
 
     def make_fig(self):
         fig = figure(
             title="Cluster plot",
-            x_range=(0, self.dim),
+            x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg"
+            output_backend=self.output_backend.value
             # Specifying xdim/ydim isn't quire right :-(
             # width=xdim, height=ydim,
         )
@@ -467,6 +668,112 @@ class BokehClusterPlot(Spatial):
 
         return fig
 
+    def add_dea(self):
+        dea = self.create_dea(self.adata[0])
+
+        dea = (np.array(dea)).astype(np.uint8)
+
+        img_pillow2 = Image.fromarray(dea).convert("RGBA")
+
+        xdim, ydim = img_pillow2.size
+
+        # Create an array representation for the image `img`, and an 8-bit "4
+        # layer/RGBA" version of it `view`.
+        image2 = np.empty((ydim, xdim), dtype=np.uint32)
+        view2 = image2.view(dtype=np.uint8).reshape((ydim, xdim, 4))
+        # Copy the RGBA image into view, flipping it so it comes right-side up
+        # with a lower-left origin
+        view2[:, :, :] = np.flipud(np.asarray(img_pillow2))
+
+        p = figure(
+            plot_width=910,
+            plot_height=int(910 / xdim * ydim) + 5,
+            output_backend=self.output_backend.value,
+        )
+
+        # must give a vector of images
+        p.image_rgba(image=[image2], x=0, y=1, dw=xdim, dh=ydim)
+
+        p.toolbar.logo = None
+        p.xaxis.visible = False
+        p.yaxis.visible = False
+        p.xgrid.grid_line_color = None
+        p.ygrid.grid_line_color = None
+        p.outline_line_alpha = 0
+
+        return p
+
+    def fig2img(self, fig):
+        """Convert a Matplotlib figure to a PIL Image and return it"""
+        import io
+
+        buf = io.BytesIO()
+        fig.savefig(buf, bbox_inches="tight", pad_inches=0, dpi=150)
+        buf.seek(0)
+        img = Image.open(buf)
+        return img
+
+    def create_dea(self, adata):
+        import matplotlib.pyplot as plt
+
+        plt.rc("font", size=12)
+
+        fig, ax = plt.subplots(figsize=(12, 5))
+        sc.tl.dendrogram(adata, groupby="leiden")
+        if self.plot_select.value == "matrixplot":
+            sc.pl.rank_genes_groups_matrixplot(
+                adata,
+                n_genes=self.n_top_genes.value,
+                cmap=self.cmap_select.value,
+                show=False,
+                ax=ax,
+                standard_scale="var",
+                min_logfoldchange=float(self.min_logfoldchange.value),
+                groups=self.adata[0]
+                .obs[self.use_label.value]
+                .cat.categories[self.list_cluster.active],
+            )
+        elif self.plot_select.value == "stacked_violin":
+            sc.pl.rank_genes_groups_stacked_violin(
+                adata,
+                n_genes=self.n_top_genes.value,
+                cmap=self.cmap_select.value,
+                show=False,
+                ax=ax,
+                standard_scale="var",
+                min_logfoldchange=float(self.min_logfoldchange.value),
+                groups=self.adata[0]
+                .obs[self.use_label.value]
+                .cat.categories[self.list_cluster.active],
+            )
+        else:
+            sc.pl.rank_genes_groups_dotplot(
+                adata,
+                n_genes=self.n_top_genes.value,
+                cmap=self.cmap_select.value,
+                show=False,
+                ax=ax,
+                standard_scale="var",
+                min_logfoldchange=float(self.min_logfoldchange.value),
+                groups=self.adata[0]
+                .obs[self.use_label.value]
+                .cat.categories[self.list_cluster.active],
+            )
+
+        # Hide the right and top spines
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position("left")
+        ax.xaxis.set_ticks_position("bottom")
+
+        plt.close(fig)
+
+        dea = self.fig2img(fig)
+
+        return dea
+
 
 class BokehCciPlot(Spatial):
     def __init__(
@@ -515,8 +822,17 @@ class BokehCciPlot(Spatial):
             completions=available_het,
             min_characters=1,
         )
+
+        self.output_backend = Select(
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
+        )
+
         inputs = column(
-            self.het_select, self.data_alpha, self.tissue_alpha, self.spot_size
+            self.het_select,
+            self.data_alpha,
+            self.tissue_alpha,
+            self.spot_size,
+            self.output_backend,
         )
 
         self.layout = row(inputs, self.make_fig())
@@ -543,7 +859,7 @@ class BokehCciPlot(Spatial):
             title=self.het_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend="svg",
+            output_backend=self.output_backend.value,
         )
 
         colors = self._get_het(self.het_select.value)
@@ -675,7 +991,7 @@ class Annotate(Spatial):
 
     def make_fig(self):
         fig = figure(
-            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="svg"
+            x_range=(0, self.dim - 150), y_range=(self.dim, 0), output_backend="webgl"
         )
 
         colors = np.repeat("black", len(self.imagecol))

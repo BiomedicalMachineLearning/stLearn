@@ -131,21 +131,20 @@ def deconvolution_plot(
 
         ax_pie.pie(
             label_filter_.sum(axis=1),
-            colors=colors,
-            radius=5,
-            frame=True,
+            colors=my_cmap.colors,
+            radius=10,
+            # frame=True,
             autopct=my_autopct,
             pctdistance=1.1,
             startangle=90,
-            wedgeprops=dict(width=(2), edgecolor="w", antialiased=True),
+            wedgeprops=dict(width=(3), edgecolor="w", antialiased=True),
             textprops={"fontsize": 5},
         )
 
-        ax_pie.set_axis_off()
-
     if type(colors) == type(None):
         ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
-        cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals)
+        cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap,
+                                       norm=my_norm, ticks=color_vals)
 
         cb.ax.tick_params(size=0)
         loc = np.array(color_vals) + 0.5
