@@ -126,7 +126,9 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
 
     return all_edges_unique
 
-def get_between_spot_edge_array(neigh_zip, neigh_bool, cell_data=None,
+# TODO optimise with Numba
+def get_between_spot_edge_array(neigh_zip,
+                                neigh_bool, cell_data=None,
                                 label_set=None, cutoff=None, undirected=True):
     """ undirected=False uses list instead of set to store edges,
     thereby giving direction.
@@ -287,7 +289,8 @@ def count_interactions(adata, all_set, mix_mode, neighbours, obs_key,
         for j, cell_B in enumerate(all_set): # receiver if trans_dir else transmitter
             cellA_cellB_counts = count_core(adata, obs_key, neighbours,
                                       spot_indices=A_gene1_sig_indices,
-                                      neigh_bool=gene2_bool, label_set=[cell_B])
+                                      neigh_bool=gene2_bool, label_set=[cell_B],
+                                                         spot_mixtures=mix_mode)
             int_matrix[i, j] = cellA_cellB_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()

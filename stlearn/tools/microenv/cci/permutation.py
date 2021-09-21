@@ -15,24 +15,30 @@ from .merge import merge
 from .perm_utils import nonzero_quantile, get_lr_quants, get_lr_zeroprops, \
                         get_lr_bounds, get_similar_genes, \
                         get_similar_genes_Quantiles, gen_rand_pairs, \
-                        get_similar_genesFAST
+                        get_similar_genesFAST, get_lr_features, get_lr_bg
 
 # Newest method #
 def perform_spot_testing(adata: AnnData,
                          lr_scores: np.ndarray, lrs: np.array, n_pairs: int,
                          neighbours: List, het_vals: np.array, min_expr: float,
                          adj_method: str='fdr_bh', pval_adj_cutoff: float=0.05,
-                         verbose: bool = True, save_bg=False, n_groups=10,
+                         verbose: bool = True, save_bg=False, n_groups=None,
+          quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, .995, .9975, .999, 1)
                          ):
+    """ Calls significant spots by creating random gene pairs with similar
+        expression to given LR pair; only generate background for spots
+        which have score for given LR.
+    """
+    quantiles = np.array(quantiles)
 
     lr_genes = np.unique([lr_.split('_') for lr_ in lrs])
     genes = np.array([gene for gene in adata.var_names if gene not in lr_genes])
     candidate_expr = adata[:, genes].to_df().values
 
-    minimum_genes = round(np.sqrt(n_pairs)*2)
-    if len(genes) < minimum_genes:
+    n_genes = round(np.sqrt(n_pairs)*2)
+    if len(genes) < n_genes:
         print("Exiting since need atleast "
-              f"{minimum_genes} genes to generate {n_pairs} pairs.")
+              f"{n_genes} genes to generate {n_pairs} pairs.")
         return
 
     if n_pairs < 100:
@@ -40,57 +46,52 @@ def perform_spot_testing(adata: AnnData,
               "get accurate backgrounds (e.g. 1000).")
         return
 
-    if verbose:
-        print("Generating random gene pairs...")
-
-    ######## From generating same background for each spot ########
-    # rand_genes = genes
-    # rand_pairs = []
-    # for i in range(n_pairs):
-    #     rand_pair = '_'.join(np.random.choice(rand_genes, 2))
-    #     while rand_pair in rand_pairs:
-    #         rand_pair = '_'.join(np.random.choice(rand_genes, 2))
-    #         print(rand_pair)
-    #     rand_pairs.append(rand_pair)
-    #
-    # if verbose:
-    #     print("Generating the background...")
-    #
-    # # Per spot background #
-    # background = get_lrs_scores(adata, rand_pairs, neighbours,
-    #                             het_vals, min_expr, filter_pairs=False
-    #                             )
-    # adata.obsm['spot_bgs'] = background
-    # print("Added the background distribution per-spot to adata.obsm['spot_bgs']")
-
-    ####### Grouping the LRs to generate common backgrounds #######
+    ####### Quantiles to select similar gene to LRs to gen. rand-pairs #######
     lr_expr = adata[:, lr_genes].to_df()
-    grouped_lr_backgrounds(lrs, lr_expr, lr_scores, minimum_genes, n_pairs,
-                           candidate_expr, genes, adata, neighbours,
-                                                             het_vals, min_expr)
+    lr_feats = get_lr_features(adata, lr_expr, lrs, quantiles)
+    l_quants = lr_feats.loc[lrs,
+                         [col for col in lr_feats.columns if 'L_'in col]].values
+    r_quants = lr_feats.loc[lrs,
+                         [col for col in lr_feats.columns if 'R_'in col]].values
+    candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
+                                           q=quantiles, interpolation='nearest')
 
     ######## Background per LR, but only for spots where LR has a score ########
     # Determine the indices of the spots where each LR has a score #
-    print("here!")
-
-    cols = ['n_spots', 'n_spots_sig']
-    lr_summary = np.zeros((lr_scores.shape[1], 2), np.int)
+    cols = ['n_spots', 'n_spots_sig', 'n_spots_sig_pval']
+    lr_summary = np.zeros((lr_scores.shape[1], 3), np.int)
     pvals = np.ones(lr_scores.shape, dtype=np.float64)
     pvals_adj = np.ones(lr_scores.shape, dtype=np.float64)
     log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
     lr_sig_scores = lr_scores.copy()
+
+    # If we are saving the backgrounds #
+    if save_bg:
+        adata.uns['lrs_to_bg'] = {}
+        adata.uns['lr_spot_indices'] = {}
+
     with tqdm(
             total=lr_scores.shape[1],
-            desc="Calculating p-values for each LR pair in each spot...",
+            desc="Generating backgrounds & testing each LR pair...",
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
             disable= verbose==False
     ) as pbar:
 
+        gene_bg_genes = {} # Keep track of genes which can be used to gen. rand-pairs.
         spot_lr_indices = [[] for i in range(lr_scores.shape[0])] #tracks the lrs tested in a given spot for MHT !!!!
         for lr_j in range(lr_scores.shape[1]):
             lr_ = lrs[lr_j]
-            background = adata.uns['lrs_to_bg'][lr_]
-            spot_indices = adata.uns['lr_spot_indices'][lr_]
+            if lr_ == 'hg38-RPS19_hg38-RPSA':
+                print("here")
+            background, spot_indices = get_lr_bg(adata, neighbours, het_vals,
+                                               min_expr, lr_, lr_scores[:,lr_j],
+                                     l_quants[lr_j,:], r_quants[lr_j,:], genes,
+                                                candidate_quants, gene_bg_genes,
+                                                              n_genes, n_pairs,)
+
+            if save_bg:
+                adata.uns['lrs_to_bg'][lr_] = background
+                adata.uns['lr_spot_indices'] = spot_indices
 
             for spot_i, spot_index in enumerate(spot_indices):
                 n_greater = len(np.where(background[spot_i, :] >=
@@ -114,8 +115,10 @@ def perform_spot_testing(adata: AnnData,
             # Recording per lr results for this LR #
             lrs_in_spot = lr_scores[spot_i] > min_expr
             sig_lrs_in_spot = pvals_adj[spot_i,:] < pval_adj_cutoff
+            sigpval_lrs_in_spot = pvals[spot_i,:] < pval_adj_cutoff
             lr_summary[lrs_in_spot, 0] += 1
             lr_summary[sig_lrs_in_spot, 1] += 1
+            lr_summary[sigpval_lrs_in_spot, 2] += 1
 
             lr_sig_scores[spot_i,sig_lrs_in_spot==False] = 0
 
@@ -146,181 +149,6 @@ def perform_spot_testing(adata: AnnData,
         print("\nPer-spot results in adata.obsm have columns in same order as "
               "rows in adata.uns['lr_summary'].")
         print("Summary of LR results in adata.uns['lr_summary'].")
-
-def grouped_lr_backgrounds(lrs: np.array, lr_expr: pd.DataFrame,
-                           lr_scores: np.ndarray,
-                           n_genes: int, n_pairs: int,
-                           candidate_expr: np.ndarray, genes: np.array,
-                           adata: AnnData, neighbours: List, het_vals, min_expr,
-                           quantiles=(.5, .75, .85, .9, .95, .97, .98, .99, .995, .9975, .999, 1)
-                           ):
-    """ Groups LR pairs together if they have similar expression levels &
-                                                generates a background for each.
-    Parameters
-    ----------
-    lrs: np.array   LR pairs, which will be grouped after calculating quantiles.
-    lr_expr: pd.DataFrame   Gene expression for just the LR pairs.
-    n_groups: int           The number of groups to make for the LR pairs.
-    n_genes: int            Number of equivalent genes to select to generate bg.
-    n_pairs: int            Number of random pairs to generate.
-    candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
-    genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
-    quantiles: tuple    The quantiles to calculate for each gene.
-    """
-    quantiles = np.array(quantiles)
-
-    # Determining indices of LR pairs #
-    l_indices, r_indices = [], []
-    for lr in lrs:
-        l_, r_ = lr.split('_')
-        l_indices.extend( np.where( lr_expr.columns.values == l_ )[0] )
-        r_indices.extend( np.where( lr_expr.columns.values == r_ )[0] )
-
-    rank_dir = 'prop_highestTolowest'
-    method = 'quantiles'
-
-    # The nonzero median when quantiles=.5 #
-    lr_quants, l_quants, r_quants = get_lr_quants(lr_expr, l_indices, r_indices,
-                                                       quantiles, method=method)
-
-    # Calculating the zero proportions, for grouping based on median/zeros #
-    lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
-
-    ######## Getting lr features for later diagnostics #######
-    lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
-                                                   quantiles=np.array([.5]),
-                                                                  method='')
-    lr_median_means = lr_meds.mean(axis=1)
-    lr_prop_means = lr_props.mean(axis=1)
-
-    # Calculating mean rank #
-    dir_ = 1 if 'lowestToHighest' in rank_dir else -1
-    median_order = np.argsort( lr_median_means )
-    prop_order = np.argsort( lr_prop_means*dir_ )
-    #print(lr_prop_means[prop_order])
-    median_ranks = [np.where(median_order==i)[0][0]
-                                                   for i in range(len(lrs))]
-    prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
-    mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
-
-    #"""Saving the lrfeatures...
-    cols = ['lr-group', 'nonzero-median', 'zero-prop',
-                                    'median_rank', 'prop_rank', 'mean_rank']
-    rank_df = pd.DataFrame(index=lrs, columns=cols)
-    rank_df.iloc[:, 0] = list(range(len(lrs)))
-    rank_df.iloc[:, 1] = lr_median_means
-    rank_df.iloc[:, 2] = lr_prop_means
-    rank_df.iloc[:, 3] = np.array(median_ranks)
-    rank_df.iloc[:, 4] = np.array(prop_ranks)
-    rank_df.iloc[:, 5] = np.array(mean_ranks)
-    rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
-    if method=='quantiles':
-        lr_cols = [f'L_{quant}' for quant in quantiles] +\
-                  [f'R_{quant}' for quant in quantiles]
-        quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
-        rank_df = pd.concat((rank_df, quant_df), axis=1)
-    adata.uns['lrfeatures'] = rank_df
-
-    # Calculating LR features to evaluating grouping #
-    lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
-                                                   quantiles=np.array([.5]),
-                                                                  method='')
-    lr_median_means = lr_meds.mean(axis=1)
-    lr_prop_means = lr_props.mean(axis=1)
-
-    # Calculating mean rank #
-    dir_ = 1 if 'lowestToHighest' in rank_dir else -1
-    median_order = np.argsort( lr_median_means )
-    prop_order = np.argsort( lr_prop_means*dir_ )
-    #print(lr_prop_means[prop_order])
-    median_ranks = [np.where(median_order==i)[0][0]
-                                                   for i in range(len(lrs))]
-    prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
-    mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
-
-    # Creating the actual LR features to add to .uns #
-    cols = ['lr-group', 'nonzero-median', 'zero-prop',
-                                    'median_rank', 'prop_rank', 'mean_rank']
-    rank_df = pd.DataFrame(index=lrs, columns=cols)
-    rank_df.iloc[:, 0] = list(range(len(lrs)))
-    rank_df.iloc[:, 1] = lr_median_means
-    rank_df.iloc[:, 2] = lr_prop_means
-    rank_df.iloc[:, 3] = np.array(median_ranks)
-    rank_df.iloc[:, 4] = np.array(prop_ranks)
-    rank_df.iloc[:, 5] = np.array(mean_ranks)
-    rank_df = rank_df.iloc[np.argsort(mean_ranks),:]
-
-    lr_cols = [f'L_{quant}' for quant in quantiles] +\
-              [f'R_{quant}' for quant in quantiles]
-    quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
-    rank_df = pd.concat((rank_df, quant_df), axis=1)
-    adata.uns['lrfeatures'] = rank_df
-
-    # Now getting the background for each group #
-    lrs_to_bg = {}
-    lr_to_spot_indices = {}
-    # Pre-computing the quantiles #
-    candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
-                                           q=quantiles, interpolation='nearest')
-    gene_bg_genes = {} # Stores the background genes used for a gene if already
-                       # been tested in a different pair.
-    """ Checking distribution of genes which have each quantile as non-zero.
-    import matplotlib.pyplot as plt
-    plt.hist((candidate_quants>0).sum(axis=0), bins=100)
-    plt.show()
-    """
-    with tqdm(
-            total=len(lrs),
-            desc="Calculating backgrounds for each LR pair...",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-    ) as pbar:
-        for i, lr_ in enumerate(lrs):
-            l_, r_ = lr_.split('_')
-            if l_ not in gene_bg_genes:
-                l_quant = l_quants[:, i]
-                l_genes = get_similar_genesFAST(l_quant,  # group_l_props,
-                                                n_genes, candidate_quants,
-                                                genes)
-                gene_bg_genes[l_] = l_genes
-            else:
-                l_genes = gene_bg_genes[l_]
-
-            if r_ not in gene_bg_genes:
-                r_quant = r_quants[:, i]
-                r_genes = get_similar_genesFAST(r_quant,  # group_r_props,
-                                                n_genes, candidate_quants,
-                                                genes)
-                gene_bg_genes[r_] = r_genes
-            else:
-                r_genes = gene_bg_genes[r_]
-
-            """ Checking genes selected makes sense:
-            print(l_genes[0:5])
-            print(r_genes[0:5])
-            print(l_quant)
-            print(candidate_quants[:,np.where(genes==l_genes[0])[0][0]])
-            print(r_quant)
-            print(candidate_quants[:,np.where(genes==r_genes[0])[0][0]])
-            """
-
-            rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
-            spot_indices = np.where(lr_scores[:, i] > 0)[0]
-
-            background = get_lrs_scores(adata, rand_pairs,
-                                        neighbours, het_vals,
-                                        min_expr, filter_pairs=False,
-                                        spot_indices=spot_indices)
-
-            lrs_to_bg[lr_] = background
-            lr_to_spot_indices[lr_] = spot_indices
-
-            pbar.update(1)
-
-    # Adding the information to the adata #
-    adata.uns['lrs_to_bg'] = lrs_to_bg
-    adata.uns['lr_spot_indices'] = lr_to_spot_indices
-    print("Background information added to 'lrs_to_bg' & 'lr_spot_indices' "
-          "in adata.uns")
 
 # Version 2, no longer in use, see above for newest method #
 def perform_perm_testing(adata: AnnData, lr_scores: np.ndarray,

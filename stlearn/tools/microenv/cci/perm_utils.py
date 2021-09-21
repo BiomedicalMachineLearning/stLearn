@@ -6,6 +6,8 @@ from sklearn.preprocessing import MinMaxScaler
 from numba import njit, prange
 from numba.typed import List
 
+from .base import get_lrs_scores
+
 def nonzero_quantile(expr, q, interpolation):
     """ Calculating the non-zero quantiles. """
     nonzero_expr = expr[ expr>0 ]
@@ -249,4 +251,90 @@ def gen_rand_pairs(genes1: np.array, genes2: np.array, n_pairs: int):
         rand_pairs.append(rand_pair)
 
     return rand_pairs
+
+def get_lr_features(adata, lr_expr, lrs, quantiles):
+    """Gets expression features of LR pairs; nonzero-median, zero-prop, quantiles.
+    """
+    quantiles = np.array(quantiles)
+
+    # Determining indices of LR pairs #
+    l_indices, r_indices = [], []
+    for lr in lrs:
+        l_, r_ = lr.split('_')
+        l_indices.extend( np.where( lr_expr.columns.values == l_ )[0] )
+        r_indices.extend( np.where( lr_expr.columns.values == r_ )[0] )
+
+    # The nonzero median when quantiles=.5 #
+    lr_quants, l_quants, r_quants = get_lr_quants(lr_expr, l_indices, r_indices,
+                                                  quantiles, method='quantiles')
+
+    # Calculating the zero proportions, for grouping based on median/zeros #
+    lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
+
+    ######## Getting lr features for later diagnostics #######
+    lr_meds, l_meds, r_meds = get_lr_quants(lr_expr, l_indices, r_indices,
+                                                   quantiles=np.array([.5]),
+                                                                  method='')
+    lr_median_means = lr_meds.mean(axis=1)
+    lr_prop_means = lr_props.mean(axis=1)
+
+    # Calculating mean rank #
+    median_order = np.argsort( lr_median_means )
+    prop_order = np.argsort( lr_prop_means*-1 )
+    median_ranks = [np.where(median_order==i)[0][0]
+                                                   for i in range(len(lrs))]
+    prop_ranks = [np.where(prop_order==i)[0][0] for i in range(len(lrs))]
+    mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
+
+    # Saving the lrfeatures...
+    cols = ['lr-group', 'nonzero-median', 'zero-prop',
+                                    'median_rank', 'prop_rank', 'mean_rank']
+    lr_features = pd.DataFrame(index=lrs, columns=cols)
+    lr_features.iloc[:, 0] = list(range(len(lrs)))
+    lr_features.iloc[:, 1] = lr_median_means
+    lr_features.iloc[:, 2] = lr_prop_means
+    lr_features.iloc[:, 3] = np.array(median_ranks)
+    lr_features.iloc[:, 4] = np.array(prop_ranks)
+    lr_features.iloc[:, 5] = np.array(mean_ranks)
+    lr_features = lr_features.iloc[np.argsort(mean_ranks),:]
+    lr_cols = [f'L_{quant}' for quant in quantiles] +\
+              [f'R_{quant}' for quant in quantiles]
+    quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs)
+    lr_features = pd.concat((lr_features, quant_df), axis=1)
+    adata.uns['lrfeatures'] = lr_features
+
+    return lr_features
+
+def get_lr_bg(adata, neighbours, het_vals, min_expr,
+              lr_, lr_score, l_quant, r_quant, genes, candidate_quants,
+              gene_bg_genes, n_genes, n_pairs, ):
+    """ Gets the LR-specific background & bg spot indices.
+    """
+    l_, r_ = lr_.split('_')
+    if l_ not in gene_bg_genes:
+        l_genes = get_similar_genesFAST(l_quant,  # group_l_props,
+                                        n_genes, candidate_quants,
+                                        genes)
+        gene_bg_genes[l_] = l_genes
+    else:
+        l_genes = gene_bg_genes[l_]
+
+    if r_ not in gene_bg_genes:
+        r_genes = get_similar_genesFAST(r_quant,  # group_r_props,
+                                        n_genes, candidate_quants,
+                                        genes)
+        gene_bg_genes[r_] = r_genes
+    else:
+        r_genes = gene_bg_genes[r_]
+
+    rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
+    spot_indices = np.where(lr_score>0)[0]
+
+    background = get_lrs_scores(adata, rand_pairs,
+                                neighbours, het_vals,
+                                min_expr, filter_pairs=False,
+                                spot_indices=spot_indices)
+
+    return background, spot_indices
+
 

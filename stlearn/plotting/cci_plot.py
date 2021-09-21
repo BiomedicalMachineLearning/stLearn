@@ -348,8 +348,8 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
                 font_size: int=12, node_size_exp: int=1, node_size_scaler: int=1,
                 min_counts: int=3,
                 fig: matplotlib.figure.Figure=None,
-                ax: matplotlib.axes.Axes=None,
-                title: str=None, figsize: tuple=(14,8),):
+                ax: matplotlib.axes.Axes=None, pad=.1,
+                title: str=None, figsize: tuple=(10,10),):
     """ Circular celltype-celltype interaction network based on LR analysis.
         Parameters
         ----------
@@ -407,9 +407,11 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
     node_names = list(graph.nodes.keys())
     node_indices = [np.where(all_set==node_name)[0][0]
                                                     for node_name in node_names]
-    node_sizes = [(((sum(int_matrix[i,:]+int_matrix[:,i])-
+    node_sizes = np.array([(((sum(int_matrix[i,:]+int_matrix[:,i])-
                 int_matrix[i,i])/total)*10000*node_size_scaler)**(node_size_exp)
-                                                          for i in node_indices]
+                                                         for i in node_indices])
+    node_sizes[node_sizes==0] = .1 #pseudocount
+
     edges = list(graph.edges.items())
     e_totals = []
     for i, edge in enumerate(edges):
@@ -467,13 +469,20 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
         ax=ax,
     )
     fig.suptitle(title, fontsize=30)
+    plt.tight_layout()
+
+    # Adding padding #
+    xlims = ax.get_xlim()
+    ax.set_xlim(xlims[0]-pad, xlims[1]+pad)
+    ylims = ax.get_ylim()
+    ax.set_ylim(ylims[0]-pad, ylims[1]+pad)
 
     if return_pos:
         return pos
 
 def cci_map(adata: AnnData, use_label: str, lr: str=None,
             ax: matplotlib.figure.Axes=None, show: bool=False,
-            figsize: tuple=None):
+            figsize: tuple=None, cmap: str='Spectral_r'):
     """ Heatmap visualising sender->receivers of cell type interactions.
         Parameters
         ----------
@@ -497,10 +506,17 @@ def cci_map(adata: AnnData, use_label: str, lr: str=None,
         add = np.array([int_df.shape[0]*.1, int_df.shape[0]*.05])
         figsize = tuple(np.array([6.4, 4.8])+add)
 
+    # Rank by total interactions #
+    int_vals = int_df.values
+    total_ints = int_vals.sum(axis=1)+int_vals.sum(axis=0)-int_vals.diagonal()
+    order = np.argsort(-total_ints)
+    int_df = int_df.iloc[order, order[::-1]]
+
+    # Reformat the interaction df #
     flat_df = create_flat_df(int_df)
 
     ax = _box_map(flat_df['x'], flat_df['y'], flat_df['value'].astype(int),
-                  ax=ax, figsize=figsize)
+                  ax=ax, figsize=figsize, cmap=cmap)
 
     ax.set_ylabel('Sender')
     ax.set_xlabel('Receiver')
@@ -512,8 +528,10 @@ def cci_map(adata: AnnData, use_label: str, lr: str=None,
         return ax
 
 def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
-               n_top_lrs: int=5, min_total: int=10,
-               ax: matplotlib.figure.Axes=None, show: bool=False):
+               n_top_lrs: int=5, n_top_ccis: int=15, min_total: int=0,
+               ax: matplotlib.figure.Axes=None, figsize: tuple=(6.48,4.8),
+               show: bool=False, cmap: str='Spectral_r',
+               square_scaler: int=700):
     """ Heatmap of interaction counts; rows are lrs, columns are celltype->celltype interactions.
         Parameters
         ----------
@@ -522,6 +540,7 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
         lrs: list-like    LR pairs to show in the heatmap, if None then top 5 lrs with highest no. of interactions used from adata.uns['lr_summary'].
         n_top_lrs: int    Indicates how many lrs to show; is ignored if lrs is not None.
         min_total: int    Minimum no. of totals interaction celltypes must have to be shown.
+        square_scaler: int  Scaler to size the squares displayed.
 
         Returns
         -------
@@ -552,18 +571,28 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
 
     # Filtering out ccis which have few LR interactions #
     total_ints = new_int_df.values.sum(axis=0)
-    new_int_df = new_int_df.loc[:,total_ints>min_total]
+    order = np.argsort(-total_ints)
+    new_int_df = new_int_df.iloc[:, order[0:n_top_ccis]]
 
     # Getting the top_lrs to display by top loadings in PCA #
     if n_top_lrs < len(lrs):
         top_lrs = adata.uns['lr_summary'].index.values[0:n_top_lrs]
         new_int_df = new_int_df.loc[top_lrs,:]
 
+    # Ordering by the no. of interactions #
+    cci_ints = new_int_df.values.sum(axis=0)
+    cci_order = np.argsort(-cci_ints)
+    lr_ints = new_int_df.values.sum(axis=1)
+    lr_order = np.argsort(-lr_ints)
+    new_int_df = new_int_df.iloc[lr_order, cci_order]
+
     # Getting a flat version of the array for plotting #
     flat_df = create_flat_df(new_int_df.transpose())
+    if flat_df.shape[0]==0 or flat_df.shape[1]==0:
+        raise Exception(f'No interactions greater than min: {min_total}')
 
     ax = _box_map(flat_df['x'], flat_df['y'], flat_df['value'].astype(int),
-                  ax=ax)
+                 ax=ax, cmap=cmap, figsize=figsize, square_scaler=square_scaler)
 
     ax.set_ylabel('LR-pair')
     ax.set_xlabel('Cell-cell interaction')
@@ -574,7 +603,7 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
         return ax
 
 def lr_chord_plot(adata: AnnData, use_label: str,
-                  lr: str=None, min_ints: int=2,
+                  lr: str=None, min_ints: int=2, n_top_ccis: int=10,
                   cmap: str='default', show: bool=True):
     """ Chord diagram of interactions between cell types.
         Parameters
@@ -602,8 +631,8 @@ def lr_chord_plot(adata: AnnData, use_label: str,
     total_ints = flux.sum(axis=1) + flux.sum(axis=0) - flux.diagonal()
     keep = total_ints > min_ints
     # Limit of 10 for good display #
-    if sum(keep) > 10:
-        keep = np.argsort(-total_ints)[0:10]
+    if sum(keep) > n_top_ccis:
+        keep = np.argsort(-total_ints)[0:n_top_ccis]
     flux = flux[:, keep]
     flux = flux[keep, :].astype(float)
     # Add pseudocount to row/column which has all zeros for the incoming

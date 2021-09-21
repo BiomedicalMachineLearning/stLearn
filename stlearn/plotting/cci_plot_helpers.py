@@ -70,23 +70,27 @@ def create_flat_df(int_df):
 
     return flat_df
 
-def _box_map(x, y, size, ax=None, figsize=(6.48,4.8)):
+def _box_map(x, y, size, ax=None, figsize=(6.48,4.8), cmap=None,
+             square_scaler=700):
     """ Main underlying helper function for generating the heatmaps.
     """
+    if type(cmap)==type(None):
+        cmap = 'Spectral_r'
+
     if type(ax) == type(None):
         fig, ax = plt.subplots(figsize=figsize)
 
     # Mapping from column names to integer coordinates
-    x_labels = [v for v in sorted(x.unique())]
-    y_labels = [v for v in sorted(y.unique())]
+    x_labels = list(x.values) #[v for v in sorted(x.unique())]
+    y_labels = list(y.values) #[v for v in sorted(y.unique())]
     x_to_num = {p[1]: p[0] for p in enumerate(x_labels)}
     y_to_num = {p[1]: p[0] for p in enumerate(y_labels)}
 
     out = ax.scatter(
         x=x.map(x_to_num),  # Use mapping for x
         y=y.map(y_to_num),  # Use mapping for y
-        s=size / sum(size) * 700,
-        c=size, cmap='Reds',
+        s=size / sum(size) * square_scaler,
+        c=size, cmap=cmap,
         # Vector of square sizes, proportional to size parameter
         marker='s'  # Use square as scatterplot marker
     )
