@@ -189,13 +189,13 @@ def run_cci(adata: AnnData, use_label: str,
         # (if bidirectional interaction between two spots, counts as two seperate interactions).
         LR_edges = get_interactions(
                     adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
-                    L_bool, R_bool,
+                    L_bool, R_bool, spot_mixtures=spot_mixtures,
                      tissue_types=tissue_types, cell_type_props=cell_type_props,
                     cell_prop_cutoff=cell_prop_cutoff, trans_dir=True, #sig ligand->receptor mode
                      )
         RL_edges = get_interactions(
                     adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
-                    R_bool, L_bool,
+                    R_bool, L_bool, spot_mixtures=spot_mixtures,
                      tissue_types=tissue_types, cell_type_props=cell_type_props,
                     cell_prop_cutoff=cell_prop_cutoff, trans_dir=False, #sig receptor->ligand mode
                      )
