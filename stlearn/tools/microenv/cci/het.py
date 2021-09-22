@@ -5,6 +5,10 @@ import scipy.spatial as spatial
 from numba.typed import List
 from numba import njit, jit
 
+from stlearn.tools.microenv.cci.het_helpers import count_core, \
+                                                  get_between_spot_edge_array, \
+                                                  get_data_for_counting
+
 def count(
     adata: AnnData,
     use_label: str = None,
@@ -127,180 +131,18 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
 
     return all_edges_unique
 
-@njit
-def get_between_spot_edge_array(neighbourhood_bcs: List,
-                                neighbourhood_indices: List,
-                                #neigh_zip,
-                                neigh_bool: np.array,
-                                count_cell_types: bool,
-                                cell_data: np.ndarray=None,
-                                cutoff: float=0, undirected=True):
-    """ undirected=False uses list instead of set to store edges,
-    thereby giving direction.
-    cell_data is either labels or label transfer scores.
-    """
-    edge_starts = List()
-    edge_ends = List()
-    n_edges = 0
-    #for bcs, indices in neigh_zip: #bc is cell barcode
-    for i in range(len(neighbourhood_bcs)):
-        bcs, indices = neighbourhood_bcs[i], neighbourhood_indices[i]
-        spot_bc, neigh_bcs = bcs
-        neigh_indices = indices[1]
-        # Subset the neighbours to only those fitting indicated criteria #
-        neigh_bcs = neigh_bcs[neigh_bool[neigh_indices]]
-        neigh_indices = neigh_indices[neigh_bool[neigh_indices]]
-
-        if len(neigh_indices) == 0: # No cases where neighbours meet criteria
-            continue # Don't add any interactions for this neighbourhood
-
-        # If we have cell data, need to subset neighbours meeting criteria
-        if count_cell_types: # User needs to have input cell_data
-            # If cutoff specified, then means cell_data refers to cell proportions
-            #if mix_mode: # Inputted mixture data, user should have specific cutoff.
-            # NOTE is always in mix_mode, for pure cell types just use 0s & 1s #
-            interact_bool = cell_data[neigh_indices, :] > cutoff
-            interact_neigh_bool = interact_bool.sum(axis=1)
-            interact_neigh_bool = interact_neigh_bool == cell_data.shape[1]
-
-        else: # Keep all neighbours with L | R as interacting
-            interact_neigh_bool = np.ones((1,neigh_indices.shape[0]))[0,:]==1
-
-        # Retrieving the barcodes of the interacting neighbours #
-        interact_neigh_bcs = neigh_bcs[ interact_neigh_bool ]
-        for interact_neigh_bc in interact_neigh_bcs:
-            edge_starts.append( spot_bc )
-            edge_ends.append( interact_neigh_bc )
-            n_edges += 1
-
-    # Getting the unique edges #
-    edge_added = np.zeros((1,len(edge_starts)))[0,:]==1
-    edge_list_unique = List()
-    for i in range(n_edges):
-        if not edge_added[i]:
-            edge_start, edge_end = edge_starts[i], edge_ends[i]
-            edge_list_unique.append( (edge_start, edge_end) )
-            for j in range(i, n_edges):
-                edge_startj, edge_endj = edge_starts[j], edge_ends[j]
-                if undirected: # Direction doesn't matter #
-                    if (edge_start == edge_startj and edge_end == edge_endj) or \
-                       (edge_end == edge_startj and edge_start == edge_endj):
-                        edge_added[j] = True
-                else:
-                    if edge_start == edge_startj and edge_end == edge_endj:
-                        edge_added[j] = True
-
-    return edge_list_unique
-
-def count_core(adata: AnnData, use_label: str, neighbours: List,
-               spot_indices: np.array = None, neigh_bool: np.array = None,
-               label_set=None, spot_mixtures: bool = True, cutoff: float = 0.2,
-               return_edges=False,
-               ) -> np.array:
-    """Get the cell type counts per spot, if spot_mixtures is True & there is \
-        per spot deconvolution results available, then counts within spot. \
-        If cell type deconvolution results not present but use_label in \
-        adata.obs, then counts number of cell types in the neighbourhood.
-
-        Parameters
-        ----------
-        spot_lr1: np.ndarray          Spots*Ligands
-        Returns
-        -------
-        counts: int   Total number of interactions satisfying the conditions, \
-                      or np.array<set> if return_edges=True, where each set is \
-                      an edge, only returns unique edges.
-    """
-    # Ensuring compatibility with current way of adding label_transfer to object
-    if use_label == "label_transfer" or use_label == "predictions":
-        obs_key, uns_key = "predictions", "label_transfer"
-    else:
-        obs_key, uns_key = use_label, use_label
-
-    # Just return an empty list if no spot indices #
-    if len(spot_indices)==0:
-        return [] if return_edges else 0
-
-    # Setting label_set if not present
-    if type(label_set) == type(None):
-        label_set = np.unique(adata.obs.loc[:,obs_key].values)
-
-    # Setting neigh_bool if not present, is used to filter which spots can be neighbours
-    if type(neigh_bool) == type(None):
-        neigh_bool = np.array([True]*len(adata))
-
-    # Setting the spot indices to do the counting
-    if type(spot_indices) == type(None):
-        spot_indices = np.array(list(range(len(adata))))
-
-    # Getting the neighbourhood information #
-    neighbourhood_bcs = List()
-    neighbourhood_indices = List()
-    all_bcs = adata.obs_names.values.astype(str)
-    for spot_i in spot_indices:
-        neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
-        neighbourhood_bcs.append( (all_bcs[spot_i],
-                                   all_bcs[neighbours[spot_i]]) )
-
-    # Getting the barcodes #
-    #neigh_zip = zip(neigh_zip_bcs, neigh_zip_indices)
-
-    # Mixture mode
-    if spot_mixtures and uns_key in adata.uns:
-        # Making sure the label_set in consistent format with columns of adata.uns
-        # cols = list(adata.uns[uns_key].columns)
-        # col_set = np.array([col for i, col in enumerate(cols)
-        #                                                    if col in label_set])
-
-        # within-spot, will have only itself as a neighbour in this mode
-        if np.all(np.array([spot_i in neighs for spot_i, neighs
-                                                 in neighbourhood_indices])==1):
-            # Since each edge link to the spot itself,
-            # then need to count the number of significant spots where
-            # cellA & cellB > cutoff, & the L/R are expressed.
-            ## Getting spots where L/R expressed & cellA > cutoff
-            sig_spot_bool = np.array([False]*len(neigh_bool))
-            sig_spot_bool[spot_indices] = True
-            spots = np.logical_and(sig_spot_bool, neigh_bool)
-            ## For the spots where L/R expressed & cellA > cutoff, counting
-            ## how many have cellB > cutoff.
-            counts = (adata.uns[uns_key].loc[:, label_set].values[spots, :]
-                                                           > cutoff).sum(axis=1)
-            interact_indices = np.where(counts > 0)[0]
-            edge_list = [(adata.obs_names[index]) for index in interact_indices]
-
-        # between-spot
-        else:
-            # To prevent double counting edges, creating a list of sets,
-            # with each set representing an edge, the number of unique edges
-            # will be the count of interactions.
-            prop_vals = adata.uns[uns_key].loc[:, label_set].values
-            edge_list = list(get_between_spot_edge_array(neighbourhood_bcs,
-                                                    neighbourhood_indices,
-                                     neigh_bool, True,
-                                            cell_data=prop_vals, cutoff=cutoff))
-
-    # Absolute mode
-    else:
-        # Need to consider the same problem indicated above #
-        cell_types = adata.obs.loc[:,obs_key].values
-        prop_vals = np.zeros( (len(cell_types), len(label_set)) )
-        for i, cell_type in enumerate(label_set):
-            prop_vals[:,i] = (cell_types==cell_type).astype(np.int_)
-        edge_list = list(get_between_spot_edge_array(neighbourhood_bcs,
-                                                neighbourhood_indices,
-                                         neigh_bool, True, cell_data=prop_vals))
-
-    if return_edges:
-        return edge_list
-    else: # Counting number of unique interactions #
-        return len(edge_list)
-
-def count_interactions(adata, all_set, mix_mode, neighbours, obs_key,
+def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
                        sig_bool, gene1_bool, gene2_bool,
                        tissue_types=None, cell_type_props=None,
                        cell_prop_cutoff=None, trans_dir=True,
                        ):
+    """ Counts the interactions.
+    """
+    # Getting minimal information necessary for the counting #
+    spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices = \
+                            get_data_for_counting(adata, use_label,
+                                                  mix_mode, neighbours, all_set)
+
     # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
     int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
     for i, cell_A in enumerate(all_set):  # transmitter if trans_dir else reciever
@@ -317,30 +159,34 @@ def count_interactions(adata, all_set, mix_mode, neighbours, obs_key,
         A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
 
         for j, cell_B in enumerate(all_set): # receiver if trans_dir else transmitter
-            cellA_cellB_counts = count_core(adata, obs_key, neighbours,
-                                      spot_indices=A_gene1_sig_indices,
-                                      neigh_bool=gene2_bool, label_set=[cell_B],
-                                                         spot_mixtures=mix_mode)
+            cellA_cellB_counts = count_core(spot_bcs, cell_data, j,
+                                    neighbourhood_bcs, neighbourhood_indices,
+                                    spot_indices=A_gene1_sig_indices,
+                                    neigh_bool=gene2_bool,
+                                    cutoff=cell_prop_cutoff, return_edges=True,
+                                    )
             int_matrix[i, j] = cellA_cellB_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
-def get_interactions(adata, all_set, mix_mode, neighbours, obs_key,
+def get_interactions(spot_bcs, cell_data,
+                     neighbourhood_bcs, neighbourhood_indices, all_set, mix_mode,
                        sig_bool, gene1_bool, gene2_bool,
-                       spot_mixtures: bool=False,
-                       tissue_types=None, cell_type_props=None,
+                       tissue_types=None, #cell_type_props=None,
                        cell_prop_cutoff=None, trans_dir = True,
                      ):
-    """"""
+    """ Gets spot edges between cell types where the first cell type fits \
+        criteria of gene1_bool, & second second cell type of gene2_bool.
+    """
+
+    # Now retrieving the interaction edges #
     interaction_edges = {}
     for i, cell_A in enumerate(all_set):  # transmitter if trans_dir else reciever
         # Determining which spots have cell type A #
         if not mix_mode:
             A_bool = tissue_types == cell_A
         else:
-            col_A = [col for i, col in enumerate(cell_type_props.columns)
-                     if cell_A in col][0]
-            A_bool = cell_type_props.loc[:, col_A].values > cell_prop_cutoff
+            A_bool = cell_data[:, i] > cell_prop_cutoff
 
         A_gene1_bool = np.logical_and(A_bool, gene1_bool)
         A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
@@ -350,13 +196,13 @@ def get_interactions(adata, all_set, mix_mode, neighbours, obs_key,
             interaction_edges[cell_A] = {}
 
         for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
-            edges_list = count_core(adata, obs_key, neighbours,
-                                            spot_indices=A_gene1_sig_indices,
-                                            neigh_bool=gene2_bool,
-                                            label_set=[cell_B],
-                                            return_edges=True,
-                                            spot_mixtures=spot_mixtures)
-
+            edges_list = count_core(spot_bcs, cell_data, j,
+                                    neighbourhood_bcs, neighbourhood_indices,
+                                    spot_indices=A_gene1_sig_indices,
+                                    neigh_bool=gene2_bool,
+                                    cutoff=cell_prop_cutoff, return_edges=True,
+                                    )
+            #print(edges_list)
             if trans_dir:
                 interaction_edges[cell_A][cell_B] = edges_list
             else:

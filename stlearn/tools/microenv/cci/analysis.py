@@ -12,7 +12,8 @@ from anndata import AnnData
 from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_lrs_scores, calc_distance
 from .base_grouping import get_hotspots
-from .het import count, count_interactions, get_interactions
+from .het import count, count_interactions, get_interactions, \
+                                                           get_data_for_counting
 from .permutation import perform_perm_testing, perform_spot_testing
 
 def run(adata: AnnData, lrs: np.array,
@@ -47,7 +48,7 @@ def run(adata: AnnData, lrs: np.array,
     """
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
-    adata.uns['spot_neighbours'] = pd.DataFrame([','.join(x.astype(str))
+    adata.obsm['spot_neighbours'] = pd.DataFrame([','.join(x.astype(str))
                                                            for x in neighbours],
                            index=adata.obs_names, columns=['neighbour_indices'])
     if verbose:
@@ -135,7 +136,7 @@ def load_lrs(names: str) -> np.array:
 ################################################################################
 def run_cci(adata: AnnData, use_label: str,
             min_spots: int = 3, sig_spots: bool = True,
-            spot_mixtures: bool = True, cell_prop_cutoff: float = 0.2,
+            spot_mixtures: bool = False, cell_prop_cutoff: float = 0.2,
             verbose: bool = True,
             ):
     ran_lr = 'lr_summary' in adata.uns
@@ -152,10 +153,11 @@ def run_cci(adata: AnnData, use_label: str,
 
     # Determining the neighbour spots used for significance testing #
     neighbours = List()
-    for i in range(adata.uns['spot_neighbours'].shape[0]):
-        neighs = np.array(adata.uns['spot_neighbours'].values[i,
+    for i in range(adata.obsm['spot_neighbours'].shape[0]):
+        neighs = np.array(adata.obsm['spot_neighbours'].values[i,
                                                                :][0].split(','))
         neighs = neighs[neighs != ''].astype(int)
+        neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
         neighbours.append(neighs)
 
     # Getting the cell/tissue types that we are actually testing #
@@ -164,7 +166,15 @@ def run_cci(adata: AnnData, use_label: str,
 
     # Mixture mode
     mix_mode = spot_mixtures and uns_key in adata.uns
-    cell_type_props = None if not mix_mode else adata.uns[uns_key]
+    if not mix_mode and spot_mixtures:
+        print(f"Warning: specified spot_mixtures but no deconvolution data in "
+              f"adata.uns['{uns_key}'].\nFalling back to discrete mode.")
+
+    # Getting minimum necessary information for edge counting #
+    spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices = \
+                            get_data_for_counting(adata, use_label,
+                                                  mix_mode, neighbours, all_set)
+
 
     lr_summary = adata.uns['lr_summary']
     col_i = 1 if sig_spots else 0
@@ -187,18 +197,22 @@ def run_cci(adata: AnnData, use_label: str,
         # 2) sig spot with receptor, only neighbours with ligand relevant
         # NOTE, A<->B is double counted, but on different side of matrix.
         # (if bidirectional interaction between two spots, counts as two seperate interactions).
-        LR_edges = get_interactions(
-                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
-                    L_bool, R_bool, spot_mixtures=spot_mixtures,
-                     tissue_types=tissue_types, cell_type_props=cell_type_props,
-                    cell_prop_cutoff=cell_prop_cutoff, trans_dir=True, #sig ligand->receptor mode
-                     )
-        RL_edges = get_interactions(
-                    adata, all_set, mix_mode, neighbours, obs_key, sig_bool,
-                    R_bool, L_bool, spot_mixtures=spot_mixtures,
-                     tissue_types=tissue_types, cell_type_props=cell_type_props,
-                    cell_prop_cutoff=cell_prop_cutoff, trans_dir=False, #sig receptor->ligand mode
-                     )
+        LR_edges = get_interactions(spot_bcs, cell_data,
+                                    neighbourhood_bcs, neighbourhood_indices,
+                                    all_set, mix_mode, sig_bool,
+                                    L_bool, R_bool,
+                                    tissue_types=tissue_types,
+                                    cell_prop_cutoff=cell_prop_cutoff,
+                                    trans_dir=True, #sig ligand->receptor mode
+                                    )
+        RL_edges = get_interactions(spot_bcs, cell_data,
+                                    neighbourhood_bcs, neighbourhood_indices,
+                                    all_set, mix_mode, sig_bool,
+                                    R_bool, L_bool,
+                                    tissue_types=tissue_types,
+                                    cell_prop_cutoff=cell_prop_cutoff,
+                                    trans_dir=False, #sig receptor->ligand mode
+                                    )
 
         # Counting the number of unique interacting edges
         # between different cell type via indicate LR
