@@ -5,7 +5,7 @@ import scipy.spatial as spatial
 from numba.typed import List
 from numba import njit, jit
 
-from stlearn.tools.microenv.cci.het_helpers import count_core, \
+from stlearn.tools.microenv.cci.het_helpers import edge_core, \
                                                   get_between_spot_edge_array, \
                                                   get_data_for_counting
 
@@ -159,20 +159,20 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
         A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
 
         for j, cell_B in enumerate(all_set): # receiver if trans_dir else transmitter
-            cellA_cellB_counts = count_core(spot_bcs, cell_data, j,
+            cellA_cellB_counts = len(edge_core(cell_data, j,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     spot_indices=A_gene1_sig_indices,
                                     neigh_bool=gene2_bool,
-                                    cutoff=cell_prop_cutoff, return_edges=True,
-                                    )
+                                    cutoff=cell_prop_cutoff,
+                                    ))
             int_matrix[i, j] = cellA_cellB_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
-def get_interactions(spot_bcs, cell_data,
+def get_interactions(cell_data,
                      neighbourhood_bcs, neighbourhood_indices, all_set, mix_mode,
                        sig_bool, gene1_bool, gene2_bool,
-                       tissue_types=None, #cell_type_props=None,
+                       tissue_types=None, 
                        cell_prop_cutoff=None, trans_dir = True,
                      ):
     """ Gets spot edges between cell types where the first cell type fits \
@@ -196,19 +196,19 @@ def get_interactions(spot_bcs, cell_data,
             interaction_edges[cell_A] = {}
 
         for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
-            edges_list = count_core(spot_bcs, cell_data, j,
+            edge_list = list( edge_core(cell_data, j,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     spot_indices=A_gene1_sig_indices,
                                     neigh_bool=gene2_bool,
-                                    cutoff=cell_prop_cutoff, return_edges=True,
-                                    )
-            #print(edges_list)
+                                    cutoff=cell_prop_cutoff
+                                    ) )
+
             if trans_dir:
-                interaction_edges[cell_A][cell_B] = edges_list
+                interaction_edges[cell_A][cell_B] = edge_list
             else:
                 if cell_B not in interaction_edges:
                     interaction_edges[cell_B] = {}
-                interaction_edges[cell_B][cell_A] = edges_list
+                interaction_edges[cell_B][cell_A] = edge_list
 
     return interaction_edges
 

@@ -197,7 +197,7 @@ def run_cci(adata: AnnData, use_label: str,
         # 2) sig spot with receptor, only neighbours with ligand relevant
         # NOTE, A<->B is double counted, but on different side of matrix.
         # (if bidirectional interaction between two spots, counts as two seperate interactions).
-        LR_edges = get_interactions(spot_bcs, cell_data,
+        LR_edges = get_interactions(cell_data,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     all_set, mix_mode, sig_bool,
                                     L_bool, R_bool,
@@ -205,7 +205,7 @@ def run_cci(adata: AnnData, use_label: str,
                                     cell_prop_cutoff=cell_prop_cutoff,
                                     trans_dir=True, #sig ligand->receptor mode
                                     )
-        RL_edges = get_interactions(spot_bcs, cell_data,
+        RL_edges = get_interactions(cell_data,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     all_set, mix_mode, sig_bool,
                                     R_bool, L_bool,

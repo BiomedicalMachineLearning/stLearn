@@ -9,14 +9,11 @@ import scipy.spatial as spatial
 from numba.typed import List
 from numba import njit, jit
 
-# TODO:
-#   2) Try to njit.
-#@njit
-def count_core(spot_bcs: np.array,
-               cell_data: np.ndarray, cell_type_index: int,
+@njit
+def edge_core(cell_data: np.ndarray, cell_type_index: int,
                neighbourhood_bcs: List, neighbourhood_indices: List,
                spot_indices: np.array = None, neigh_bool: np.array = None,
-               cutoff: float = 0.2, return_edges=False,
+               cutoff: float = 0.2,
                ) -> np.array:
     """Get the cell type counts per spot, if spot_mixtures is True & there is \
         per spot deconvolution results available, then counts within spot. \
@@ -33,32 +30,50 @@ def count_core(spot_bcs: np.array,
                       an edge, only returns unique edges.
     """
 
-    # Just return an empty list if no spot indices #
-    if len(spot_indices)==0:
-        return [] if return_edges else 0
-
     # Subsetting to relevant cell types #
     cell_data = cell_data[:, cell_type_index]
 
+    # Initialising the edge list #
+    edge_list = List()
+    # This ensures consistent typing #
+    spots_have_neighbours = False
+    first_spot = -1
+    for i in range(len(neighbourhood_bcs)):
+        if len(neighbourhood_bcs[i][1]) > 0:
+            edge_list.append( (neighbourhood_bcs[i][0],
+                               neighbourhood_bcs[i][1][0]) )
+            spots_have_neighbours = True
+            first_spot = i
+            break
+
+    # If spots have no neighbours, no counting !
+    if not spots_have_neighbours:
+        return edge_list
+    elif len(spot_indices)==0:
+        return edge_list[1:]
+
     ### Within-spot mode
     # within-spot, will have only itself as a neighbour in this mode
-    within_mode = neighbourhood_indices[0][0] in neighbourhood_indices[0][1]
-        # np.all(np.array([spot_i in neighs for spot_i, neighs
-        #                                          in neighbourhood_indices])==1)
+    within_mode = neighbourhood_indices[first_spot][0] in \
+                                            neighbourhood_indices[first_spot][1]
     if within_mode:
             # Since each edge link to the spot itself,
             # then need to count the number of significant spots where
             # cellA & cellB > cutoff, & the L/R are expressed.
             ## Getting spots where L/R expressed & cellA > cutoff
-            spots = [i in spot_indices and neigh_bool_
-                     for i, neigh_bool_ in enumerate(neigh_bool)]
-            ## For the spots where L/R expressed & cellA > cutoff, counting
-            ## how many have cellB > cutoff.
-            #counts = (adata.uns[uns_key].loc[:, label_set].values[spots, :]
-            #                                               > cutoff).sum(axis=1)
-            counts = (cell_data[spots]>cutoff).sum(axis=1)
-            interact_indices = np.where(counts > 0)[0]
-            edge_list = [(spot_bcs[index]) for index in interact_indices]
+            # spots = [i in spot_indices and neigh_bool_
+            #          for i, neigh_bool_ in enumerate(neigh_bool)]
+            # ## For the spots where L/R expressed & cellA > cutoff, counting
+            # ## how many have cellB > cutoff.
+            # counts = (cell_data[spots]>cutoff).sum()
+            # interact_indices = np.where(counts > 0)[0]
+            # edge_list = [(spot_bcs[index]) for index in interact_indices]
+
+            # Numba implimentation #
+            for i in spot_indices:
+                if neigh_bool[i] and cell_data[i] > cutoff:
+                    edge_list.append( (neighbourhood_bcs[i][0],
+                                       neighbourhood_bcs[i][1][0]) )
 
     ### Between-spot mode
     else:
@@ -70,18 +85,15 @@ def count_core(spot_bcs: np.array,
             neighbourhood_indices_sub.append( neighbourhood_indices[spot_i] )
 
         # Number of unique edges will be the count of interactions.
-        edge_list = list(get_between_spot_edge_array(neighbourhood_bcs_sub,
+        get_between_spot_edge_array(edge_list, neighbourhood_bcs_sub,
                                                      neighbourhood_indices_sub,
                                                     neigh_bool, True,
-                                            cell_data=cell_data, cutoff=cutoff))
+                                             cell_data=cell_data, cutoff=cutoff)
 
-    if return_edges:
-        return edge_list
-    else: # Counting number of unique interactions #
-        return len(edge_list)
+    return edge_list[1:] # Removing the initial edge added for typing #
 
 @njit
-def get_between_spot_edge_array(neighbourhood_bcs: List,
+def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
                                 neighbourhood_indices: List,
                                 neigh_bool: np.array,
                                 count_cell_types: bool,
@@ -127,11 +139,10 @@ def get_between_spot_edge_array(neighbourhood_bcs: List,
 
     # Getting the unique edges #
     edge_added = np.zeros((1,len(edge_starts)))[0,:]==1
-    edge_list_unique = List()
     for i in range(n_edges):
         if not edge_added[i]:
             edge_start, edge_end = edge_starts[i], edge_ends[i]
-            edge_list_unique.append( (edge_start, edge_end) )
+            edge_list.append( (edge_start, edge_end) )
             for j in range(i, n_edges):
                 edge_startj, edge_endj = edge_starts[j], edge_ends[j]
                 if undirected: # Direction doesn't matter #
@@ -141,8 +152,6 @@ def get_between_spot_edge_array(neighbourhood_bcs: List,
                 else:
                     if edge_start == edge_startj and edge_end == edge_endj:
                         edge_added[j] = True
-
-    return edge_list_unique
 
 def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
     """ Retrieves the minimal information necessary to perform edge counting.
