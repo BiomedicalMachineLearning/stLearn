@@ -135,7 +135,7 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
 def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
                        sig_bool, gene1_bool, gene2_bool,
                        tissue_types=None, cell_type_props=None,
-                       cell_prop_cutoff=None, trans_dir=True,
+                       cell_prop_cutoff=.2, trans_dir=True,
                        ):
     """ Counts the interactions.
     """

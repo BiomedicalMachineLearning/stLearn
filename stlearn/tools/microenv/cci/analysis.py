@@ -222,7 +222,9 @@ def run_cci(adata: AnnData, use_label: str,
         per_lr_cci_raw[best_lr] = int_df
 
     adata.uns[f'lr_cci_{use_label}'] = pd.DataFrame(all_matrix,
-                                             index=all_set, columns=all_set)
+                                                 index=all_set, columns=all_set)
+    adata.uns[f'lr_cci_raw_{use_label}'] = pd.DataFrame(raw_matrix,
+                                                 index=all_set, columns=all_set)
     adata.uns[f'per_lr_cci_{use_label}'] = per_lr_cci
     adata.uns[f'per_lr_cci_pvals_{use_label}'] = per_lr_cci_pvals
     adata.uns[f'per_lr_cci_raw_{use_label}'] = per_lr_cci_raw

@@ -28,7 +28,8 @@ from .cluster_plot import cluster_plot
 from .deconvolution_plot import deconvolution_plot
 from .gene_plot import gene_plot
 from stlearn.plotting.utils import get_colors
-from .cci_plot_helpers import add_arrows, create_flat_df, _box_map, chordDiagram
+from .cci_plot_helpers import get_int_df, add_arrows, create_flat_df, _box_map, \
+                                                                    chordDiagram
 from sklearn.decomposition import PCA
 
 from bokeh.io import push_notebook, output_notebook
@@ -346,9 +347,9 @@ def het_plot(
 def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
                 pos: dict = None, return_pos: bool = False, cmap: str='default',
                 font_size: int=12, node_size_exp: int=1, node_size_scaler: int=1,
-                min_counts: int=3,
+                min_counts: int=0, sig_interactions: bool=True,
                 fig: matplotlib.figure.Figure=None,
-                ax: matplotlib.axes.Axes=None, pad=.1,
+                ax: matplotlib.axes.Axes=None, pad=.25,
                 title: str=None, figsize: tuple=(10,10),):
     """ Circular celltype-celltype interaction network based on LR analysis.
         Parameters
@@ -379,12 +380,7 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
                         "suggesting no significant interactions.")
 
     # Either plotting overall interactions, or just for a particular LR #
-    if type(lr) == type(None):
-        int_df = adata.uns[f'lr_cci_{use_label}']
-        title = f'lr_cci_{use_label}' if type(title)==type(None) else title
-    else:
-        int_df = adata.uns[f'per_lr_cci_{use_label}'][lr]
-        title = lr if type(title) == type(None) else title
+    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
 
     # Creating the interaction graph #
     all_set = int_df.index.values
@@ -482,7 +478,9 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
 
 def cci_map(adata: AnnData, use_label: str, lr: str=None,
             ax: matplotlib.figure.Axes=None, show: bool=False,
-            figsize: tuple=None, cmap: str='Spectral_r'):
+            figsize: tuple=None, cmap: str='Spectral_r',
+            sig_interactions: bool=True, title=None,
+            ):
     """ Heatmap visualising sender->receivers of cell type interactions.
         Parameters
         ----------
@@ -495,12 +493,8 @@ def cci_map(adata: AnnData, use_label: str, lr: str=None,
         ax: matplotlib.figure.Axes    Axes where the heatmap was drawn on if show=False.
     """
 
-    if type(lr)==type(None): #No LR inputted, so just use all
-        int_df = adata.uns[f'lr_cci_{use_label}']
-        title = 'Cell-Cell LR Interactions'
-    else:
-        int_df = adata.uns[f'per_lr_cci_{use_label}'][lr]
-        title = f'Cell-Cell {lr} interactions'
+    # Either plotting overall interactions, or just for a particular LR #
+    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
 
     if type(figsize) == type(None): # Adjust size depending on no. cell types
         add = np.array([int_df.shape[0]*.1, int_df.shape[0]*.05])
@@ -531,7 +525,7 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
                n_top_lrs: int=5, n_top_ccis: int=15, min_total: int=0,
                ax: matplotlib.figure.Axes=None, figsize: tuple=(6.48,4.8),
                show: bool=False, cmap: str='Spectral_r',
-               square_scaler: int=700):
+               square_scaler: int=700, sig_interactions: bool=True):
     """ Heatmap of interaction counts; rows are lrs, columns are celltype->celltype interactions.
         Parameters
         ----------
@@ -546,7 +540,10 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
         -------
         ax: matplotlib.figure.Axes    Axes where the heatmap was drawn on if show=False.
     """
-    lr_int_dfs = adata.uns[f'per_lr_cci_{use_label}']
+    if sig_interactions:
+        lr_int_dfs = adata.uns[f'per_lr_cci_{use_label}']
+    else:
+        lr_int_dfs = adata.uns[f'per_lr_cci_raw_{use_label}']
 
     if type(lrs)==type(None):
         lrs = np.array( list(lr_int_dfs.keys()) )
@@ -604,7 +601,9 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
 
 def lr_chord_plot(adata: AnnData, use_label: str,
                   lr: str=None, min_ints: int=2, n_top_ccis: int=10,
-                  cmap: str='default', show: bool=True):
+                  cmap: str='default', show: bool=True,
+                  sig_interactions: bool=True, title=None,
+                  ):
     """ Chord diagram of interactions between cell types.
         Parameters
         ----------
@@ -617,12 +616,8 @@ def lr_chord_plot(adata: AnnData, use_label: str,
         -------
         fig, ax: matplotlib.figure.Figure, matplotlib.figure.Axes   Axes where the heatmap was drawn on if show=False.
     """
-    if type(lr)==type(None):
-        int_df = adata.uns[f'lr_cci_{use_label}']
-        title = '# LR interactions between cell types'
-    else:
-        int_df = adata.uns[f'per_lr_cci_{use_label}'][lr]
-        title = f'# {lr} interactions between cell types'
+    # Either plotting overall interactions, or just for a particular LR #
+    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
 
     int_df = int_df.transpose()
     fig = plt.figure(figsize=(8, 8))

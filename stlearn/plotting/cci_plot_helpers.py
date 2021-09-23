@@ -56,6 +56,21 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
 """ Helper functions for cci_map
 """
 
+def get_int_df(adata, lr, use_label, sig_interactions, title):
+    """ Retrieves the relevant interaction count matrix.
+    """
+    no_title = type(title)==type(None)
+    if type(lr)==type(None): #No LR inputted, so just use all
+        int_df = adata.uns[f'lr_cci_{use_label}'] if sig_interactions else \
+                                            adata.uns[f'lr_cci_raw_{use_label}']
+        title = 'Cell-Cell LR Interactions' if no_title else title
+    else:
+        int_df = adata.uns[f'per_lr_cci_{use_label}'][lr] if sig_interactions \
+                               else adata.uns[f'per_lr_cci_raw_{use_label}'][lr]
+        title = f'Cell-Cell {lr} interactions' if no_title else title
+
+    return int_df, title
+
 def create_flat_df(int_df):
     """Reformats a dataframe representing interactions to a flat format."""
     n_rows = int_df.shape[0] * int_df.shape[1]
