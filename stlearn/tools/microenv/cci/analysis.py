@@ -53,7 +53,7 @@ def run(adata: AnnData, lrs: np.array,
                                                            for x in neighbours],
                            index=adata.obs_names, columns=['neighbour_indices'])
     if verbose:
-        print("Spot neighbour indices stored in adata.uns['spot_neighbours']")
+        print("Spot neighbour indices stored in adata.obsm['spot_neighbours']")
 
     # Conduct with cell heterogeneity info if label_transfer provided #
     cell_het = type(use_label) != type(None) and use_label in adata.uns.keys()
