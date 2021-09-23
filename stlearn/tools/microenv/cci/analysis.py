@@ -13,7 +13,8 @@ from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_lrs_scores, calc_distance
 from .base_grouping import get_hotspots
 from .het import count, count_interactions, get_interactions, \
-                         get_data_for_counting, get_interaction_matrix
+                         get_data_for_counting, get_interaction_matrix, \
+                         get_interaction_pvals
 from .permutation import perform_perm_testing, perform_spot_testing
 
 def run(adata: AnnData, lrs: np.array,
@@ -137,7 +138,7 @@ def load_lrs(names: str) -> np.array:
 def run_cci(adata: AnnData, use_label: str,
             min_spots: int = 3, sig_spots: bool = True,
             spot_mixtures: bool = False, cell_prop_cutoff: float = 0.2,
-            verbose: bool = True,
+            verbose: bool = True, p_cutoff=.05, n_perms=100,
             ):
     ran_lr = 'lr_summary' in adata.uns
     ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
@@ -182,35 +183,54 @@ def run_cci(adata: AnnData, use_label: str,
     best_lrs = lr_summary.index.values[lr_summary.values[:,col_i] > min_spots]
     lr_genes = np.unique([lr.split('_') for lr in best_lrs])
     lr_expr = adata[:,lr_genes].to_df()
+
+    # Sig-CCIs across all LRs #
     all_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
-    per_lr_cci = {}
+    # CCIs across all LRs #
+    raw_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+    per_lr_cci = {} # Per LR significant CCI counts #
+    per_lr_cci_pvals = {} # Per LR CCI p-values #
+    per_lr_cci_raw = {} # Per LR raw CCI counts #
     for best_lr in best_lrs:
         l, r = best_lr.split('_')
-        #lr_results = adata.uns['per_lr_results'][best_lr]
 
-        L_bool = lr_expr.loc[:,l].values > 0 #adata[:, l].X.toarray()[:, 0] > 0
-        R_bool = lr_expr.loc[:,r].values > 0 #adata[:, r].X.toarray()[:, 0] > 0
+        L_bool = lr_expr.loc[:,l].values > 0
+        R_bool = lr_expr.loc[:,r].values > 0
         lr_index = np.where(adata.uns['lr_summary'].index.values==best_lr)[0][0]
         sig_bool = adata.obsm[col][:, lr_index] > 0
-        #sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
         int_matrix = get_interaction_matrix(cell_data, neighbourhood_bcs,
                                             neighbourhood_indices, all_set,
                                             mix_mode, sig_bool, L_bool, R_bool,
                                      tissue_types, cell_prop_cutoff).astype(int)
 
-        all_matrix += int_matrix
-        int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
-        per_lr_cci[best_lr] = int_matrix
+        int_pvals = get_interaction_pvals(int_matrix, n_perms, cell_data,
+                          neighbourhood_bcs, neighbourhood_indices, all_set,
+                          mix_mode, sig_bool, L_bool, R_bool, tissue_types,
+                                                               cell_prop_cutoff)
+
+        sig_int_matrix = int_matrix.copy()
+        sig_int_matrix[int_pvals>p_cutoff] = 0
+
+        raw_matrix += int_matrix
+        all_matrix += sig_int_matrix
+        int_df = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
+        sig_int_df = pd.DataFrame(sig_int_matrix, index=all_set, columns=all_set)
+        pval_df = pd.DataFrame(int_pvals, index=all_set, columns=all_set)
+        per_lr_cci[best_lr] = sig_int_df
+        per_lr_cci_pvals[best_lr] = pval_df
+        per_lr_cci_raw[best_lr] = int_df
 
     adata.uns[f'lr_cci_{use_label}'] = pd.DataFrame(all_matrix,
                                              index=all_set, columns=all_set)
     adata.uns[f'per_lr_cci_{use_label}'] = per_lr_cci
+    adata.uns[f'per_lr_cci_pvals_{use_label}'] = per_lr_cci_pvals
+    adata.uns[f'per_lr_cci_raw_{use_label}'] = per_lr_cci_raw
     if verbose:
-        print(f"Counts of cci interactions for all LR pairs in "
+        print(f"Significant counts of cci interactions for all LR pairs in "
               f"{f'lr_cci_{use_label}'}")
-        print(f"Counts of cci interactions for each LR pair stored in dictionary"
-              f" {f'per_lr_cci_{use_label}'}")
+        print(f"Significant counts of cci interactions for each LR pair "
+              f"stored in dictionary {f'per_lr_cci_{use_label}'}")
 
 
 

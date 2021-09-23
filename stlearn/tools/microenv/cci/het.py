@@ -170,6 +170,33 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
+def get_interaction_pvals(int_matrix, n_perms, cell_data,
+                          neighbourhood_bcs, neighbourhood_indices, all_set,
+                          mix_mode, sig_bool, L_bool, R_bool, tissue_types,
+                                                              cell_prop_cutoff):
+    """ Perturbs the cell labels to get background count frequency to estimate \
+        p-values.
+    """
+
+    # Counting how many times permutation of spots cell data creates interaction
+    # counts greater than that observed, in order to calculate p-values.
+    greater_counts = np.zeros(int_matrix.shape).astype(int)
+    indices = np.array([i for i in range(cell_data.shape[0])])
+    for i in range(n_perms):
+        # Permuting the cell data by swapping between spots #
+        rand_indices = np.random.choice(indices, cell_data.shape[0], False)
+        perm_data = cell_data[rand_indices, :]
+        perm_matrix = get_interaction_matrix(perm_data, neighbourhood_bcs,
+                                        neighbourhood_indices, all_set,
+                                        mix_mode, sig_bool, L_bool, R_bool,
+                                     tissue_types, cell_prop_cutoff).astype(int)
+        perm_greater = (perm_matrix >= int_matrix).astype(int)
+        greater_counts += perm_greater
+
+    # Calculating the pvalues #
+    int_pvals = greater_counts / n_perms
+    return int_pvals
+
 @njit
 def get_interaction_matrix(cell_data,
                            neighbourhood_bcs, neighbourhood_indices,
