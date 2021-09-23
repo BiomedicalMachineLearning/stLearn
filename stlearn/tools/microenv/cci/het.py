@@ -169,46 +169,50 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
+@njit
 def get_interactions(cell_data,
                      neighbourhood_bcs, neighbourhood_indices, all_set, mix_mode,
                        sig_bool, gene1_bool, gene2_bool,
-                       tissue_types=None, 
-                       cell_prop_cutoff=None, trans_dir = True,
+                       tissue_types=None,
+                       cell_prop_cutoff=None,
                      ):
     """ Gets spot edges between cell types where the first cell type fits \
         criteria of gene1_bool, & second second cell type of gene2_bool.
     """
 
+    # Creating list of lists to store edges for respective cell types #
+    interaction_edges = List()
+
     # Now retrieving the interaction edges #
-    interaction_edges = {}
-    for i, cell_A in enumerate(all_set):  # transmitter if trans_dir else reciever
+    for i in range(all_set.shape[0]):  # transmitter if trans_dir else reciever
+        cell_A = all_set[i]
+
         # Determining which spots have cell type A #
         if not mix_mode:
-            A_bool = tissue_types == cell_A
+            A_bool_1 = tissue_types == cell_A
+            A_gene1_bool = np.logical_and(A_bool_1, gene1_bool)
         else:
-            A_bool = cell_data[:, i] > cell_prop_cutoff
+            A_bool_2 = cell_data[:, i] > cell_prop_cutoff
+            A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)
 
-        A_gene1_bool = np.logical_and(A_bool, gene1_bool)
         A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
-        A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
+        n_true = A_gene1_sig_bool.sum()
+        A_gene1_sig_indices = np.zeros((1, n_true), dtype=np.int_)[0,:] #np.where(A_gene1_sig_bool)[0]
+        index = 0
+        for k in range(A_gene1_sig_bool.shape[0]):
+            if A_gene1_sig_bool[k]:
+                A_gene1_sig_indices[index] = k
+                index += 1
 
-        if trans_dir:
-            interaction_edges[cell_A] = {}
-
-        for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
-            edge_list = list( edge_core(cell_data, j,
+        for j in range(all_set.shape[0]):  # receiver if trans_dir else transmitter
+            edge_list = edge_core(cell_data, j,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     spot_indices=A_gene1_sig_indices,
                                     neigh_bool=gene2_bool,
                                     cutoff=cell_prop_cutoff
-                                    ) )
+                                    )
 
-            if trans_dir:
-                interaction_edges[cell_A][cell_B] = edge_list
-            else:
-                if cell_B not in interaction_edges:
-                    interaction_edges[cell_B] = {}
-                interaction_edges[cell_B][cell_A] = edge_list
+            interaction_edges.append( edge_list )
 
     return interaction_edges
 

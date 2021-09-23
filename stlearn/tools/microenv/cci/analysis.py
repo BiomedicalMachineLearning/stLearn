@@ -180,14 +180,16 @@ def run_cci(adata: AnnData, use_label: str,
     col_i = 1 if sig_spots else 0
     col = 'lr_sig_scores'if sig_spots else 'lr_scores'
     best_lrs = lr_summary.index.values[lr_summary.values[:,col_i] > min_spots]
+    lr_genes = np.unique([lr.split('_') for lr in best_lrs])
+    lr_expr = adata[:,lr_genes].to_df()
     all_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
     per_lr_cci = {}
     for best_lr in best_lrs:
         l, r = best_lr.split('_')
         #lr_results = adata.uns['per_lr_results'][best_lr]
 
-        L_bool = adata[:, l].X.toarray()[:, 0] > 0
-        R_bool = adata[:, r].X.toarray()[:, 0] > 0
+        L_bool = lr_expr.loc[:,l].values > 0 #adata[:, l].X.toarray()[:, 0] > 0
+        R_bool = lr_expr.loc[:,r].values > 0 #adata[:, r].X.toarray()[:, 0] > 0
         lr_index = np.where(adata.uns['lr_summary'].index.values==best_lr)[0][0]
         sig_bool = adata.obsm[col][:, lr_index] > 0
         #sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
@@ -203,7 +205,7 @@ def run_cci(adata: AnnData, use_label: str,
                                     L_bool, R_bool,
                                     tissue_types=tissue_types,
                                     cell_prop_cutoff=cell_prop_cutoff,
-                                    trans_dir=True, #sig ligand->receptor mode
+                                    #sig ligand->receptor mode
                                     )
         RL_edges = get_interactions(cell_data,
                                     neighbourhood_bcs, neighbourhood_indices,
@@ -211,20 +213,24 @@ def run_cci(adata: AnnData, use_label: str,
                                     R_bool, L_bool,
                                     tissue_types=tissue_types,
                                     cell_prop_cutoff=cell_prop_cutoff,
-                                    trans_dir=False, #sig receptor->ligand mode
+                                    #sig receptor->ligand mode
                                     )
 
         # Counting the number of unique interacting edges
         # between different cell type via indicate LR
         int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
+        edge_i = 0
         for i, cell_A in enumerate(all_set):
-            RL_Atrans_edges = RL_edges[cell_A]
-            LR_Atrans_edges = LR_edges[cell_A]
+            # RL_Atrans_edges = RL_edges[i]
+            # LR_Atrans_edges = LR_edges[i]
             for j, cell_B in enumerate(all_set):
-                RL_Atrans_Bedges = RL_Atrans_edges[cell_B]
-                LR_Atrans_Bedges = LR_Atrans_edges[cell_B]
+                # RL_Atrans_Bedges = list( RL_Atrans_edges[j] )
+                # LR_Atrans_Bedges = list( LR_Atrans_edges[j] )
+                RL_Atrans_Bedges = list( LR_edges[edge_i] )
+                LR_Atrans_Bedges = list( RL_edges[edge_i] )
                 Atrans_Bedges = np.unique( RL_Atrans_Bedges+LR_Atrans_Bedges )
                 int_matrix[i, j] = len(Atrans_Bedges)
+                edge_i += 1
 
         all_matrix += int_matrix
         int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
