@@ -172,8 +172,7 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
 
 def get_interaction_pvals(int_matrix, n_perms, cell_data,
                           neighbourhood_bcs, neighbourhood_indices, all_set,
-                          mix_mode, sig_bool, L_bool, R_bool, tissue_types,
-                                                              cell_prop_cutoff):
+                          sig_bool, L_bool, R_bool, cell_prop_cutoff):
     """ Perturbs the cell labels to get background count frequency to estimate \
         p-values.
     """
@@ -188,8 +187,8 @@ def get_interaction_pvals(int_matrix, n_perms, cell_data,
         perm_data = cell_data[rand_indices, :]
         perm_matrix = get_interaction_matrix(perm_data, neighbourhood_bcs,
                                         neighbourhood_indices, all_set,
-                                        mix_mode, sig_bool, L_bool, R_bool,
-                                     tissue_types, cell_prop_cutoff).astype(int)
+                                         sig_bool, L_bool, R_bool,
+                                                   cell_prop_cutoff).astype(int)
         perm_greater = (perm_matrix >= int_matrix).astype(int)
         greater_counts += perm_greater
 
@@ -200,8 +199,7 @@ def get_interaction_pvals(int_matrix, n_perms, cell_data,
 @njit
 def get_interaction_matrix(cell_data,
                            neighbourhood_bcs, neighbourhood_indices,
-                           all_set, mix_mode, sig_bool,
-                           L_bool, R_bool, tissue_types, cell_prop_cutoff):
+                           all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff):
     """ Gets the interaction count matrix.
     """
     # Now counting the interactions under 3 situations:
@@ -211,17 +209,15 @@ def get_interaction_matrix(cell_data,
     # (if bidirectional interaction between two spots, counts as two seperate interactions).
     LR_edges = get_interactions(cell_data,
                                 neighbourhood_bcs, neighbourhood_indices,
-                                all_set, mix_mode, sig_bool,
+                                all_set, sig_bool,
                                 L_bool, R_bool,
-                                tissue_types=tissue_types,
                                 cell_prop_cutoff=cell_prop_cutoff,
                                 # sig ligand->receptor mode
                                 )
     RL_edges = get_interactions(cell_data,
                                 neighbourhood_bcs, neighbourhood_indices,
-                                all_set, mix_mode, sig_bool,
+                                all_set, sig_bool,
                                 R_bool, L_bool,
-                                tissue_types=tissue_types,
                                 cell_prop_cutoff=cell_prop_cutoff,
                                 # sig receptor->ligand mode
                                 )
@@ -258,9 +254,8 @@ def get_interaction_matrix(cell_data,
 
 @njit
 def get_interactions(cell_data,
-                     neighbourhood_bcs, neighbourhood_indices, all_set, mix_mode,
+                     neighbourhood_bcs, neighbourhood_indices, all_set,
                        sig_bool, gene1_bool, gene2_bool,
-                       tissue_types=None,
                        cell_prop_cutoff=None,
                      ):
     """ Gets spot edges between cell types where the first cell type fits \
@@ -272,15 +267,10 @@ def get_interactions(cell_data,
 
     # Now retrieving the interaction edges #
     for i in range(all_set.shape[0]):  # transmitter if trans_dir else reciever
-        cell_A = all_set[i]
 
         # Determining which spots have cell type A #
-        if not mix_mode:
-            A_bool_1 = tissue_types == cell_A
-            A_gene1_bool = np.logical_and(A_bool_1, gene1_bool)
-        else:
-            A_bool_2 = cell_data[:, i] > cell_prop_cutoff
-            A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)
+        A_bool_2 = cell_data[:, i] > cell_prop_cutoff
+        A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)
 
         A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
         n_true = A_gene1_sig_bool.sum()

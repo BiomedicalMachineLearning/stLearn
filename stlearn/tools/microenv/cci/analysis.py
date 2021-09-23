@@ -176,7 +176,6 @@ def run_cci(adata: AnnData, use_label: str,
                             get_data_for_counting(adata, use_label,
                                                   mix_mode, neighbours, all_set)
 
-
     lr_summary = adata.uns['lr_summary']
     col_i = 1 if sig_spots else 0
     col = 'lr_sig_scores'if sig_spots else 'lr_scores'
@@ -201,13 +200,12 @@ def run_cci(adata: AnnData, use_label: str,
 
         int_matrix = get_interaction_matrix(cell_data, neighbourhood_bcs,
                                             neighbourhood_indices, all_set,
-                                            mix_mode, sig_bool, L_bool, R_bool,
-                                     tissue_types, cell_prop_cutoff).astype(int)
+                                            sig_bool, L_bool, R_bool,
+                                                   cell_prop_cutoff).astype(int)
 
         int_pvals = get_interaction_pvals(int_matrix, n_perms, cell_data,
                           neighbourhood_bcs, neighbourhood_indices, all_set,
-                          mix_mode, sig_bool, L_bool, R_bool, tissue_types,
-                                                               cell_prop_cutoff)
+                                     sig_bool, L_bool, R_bool, cell_prop_cutoff)
 
         sig_int_matrix = int_matrix.copy()
         sig_int_matrix[int_pvals>p_cutoff] = 0

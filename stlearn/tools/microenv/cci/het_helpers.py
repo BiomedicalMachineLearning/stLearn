@@ -183,12 +183,13 @@ def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
         cols = cell_props.columns.values.astype(str)
         col_order = [np.where([cell_type in col for col in cols])[0][0]
                                                        for cell_type in all_set]
-        cell_data = adata.uns[uns_key].iloc[:, col_order].values
+        cell_data = adata.uns[uns_key].iloc[:, col_order].values.astype(np.float64)
     else:
         cell_labels = adata.obs.loc[:, obs_key].values
-        cell_data = np.zeros( (len(cell_labels), len(all_set)) )
+        cell_data = np.zeros( (len(cell_labels), len(all_set)), dtype=np.float64)
         for i, cell_type in enumerate(all_set):
-            cell_data[:,i] = (cell_labels==cell_type).astype(np.int_)
+            cell_data[:,i] = (cell_labels==cell_type).astype(np.int_)\
+                                                             .astype(np.float64)
 
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
