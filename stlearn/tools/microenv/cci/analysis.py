@@ -13,7 +13,7 @@ from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_lrs_scores, calc_distance
 from .base_grouping import get_hotspots
 from .het import count, count_interactions, get_interactions, \
-                                                           get_data_for_counting
+                         get_data_for_counting, get_interaction_matrix
 from .permutation import perform_perm_testing, perform_spot_testing
 
 def run(adata: AnnData, lrs: np.array,
@@ -194,43 +194,10 @@ def run_cci(adata: AnnData, use_label: str,
         sig_bool = adata.obsm[col][:, lr_index] > 0
         #sig_bool = lr_results.loc[:, 'lr_sig_scores'].values != 0
 
-        # Now counting the interactions under 3 situations:
-        # 1) sig spot with ligand, only neighbours with receptor relevant
-        # 2) sig spot with receptor, only neighbours with ligand relevant
-        # NOTE, A<->B is double counted, but on different side of matrix.
-        # (if bidirectional interaction between two spots, counts as two seperate interactions).
-        LR_edges = get_interactions(cell_data,
-                                    neighbourhood_bcs, neighbourhood_indices,
-                                    all_set, mix_mode, sig_bool,
-                                    L_bool, R_bool,
-                                    tissue_types=tissue_types,
-                                    cell_prop_cutoff=cell_prop_cutoff,
-                                    #sig ligand->receptor mode
-                                    )
-        RL_edges = get_interactions(cell_data,
-                                    neighbourhood_bcs, neighbourhood_indices,
-                                    all_set, mix_mode, sig_bool,
-                                    R_bool, L_bool,
-                                    tissue_types=tissue_types,
-                                    cell_prop_cutoff=cell_prop_cutoff,
-                                    #sig receptor->ligand mode
-                                    )
-
-        # Counting the number of unique interacting edges
-        # between different cell type via indicate LR
-        int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
-        edge_i = 0
-        for i, cell_A in enumerate(all_set):
-            # RL_Atrans_edges = RL_edges[i]
-            # LR_Atrans_edges = LR_edges[i]
-            for j, cell_B in enumerate(all_set):
-                # RL_Atrans_Bedges = list( RL_Atrans_edges[j] )
-                # LR_Atrans_Bedges = list( LR_Atrans_edges[j] )
-                RL_Atrans_Bedges = list( LR_edges[edge_i] )
-                LR_Atrans_Bedges = list( RL_edges[edge_i] )
-                Atrans_Bedges = np.unique( RL_Atrans_Bedges+LR_Atrans_Bedges )
-                int_matrix[i, j] = len(Atrans_Bedges)
-                edge_i += 1
+        int_matrix = get_interaction_matrix(cell_data, neighbourhood_bcs,
+                                            neighbourhood_indices, all_set,
+                                            mix_mode, sig_bool, L_bool, R_bool,
+                                     tissue_types, cell_prop_cutoff).astype(int)
 
         all_matrix += int_matrix
         int_matrix = pd.DataFrame(int_matrix, index=all_set, columns=all_set)

@@ -7,7 +7,8 @@ from numba import njit, jit
 
 from stlearn.tools.microenv.cci.het_helpers import edge_core, \
                                                   get_between_spot_edge_array, \
-                                                  get_data_for_counting
+                                                  get_data_for_counting, \
+                                                  add_unique_edges
 
 def count(
     adata: AnnData,
@@ -168,6 +169,65 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
             int_matrix[i, j] = cellA_cellB_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()
+
+@njit
+def get_interaction_matrix(cell_data,
+                           neighbourhood_bcs, neighbourhood_indices,
+                           all_set, mix_mode, sig_bool,
+                           L_bool, R_bool, tissue_types, cell_prop_cutoff):
+    """ Gets the interaction count matrix.
+    """
+    # Now counting the interactions under 3 situations:
+    # 1) sig spot with ligand, only neighbours with receptor relevant
+    # 2) sig spot with receptor, only neighbours with ligand relevant
+    # NOTE, A<->B is double counted, but on different side of matrix.
+    # (if bidirectional interaction between two spots, counts as two seperate interactions).
+    LR_edges = get_interactions(cell_data,
+                                neighbourhood_bcs, neighbourhood_indices,
+                                all_set, mix_mode, sig_bool,
+                                L_bool, R_bool,
+                                tissue_types=tissue_types,
+                                cell_prop_cutoff=cell_prop_cutoff,
+                                # sig ligand->receptor mode
+                                )
+    RL_edges = get_interactions(cell_data,
+                                neighbourhood_bcs, neighbourhood_indices,
+                                all_set, mix_mode, sig_bool,
+                                R_bool, L_bool,
+                                tissue_types=tissue_types,
+                                cell_prop_cutoff=cell_prop_cutoff,
+                                # sig receptor->ligand mode
+                                )
+
+    # Counting the number of unique interacting edges
+    # between different cell type via indicate LR
+    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]))
+    edge_i = 0
+    for i in range(all_set.shape[0]):
+        for j in range(all_set.shape[0]):
+            RL_Atrans_Bedges = LR_edges[edge_i]
+            LR_Atrans_Bedges = RL_edges[edge_i]
+            edge_i += 1
+            max_len = max([len(RL_Atrans_Bedges), len(LR_Atrans_Bedges)])
+            if max_len == 0: # Nothing to count #
+                continue
+
+            edge_starts = List()
+            edge_ends = List()
+            for k in range(max_len):
+                if k < len(RL_Atrans_Bedges):
+                    edge_starts.append( RL_Atrans_Bedges[k][0] )
+                    edge_ends.append( RL_Atrans_Bedges[k][1] )
+                if k < len(LR_Atrans_Bedges):
+                    edge_starts.append( LR_Atrans_Bedges[k][0] )
+                    edge_ends.append( LR_Atrans_Bedges[k][1] )
+            Atrans_Bedges = List()
+            Atrans_Bedges.append( (edge_starts[0], edge_ends[0]) ) #for typing
+            add_unique_edges(Atrans_Bedges, edge_starts, edge_ends)
+            # Atrans_Bedges = np.unique(RL_Atrans_Bedges + LR_Atrans_Bedges)
+            int_matrix[i, j] = len(Atrans_Bedges)-1 # since added edge for type
+
+    return int_matrix
 
 @njit
 def get_interactions(cell_data,

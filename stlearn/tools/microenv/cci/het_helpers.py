@@ -98,14 +98,13 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
                                 neigh_bool: np.array,
                                 count_cell_types: bool,
                                 cell_data: np.array=None,
-                                cutoff: float=0, undirected=True):
+                                cutoff: float=0):
     """ undirected=False uses list instead of set to store edges,
     thereby giving direction.
     cell_data is either labels or label transfer scores.
     """
     edge_starts = List()
     edge_ends = List()
-    n_edges = 0
     #for bcs, indices in neigh_zip: #bc is cell barcode
     for i in range(len(neighbourhood_bcs)):
         bcs, indices = neighbourhood_bcs[i], neighbourhood_indices[i]
@@ -135,9 +134,17 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
         for interact_neigh_bc in interact_neigh_bcs:
             edge_starts.append( spot_bc )
             edge_ends.append( interact_neigh_bc )
-            n_edges += 1
 
     # Getting the unique edges #
+    add_unique_edges(edge_list, edge_starts, edge_ends)
+
+@njit
+def add_unique_edges(edge_list, edge_starts, edge_ends):
+    """ Adds the unique edges to the given edge list.
+    """
+    n_edges = len(edge_starts)
+
+    # Adding the unique edges #
     edge_added = np.zeros((1,len(edge_starts)))[0,:]==1
     for i in range(n_edges):
         if not edge_added[i]:
@@ -145,13 +152,10 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
             edge_list.append( (edge_start, edge_end) )
             for j in range(i, n_edges):
                 edge_startj, edge_endj = edge_starts[j], edge_ends[j]
-                if undirected: # Direction doesn't matter #
-                    if (edge_start == edge_startj and edge_end == edge_endj) or \
-                       (edge_end == edge_startj and edge_start == edge_endj):
-                        edge_added[j] = True
-                else:
-                    if edge_start == edge_startj and edge_end == edge_endj:
-                        edge_added[j] = True
+                # Direction doesn't matter #
+                if (edge_start == edge_startj and edge_end == edge_endj) or \
+                   (edge_end == edge_startj and edge_start == edge_endj):
+                    edge_added[j] = True
 
 def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
     """ Retrieves the minimal information necessary to perform edge counting.
