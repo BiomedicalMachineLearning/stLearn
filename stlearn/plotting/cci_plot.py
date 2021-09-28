@@ -104,7 +104,9 @@ def lr_plot(
     inner_size_prop: float=0.25, middle_size_prop: float=0.5,
     outer_size_prop: float=1, pt_scale: int=100, title='',
     show_image: bool=True, show_arrows: bool=False,
-    fig: Figure = None, ax: Axes=None, crop: bool = True, margin: float = 100,
+    fig: Figure = None, ax: Axes=None,
+        arrow_head_width: float=4, arrow_width: float=.001,
+        sig_cci: bool=False,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -129,11 +131,19 @@ def lr_plot(
         raise Exception("LR has no significant spots, to visualise anyhow set"
                         "sig_spots=False")
 
+    # Making sure have run_cci first with respective labelling #
+    if show_arrows and sig_cci and use_label and f'per_lr_cci_{use_label}' \
+        not in adata.uns:
+        raise Exception("Cannot subset arrow interactions to significant ccis "
+                        "without performing st.tl.run_cci with "
+                        f"use_label={use_label} first.")
+
     # Getting which are the allowed stats for the lr to plot #
     if not ran_sig:
         lr_use_labels = ['lr_scores']
     else:
-        lr_use_labels = ['lr_scores', 'p_val', 'p_adj', '-log10(p_adj)', 'lr_sig_scores']
+        lr_use_labels = ['lr_scores', 'p_val', 'p_adj',
+                         '-log10(p_adj)', 'lr_sig_scores']
 
     if type(use_mix)!=type(None) and use_mix not in adata.uns:
         raise Exception(f"Specified use_mix, but no deconvolution results added "
@@ -155,13 +165,12 @@ def lr_plot(
         raise Exception("L or R not found in adata.var_names.")
 
     # Whether to show just the significant spots or all spots
+    lr_index = np.where(adata.uns['lr_summary'].index.values == lr)[0][0]
+    sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] > 0
     if sig_spots:
-        lr_index = np.where(adata.uns['lr_summary'].index.values==lr)[0][0]
-        sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] > 0
         adata_full = adata
         adata = adata[sig_bool,:]
     else:
-        sig_bool = np.array([True]*len(adata))
         adata_full = adata
 
     # Dealing with the axis #
@@ -249,18 +258,27 @@ def lr_plot(
     if show_arrows:
         l_expr = adata_full[:, l].X.toarray()[:, 0]
         r_expr = adata_full[:, r].X.toarray()[:, 0]
-        add_arrows(adata_full, l_expr > min_expr, r_expr>min_expr, sig_bool, ax)
+
+        if sig_cci:
+            int_df = adata.uns[f'per_lr_cci_{use_label}'][lr]
+        else:
+            int_df = None
+
+        add_arrows(adata_full, l_expr > min_expr, r_expr>min_expr, sig_bool, ax,
+                    use_label, int_df, arrow_head_width, arrow_width)
 
     # Cropping #
-    if crop:
-        image_coor = adata.obsm["spatial"]
-        imagecol = image_coor[:, 0]
-        imagerow = image_coor[:, 1]
-        ax.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
-        ax.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
-        ax.set_ylim(ax.get_ylim()[::-1])
+    # if crop:
+    #     x0, x1 = ax.get_xlim()
+    #     y0, y1 = ax.get_ylim()
+    #     x_margin, y_margin = (x1-x0)*margin_ratio, (y1-y0)*margin_ratio
+    #     print(x_margin, y_margin)
+    #     print(x0, x1, y0, y1)
+    #     ax.set_xlim(x0 - x_margin, x1 + x_margin)
+    #     ax.set_ylim(y0 - y_margin, y1 + y_margin)
+    #     #ax.set_ylim(ax.get_ylim()[::-1])
 
-    plt.title(title)
+    fig.suptitle(title)
 
 #### het_plot currently out of date;
 #### from old data structure when only test individual LRs.
@@ -602,7 +620,7 @@ def lr_cci_map(adata: AnnData, use_label: str, lrs: list or np.array=None,
 def lr_chord_plot(adata: AnnData, use_label: str,
                   lr: str=None, min_ints: int=2, n_top_ccis: int=10,
                   cmap: str='default', show: bool=True,
-                  sig_interactions: bool=True, title=None,
+                  sig_interactions: bool=True, title=None, label_size: int=10,
                   ):
     """ Chord diagram of interactions between cell types.
         Parameters
@@ -647,7 +665,7 @@ def lr_chord_plot(adata: AnnData, use_label: str,
     ax = plt.axes([0, 0, 1, 1])
     nodePos = chordDiagram(flux, ax, lim=1.25, colors=colors)
     ax.axis('off')
-    prop = dict(fontsize=10, ha='center', va='center')
+    prop = dict(fontsize=label_size, ha='center', va='center')
     for i in range(len(cell_names)):
         x, y = nodePos[i][0:2]
         ax.text(x, y, nodes[i],

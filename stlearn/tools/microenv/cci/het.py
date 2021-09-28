@@ -8,7 +8,9 @@ from numba import njit, jit
 from stlearn.tools.microenv.cci.het_helpers import edge_core, \
                                                   get_between_spot_edge_array, \
                                                   get_data_for_counting, \
-                                                  add_unique_edges
+                                                  add_unique_edges, \
+                                                  get_neighbourhoods, \
+                                                  init_edge_list
 
 def count(
     adata: AnnData,
@@ -96,43 +98,37 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array,
                         list of sets (undirected), indicating unique significant
                         interactions between spots.
     """
-    # Determining the neighbour spots used for significance testing #
-    neighbours = List()
-    for i in range(adata.uns['spot_neighbours'].shape[0]):
-        neighs = np.array(adata.uns['spot_neighbours'].values[i,
-                          :][0].split(','))
-        neighs = neighs[neighs != ''].astype(int)
-        neighbours.append(neighs)
+    # Getting the neighbourhoods #
+    neighbours, neighbourhood_bcs, neighbourhood_indices = \
+                                                       get_neighbourhoods(adata)
 
     # Getting the edges to draw in-between #
     L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
     R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
 
-    gene_bools = [L_bool, R_bool]
-    all_edges = []
+    # To keep the get_between_spot_edge_array function happy #
+    cell_data = np.ones((1, len(sig_bool)))[0,:].astype(np.float_)
+
+    # Retrieving the edges #
+    gene_bools = [R_bool, L_bool]
+    edge_list = []
     for i, spot_indices in enumerate([L_spot_indices, R_spot_indices]):
-        neigh_zip_indices = [(spot_i, neighbours[spot_i]) for spot_i in
-                             spot_indices]
-        # Getting the barcodes #
-        neigh_zip_bcs = [(adata.obs_names[spot_i], adata.obs_names[neigh_indices])
-                         for spot_i, neigh_indices in neigh_zip_indices]
-        neigh_zip = zip(neigh_zip_bcs, neigh_zip_indices)
+        # Subsetting to the relevant neighbourhoods #
+        neigh_bcs = List()
+        neigh_indices = List()
+        for j in spot_indices:
+            neigh_bcs.append( neighbourhood_bcs[j] )
+            neigh_indices.append( neighbourhood_indices[j] )
 
-        edges = get_between_spot_edge_array(neigh_zip, gene_bools[i],
-                                                               undirected=False)
-        if i == 1: # Need to reverse the order of the edges #
-            edges = [edge[::-1] for edge in edges]
-        all_edges.extend( edges )
+        # Getting the edges in this neighbourhood #
+        edges = init_edge_list(neighbourhood_bcs) # Note this has 1 pseudo edge
+        get_between_spot_edge_array(edges, neigh_bcs, neigh_indices,
+                                                       gene_bools[i], cell_data)
+        edge_list.append( edges[1:] )
 
-    # Removing any duplicates #
-    all_edges_unique = []
-    for edge in all_edges:
-        if edge not in all_edges_unique:
-            all_edges_unique.append(edge)
+    return edge_list
 
-    return all_edges_unique
-
-def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
+def count_interactions(adata, all_set, mix_mode, use_label,
                        sig_bool, gene1_bool, gene2_bool,
                        tissue_types=None, cell_type_props=None,
                        cell_prop_cutoff=.2, trans_dir=True,
@@ -142,7 +138,7 @@ def count_interactions(adata, all_set, mix_mode, neighbours, use_label,
     # Getting minimal information necessary for the counting #
     spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices = \
                             get_data_for_counting(adata, use_label,
-                                                  mix_mode, neighbours, all_set)
+                                                              mix_mode, all_set)
 
     # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
     int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)

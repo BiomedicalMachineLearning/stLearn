@@ -152,15 +152,6 @@ def run_cci(adata: AnnData, use_label: str,
     else:
         obs_key, uns_key = use_label, use_label
 
-    # Determining the neighbour spots used for significance testing #
-    neighbours = List()
-    for i in range(adata.obsm['spot_neighbours'].shape[0]):
-        neighs = np.array(adata.obsm['spot_neighbours'].values[i,
-                                                               :][0].split(','))
-        neighs = neighs[neighs != ''].astype(int)
-        neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
-        neighbours.append(neighs)
-
     # Getting the cell/tissue types that we are actually testing #
     tissue_types = adata.obs[obs_key].values.astype(str)
     all_set = np.unique(tissue_types)
@@ -174,7 +165,7 @@ def run_cci(adata: AnnData, use_label: str,
     # Getting minimum necessary information for edge counting #
     spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices = \
                             get_data_for_counting(adata, use_label,
-                                                  mix_mode, neighbours, all_set)
+                                                              mix_mode, all_set)
 
     lr_summary = adata.uns['lr_summary']
     col_i = 1 if sig_spots else 0

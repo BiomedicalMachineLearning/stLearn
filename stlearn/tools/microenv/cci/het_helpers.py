@@ -33,29 +33,19 @@ def edge_core(cell_data: np.ndarray, cell_type_index: int,
     # Subsetting to relevant cell types #
     cell_data = cell_data[:, cell_type_index]
 
+    # TODO need to test with this new function #
     # Initialising the edge list #
-    edge_list = List()
-    # This ensures consistent typing #
-    spots_have_neighbours = False
-    first_spot = -1
-    for i in range(len(neighbourhood_bcs)):
-        if len(neighbourhood_bcs[i][1]) > 0:
-            edge_list.append( (neighbourhood_bcs[i][0],
-                               neighbourhood_bcs[i][1][0]) )
-            spots_have_neighbours = True
-            first_spot = i
-            break
+    edge_list = init_edge_list(neighbourhood_bcs)
 
     # If spots have no neighbours, no counting !
-    if not spots_have_neighbours:
+    if len(edge_list)==0:
         return edge_list
     elif len(spot_indices)==0:
         return edge_list[1:]
 
     ### Within-spot mode
     # within-spot, will have only itself as a neighbour in this mode
-    within_mode = neighbourhood_indices[first_spot][0] in \
-                                            neighbourhood_indices[first_spot][1]
+    within_mode = edge_list[0][0] == edge_list[0][1]
     if within_mode:
             # Since each edge link to the spot itself,
             # then need to count the number of significant spots where
@@ -87,17 +77,35 @@ def edge_core(cell_data: np.ndarray, cell_type_index: int,
         # Number of unique edges will be the count of interactions.
         get_between_spot_edge_array(edge_list, neighbourhood_bcs_sub,
                                                      neighbourhood_indices_sub,
-                                                    neigh_bool, True,
-                                             cell_data=cell_data, cutoff=cutoff)
+                                                    neigh_bool, cell_data,
+                                                                  cutoff=cutoff)
 
     return edge_list[1:] # Removing the initial edge added for typing #
+
+@njit
+def init_edge_list(neighbourhood_bcs):
+    """ Initialises the edge-list in a way which ensures consistent typing.
+    """
+
+    # Initialising the edge list #
+    edge_list = List()
+    # This ensures consistent typing #
+    # spots_have_neighbours = False
+    # first_spot = -1
+    for i in range(len(neighbourhood_bcs)):
+        if len(neighbourhood_bcs[i][1]) > 0:
+            edge_list.append( (neighbourhood_bcs[i][0],
+                               neighbourhood_bcs[i][1][0]) )
+            # spots_have_neighbours = True
+            # first_spot = i
+            break
+    return edge_list
 
 @njit
 def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
                                 neighbourhood_indices: List,
                                 neigh_bool: np.array,
-                                count_cell_types: bool,
-                                cell_data: np.array=None,
+                                cell_data: np.array,
                                 cutoff: float=0):
     """ undirected=False uses list instead of set to store edges,
     thereby giving direction.
@@ -117,17 +125,20 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
         if len(neigh_indices) == 0: # No cases where neighbours meet criteria
             continue # Don't add any interactions for this neighbourhood
 
-        # If we have cell data, need to subset neighbours meeting criteria
-        if count_cell_types: # User needs to have input cell_data
-            # If cutoff specified, then means cell_data refers to cell proportions
-            #if mix_mode: # Inputted mixture data, user should have specific cutoff.
-            # NOTE is always in mix_mode, for pure cell types just use 0s & 1s #
-            interact_neigh_bool = cell_data[neigh_indices] > cutoff
-            # interact_neigh_bool = interact_bool.sum(axis=1)
-            # interact_neigh_bool = interact_neigh_bool == cell_data.shape[1]
+        # Note that can keep all by inputting cell_data with all 1's #
+        interact_neigh_bool = cell_data[neigh_indices] > cutoff
 
-        else: # Keep all neighbours with L | R as interacting
-            interact_neigh_bool = np.ones((1,neigh_indices.shape[0]))[0,:]==1
+        # If we have cell data, need to subset neighbours meeting criteria
+        # if count_cell_types: # User needs to have input cell_data
+        #     # If cutoff specified, then means cell_data refers to cell proportions
+        #     #if mix_mode: # Inputted mixture data, user should have specific cutoff.
+        #     # NOTE is always in mix_mode, for pure cell types just use 0s & 1s #
+        #     interact_neigh_bool = cell_data[neigh_indices] > cutoff
+        #     # interact_neigh_bool = interact_bool.sum(axis=1)
+        #     # interact_neigh_bool = interact_neigh_bool == cell_data.shape[1]
+        #
+        # else: # Keep all neighbours with L | R as interacting
+        #     interact_neigh_bool = np.ones((1,neigh_indices.shape[0]))[0,:]==1
 
         # Retrieving the barcodes of the interacting neighbours #
         interact_neigh_bcs = neigh_bcs[ interact_neigh_bool ]
@@ -136,7 +147,8 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
             edge_ends.append( interact_neigh_bc )
 
     # Getting the unique edges #
-    add_unique_edges(edge_list, edge_starts, edge_ends)
+    if len(edge_starts) > 0:
+        add_unique_edges(edge_list, edge_starts, edge_ends)
 
 @njit
 def add_unique_edges(edge_list, edge_starts, edge_ends):
@@ -157,7 +169,7 @@ def add_unique_edges(edge_list, edge_starts, edge_ends):
                    (edge_end == edge_startj and edge_start == edge_endj):
                     edge_added[j] = True
 
-def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
+def get_data_for_counting(adata, use_label, mix_mode, all_set):
     """ Retrieves the minimal information necessary to perform edge counting.
     """
     # First determining how the edge counting needs to be performed #
@@ -167,14 +179,9 @@ def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
     else:
         obs_key, uns_key = use_label, use_label
 
-    # Getting the neighbourhood information #
-    neighbourhood_bcs = List()
-    neighbourhood_indices = List()
-    spot_bcs = adata.obs_names.values.astype(str)
-    for spot_i in range(len(spot_bcs)):
-        neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
-        neighbourhood_bcs.append( (spot_bcs[spot_i],
-                                   spot_bcs[neighbours[spot_i]]) )
+    # Getting the neighbourhoods #
+    neighbours, neighbourhood_bcs, neighbourhood_indices = \
+                                                       get_neighbourhoods(adata)
 
     # Getting the cell type information; if not mixtures then populate
     # matrix with one's indicating pure spots.
@@ -191,9 +198,32 @@ def get_data_for_counting(adata, use_label, mix_mode, neighbours, all_set):
             cell_data[:,i] = (cell_labels==cell_type).astype(np.int_)\
                                                              .astype(np.float64)
 
+    spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
+def get_neighbourhoods(adata):
+    """ Gets the neighbourhood information. """
 
+    # Determining the neighbour spots used for significance testing #
+    neighbours = List()
+    for i in range(adata.obsm['spot_neighbours'].shape[0]):
+        neighs = np.array(adata.obsm['spot_neighbours'].values[i,
+                                                               :][0].split(','))
+        neighs = neighs[neighs != ''].astype(int)
+        # TODO would need to store neigh_bcs to get below to work reliably #
+        #neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
+        neighbours.append(neighs)
+
+    # Getting the neighbourhood information #
+    neighbourhood_bcs = List()
+    neighbourhood_indices = List()
+    spot_bcs = adata.obs_names.values.astype(str)
+    for spot_i in range(len(spot_bcs)):
+        neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
+        neighbourhood_bcs.append( (spot_bcs[spot_i],
+                                   spot_bcs[neighbours[spot_i]]) )
+
+    return neighbours, neighbourhood_bcs, neighbourhood_indices
 
 
 

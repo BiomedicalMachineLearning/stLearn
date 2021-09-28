@@ -20,7 +20,9 @@ from anndata import AnnData
 """
 
 def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
-               sig_bool: np.array, ax: Axes):
+               sig_bool: np.array, ax: Axes,
+               use_label:str, int_df: pd.DataFrame,
+                head_width=4, width=.001, ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
         Parameters
@@ -40,18 +42,53 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
                                                         ['tissue_lowres_scalef']
     scale_factor = 1
 
-    # Getting the edges #
-    all_edges_unique = get_edges(adata, L_bool, R_bool, sig_bool)
+    # Getting the edges, from sig-L->R and sig-R->L #
+    forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
+
+    # If int_df specified, means need to subset to CCIs which are significant #
+    if type(int_df)!=type(None):
+        spot_bcs = adata.obs_names.values.astype(str)
+        spot_labels = adata.obs[use_label].values.astype(str)
+        label_set = int_df.index.values.astype(str)
+        interact_bool = int_df.values > 0
+
+        # Subsetting to only significant CCI #
+        edges_sub = [[], []] #forward, reverse
+        for i, edges in enumerate([forward_edges, reverse_edges]):
+            for j, edge in enumerate(edges):
+                k_ = [0, 1] if i==0 else [1, 0]
+                celltype0 = label_set == spot_labels[ spot_bcs==edge[k_[0]] ]
+                celltype1 = label_set == spot_labels[ spot_bcs==edge[k_[1]] ]
+                if interact_bool[celltype0, celltype1]:
+                    edges_sub[i].append( edge )
+
+        forward_edges, reverse_edges = edges_sub
 
     # Now performing the plotting #
     # The arrows #
     # Now converting the edges to coordinates #
-    for edge in all_edges_unique:
+    add_arrows_by_edges(ax, adata, forward_edges, scale_factor,
+                        head_width, width)
+    add_arrows_by_edges(ax, adata, reverse_edges, scale_factor,
+                        head_width, width, forward=False)
+
+def add_arrows_by_edges(ax, adata, edges, scale_factor, head_width, width,
+                        forward=True,
+                       ):
+    """ Adds the arrows using an edge list.
+    """
+    for edge in edges:
         cols = ['imagecol', 'imagerow']
-        x1, y1 = adata.obs.loc[edge[0], cols].values.astype(float) * scale_factor
-        x2, y2 = adata.obs.loc[edge[1], cols].values.astype(float) * scale_factor
-        dx, dy = x2-x1, y2-y1
-        ax.arrow(x1, y1, dx, dy, head_width=4)
+        if forward:
+            edge0, edge1 = edge
+        else:
+            edge0, edge1 = edge[::-1]
+
+        x1, y1 = adata.obs.loc[edge0, cols].values.astype(float) * scale_factor
+        x2, y2 = adata.obs.loc[edge1, cols].values.astype(float) * scale_factor
+        dx, dy = (x2-x1)*.75, (y2-y1)*.75
+        ax.arrow(x1, y1, dx, dy, head_width=head_width, width=width,
+                 linewidth=0.01, facecolor='k')
 
 """ Helper functions for cci_map
 """
