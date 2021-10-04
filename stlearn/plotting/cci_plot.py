@@ -106,7 +106,7 @@ def lr_plot(
     show_image: bool=True, show_arrows: bool=False,
     fig: Figure = None, ax: Axes=None,
         arrow_head_width: float=4, arrow_width: float=.001,
-        sig_cci: bool=False,
+        sig_cci: bool=False, lr_colors: dict=None,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -177,8 +177,9 @@ def lr_plot(
     if type(fig)==type(None) or type(ax)==type(None):
         fig, ax = plt.subplots()
 
-    l_expr = adata[:, l].X.toarray()[:, 0]
-    r_expr = adata[:, r].X.toarray()[:, 0]
+    expr = adata.to_df()
+    l_expr = expr.loc[:, l].values
+    r_expr = expr.loc[:, r].values
     # Adding binary points of the ligand/receptor pair #
     if outer_mode == 'binary':
         l_bool, r_bool = l_expr > min_expr, r_expr > min_expr
@@ -190,7 +191,7 @@ def lr_plot(
                 lr_binary_labels.append( r )
             elif l_bool[i] and r_bool[i]:
                 lr_binary_labels.append( lr )
-            else:
+            elif not l_bool[i] and not r_bool[i]:
                 lr_binary_labels.append( '' )
         lr_binary_labels = pd.Series(np.array(lr_binary_labels),
                                        index=adata.obs_names).astype('category')
@@ -198,12 +199,15 @@ def lr_plot(
 
         if type(lr_cmap) == type(None):
             lr_cmap = "default" #This gets ignored due to setting colours below
-            colors = {l: matplotlib.colors.to_hex('r'),
-                      r: matplotlib.colors.to_hex('limegreen'),
-                      lr: matplotlib.colors.to_hex('b'),
-                      '': matplotlib.colors.to_hex('k')}
+            if type(lr_colors)==type(None):
+                lr_colors = {l: matplotlib.colors.to_hex('r'),
+                          r: matplotlib.colors.to_hex('limegreen'),
+                          lr: matplotlib.colors.to_hex('b'),
+                          '': '#836BC6' # Neutral color in H&E images.
+                             }
+
             label_set = adata.obs[f'{lr}_binary_labels'].cat.categories
-            adata.uns[f'{lr}_binary_labels_colors'] = [colors[label]
+            adata.uns[f'{lr}_binary_labels_colors'] = [lr_colors[label]
                                                          for label in label_set]
         else:
             lr_cmap = check_cmap(lr_cmap)
