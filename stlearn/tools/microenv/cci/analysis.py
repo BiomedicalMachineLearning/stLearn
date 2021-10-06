@@ -3,28 +3,21 @@
 """
 
 import os
+import numba
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from numba.typed import List
-
 from anndata import AnnData
-from sklearn.cluster import AgglomerativeClustering
 from .base import calc_neighbours, get_lrs_scores, calc_distance
-from .base_grouping import get_hotspots
-from .het import count, count_interactions, get_interactions, \
-                         get_data_for_counting, get_interaction_matrix, \
+from .het import count, get_data_for_counting, get_interaction_matrix, \
                          get_interaction_pvals
-from .permutation import perform_perm_testing, perform_spot_testing
+from .permutation import perform_spot_testing
 
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
-        distance: int = 0, n_pairs: int = 1000, neg_binom: bool = False,
+        distance: int = None, n_pairs: int = 1000,
         adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
-        lr_mid_dist: int = 150, min_spots: int = 10, min_expr: float = 0,
-        verbose: bool = True, method: str='spot_sig', quantile=0.05,
-        plot_diagnostics: bool = False, show_plot=False, save_bg=False,
-        n_groups: int=5,
+        min_spots: int = 10, min_expr: float = 0,
+        save_bg: bool=False, n_cpus: int=None, verbose: bool = True,
         ):
     """Wrapper function for performing CCI analysis, varrying the analysis based 
         on the inputted data / state of the anndata object.
@@ -36,17 +29,21 @@ def run(adata: AnnData, lrs: np.array,
     use_het:                The storage place for cell heterogeneity results in adata.obsm.
     distance: int           Distance to determine the neighbours (default is the nearest neighbour), distance=0 means within spot
     n_pairs: int            Number of random pairs to generate when performing the background distribution.
-    neg_binom: bool         Whether to use neg-binomial distribution to estimate p-values, NOT appropriate with log1p data, alternative is to use background distribution itself (recommend higher number of n_pairs for this).
     adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
-    lr_mid_dist: int        The distance between the mid-points of the average expression of the two genes in an LR pair for it to be group with other pairs via AgglomerativeClustering to generate a common background distribution.
+    pval_adj_cutoff: float  P-value below which LR is considered significant in spot neighbourhood.
     min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
     min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
-    n_groups:               If in spot_sig mode, then groups LRs into groups of 10, then generate background for each.
-    method: str             One of spot_sig, lr_sig, or hotspot; former generates background for each spot, middle generates bg for each lr, and latter identifies hotspots. 'lr_sig'/'hotspot' will be removed in future pushes.
+    save_bg: bool           Whether to save the background per LR pair; for method development only. Not recommended since huge memory.
+    n_cpus: int             The number of cpus to use for multi-threading; by default will use all available.
+    verbose: bool           True if print dialogue to user during run-time.
     Returns
     -------
     adata: AnnData          Relevant information stored: adata.uns['het'], adata.uns['lr_summary'], & data.uns['per_lr_results'].
     """
+    # Setting threads for paralellisation #
+    if type(n_cpus)!=type(None):
+        numba.set_num_threads(n_cpus)
+
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
     adata.obsm['spot_neighbours'] = pd.DataFrame([','.join(x.astype(str))
@@ -80,43 +77,18 @@ def run(adata: AnnData, lrs: np.array,
         print("Exiting due to lack of valid LR pairs.")
         return
 
-    if method == 'spot_sig':
-        """ Permutation methods generating background per spot, & testing lrs in spot. 
-        """
-        perform_spot_testing(adata, lr_scores, lrs, n_pairs, neighbours,
-                             het_vals, min_expr, adj_method, pval_adj_cutoff,
-                                                                        verbose,
-                             save_bg=save_bg, n_groups=n_groups)
+    """ Permutation methods generating background per spot, & test lrs in spot. 
+    """
+    perform_spot_testing(adata, lr_scores, lrs, n_pairs, neighbours,
+                         het_vals, min_expr, adj_method, pval_adj_cutoff,
+                                                                    verbose,
+                                                                save_bg=save_bg)
 
-    elif method == 'lr_sig':
-        """ Permutation based method generating backgrounds per lr/lr group.
-          1. Group LRs with similar mean expression.
-          2. Calc. common bg distrib. for grouped lrs.
-          3. Calc. p-values for each lr relative to bg. 
-        """
-        perform_perm_testing(adata, lr_scores, n_pairs, lrs, lr_mid_dist,
-                             verbose, neighbours, het_vals, min_expr,
-                             neg_binom, adj_method, pval_adj_cutoff,
-                            )
-    else:
-        """ Perform per lr background removal to get hot-spots by choosing dynamic cutoffs.
-        Inspired by the watershed method:
-            1. Generate set of candidate cutoffs based on quantiles.
-            2. Perform DBScan clustering using spatial coordinates at different cutoffs.
-            3. Choose cutoff as point that maximises number of clusters i.e. peaks. 
-        """
-        # TODO need to evaluate this eps param better.
-        eps = 3*distance if type(distance)!=type(None) and distance!=0 else 100
-        get_hotspots(adata, lr_scores.transpose(), lrs, eps=eps,
-                     quantile=quantile, verbose=verbose,
-                     plot_diagnostics=plot_diagnostics, show_plot=show_plot)
-
-
-def load_lrs(names: str) -> np.array:
+def load_lrs(names: list) -> np.array:
     """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates.
     Parameters
     ----------
-    names: str   Databases to load, options: \
+    names: list   Databases to load, options: \
                 'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
                 If more than one specified, loads all & removes duplicates.
     Returns
@@ -135,11 +107,27 @@ def load_lrs(names: str) -> np.array:
 ################################################################################
             # Functions for calling Celltype-Celltype interactions #
 ################################################################################
-def run_cci(adata: AnnData, use_label: str,
+def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
             min_spots: int = 3, sig_spots: bool = True,
-            spot_mixtures: bool = False, cell_prop_cutoff: float = 0.2,
-            verbose: bool = True, p_cutoff=.05, n_perms=100,
+            cell_prop_cutoff: float = 0.2, p_cutoff=.05, n_perms=100,
+            verbose: bool = True,
             ):
+    f""" Calls significant celltype-celltype interactions based on cell-type data randomisation.
+    Parameters
+    ----------
+    adata: AnnData          Must have had st.tl.run() called prior.
+    use_label: str          If !spot_mixtures, is a key in adata.obs, else key in adata.obsm.
+    spot_mixtures: bool     If true, indicates using deconvolution data, hence use_label refers to adata.obsm.
+    min_spots: int          Specifies the minimum number of spots where LR score present to include in subsequent analysis.
+    sig_spots: bool         If true, only consider edges which include a signficant spot from calling st.tl.run()
+    cell_prop_cutoff: float Only relevant if spot_mixtures==True, indicates cutoff where cell type considered found in spot.
+    p_cutoff: float         Value at which p is considered significant.
+    n_perms: int            Number of randomisations of cell data to generate p-values.
+    verbose: bool           True if print dialogue to user during run-time.
+    Returns
+    -------
+    adata: AnnData          Relevant information stored: adata.uns[f'*_use_label']
+    """
     ran_lr = 'lr_summary' in adata.uns
     ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
     if not ran_lr and not ran_sig:

@@ -5,12 +5,15 @@ import sys
 import math
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.patches import Arc, Wedge
 
 from matplotlib.path import Path
 import matplotlib.patches as patches
+import matplotlib.colors as plt_colors
+import matplotlib.cm as cm
 
 from ..tools.microenv.cci.het import get_edges
 
@@ -19,10 +22,10 @@ from anndata import AnnData
 """ Helper functions for lr_plot
 """
 
-def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
-               sig_bool: np.array, ax: Axes,
+def add_arrows(adata: AnnData, l_expr: np.array, r_expr: np.array,
+               min_expr: float, sig_bool: np.array, fig, ax: Axes,
                use_label:str, int_df: pd.DataFrame,
-                head_width=4, width=.001, ):
+                head_width=4, width=.001, arrow_cmap=None, arrow_vmax=None):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
         Parameters
@@ -41,6 +44,9 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
     scale_factor = adata.uns['spatial'][library_id]['scalefactors'] \
                                                         ['tissue_lowres_scalef']
     scale_factor = 1
+
+    L_bool = l_expr > min_expr
+    R_bool = r_expr > min_expr
 
     # Getting the edges, from sig-L->R and sig-R->L #
     forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
@@ -64,31 +70,75 @@ def add_arrows(adata: AnnData, L_bool: np.array, R_bool: np.array,
 
         forward_edges, reverse_edges = edges_sub
 
+    # If cmap specified, colour arrows by average LR expression on edge #
+    if type(arrow_cmap)!=type(None):
+        edges_means = [[], []]
+        all_means = []
+        for i, edges in enumerate([forward_edges, reverse_edges]):
+            for j, edge in enumerate(edges):
+                edge0_bool = spot_bcs==edge[0]
+                edge1_bool = spot_bcs==edge[1]
+                l_expr0 = l_expr[edge0_bool]
+                l_expr1 = l_expr[edge1_bool]
+                r_expr0 = r_expr[edge0_bool]
+                r_expr1 = r_expr[edge1_bool]
+                mean_expr = np.mean([l_expr0, l_expr1, r_expr0, r_expr1])
+                edges_means[i].append( mean_expr )
+                all_means.append( mean_expr )
+
+        # Determining the color maps #
+        arrow_vmax = np.max(all_means) \
+                                 if type(arrow_vmax)==type(None) else arrow_vmax
+        cmap = plt.get_cmap(arrow_cmap)
+        c_norm = plt_colors.Normalize(vmin=0, vmax=arrow_vmax)
+        scalar_map = cm.ScalarMappable(norm=c_norm, cmap=cmap)
+
+        # Determining the edge colors #
+        edges_colors = [[], []]
+        for i, edges in enumerate([forward_edges, reverse_edges]):
+            for j, edge in enumerate(edges):
+                color_val = scalar_map.to_rgba(edges_means[i][j])
+                edges_colors[i].append(color_val)
+
+        # Need to add new axes #
+        axc = fig.add_axes([0.025, 0.17, 0.28, 0.015])
+
+    else:
+        edges_colors = [None, None]
+
     # Now performing the plotting #
     # The arrows #
     # Now converting the edges to coordinates #
     add_arrows_by_edges(ax, adata, forward_edges, scale_factor,
-                        head_width, width)
+                        head_width, width, edge_colors=edges_colors[0])
     add_arrows_by_edges(ax, adata, reverse_edges, scale_factor,
-                        head_width, width, forward=False)
+                        head_width, width, forward=False,
+                        edge_colors=edges_colors[1])
+    # Adding the color map #
+    if type(arrow_cmap) != type(None):
+        cb1 = matplotlib.colorbar.ColorbarBase(axc, cmap=cmap,
+                                    norm=c_norm, orientation='horizontal')
 
 def add_arrows_by_edges(ax, adata, edges, scale_factor, head_width, width,
-                        forward=True,
+                        forward=True, edge_colors=None, axc=None,
                        ):
     """ Adds the arrows using an edge list.
     """
-    for edge in edges:
+    for i, edge in enumerate(edges):
         cols = ['imagecol', 'imagerow']
         if forward:
             edge0, edge1 = edge
         else:
             edge0, edge1 = edge[::-1]
 
+        # Arrow details #
         x1, y1 = adata.obs.loc[edge0, cols].values.astype(float) * scale_factor
         x2, y2 = adata.obs.loc[edge1, cols].values.astype(float) * scale_factor
         dx, dy = (x2-x1)*.75, (y2-y1)*.75
+        arrow_color = 'k' if type(edge_colors)==type(None) else edge_colors[i]
+
         ax.arrow(x1, y1, dx, dy, head_width=head_width, width=width,
-                 linewidth=0.01, facecolor='k')
+                 linewidth=0.01, facecolor=arrow_color)
 
 """ Helper functions for cci_map
 """
