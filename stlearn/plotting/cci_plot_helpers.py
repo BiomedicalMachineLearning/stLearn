@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.patches import Arc, Wedge
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from matplotlib.path import Path
 import matplotlib.patches as patches
@@ -101,7 +102,13 @@ def add_arrows(adata: AnnData, l_expr: np.array, r_expr: np.array,
                 edges_colors[i].append(color_val)
 
         # Need to add new axes #
-        axc = fig.add_axes([0.025, 0.17, 0.28, 0.015])
+        # xlims = ax.get_xlim()
+        # ylims = ax.get_ylim()
+        # left, bottom = xlims[0]*0.025, ylims[0]*0.17
+        # axc = fig.add_axes([0, 0, 0.28, 0.015])
+        divider = make_axes_locatable(ax)
+        cax = divider.new_vertical(size="2%", pad=0.1, pack_start=True)
+        axc = fig.add_axes(cax)
 
     else:
         edges_colors = [None, None]

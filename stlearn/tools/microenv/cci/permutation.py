@@ -91,7 +91,7 @@ def perform_spot_testing(adata: AnnData,
 
             if save_bg:
                 adata.uns['lrs_to_bg'][lr_] = background
-                adata.uns['lr_spot_indices'] = spot_indices
+                adata.uns['lr_spot_indices'][lr_] = spot_indices
 
             for spot_i, spot_index in enumerate(spot_indices):
                 n_greater = len(np.where(background[spot_i, :] >=
