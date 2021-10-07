@@ -233,21 +233,17 @@ def get_similar_genesFAST(ref_quants: np.array, n_genes: int,
 @njit
 def gen_rand_pairs(genes1: np.array, genes2: np.array, n_pairs: int):
     """Generates random pairs of genes."""
-    # genes1_ins = np.array(list(range(genes1)))
-    # genes2_ins = np.array(list(range(genes2)))
 
-    rand_pairs = List() #np.zeros((n_pairs, 2), dtype=np.float)
+    rand_pairs = List()
     for j in range(0, n_pairs):
         l_rand = np.random.choice(genes1, 1)[0]
         r_rand = np.random.choice(genes2, 1)[0]
         rand_pair = '_'.join([l_rand, r_rand])
-        # l_rand_i = np.random.choice(genes1_ins, 1)
-        # r_rand_i = np.random.choice(genes2_ins, 1)
-        while rand_pair in rand_pairs and l_rand == r_rand:
+        while rand_pair in rand_pairs or l_rand == r_rand:
             l_rand = np.random.choice(genes1, 1)[0]
             r_rand = np.random.choice(genes2, 1)[0]
             rand_pair = '_'.join([l_rand, r_rand])
-        #rand_pairs[j] = rand_pair
+
         rand_pairs.append(rand_pair)
 
     return rand_pairs
