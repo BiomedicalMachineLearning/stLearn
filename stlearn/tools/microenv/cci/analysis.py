@@ -6,6 +6,7 @@ import os
 import numba
 import numpy as np
 import pandas as pd
+from typing import Union
 from anndata import AnnData
 from .base import calc_neighbours, get_lrs_scores, calc_distance
 from .het import count, get_data_for_counting, get_interaction_matrix, \
@@ -84,8 +85,8 @@ def run(adata: AnnData, lrs: np.array,
                                                                     verbose,
                                                                 save_bg=save_bg)
 
-def load_lrs(names: list) -> np.array:
-    """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates.
+def load_lrs(names: Union[str, list, None]=None) -> np.array:
+    """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates. If None loads 'connectomeDB2020_lit'.
     Parameters
     ----------
     names: list   Databases to load, options: \
@@ -95,6 +96,11 @@ def load_lrs(names: list) -> np.array:
     -------
     lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
+    if type(names)==type(None):
+        names = ['connectomeDB2020_lit']
+    if type(names)==str:
+        names = [names]
+
     path = os.path.dirname(os.path.realpath(__file__))
     dbs = [pd.read_csv(f'{path}/databases/{name}.txt', sep='\t')
                                                               for name in names]

@@ -262,7 +262,7 @@ def get_interactions(cell_data,
     interaction_edges = List()
 
     # Now retrieving the interaction edges #
-    for i in range(all_set.shape[0]):  # transmitter if trans_dir else reciever
+    for i in range(all_set.shape[0]):
 
         # Determining which spots have cell type A #
         A_bool_2 = cell_data[:, i] > cell_prop_cutoff
@@ -277,7 +277,7 @@ def get_interactions(cell_data,
                 A_gene1_sig_indices[index] = k
                 index += 1
 
-        for j in range(all_set.shape[0]):  # receiver if trans_dir else transmitter
+        for j in range(all_set.shape[0]):
             edge_list = edge_core(cell_data, j,
                                     neighbourhood_bcs, neighbourhood_indices,
                                     spot_indices=A_gene1_sig_indices,

@@ -3,11 +3,8 @@ Helper functions for het.py; primarily counting help.
 """
 
 import numpy as np
-import pandas as pd
-from anndata import AnnData
-import scipy.spatial as spatial
 from numba.typed import List
-from numba import njit, jit
+from numba import njit
 
 @njit
 def edge_core(cell_data: np.ndarray, cell_type_index: int,
@@ -15,25 +12,55 @@ def edge_core(cell_data: np.ndarray, cell_type_index: int,
                spot_indices: np.array = None, neigh_bool: np.array = None,
                cutoff: float = 0.2,
                ) -> np.array:
-    """Get the cell type counts per spot, if spot_mixtures is True & there is \
-        per spot deconvolution results available, then counts within spot. \
-        If cell type deconvolution results not present but use_label in \
-        adata.obs, then counts number of cell types in the neighbourhood.
+    """Gets the edges which connect inputted spots to neighbours of a given cell type.
 
         Parameters
         ----------
-        spot_lr1: np.ndarray          Spots*Ligands
+        cell_data: np.ndarray          Spots*CellTypes; value indicates \
+                                        proportion of spot due to a specific \
+                                        cell type. Rows sum to 1; pure spots \
+                                        or spot annotations have a single 1 \
+                                        per row.
+
+        cell_type_index: int            Column of cell_data that contains the \
+                                        cell type of interest.
+
+        neighbourhood_bcs: List         List of lists, inner list for each \
+                                        spot. First element of inner list is \
+                                        spot barcode, second element is array \
+                                        of neighbourhood spot barcodes.
+
+        neighbourhood_indices: List     Same structure as neighbourhood_bcs, \
+                                        but first inner list element is index \
+                                        of the spot, and second is array of \
+                                        neighbour indices.
+
+        spot_indices: np.array          Array of indices indicating which spots \
+                                        we want edges associated with. Can be \
+                                        used to subset to significant spots.
+
+        neigh_bool: np.array            Array of booleans of length n-spots, \
+                                        True indicates the spot is an allowed \
+                                        neighbour. This is useful where we only \
+                                        want edges to neighbours which express \
+                                        an indicated ligand or receptor.
+
+        cutoff: float                   Cutoff above which cell is considered \
+                                        to be present within the spot, is \
+                                        applied on cell_data, and thereby allows \
+                                        a spot to be counted as having multiple \
+                                        cell types.
+
         Returns
         -------
-        counts: int   Total number of interactions satisfying the conditions, \
-                      or np.array<set> if return_edges=True, where each set is \
-                      an edge, only returns unique edges.
+        edges: List   List of 2-tuples containing spot barcodes, indicating \
+                        an edge between a spot in spot_indices and a neighbour \
+                        where neigh_bool is True, and either the
     """
 
     # Subsetting to relevant cell types #
     cell_data = cell_data[:, cell_type_index]
 
-    # TODO need to test with this new function #
     # Initialising the edge list #
     edge_list = init_edge_list(neighbourhood_bcs)
 
@@ -47,18 +74,6 @@ def edge_core(cell_data: np.ndarray, cell_type_index: int,
     # within-spot, will have only itself as a neighbour in this mode
     within_mode = edge_list[0][0] == edge_list[0][1]
     if within_mode:
-            # Since each edge link to the spot itself,
-            # then need to count the number of significant spots where
-            # cellA & cellB > cutoff, & the L/R are expressed.
-            ## Getting spots where L/R expressed & cellA > cutoff
-            # spots = [i in spot_indices and neigh_bool_
-            #          for i, neigh_bool_ in enumerate(neigh_bool)]
-            # ## For the spots where L/R expressed & cellA > cutoff, counting
-            # ## how many have cellB > cutoff.
-            # counts = (cell_data[spots]>cutoff).sum()
-            # interact_indices = np.where(counts > 0)[0]
-            # edge_list = [(spot_bcs[index]) for index in interact_indices]
-
             # Numba implimentation #
             for i in spot_indices:
                 if neigh_bool[i] and cell_data[i] > cutoff:
@@ -84,7 +99,8 @@ def edge_core(cell_data: np.ndarray, cell_type_index: int,
 
 @njit
 def init_edge_list(neighbourhood_bcs):
-    """ Initialises the edge-list in a way which ensures consistent typing.
+    """ Initialises the edge-list in a way which ensures consistent typing to \
+        prevent errors with Numba.
     """
 
     # Initialising the edge list #
@@ -107,13 +123,13 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
                                 neigh_bool: np.array,
                                 cell_data: np.array,
                                 cutoff: float=0):
-    """ undirected=False uses list instead of set to store edges,
-    thereby giving direction.
-    cell_data is either labels or label transfer scores.
+    """ Populates edge_list with edges linking spots with a valid neighbour \
+        of a given cell type. Validity of neighbour determined by neigh_bool, \
+        which can indicate whether the neighbour expresses a certain ligand \
+        or receptor. See edge_core for parameter information.
     """
     edge_starts = List()
     edge_ends = List()
-    #for bcs, indices in neigh_zip: #bc is cell barcode
     for i in range(len(neighbourhood_bcs)):
         bcs, indices = neighbourhood_bcs[i], neighbourhood_indices[i]
         spot_bc, neigh_bcs = bcs
@@ -128,18 +144,6 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
         # Note that can keep all by inputting cell_data with all 1's #
         interact_neigh_bool = cell_data[neigh_indices] > cutoff
 
-        # If we have cell data, need to subset neighbours meeting criteria
-        # if count_cell_types: # User needs to have input cell_data
-        #     # If cutoff specified, then means cell_data refers to cell proportions
-        #     #if mix_mode: # Inputted mixture data, user should have specific cutoff.
-        #     # NOTE is always in mix_mode, for pure cell types just use 0s & 1s #
-        #     interact_neigh_bool = cell_data[neigh_indices] > cutoff
-        #     # interact_neigh_bool = interact_bool.sum(axis=1)
-        #     # interact_neigh_bool = interact_neigh_bool == cell_data.shape[1]
-        #
-        # else: # Keep all neighbours with L | R as interacting
-        #     interact_neigh_bool = np.ones((1,neigh_indices.shape[0]))[0,:]==1
-
         # Retrieving the barcodes of the interacting neighbours #
         interact_neigh_bcs = neigh_bcs[ interact_neigh_bool ]
         for interact_neigh_bc in interact_neigh_bcs:
@@ -152,7 +156,8 @@ def get_between_spot_edge_array(edge_list: List, neighbourhood_bcs: List,
 
 @njit
 def add_unique_edges(edge_list, edge_starts, edge_ends):
-    """ Adds the unique edges to the given edge list.
+    """ Adds the unique edges to the given edge list. \
+    Complicated in order to satisfy Numba compilation in no-python mode.
     """
     n_edges = len(edge_starts)
 
@@ -210,7 +215,8 @@ def get_neighbourhoods(adata):
         neighs = np.array(adata.obsm['spot_neighbours'].values[i,
                                                                :][0].split(','))
         neighs = neighs[neighs != ''].astype(int)
-        # TODO would need to store neigh_bcs to get below to work reliably #
+        # TODO would need to store neigh_bcs to get below to work reliably
+        #       after subsetting anndata #
         #neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
         neighbours.append(neighs)
 

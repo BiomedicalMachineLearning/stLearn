@@ -109,7 +109,7 @@ def lr_plot(
 	show_image: bool=True, show_arrows: bool=False,
 	fig: Figure = None, ax: Axes=None,
 	arrow_head_width: float=4, arrow_width: float=.001, arrow_cmap: str=None,
-        arrow_vmax: float=None,
+		arrow_vmax: float=None,
 		sig_cci: bool=False, lr_colors: dict=None,
 	# plotting params
 	**kwargs,
@@ -273,8 +273,8 @@ def lr_plot(
 			int_df = None
 
 		cci_hs.add_arrows(adata_full, l_expr, r_expr,
-                          min_expr, sig_bool, fig, ax, use_label, int_df,
-                          arrow_head_width, arrow_width, arrow_cmap, arrow_vmax)
+						  min_expr, sig_bool, fig, ax, use_label, int_df,
+						  arrow_head_width, arrow_width, arrow_cmap, arrow_vmax)
 
 	# Cropping #
 	# if crop:

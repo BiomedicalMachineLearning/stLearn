@@ -49,7 +49,7 @@ def add_arrows(adata: AnnData, l_expr: np.array, r_expr: np.array,
     L_bool = l_expr > min_expr
     R_bool = r_expr > min_expr
 
-    # Getting the edges, from sig-L->R and sig-R->L #
+    # Getting the edges, from sig-L->R and sig-R<-L #
     forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
 
     # If int_df specified, means need to subset to CCIs which are significant #
@@ -61,13 +61,24 @@ def add_arrows(adata: AnnData, l_expr: np.array, r_expr: np.array,
 
         # Subsetting to only significant CCI #
         edges_sub = [[], []] #forward, reverse
+        #ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
+                                          # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
                 k_ = [0, 1] if i==0 else [1, 0]
-                celltype0 = label_set == spot_labels[ spot_bcs==edge[k_[0]] ]
-                celltype1 = label_set == spot_labels[ spot_bcs==edge[k_[1]] ]
-                if interact_bool[celltype0, celltype1]:
+                celltype0 = np.where(label_set == \
+                                     spot_labels[ spot_bcs==edge[k_[0]] ])[0][0]
+                celltype1 = np.where(label_set == \
+                                     spot_labels[ spot_bcs==edge[k_[1]] ])[0][0]
+                celltypes = np.array([celltype0, celltype1])
+                # For debugging purposes, used to find indexing bug #
+                # print(label_set[celltypes[k_[0]]],
+                #       label_set[celltypes[k_[1]]])
+                # print( celltypes[k_[0]], celltypes[k_[1]] )
+                # print( interact_bool[celltypes[k_[0]], celltypes[k_[1]]] )
+                if interact_bool[celltypes[k_[0]], celltypes[k_[1]]]:
                     edges_sub[i].append( edge )
+                    #ints_2[celltypes[k_[0]], celltypes[k_[1]]] += 1
 
         forward_edges, reverse_edges = edges_sub
 
