@@ -38,9 +38,114 @@ importlib.reload(cci_hs)
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-""" Functions for visualisation the LR results per spot. 
+""" Functions for visualising the overall LR results and diagnostics.
 """
 
+def lr_diagnostics(adata, highlight_lrs: list=None,
+                   color0: str='turquoise', color1: str='plum',
+                   figsize: tuple=(10,4), lr_text_fp: dict=None,
+                                                               show: bool=True):
+    """ Diagnostic plot looking at relationship between technical features of lrs and lr rank.
+
+    Parameters
+    ----------
+    adata: AnnData          The data object including the cell types to count
+    highlight_lrs: list     List of LRs to highlight, will add text and change point color for these LR pairs.
+    lr_text_fp: dict        Font dict for the LR text if highlight_lrs not None.
+    axis_text_fp: dict      Font dict for the
+    Returns
+    -------
+    Figure, Axes            Figure and axes of the plot, if show=False.
+    """
+
+    fig, axes = plt.subplots(ncols=2, figsize=figsize)
+    cci_hs.lr_scatter(adata, 'nonzero-median', highlight_lrs=highlight_lrs,
+                                        n_top=adata.shape[0], color=color0,
+                                              ax=axes[0], lr_text_fp=lr_text_fp,
+                                                                     show=False)
+    cci_hs.lr_scatter(adata, 'zero-prop', highlight_lrs=highlight_lrs,
+                                        n_top=adata.shape[0], color=color1,
+                                              ax=axes[1], lr_text_fp=lr_text_fp,
+                                                                     show=False)
+    if show:
+        plt.show()
+    else:
+        return fig, axes
+
+def lr_summary(adata, n_top: int=50, highlight_lrs: list=None,
+               y: str='n_spots_sig', color: str='gold',
+               highlight_color: str='red', max_text: int=50,
+               lr_text_fp: dict=None, ax: Axes=None, show: bool=True):
+    """ Plotting the top LRs ranked by number of significant spots.
+
+    Parameters
+    ----------
+    adata: AnnData          The data object including the cell types to count
+    """
+    allowed = ['n_spots', 'n_spots_sig', 'n_spots_sig_pval']
+    if y not in allowed:
+        raise Exception(f'Got {y} for y; must be one of {allowed}')
+
+    return cci_hs.lr_scatter(adata, y, n_top=n_top, color=color,
+                             show_all=n_top<=max_text,
+                      highlight_lrs=highlight_lrs, ax=ax, lr_text_fp=lr_text_fp,
+                                     highlight_color=highlight_color, show=show)
+
+def lr_n_spots(adata, n_top: int=100, font_dict: dict=None,
+               xtick_dict: dict=None, bar_width: float=1,
+               non_sig_color: str='dodgerblue', sig_color: str='springgreen',
+               figsize: tuple=(6, 4), show: bool=True):
+    """ Bar plot showing for each LR no. of sig versus non-sig spots.
+    """
+    if type(font_dict)==type(None):
+        font_dict = {'weight': 'bold', 'size': 12}
+    if type(xtick_dict)==type(None):
+        xtick_dict = {'fontweight': 'bold', 'rotation': 90, 'size': 6}
+
+    lrs = adata.uns['lr_summary'].index.values[0:n_top]
+    n_sig = adata.uns['lr_summary'].loc[:, 'n_spots_sig'].values
+    n_non_sig = adata.uns['lr_summary'].loc[:, 'n_spots'].values - n_sig
+    rank = list(range(len(n_sig)))
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.bar(rank[0:n_top], n_non_sig[0:n_top], bar_width, color=non_sig_color)
+    ax.bar(rank[0:n_top], n_sig[0:n_top], bar_width,
+           bottom=n_non_sig[0:n_top], color=sig_color)
+    ax.set_ylabel('n_spots', font_dict)
+    ax.set_xlabel('LRs Ranked (n_spots_sig)', font_dict)
+    ax.set_title('Signficant and non-signficant spots per LR', font_dict)
+    ax.legend(labels=['non-sig', 'sig'], loc='upper right')
+    if n_top <= 50:
+        ax.set_xticks(rank[0:n_top])
+        ax.set_xticklabels(lrs, fontdict=xtick_dict)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    if show:
+        plt.show()
+    else:
+        return fig, ax
+
+def lr_go(adata, n_top: int=20, highlight_go: list=None,
+          highlight_color: str='yellow', max_text: int=50, show: bool=True):
+    """ Plots the results from the LR GO analysis.
+    """
+    # Making sure LR GO has been run #
+    if 'lr_go' not in adata.uns:
+        raise Exception('Need to run st.tl.cci.run_lr_go() first!')
+
+    go_results = adata.uns['lr_go']
+    gos = go_results.loc[:, 'Description'].values.astype(str)
+    y = -np.log10(go_results.loc[:, 'p.adjust'].values)
+    sizes = go_results.loc[:, 'Count'].values
+    cci_hs.rank_scatter(gos[0:n_top], y[0:n_top], point_sizes=sizes[0:n_top],
+                        highlight_items=highlight_go,
+                        highlight_color=highlight_color,
+                        y_label='-log10(padjs)', x_label='GO Rank', height=6,
+                        color='deepskyblue', rot=50, width_ratio=.4, show=show,
+                        point_size_name='n-genes', show_all=n_top<=max_text)
+
+""" Functions for visualisation the LR results per spot. 
+"""
 def lr_result_plot(
 		adata: AnnData,
 		use_lr: Optional["str"] = None,

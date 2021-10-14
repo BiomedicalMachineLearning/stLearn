@@ -20,6 +20,146 @@ from ..tools.microenv.cci.het import get_edges
 
 from anndata import AnnData
 
+""" Helper functions for overview plots of the LRs.
+"""
+
+def lr_scatter(data, feature, highlight_lrs=None,
+               show_text=True, n_top=50, color='gold', alpha=.5,
+               lr_text_fp=None, axis_text_fp=None, ax=None, show=True,
+               max_text=100, highlight_color='red', show_all: bool=False):
+    """ General plotting of the LR features.
+    """
+    highlight = type(highlight_lrs)!=type(None)
+    if not highlight:
+        show_text = show_text if n_top <= max_text else False
+    else:
+        highlight_lrs = highlight_lrs[0:max_text]
+
+    lr_df = data.uns['lr_summary']
+    lrs = lr_df.index.values.astype(str)[0:n_top]
+    lr_features = data.uns['lrfeatures']
+    lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
+    if feature not in lr_df.columns:
+        raise Exception(f"Inputted {feature}; must be one of "
+                        f"{list(lr_df.columns)}")
+
+    rot = 90 if feature!='n_spots_sig' else 70
+
+    n_spots = lr_df.loc[:, feature].values[0:n_top]
+
+    return rank_scatter(lrs, n_spots, y_label=feature,
+                        x_label='LR Rank (n_sig_spots)',
+                        highlight_items=highlight_lrs, show_text=show_text,
+                        color=color, alpha=alpha, lr_text_fp=lr_text_fp,
+                        axis_text_fp=axis_text_fp, ax=ax, show=show,
+                        highlight_color=highlight_color, rot=rot, pad=0,
+                        show_all=show_all)
+    # ranks = np.array(list(range(len(n_spots))))
+    #
+    # if type(lr_text_fp)==type(None):
+    #     lr_text_fp = {'weight': 'bold', 'size': 8}
+    # if type(axis_text_fp)==type(None):
+    #     axis_text_fp = {'weight': 'bold', 'size': 12}
+    #
+    # if type(ax)==type(None):
+    #     width = (7.5 / 50) * n_top if show_text and not highlight else 7.5
+    #     if width > 20:
+    #         width = 20
+    #     fig, ax = plt.subplots(figsize=(width, 4))
+    #
+    # # Plotting the points #
+    # ax.scatter(ranks, n_spots, alpha=alpha, c=color)
+    #
+    # if show_text:
+    #     if highlight:
+    #         ranks = ranks[[np.where(lrs==lr)[0][0] for lr in highlight_lrs]]
+    #         ax.scatter(ranks, n_spots[ranks], alpha=alpha, c=highlight_color)
+    #
+    #     for i in ranks:
+    #         ax.text(i-.2, n_spots[i], lrs[i], rotation=rot, fontdict=lr_text_fp)
+    #
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
+    # ax.set_xlabel('LR Rank', axis_text_fp)
+    # ax.set_ylabel(feature, axis_text_fp)
+    #
+    # if show:
+    #     plt.show()
+    # else:
+    #     return ax
+
+def rank_scatter(items, y, y_label: str='', x_label: str='',
+                 highlight_items=None, show_text=True, color='gold',
+                 alpha=.5, lr_text_fp=None, axis_text_fp=None, ax=None,
+                 show=True, highlight_color='red', rot: float=90,
+                 point_sizes: np.array=None, pad=0.2, figsize=None,
+                 width_ratio=7.5 / 50, height=4, point_size_name='Sizes',
+                 point_size_exp=2, show_all: bool=False):
+    """ General plotting function for showing ranked list of items.
+    """
+    ranks = np.array(list(range(len(items))))
+
+    highlight = type(highlight_items) != type(None)
+    if type(lr_text_fp)==type(None):
+        lr_text_fp = {'weight': 'bold', 'size': 8}
+    if type(axis_text_fp)==type(None):
+        axis_text_fp = {'weight': 'bold', 'size': 12}
+
+    if type(ax)==type(None):
+        if type(figsize)==type(None):
+            width = width_ratio * len(ranks) if show_text and not highlight else 7.5
+            if width > 20:
+                width = 20
+            figsize = (width, height)
+        fig, ax = plt.subplots(figsize=figsize)
+
+    # Plotting the points #
+    scatter = ax.scatter(ranks, y, alpha=alpha, c=color,
+                         s=None if type(point_sizes)==type(None)
+                         else point_sizes**point_size_exp)
+    y_min, y_max = ax.get_ylim()
+    y_max = y_max+y_max*pad
+    ax.set_ylim(y_min, y_max)
+    if type(point_sizes)!=type(None):
+        # produce a legend with a cross section of sizes from the scatter
+        handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6,
+                                                  num=4)
+        starts = [label.find('{') for label in labels]
+        ends = [label.find('}')+1 for label in labels]
+        sizes = [float(label[(starts[i]+1):(ends[i]-1)])
+                                              for i, label in enumerate(labels)]
+        counts = [int(size**(1/point_size_exp)) for size in sizes]
+        labels2 = [label.replace(label[(starts[i]):(ends[i])],
+                                 '{'+str(counts[i])+'}')
+                                              for i, label in enumerate(labels)]
+        legend2 = ax.legend(handles, labels2,  frameon=False,
+                            #bbox_to_anchor=(0.1, 0.05, 1., 1.),
+                            handletextpad=1.6,
+                            loc="upper right", title=point_size_name)
+
+    if show_text:
+        if highlight:
+            ranks_ = ranks[[np.where(items==item)[0][0]
+                                                   for item in highlight_items]]
+            ax.scatter(ranks_, y[ranks_], alpha=alpha, c=highlight_color,
+                       s=None if type(point_sizes) == type(None)
+                       else point_sizes[ranks_] ** point_size_exp
+                       )
+            ranks = ranks_ if not show_all else ranks
+
+        for i in ranks:
+            ax.text(i-.2, y[i], items[i], rotation=rot, fontdict=lr_text_fp)
+
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_xlabel(x_label, axis_text_fp)
+    ax.set_ylabel(y_label, axis_text_fp)
+
+    if show:
+        plt.show()
+    else:
+        return ax
+
 """ Helper functions for lr_plot
 """
 

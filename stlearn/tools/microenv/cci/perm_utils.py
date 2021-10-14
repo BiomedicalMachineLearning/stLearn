@@ -283,15 +283,14 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
     mean_ranks = np.array( [median_ranks, prop_ranks] ).mean(axis=0)
 
     # Saving the lrfeatures...
-    cols = ['lr-group', 'nonzero-median', 'zero-prop',
-                                    'median_rank', 'prop_rank', 'mean_rank']
+    cols = ['nonzero-median', 'zero-prop', 'median_rank', 'prop_rank',
+            'mean_rank']
     lr_features = pd.DataFrame(index=lrs, columns=cols)
-    lr_features.iloc[:, 0] = list(range(len(lrs)))
-    lr_features.iloc[:, 1] = lr_median_means
-    lr_features.iloc[:, 2] = lr_prop_means
-    lr_features.iloc[:, 3] = np.array(median_ranks)
-    lr_features.iloc[:, 4] = np.array(prop_ranks)
-    lr_features.iloc[:, 5] = np.array(mean_ranks)
+    lr_features.iloc[:, 0] = lr_median_means
+    lr_features.iloc[:, 1] = lr_prop_means
+    lr_features.iloc[:, 2] = np.array(median_ranks)
+    lr_features.iloc[:, 3] = np.array(prop_ranks)
+    lr_features.iloc[:, 4] = np.array(mean_ranks)
     lr_features = lr_features.iloc[np.argsort(mean_ranks),:]
     lr_cols = [f'L_{quant}' for quant in quantiles] +\
               [f'R_{quant}' for quant in quantiles]

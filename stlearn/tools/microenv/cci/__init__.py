@@ -4,4 +4,4 @@ from . import het
 from .het import edge_core, get_between_spot_edge_array
 from .merge import merge
 from .permutation import get_rand_pairs
-from .analysis import run, load_lrs, run_cci
+from .analysis import load_lrs, run, run_lr_go, run_cci

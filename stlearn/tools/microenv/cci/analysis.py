@@ -9,9 +9,38 @@ import pandas as pd
 from typing import Union
 from anndata import AnnData
 from .base import calc_neighbours, get_lrs_scores, calc_distance
+from .permutation import perform_spot_testing
+from .go import run_GO
 from .het import count, get_data_for_counting, get_interaction_matrix, \
                          get_interaction_pvals
-from .permutation import perform_spot_testing
+
+################################################################################
+            # Functions related to Ligand-Receptor interactions #
+################################################################################
+def load_lrs(names: Union[str, list, None]=None) -> np.array:
+    """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates. If None loads 'connectomeDB2020_lit'.
+    Parameters
+    ----------
+    names: list   Databases to load, options: \
+                'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
+                If more than one specified, loads all & removes duplicates.
+    Returns
+    -------
+    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    """
+    if type(names)==type(None):
+        names = ['connectomeDB2020_lit']
+    if type(names)==str:
+        names = [names]
+
+    path = os.path.dirname(os.path.realpath(__file__))
+    dbs = [pd.read_csv(f'{path}/databases/{name}.txt', sep='\t')
+                                                              for name in names]
+    lrs_full = []
+    for db in dbs:
+        lrs = [f'{db.values[i,0]}_{db.values[i,1]}' for i in range(db.shape[0])]
+        lrs_full.extend(lrs)
+    return np.unique(lrs_full)
 
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
@@ -85,30 +114,42 @@ def run(adata: AnnData, lrs: np.array,
                                                                     verbose,
                                                                 save_bg=save_bg)
 
-def load_lrs(names: Union[str, list, None]=None) -> np.array:
-    """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates. If None loads 'connectomeDB2020_lit'.
+def run_lr_go(adata: AnnData, r_path: str,
+              n_top: int=100, min_sig_spots: int=1, species: str='human',
+              verbose: bool=True):
+    """ Runs a basic GO analysis on the genes in the top ranked LR pairs.
+        Only supported for human and mouse species.
+
     Parameters
     ----------
-    names: list   Databases to load, options: \
-                'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
-                If more than one specified, loads all & removes duplicates.
+    adata: AnnData          Must have had st.tl.cci.run() called prior.
+    r_path: str             Path to R, must have clusterProfiler installed.
+    n_top: int              The top number of LR pairs to use.
+    min_sig_spots: int      Minimum no. of significant spots pairs must have to be considered.
+    species: str            Species to perform the GO testing for.
     Returns
     -------
-    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    adata: AnnData          Relevant information stored: adata.uns['lr_go']
     """
-    if type(names)==type(None):
-        names = ['connectomeDB2020_lit']
-    if type(names)==str:
-        names = [names]
+    #### Making sure inputted correct species ####
+    all_species = ['human', 'mouse']
+    if species not in all_species:
+        raise Exception(f'Got {species} for species, must be one of '
+                        f'{all_species}')
 
-    path = os.path.dirname(os.path.realpath(__file__))
-    dbs = [pd.read_csv(f'{path}/databases/{name}.txt', sep='\t')
-                                                              for name in names]
-    lrs_full = []
-    for db in dbs:
-        lrs = [f'{db.values[i,0]}_{db.values[i,1]}' for i in range(db.shape[0])]
-        lrs_full.extend(lrs)
-    return np.unique(lrs_full)
+    #### Getting the genes from the top LR pairs ####
+    if 'lr_summary' not in adata.uns:
+        raise Exception("Need to run st.tl.cci.run first.")
+    lrs = adata.uns['lr_summary'].index.values.astype(str)
+    n_sig = adata.uns['lr_summary'].loc[:,'n_spots_sig'].values.astype(int)
+    top_lrs = lrs[n_sig>min_sig_spots][0:n_top]
+    top_genes = np.unique([lr.split('_') for lr in top_lrs])
+
+    #### Running the GO analysis ####
+    go_results = run_GO(top_genes, species, r_path)
+    adata.uns['lr_go'] = go_results
+    if verbose:
+        print("GO results saved to adata.uns['lr_go']")
 
 ################################################################################
             # Functions for calling Celltype-Celltype interactions #
@@ -118,10 +159,10 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
             cell_prop_cutoff: float = 0.2, p_cutoff=.05, n_perms=100,
             verbose: bool = True,
             ):
-    f""" Calls significant celltype-celltype interactions based on cell-type data randomisation.
+    """ Calls significant celltype-celltype interactions based on cell-type data randomisation.
     Parameters
     ----------
-    adata: AnnData          Must have had st.tl.run() called prior.
+    adata: AnnData          Must have had st.tl.cci.run() called prior.
     use_label: str          If !spot_mixtures, is a key in adata.obs, else key in adata.obsm.
     spot_mixtures: bool     If true, indicates using deconvolution data, hence use_label refers to adata.obsm.
     min_spots: int          Specifies the minimum number of spots where LR score present to include in subsequent analysis.
@@ -216,8 +257,6 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
               f"{f'lr_cci_{use_label}'}")
         print(f"Significant counts of cci interactions for each LR pair "
               f"stored in dictionary {f'per_lr_cci_{use_label}'}")
-
-
 
 
 
