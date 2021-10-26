@@ -26,7 +26,8 @@ from anndata import AnnData
 def lr_scatter(data, feature, highlight_lrs=None,
                show_text=True, n_top=50, color='gold', alpha=.5,
                lr_text_fp=None, axis_text_fp=None, ax=None, show=True,
-               max_text=100, highlight_color='red', show_all: bool=False):
+               max_text=100, highlight_color='red', figsize: tuple=None,
+               show_all: bool=False):
     """ General plotting of the LR features.
     """
     highlight = type(highlight_lrs)!=type(None)
@@ -48,7 +49,7 @@ def lr_scatter(data, feature, highlight_lrs=None,
     n_spots = lr_df.loc[:, feature].values[0:n_top]
 
     return rank_scatter(lrs, n_spots, y_label=feature,
-                        x_label='LR Rank (n_sig_spots)',
+                        x_label='LR Rank (n_sig_spots)', figsize=figsize,
                         highlight_items=highlight_lrs, show_text=show_text,
                         color=color, alpha=alpha, lr_text_fp=lr_text_fp,
                         axis_text_fp=axis_text_fp, ax=ax, show=show,
@@ -116,7 +117,7 @@ def rank_scatter(items, y, y_label: str='', x_label: str='',
     # Plotting the points #
     scatter = ax.scatter(ranks, y, alpha=alpha, c=color,
                          s=None if type(point_sizes)==type(None)
-                         else point_sizes**point_size_exp)
+                         else point_sizes**point_size_exp, edgecolors='none')
     y_min, y_max = ax.get_ylim()
     y_max = y_max+y_max*pad
     ax.set_ylim(y_min, y_max)
@@ -124,6 +125,7 @@ def rank_scatter(items, y, y_label: str='', x_label: str='',
         # produce a legend with a cross section of sizes from the scatter
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6,
                                                   num=4)
+        [handle.set_markeredgecolor('none') for handle in handles]
         starts = [label.find('{') for label in labels]
         ends = [label.find('}')+1 for label in labels]
         sizes = [float(label[(starts[i]+1):(ends[i]-1)])
@@ -143,7 +145,8 @@ def rank_scatter(items, y, y_label: str='', x_label: str='',
                                                    for item in highlight_items]]
             ax.scatter(ranks_, y[ranks_], alpha=alpha, c=highlight_color,
                        s=None if type(point_sizes) == type(None)
-                       else point_sizes[ranks_] ** point_size_exp
+                       else point_sizes[ranks_] ** point_size_exp,
+                       edgecolors='none',
                        )
             ranks = ranks_ if not show_all else ranks
 

@@ -75,7 +75,7 @@ bbox_to_anchor
 
 doc_lr_plot = """\
 adata
-    AnnData object with run st.tl.cci.run performed on. 
+    AnnData object with run st.tl.cci_rank.run performed on. 
 lr
     Ligand receptor paid (in format L_R)
 min_expr

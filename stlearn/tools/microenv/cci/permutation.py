@@ -308,7 +308,7 @@ def permutation(
     else:
         scores = adata.obsm[use_lr]
 
-    # for each randomly selected pair, run through cci analysis and keep the scores
+    # for each randomly selected pair, run through cci_rank analysis and keep the scores
     query_pair = adata.uns["lr"]
 
     # If neighbours not inputted, then compute #

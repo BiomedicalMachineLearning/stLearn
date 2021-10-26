@@ -199,7 +199,7 @@ nbsphinx_thumbnails = {
     "tutorials/stSME_clustering": "_static/img/thumbnail/sme.png",
     "tutorials/stSME_comparison": "_static/img/thumbnail/com.png",
     "tutorials/Pseudo-time-space-tutorial": "_static/img/thumbnail/psts.png",
-    "tutorials/stLearn-CCI": "_static/img/thumbnail/cci.png",
+    "tutorials/stLearn-CCI": "_static/img/thumbnail/cci_rank.png",
     "tutorials/Read_MERFISH": "_static/img/thumbnail/mer.png",
     "tutorials/Read_seqfish": "_static/img/thumbnail/seq.png",
     "tutorials/Working-with-Old-Spatial-Transcriptomics-data": "_static/img/thumbnail/legacy.png",

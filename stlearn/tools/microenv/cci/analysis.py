@@ -114,16 +114,18 @@ def run(adata: AnnData, lrs: np.array,
                                                                     verbose,
                                                                 save_bg=save_bg)
 
-def run_lr_go(adata: AnnData, r_path: str,
-              n_top: int=100, min_sig_spots: int=1, species: str='human',
+def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
+              bg_genes: np.array=None,
+              min_sig_spots: int=1, species: str='human',
               verbose: bool=True):
     """ Runs a basic GO analysis on the genes in the top ranked LR pairs.
         Only supported for human and mouse species.
 
     Parameters
     ----------
-    adata: AnnData          Must have had st.tl.cci.run() called prior.
+    adata: AnnData          Must have had st.tl.cci_rank.run() called prior.
     r_path: str             Path to R, must have clusterProfiler installed.
+    bg_genes: np.array      Genes to be used as the background. If None, defaults to all genes in lr database: 'connectomeDB2020_put'.
     n_top: int              The top number of LR pairs to use.
     min_sig_spots: int      Minimum no. of significant spots pairs must have to be considered.
     species: str            Species to perform the GO testing for.
@@ -139,14 +141,19 @@ def run_lr_go(adata: AnnData, r_path: str,
 
     #### Getting the genes from the top LR pairs ####
     if 'lr_summary' not in adata.uns:
-        raise Exception("Need to run st.tl.cci.run first.")
+        raise Exception("Need to run st.tl.cci_rank.run first.")
     lrs = adata.uns['lr_summary'].index.values.astype(str)
     n_sig = adata.uns['lr_summary'].loc[:,'n_spots_sig'].values.astype(int)
     top_lrs = lrs[n_sig>min_sig_spots][0:n_top]
     top_genes = np.unique([lr.split('_') for lr in top_lrs])
 
+    ## Determining the background genes if not inputted ##
+    if type(bg_genes)==type(None):
+        all_lrs = load_lrs('connectomeDB2020_put')
+        bg_genes = np.unique([lr_.split('_') for lr_ in all_lrs])
+
     #### Running the GO analysis ####
-    go_results = run_GO(top_genes, species, r_path)
+    go_results = run_GO(top_genes, bg_genes, species, r_path)
     adata.uns['lr_go'] = go_results
     if verbose:
         print("GO results saved to adata.uns['lr_go']")
@@ -154,6 +161,7 @@ def run_lr_go(adata: AnnData, r_path: str,
 ################################################################################
             # Functions for calling Celltype-Celltype interactions #
 ################################################################################
+# TODO need to test with new updates to lr_summary.
 def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
             min_spots: int = 3, sig_spots: bool = True,
             cell_prop_cutoff: float = 0.2, p_cutoff=.05, n_perms=100,
@@ -162,7 +170,7 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     """ Calls significant celltype-celltype interactions based on cell-type data randomisation.
     Parameters
     ----------
-    adata: AnnData          Must have had st.tl.cci.run() called prior.
+    adata: AnnData          Must have had st.tl.cci_rank.run() called prior.
     use_label: str          If !spot_mixtures, is a key in adata.obs, else key in adata.obsm.
     spot_mixtures: bool     If true, indicates using deconvolution data, hence use_label refers to adata.obsm.
     min_spots: int          Specifies the minimum number of spots where LR score present to include in subsequent analysis.
@@ -179,7 +187,7 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
     if not ran_lr and not ran_sig:
         raise Exception("No LR results testing results found, " 
-                        "please run st.tl.cci.run first")
+                        "please run st.tl.cci_rank.run first")
 
     # Ensuring compatibility with current way of adding label_transfer to object
     if use_label == "label_transfer" or use_label == "predictions":
@@ -205,7 +213,8 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     lr_summary = adata.uns['lr_summary']
     col_i = 1 if sig_spots else 0
     col = 'lr_sig_scores'if sig_spots else 'lr_scores'
-    best_lrs = lr_summary.index.values[lr_summary.values[:,col_i] > min_spots]
+    best_lr_indices = np.where( lr_summary.values[:,col_i] > min_spots )[0]
+    best_lrs = lr_summary.index.values[ best_lr_indices ]
     lr_genes = np.unique([lr.split('_') for lr in best_lrs])
     lr_expr = adata[:,lr_genes].to_df()
 
@@ -216,7 +225,10 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     per_lr_cci = {} # Per LR significant CCI counts #
     per_lr_cci_pvals = {} # Per LR CCI p-values #
     per_lr_cci_raw = {} # Per LR raw CCI counts #
-    for best_lr in best_lrs:
+    lr_n_spot_cci = np.zeros(( lr_summary.shape[0] ))
+    lr_n_spot_cci_sig = np.zeros(( lr_summary.shape[0] ))
+    lr_n_cci_sig = np.zeros(( lr_summary.shape[0] ))
+    for i, best_lr in enumerate(best_lrs):
         l, r = best_lr.split('_')
 
         L_bool = lr_expr.loc[:,l].values > 0
@@ -233,8 +245,14 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
                           neighbourhood_bcs, neighbourhood_indices, all_set,
                                      sig_bool, L_bool, R_bool, cell_prop_cutoff)
 
+        # Setting spot counts to 0 for non-significant ccis #
         sig_int_matrix = int_matrix.copy()
-        sig_int_matrix[int_pvals>p_cutoff] = 0
+        sig_int_matrix[ int_pvals>p_cutoff ] = 0
+
+        # Summarising n-spots sig/non-sig across ccis & total cci_rank for lr pair
+        lr_n_spot_cci[ best_lr_indices[i] ] = int_matrix.sum()
+        lr_n_spot_cci_sig[ best_lr_indices[i] ] = sig_int_matrix.sum()
+        lr_n_cci_sig[best_lr_indices[i]] = (int_pvals<p_cutoff).sum()
 
         raw_matrix += int_matrix
         all_matrix += sig_int_matrix
@@ -245,6 +263,10 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
         per_lr_cci_pvals[best_lr] = pval_df
         per_lr_cci_raw[best_lr] = int_df
 
+    # Saving results to anndata #
+    adata.uns['lr_summary'][f'n_cci_sig_{use_label}'] = lr_n_cci_sig
+    adata.uns['lr_summary'][f'n-spot_cci_{use_label}'] = lr_n_spot_cci
+    adata.uns['lr_summary'][f'n-spot_cci_sig_{use_label}'] = lr_n_spot_cci_sig
     adata.uns[f'lr_cci_{use_label}'] = pd.DataFrame(all_matrix,
                                                  index=all_set, columns=all_set)
     adata.uns[f'lr_cci_raw_{use_label}'] = pd.DataFrame(raw_matrix,
@@ -253,9 +275,9 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     adata.uns[f'per_lr_cci_pvals_{use_label}'] = per_lr_cci_pvals
     adata.uns[f'per_lr_cci_raw_{use_label}'] = per_lr_cci_raw
     if verbose:
-        print(f"Significant counts of cci interactions for all LR pairs in "
+        print(f"Significant counts of cci_rank interactions for all LR pairs in "
               f"{f'lr_cci_{use_label}'}")
-        print(f"Significant counts of cci interactions for each LR pair "
+        print(f"Significant counts of cci_rank interactions for each LR pair "
               f"stored in dictionary {f'per_lr_cci_{use_label}'}")
 
 

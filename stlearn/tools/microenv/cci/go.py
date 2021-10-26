@@ -25,7 +25,7 @@ def rpy2_setup(r_path):
     pandas2ri = pandas2ri_
     localconverter = localconverter_
 
-def run_GO(genes, species, r_path):
+def run_GO(genes, bg_genes, species, r_path):
     """ Running GO term analysis.
     """
     # if 'R_HOME' not in os.environ:
@@ -42,8 +42,9 @@ def run_GO(genes, species, r_path):
     go_analyse_r = ro.globalenv['GO_analyse']
 
     # Running the function on the genes #
-    genes_r = ro.StrVector(genes)
-    go_results_r = go_analyse_r(genes_r, species)
+    genes_r = ro.StrVector( genes )
+    bg_genes_r = ro.StrVector( bg_genes )
+    go_results_r = go_analyse_r(genes_r, bg_genes_r, species)
     with localconverter(ro.default_converter + pandas2ri.converter):
         go_results = ro.conversion.rpy2py(go_results_r)
 

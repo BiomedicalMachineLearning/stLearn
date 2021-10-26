@@ -975,7 +975,7 @@ class CciPlot(GenePlot):
         use_raw: Optional[bool] = False,
         fname: Optional[str] = None,
         dpi: Optional[int] = 120,
-        # cci param
+        # cci_rank param
         use_het: Optional[str] = "het",
         contour: bool = False,
         step_size: Optional[int] = None,
@@ -1041,13 +1041,13 @@ class LrResultPlot(GenePlot):
         use_raw: Optional[bool] = False,
         fname: Optional[str] = None,
         dpi: Optional[int] = 120,
-        # cci param
+        # cci_rank param
         contour: bool = False,
         step_size: Optional[int] = None,
         vmin: float = None, vmax: float = None,
         **kwargs
     ):
-        # Making sure cci has been run first #
+        # Making sure cci_rank has been run first #
         if 'lr_summary' not in adata.uns:
             raise Exception(f'To visualise LR interaction results, must run'
                             f'st.pl.cci.run first.')

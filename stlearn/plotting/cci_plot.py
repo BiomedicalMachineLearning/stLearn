@@ -73,7 +73,7 @@ def lr_diagnostics(adata, highlight_lrs: list=None,
         return fig, axes
 
 def lr_summary(adata, n_top: int=50, highlight_lrs: list=None,
-               y: str='n_spots_sig', color: str='gold',
+               y: str='n_spots_sig', color: str='gold', figsize: tuple=None,
                highlight_color: str='red', max_text: int=50,
                lr_text_fp: dict=None, ax: Axes=None, show: bool=True):
     """ Plotting the top LRs ranked by number of significant spots.
@@ -87,14 +87,15 @@ def lr_summary(adata, n_top: int=50, highlight_lrs: list=None,
         raise Exception(f'Got {y} for y; must be one of {allowed}')
 
     return cci_hs.lr_scatter(adata, y, n_top=n_top, color=color,
-                             show_all=n_top<=max_text,
+                             show_all=n_top<=max_text, figsize=figsize,
                       highlight_lrs=highlight_lrs, ax=ax, lr_text_fp=lr_text_fp,
                                      highlight_color=highlight_color, show=show)
 
 def lr_n_spots(adata, n_top: int=100, font_dict: dict=None,
-               xtick_dict: dict=None, bar_width: float=1,
+               xtick_dict: dict=None, bar_width: float=1, max_text: int=50,
                non_sig_color: str='dodgerblue', sig_color: str='springgreen',
-               figsize: tuple=(6, 4), show: bool=True):
+               figsize: tuple=(6, 4), show_title: bool=True, show: bool=True
+               ):
     """ Bar plot showing for each LR no. of sig versus non-sig spots.
     """
     if type(font_dict)==type(None):
@@ -112,9 +113,10 @@ def lr_n_spots(adata, n_top: int=100, font_dict: dict=None,
            bottom=n_non_sig[0:n_top], color=sig_color)
     ax.set_ylabel('n_spots', font_dict)
     ax.set_xlabel('LRs Ranked (n_spots_sig)', font_dict)
-    ax.set_title('Signficant and non-signficant spots per LR', font_dict)
+    if show_title:
+        ax.set_title('Signficant and non-signficant spots per LR', font_dict)
     ax.legend(labels=['non-sig', 'sig'], loc='upper right')
-    if n_top <= 50:
+    if n_top <= max_text:
         ax.set_xticks(rank[0:n_top])
         ax.set_xticklabels(lrs, fontdict=xtick_dict)
     ax.spines['top'].set_visible(False)
@@ -125,23 +127,24 @@ def lr_n_spots(adata, n_top: int=100, font_dict: dict=None,
     else:
         return fig, ax
 
-def lr_go(adata, n_top: int=20, highlight_go: list=None,
+def lr_go(adata, n_top: int=20, highlight_go: list=None, figsize=(6,4),
+          rot: float=50, lr_text_fp: dict=None,
           highlight_color: str='yellow', max_text: int=50, show: bool=True):
     """ Plots the results from the LR GO analysis.
     """
     # Making sure LR GO has been run #
     if 'lr_go' not in adata.uns:
-        raise Exception('Need to run st.tl.cci.run_lr_go() first!')
+        raise Exception('Need to run st.tl.cci_rank.run_lr_go() first!')
 
     go_results = adata.uns['lr_go']
     gos = go_results.loc[:, 'Description'].values.astype(str)
     y = -np.log10(go_results.loc[:, 'p.adjust'].values)
     sizes = go_results.loc[:, 'Count'].values
     cci_hs.rank_scatter(gos[0:n_top], y[0:n_top], point_sizes=sizes[0:n_top],
-                        highlight_items=highlight_go,
-                        highlight_color=highlight_color,
+                        highlight_items=highlight_go, lr_text_fp=lr_text_fp,
+                        highlight_color=highlight_color, figsize=figsize,
                         y_label='-log10(padjs)', x_label='GO Rank', height=6,
-                        color='deepskyblue', rot=50, width_ratio=.4, show=show,
+                        color='deepskyblue', rot=rot, width_ratio=.4, show=show,
                         point_size_name='n-genes', show_all=n_top<=max_text)
 
 """ Functions for visualisation the LR results per spot. 
@@ -169,7 +172,7 @@ def lr_result_plot(
 		use_raw: Optional[bool] = False,
 		fname: Optional[str] = None,
 		dpi: Optional[int] = 120,
-		# cci param
+		# cci_rank param
 		contour: bool = False,
 		step_size: Optional[int] = None,
 		vmin: float = None, vmax: float = None,
@@ -197,7 +200,7 @@ def lr_result_plot(
 		use_raw,
 		fname,
 		dpi,
-		# cci param
+		# cci_rank param
 		contour,
 		step_size,
 		vmin, vmax,
@@ -234,7 +237,7 @@ def lr_plot(
 
 	if sig_spots and not ran_lr:
 		raise Exception("No LR results testing results found, "
-					  "please run st.tl.cci.run first, or set sig_spots=False.")
+					  "please run st.tl.cci_rank.run first, or set sig_spots=False.")
 
 	elif sig_spots and not lr_sig:
 		raise Exception("LR has no significant spots, to visualise anyhow set"
@@ -419,7 +422,7 @@ def het_plot(
 	use_raw: Optional[bool] = False,
 	fname: Optional[str] = None,
 	dpi: Optional[int] = 120,
-	# cci param
+	# cci_rank param
 	use_het: Optional[str] = "het",
 	contour: bool = False,
 	step_size: Optional[int] = None,
@@ -473,7 +476,7 @@ def het_plot(
 	)
 
 """ Functions relating to visualising celltype-celltype interactions after 
-	calling: st.tl.cci.run_cci
+	calling: st.tl.cci_rank.run_cci
 """
 
 def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
@@ -488,7 +491,7 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
 		----------
 		adata: AnnData
 		use_label: str    Indicates the cell type labels or deconvolution results use for cell-cell interaction counting by LR pairs.
-		lr: str    The LR pair to visualise the cci network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
+		lr: str    The LR pair to visualise the cci_rank network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
 		pos: dict   Positions to draw each cell type, format as outputted from running networkx.circular_layout(graph). If not inputted will be generated.
 		return_pos: bool   Whether to return the positions of the cell types drawn or not.
 		cmap: str    Cmap to use when generating the cell colors, if not already specified by adata.uns[f'{use_label}_colors'].
@@ -618,7 +621,7 @@ def cci_map(adata: AnnData, use_label: str, lr: str=None,
 		----------
 		adata: AnnData
 		use_label: str    Indicates the cell type labels or deconvolution results use for cell-cell interaction counting by LR pairs.
-		lr: str    The LR pair to visualise the cci network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
+		lr: str    The LR pair to visualise the cci_rank network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
 
 		Returns
 		-------
@@ -741,7 +744,7 @@ def lr_chord_plot(adata: AnnData, use_label: str,
 		----------
 		adata: AnnData
 		use_label: str    Indicates the cell type labels or deconvolution results use for cell-cell interaction counting by LR pairs.
-		lr: str    The LR pair to visualise the cci network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
+		lr: str    The LR pair to visualise the cci_rank network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
 		min_ints: int    Minimum no. of interactions celltypes must have to be shown.
 
 		Returns
@@ -821,7 +824,7 @@ def grid_plot(
 	Parameters
 	----------
 	adata:                  Annotated data matrix.
-	use_het:                Cluster heterogeneity count results from tl.cci.het
+	use_het:                Cluster heterogeneity count results from tl.cci_rank.het
 	num_row: int            Number of grids on height
 	num_col: int            Number of grids on width
 	cropped                 crop image or not.
