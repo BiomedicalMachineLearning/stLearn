@@ -177,10 +177,20 @@ def get_interaction_pvals(int_matrix, n_perms, cell_data,
     # counts greater than that observed, in order to calculate p-values.
     greater_counts = np.zeros(int_matrix.shape).astype(int)
     indices = np.array([i for i in range(cell_data.shape[0])])
+    # If dealing with discrete data, no need to randomise columns indendently #
+    discrete = np.all(np.logical_or(cell_data==0, cell_data==1))
     for i in range(n_perms):
-        # Permuting the cell data by swapping between spots #
-        rand_indices = np.random.choice(indices, cell_data.shape[0], False)
-        perm_data = cell_data[rand_indices, :]
+        # Permuting the cell data by swapping between spots for each column #
+        if not discrete:
+            perm_data = cell_data.copy()
+            for j in range(cell_data.shape[1]):
+                rand_indices = np.random.choice(indices, cell_data.shape[0], False)
+                perm_data[:,j] = cell_data[rand_indices, j]
+        else:
+            rand_indices = np.random.choice(indices, cell_data.shape[0], False)
+            perm_data = cell_data[rand_indices, :]
+
+        # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(perm_data, neighbourhood_bcs,
                                         neighbourhood_indices, all_set,
                                          sig_bool, L_bool, R_bool,
