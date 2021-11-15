@@ -218,7 +218,7 @@ def get_neighbourhoods(adata):
             neighs = np.array(adata.obsm['spot_neighbours'].values[i,
                                                                    :][0].split(','))
             neighs = neighs[neighs != ''].astype(int)
-            # TODO would need to store neigh_bcs to get below to work reliably
+            # DONE: store neigh_bcs to get below to work reliably
             #       after subsetting anndata #
             #neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
             neighbours.append(neighs)
@@ -231,7 +231,7 @@ def get_neighbourhoods(adata):
             neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
             neighbourhood_bcs.append( (spot_bcs[spot_i],
                                        spot_bcs[neighbours[spot_i]]) )
-    else: #Newer version, TODO impliment this!!
+    else: #Newer version
         # Determining the neighbour spots used for significance testing #
         neighbours = List()
         neighbourhood_bcs = List()

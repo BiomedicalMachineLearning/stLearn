@@ -86,13 +86,27 @@ def run(adata: AnnData, lrs: np.array,
     if type(n_cpus)!=type(None):
         numba.set_num_threads(n_cpus)
 
+    # Calculating neighbour & storing #
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
     adata.obsm['spot_neighbours'] = pd.DataFrame([','.join(x.astype(str))
                                                            for x in neighbours],
                            index=adata.obs_names, columns=['neighbour_indices'])
+    spot_neighs_df = adata.obsm['spot_neighbours']
+    spot_neigh_bcs = []
+    for i in range(spot_neighs_df.shape[0]):
+        neigh_indices = [int(index) for index in
+                         spot_neighs_df.values[i, 0].split(',')]
+        neigh_bcs = [adata.obs_names[index] for index in neigh_indices]
+        spot_neigh_bcs.append(','.join(neigh_bcs))
+    spot_neigh_bcs_df = pd.DataFrame(spot_neigh_bcs, index=spot_neighs_df.index,
+                                     columns=['neighbour_bcs'])
+    # Important to store barcodes in-case adata subsetted #
+    adata.obsm['spot_neigh_bcs'] = spot_neigh_bcs_df
+
     if verbose:
-        print("Spot neighbour indices stored in adata.obsm['spot_neighbours']")
+        print("Spot neighbour indices stored in adata.obsm['spot_neighbours'] "
+              "& adata.obsm['spot_neigh_bcs'].")
 
     # Conduct with cell heterogeneity info if label_transfer provided #
     cell_het = type(use_label) != type(None) and use_label in adata.uns.keys()
