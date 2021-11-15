@@ -209,25 +209,45 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
 def get_neighbourhoods(adata):
     """ Gets the neighbourhood information. """
 
-    # Determining the neighbour spots used for significance testing #
-    neighbours = List()
-    for i in range(adata.obsm['spot_neighbours'].shape[0]):
-        neighs = np.array(adata.obsm['spot_neighbours'].values[i,
-                                                               :][0].split(','))
-        neighs = neighs[neighs != ''].astype(int)
-        # TODO would need to store neigh_bcs to get below to work reliably
-        #       after subsetting anndata #
-        #neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
-        neighbours.append(neighs)
+    # Old stlearn version where didn't store neighbourhood barcodes, not good
+    #   for anndata subsetting!!
+    if not 'spot_neigh_bcs' in adata.obsm:
+        # Determining the neighbour spots used for significance testing #
+        neighbours = List()
+        for i in range(adata.obsm['spot_neighbours'].shape[0]):
+            neighs = np.array(adata.obsm['spot_neighbours'].values[i,
+                                                                   :][0].split(','))
+            neighs = neighs[neighs != ''].astype(int)
+            # TODO would need to store neigh_bcs to get below to work reliably
+            #       after subsetting anndata #
+            #neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
+            neighbours.append(neighs)
 
-    # Getting the neighbourhood information #
-    neighbourhood_bcs = List()
-    neighbourhood_indices = List()
-    spot_bcs = adata.obs_names.values.astype(str)
-    for spot_i in range(len(spot_bcs)):
-        neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
-        neighbourhood_bcs.append( (spot_bcs[spot_i],
-                                   spot_bcs[neighbours[spot_i]]) )
+        # Getting the neighbourhood information #
+        neighbourhood_bcs = List()
+        neighbourhood_indices = List()
+        spot_bcs = adata.obs_names.values.astype(str)
+        for spot_i in range(len(spot_bcs)):
+            neighbourhood_indices.append( (spot_i, neighbours[spot_i]) )
+            neighbourhood_bcs.append( (spot_bcs[spot_i],
+                                       spot_bcs[neighbours[spot_i]]) )
+    else: #Newer version, TODO impliment this!!
+        # Determining the neighbour spots used for significance testing #
+        neighbours = List()
+        neighbourhood_bcs = List()
+        neighbourhood_indices = List()
+        spot_bcs = adata.obs_names.values.astype(str)
+        for i in range(adata.shape[0]):
+            neigh_bcs = np.array(adata.obsm['spot_neigh_bcs'].values[i,
+                                                               :][0].split(','))
+            neigh_bcs = neigh_bcs[neigh_bcs != '']
+            neigh_bcs = np.array([neigh_bc for neigh_bc in neigh_bcs
+                                                       if neigh_bc in spot_bcs])
+            neigh_indices = np.array([np.where(spot_bcs==neigh_bc)[0][0]
+                                                     for neigh_bc in neigh_bcs])
+            neighbours.append( neigh_indices )
+            neighbourhood_indices.append( (i, neigh_indices) )
+            neighbourhood_bcs.append( (spot_bcs[i], neigh_bcs) )
 
     return neighbours, neighbourhood_bcs, neighbourhood_indices
 

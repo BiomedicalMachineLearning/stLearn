@@ -68,6 +68,15 @@ class TestCCI(unittest.TestCase):
         lrs = st.tl.cci.load_lrs()
         self.assertEqual(len(lrs), sizes[0])
 
+        ### Testing loading mouse as species ####
+        lrs = st.tl.cci.load_lrs(species='mouse')
+        genes1 = [lr_.split('_')[0] for lr_ in lrs]
+        genes2 = [lr_.split('_')[1] for lr_ in lrs]
+        self.assertTrue(np.all([gene[0].isupper() for gene in genes1]))
+        self.assertTrue(np.all([gene[1:].islower() for gene in genes1]))
+        self.assertTrue(np.all([gene[0].isupper() for gene in genes2]))
+        self.assertTrue(np.all([gene[1:].islower() for gene in genes2]))
+
     ####### Important, granular tests related to LR scoring #########
 
 

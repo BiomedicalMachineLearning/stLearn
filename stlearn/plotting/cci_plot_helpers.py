@@ -145,8 +145,8 @@ def rank_scatter(items, y, y_label: str='', x_label: str='',
                                                    for item in highlight_items]]
             ax.scatter(ranks_, y[ranks_], alpha=alpha, c=highlight_color,
                        s=None if type(point_sizes) == type(None)
-                       else point_sizes[ranks_] ** point_size_exp,
-                       edgecolors='none',
+                       else (point_sizes[ranks_] ** point_size_exp),
+                       edgecolors=color,
                        )
             ranks = ranks_ if not show_all else ranks
 
@@ -606,6 +606,8 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1):
             path = Wedge(0, diam/2, start, end, color=colors[i]+(.5,))
             ax.add_patch(path)
         for j in range(i):
+            if X[i,j]==0 and X[j,i]==0: #don't draw anything for no interaction
+                continue
             color = colors[i]
             if X[i, j] > X[j, i]: # Color by the dominant signal #
                 color = colors[j]

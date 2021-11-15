@@ -17,13 +17,16 @@ from .het import count, get_data_for_counting, get_interaction_matrix, \
 ################################################################################
             # Functions related to Ligand-Receptor interactions #
 ################################################################################
-def load_lrs(names: Union[str, list, None]=None) -> np.array:
+def load_lrs(names: Union[str, list, None]=None, species: str='human') \
+                                                                    -> np.array:
     """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates. If None loads 'connectomeDB2020_lit'.
     Parameters
     ----------
     names: list   Databases to load, options: \
                 'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
                 If more than one specified, loads all & removes duplicates.
+    species: str    Format of the LR genes, either 'human' or 'mouse'.
+
     Returns
     -------
     lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
@@ -40,7 +43,16 @@ def load_lrs(names: Union[str, list, None]=None) -> np.array:
     for db in dbs:
         lrs = [f'{db.values[i,0]}_{db.values[i,1]}' for i in range(db.shape[0])]
         lrs_full.extend(lrs)
-    return np.unique(lrs_full)
+    lrs_full = np.unique(lrs_full)
+    # If dealing with mouse, need to reformat #
+    if species == 'mouse':
+        genes1 = [lr_.split('_')[0] for lr_ in lrs_full]
+        genes2 = [lr_.split('_')[1] for lr_ in lrs_full]
+        lrs_full = np.array([genes1[i][0]+genes1[i][1:].lower()+'_'+\
+                             genes2[i][0]+genes2[i][1:].lower()
+                             for i in range(len(lrs_full))])
+
+    return lrs_full
 
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
