@@ -58,6 +58,7 @@ def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
         distance: int = None, n_pairs: int = 1000,
         adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
+        pval_adj_axis: str = 'lrs_per_spot',
         min_spots: int = 10, min_expr: float = 0,
         save_bg: bool=False, n_cpus: int=None, verbose: bool = True,
         ):
@@ -73,6 +74,7 @@ def run(adata: AnnData, lrs: np.array,
     n_pairs: int            Number of random pairs to generate when performing the background distribution.
     adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
     pval_adj_cutoff: float  P-value below which LR is considered significant in spot neighbourhood.
+    pval_adj_axis: str      Defines how pval adjustment performed; 'lrs_per_spot' to correct by no. of LRs tested in spot, 'spots_per_lr' to correct for no. of spots tested for LR.
     min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
     min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
     save_bg: bool           Whether to save the background per LR pair; for method development only. Not recommended since huge memory.

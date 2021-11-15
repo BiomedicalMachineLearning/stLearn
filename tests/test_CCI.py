@@ -73,9 +73,9 @@ class TestCCI(unittest.TestCase):
         genes1 = [lr_.split('_')[0] for lr_ in lrs]
         genes2 = [lr_.split('_')[1] for lr_ in lrs]
         self.assertTrue(np.all([gene[0].isupper() for gene in genes1]))
-        self.assertTrue(np.all([gene[1:].islower() for gene in genes1]))
+        self.assertTrue(np.all([gene[1:]==gene[1:].lower() for gene in genes1]))
         self.assertTrue(np.all([gene[0].isupper() for gene in genes2]))
-        self.assertTrue(np.all([gene[1:].islower() for gene in genes2]))
+        self.assertTrue(np.all([gene[1:]==gene[1:].lower() for gene in genes2]))
 
     ####### Important, granular tests related to LR scoring #########
 
