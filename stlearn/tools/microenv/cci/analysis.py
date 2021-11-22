@@ -58,7 +58,6 @@ def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
         distance: int = None, n_pairs: int = 1000,
         adj_method: str = 'fdr_bh', pval_adj_cutoff: float = 0.05,
-        pval_adj_axis: str = 'lrs_per_spot',
         min_spots: int = 10, min_expr: float = 0,
         save_bg: bool=False, n_cpus: int=None, verbose: bool = True,
         ):
@@ -98,7 +97,7 @@ def run(adata: AnnData, lrs: np.array,
     spot_neigh_bcs = []
     for i in range(spot_neighs_df.shape[0]):
         neigh_indices = [int(index) for index in
-                         spot_neighs_df.values[i, 0].split(',')]
+                         spot_neighs_df.values[i, 0].split(',') if index!='']
         neigh_bcs = [adata.obs_names[index] for index in neigh_indices]
         spot_neigh_bcs.append(','.join(neigh_bcs))
     spot_neigh_bcs_df = pd.DataFrame(spot_neigh_bcs, index=spot_neighs_df.index,

@@ -765,7 +765,7 @@ def lr_chord_plot(adata: AnnData, use_label: str,
 		keep = np.argsort(-total_ints)[0:n_top_ccis]
 	flux = flux[:, keep]
 	flux = flux[keep, :].astype(float)
-	print(flux)
+	#print(flux)
 	# Add pseudocount to row/column which has all zeros for the incoming
 	# so can make the connection between the two
 	# for i in range(flux.shape[0]):
