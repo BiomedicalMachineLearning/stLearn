@@ -55,6 +55,10 @@ def perform_spot_testing(adata: AnnData,
                          [col for col in lr_feats.columns if 'R_'in col]].values
     candidate_quants = np.apply_along_axis(np.quantile, 0, candidate_expr,
                                            q=quantiles, interpolation='nearest')
+    # Ensuring consistent typing to prevent numba errors #
+    l_quants = l_quants.astype('<f4')
+    r_quants = r_quants.astype('<f4')
+    candidate_quants = candidate_quants.astype('<f4')
 
     ######## Background per LR, but only for spots where LR has a score ########
     # Determine the indices of the spots where each LR has a score #
@@ -81,8 +85,7 @@ def perform_spot_testing(adata: AnnData,
         spot_lr_indices = [[] for i in range(lr_scores.shape[0])] #tracks the lrs tested in a given spot for MHT !!!!
         for lr_j in range(lr_scores.shape[1]):
             lr_ = lrs[lr_j]
-            if lr_ == 'hg38-RPS19_hg38-RPSA':
-                print("here")
+            
             background, spot_indices = get_lr_bg(adata, neighbours, het_vals,
                                                min_expr, lr_, lr_scores[:,lr_j],
                                      l_quants[lr_j,:], r_quants[lr_j,:], genes,

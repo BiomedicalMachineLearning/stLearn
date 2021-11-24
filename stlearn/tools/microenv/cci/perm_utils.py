@@ -201,7 +201,8 @@ def get_similar_genesFAST(ref_quants: np.array, n_genes: int,
     dists = np.zeros((1, candidate_quants.shape[1]), dtype=np.float64)[0,:]
     for i in prange(0, candidate_quants.shape[1]):
         cand_quants = candidate_quants[:,i]
-        abs_diff = np.abs(ref_quants - cand_quants)
+        abs_diff = ref_quants - cand_quants
+        abs_diff[abs_diff<0] = -abs_diff[abs_diff<0]
         dists[i] = np.nansum( abs_diff / (ref_quants + cand_quants) )
 
     # Need to remove the zero-dists since this indicates they are expressed

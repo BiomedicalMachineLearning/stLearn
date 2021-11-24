@@ -768,11 +768,11 @@ def lr_chord_plot(adata: AnnData, use_label: str,
 	#print(flux)
 	# Add pseudocount to row/column which has all zeros for the incoming
 	# so can make the connection between the two
-	# for i in range(flux.shape[0]):
-	# 	if np.all(flux[i,:]==0):
-	# 		flux[i,flux[:,i]>0] += sys.float_info.min
-	# 	elif np.all(flux[:,i]==0):
-	# 		flux[flux[i, :] > 0, i] += sys.float_info.min
+	for i in range(flux.shape[0]):
+		if np.all(flux[i,:]==0):
+			flux[i,flux[:,i]>0] += sys.float_info.min
+		elif np.all(flux[:,i]==0):
+			flux[flux[i, :] > 0, i] += sys.float_info.min
 
 	cell_names = int_df.index.values.astype(str)[keep]
 	nodes = cell_names
