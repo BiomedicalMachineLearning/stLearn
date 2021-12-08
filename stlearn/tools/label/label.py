@@ -86,10 +86,13 @@ def get_counts(data):
 
     return counts
 
-def run_rctd(st_data, sc_data, sc_label_col, r_path,
+def run_rctd(st_data, sc_data, sc_label_col, r_path, st_label_col=None,
              n_highly_variable=5000, min_cells=10, n_cores=1):
     """ Runs RCTD for deconvolution.
     """
+    st_label_col = sc_label_col if type(st_label_col) == type(None) \
+                                                               else st_label_col
+
     ########### Setting up the R environment #############
     rhs.rpy2_setup(r_path)
 
@@ -136,12 +139,23 @@ def run_rctd(st_data, sc_data, sc_label_col, r_path,
         rctd_proportions = rhs.ro.conversion.rpy2py( rctd_proportions_r )
     print("Finished results rpy->py conversion.")
 
-    return rctd_proportions
+    # Adding to spatial anndata object #
+    argmaxs = np.argmax(rctd_proportions.values, axis=1)
+    labels = [rctd_proportions.columns.values[argmax] for argmax in argmaxs]
+    st_data.obs[st_label_col] = labels
+    st_data.obs[st_label_col] = st_data.obs[st_label_col].astype('category')
+    st_data.uns[st_label_col] = rctd_proportions.loc[st_data.obs_names.values,
+                                                                              :]
 
-def run_singleR(st_data, sc_data, sc_label_col, r_path,
+    print(f"Spot labels added to st_data.obs[{st_label_col}].")
+    print(f"Spot label scores added to st_data.uns[{st_label_col}].")
+
+def run_singleR(st_data, sc_data, sc_label_col, r_path, st_label_col=None,
                 n_highly_variable=5000, n_centers=3, de_n=200, de_method='t'):
     """ Runs SingleR spot annotation.
     """
+    st_label_col = sc_label_col if type(st_label_col)==type(None) \
+                                                               else st_label_col
     ########### Setting up the R environment #############
     rhs.rpy2_setup(r_path)
 
@@ -158,6 +172,7 @@ def run_singleR(st_data, sc_data, sc_label_col, r_path,
     sc_genes = sc_data.var_names
     st_genes = st_data.var_names
     genes = [gene for gene in sc_genes if gene in st_genes]
+    st_data_orig = st_data
     sc_data = sc_data[:, genes].copy()
     st_data = st_data[:, genes].copy()
 
@@ -187,10 +202,19 @@ def run_singleR(st_data, sc_data, sc_label_col, r_path,
     # Running label transfer #
     singleR_scores_r = singleR_r(st_expr_df_r, sc_expr_df_r, sc_labels_r,
                                  n_centers, de_n, de_method_r)
-    print("Finished label transfer.")
+    print("Finished SingleR annotation.")
     with rhs.localconverter(rhs.ro.default_converter + rhs.pandas2ri.converter):
         singleR_scores = rhs.ro.conversion.rpy2py( singleR_scores_r )
     print("Finished results rpy->py conversion.")
 
-    return singleR_scores
+    # Adding the results to the object #
+    singleR_scores.index = [index.replace('.', '-') for index in
+                                                           singleR_scores.index]
+    st_data_orig.obs[st_label_col] = singleR_scores.loc[:,
+                                                    'labels'].astype('category')
+    singleR_scores_only = singleR_scores.drop(columns=['labels'])
+    st_data_orig.uns[st_label_col] = singleR_scores_only
+
+    print(f"Spot labels added to st_data.obs[{st_label_col}].")
+    print(f"Spot label scores added to st_data.uns[{st_label_col}].")
 
