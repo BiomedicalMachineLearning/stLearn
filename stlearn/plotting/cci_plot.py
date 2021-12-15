@@ -20,7 +20,7 @@ from typing import Tuple  # Classes
 import warnings
 
 from .classes import CciPlot, LrResultPlot
-from .classes_bokeh import BokehCciPlot
+from .classes_bokeh import BokehLRPlot
 from ._docs import doc_spatial_base_plot, doc_het_plot, doc_lr_plot
 from ..utils import Empty, _empty, _AxesSubplot, _docs_params
 from .utils import get_cmap, check_cmap
@@ -146,6 +146,76 @@ def lr_go(adata, n_top: int=20, highlight_go: list=None, figsize=(6,4),
 						y_label='-log10(padjs)', x_label='GO Rank', height=6,
 						color='deepskyblue', rot=rot, width_ratio=.4, show=show,
 						point_size_name='n-genes', show_all=n_top<=max_text)
+
+def cci_check(adata: AnnData, use_label: str, figsize=(16,10),
+			  cell_label_size=20, axis_text_size=18,
+			  tick_size=14, show=True):
+	""" Checks relationship between no. of significant CCI-LR interactions and
+		cell type frequency.
+	"""
+	labels = adata.obs[use_label].values.astype(str)
+	label_set = np.array(list(adata.obs[use_label].cat.categories))
+	colors = np.array(adata.uns[f'{use_label}_colors'])
+	xs = np.array(list(range(len(label_set))))
+	int_dfs = adata.uns[f'per_lr_cci_{use_label}']
+
+	# Counting!!! #
+	cell_counts = [] # Cell type frequencies
+	cell_sigs = [] # Cell type significant interactions
+	for j, label in enumerate(label_set):
+		counts = sum(labels==label)
+		cell_counts.append( counts )
+
+		int_count = 0
+		for lr in int_dfs:
+			int_df = int_dfs[lr]
+			label_index = np.where(int_df.index.values == label)[0][0]
+			int_bool = int_df.values > 0
+			int_count += sum(int_bool[label_index, :])
+			int_count += sum(int_bool[:, label_index])
+			# prevent double counts
+			int_count -= int_bool[label_index, label_index]
+
+		cell_sigs.append( int_count )
+
+	cell_counts = np.array(cell_counts)
+	cell_sigs = np.array(cell_sigs)
+	order = np.argsort(cell_counts)
+	cell_counts = cell_counts[order]
+	cell_sigs = cell_sigs[order]
+	colors = colors[order]
+	label_set = label_set[order]
+
+	# Plotting bar plot #
+	fig, ax = plt.subplots(figsize=figsize)
+	ax.bar(xs, cell_counts, color=colors)
+	text_dist = max(cell_counts)*.015
+	fontdict = {'fontweight': 'bold', 'fontsize': cell_label_size}
+	for j in range(len(xs)):
+		ax.text(xs[j], cell_counts[j]+text_dist, label_set[j],
+				rotation=90, fontdict=fontdict)
+	axis_text_fp = {'fontweight': 'bold', 'fontsize': axis_text_size}
+	ax.set_ylabel('Cell type frequency', color='black',
+				  **axis_text_fp)
+	ax.spines['top'].set_visible(False)
+	ax.tick_params(labelsize=tick_size)
+	ax.set_xlabel('Cell type rank', **axis_text_fp)
+
+	# Line-plot of the interaction counts #
+	ax2 = ax.twinx()
+	ax2.set_ylabel('CCI-LR interactions', color='blue',
+				   **axis_text_fp)
+	ax2.plot(xs, cell_sigs, color='blue', linewidth=2)
+	ax2.tick_params(axis='y', labelcolor='blue', labelsize=tick_size)
+	ax2.spines['top'].set_visible(False)
+	ax2.tick_params(labelsize=tick_size)
+	fig.tight_layout()
+
+	if show:
+		plt.show()
+	else:
+		return fig, ax, ax2
+
 
 """ Functions for visualisation the LR results per spot. 
 """

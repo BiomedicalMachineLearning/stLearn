@@ -188,7 +188,6 @@ def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
 ################################################################################
             # Functions for calling Celltype-Celltype interactions #
 ################################################################################
-# TODO need to test with new updates to lr_summary.
 def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
             min_spots: int = 3, sig_spots: bool = True,
             cell_prop_cutoff: float = 0.2, p_cutoff=.05, n_perms=100,
@@ -211,7 +210,8 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     adata: AnnData          Relevant information stored: adata.uns[f'*_use_label']
     """
     ran_lr = 'lr_summary' in adata.uns
-    ran_sig = False if not ran_lr else 'n_spots_sig' in adata.uns['lr_summary'].columns
+    ran_sig = False if not ran_lr else 'n_spots_sig' \
+									   		  in adata.uns['lr_summary'].columns
     if not ran_lr and not ran_sig:
         raise Exception("No LR results testing results found, " 
                         "please run st.tl.cci_rank.run first")
@@ -231,6 +231,19 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
     if not mix_mode and spot_mixtures:
         print(f"Warning: specified spot_mixtures but no deconvolution data in "
               f"adata.uns['{uns_key}'].\nFalling back to discrete mode.")
+    if mix_mode: # Checking the deconvolution results stored correctly.
+        cols_present = np.all([cell_type in adata.uns[uns_key]
+                                                      for cell_type in all_set])
+        rows_present = np.all(adata.uns[uns_key
+                                         ].index.values==adata.obs_names.values)
+        msg = f"Cell type scores misformatted in adata.uns[{uns_key}]:\n"
+        if not cols_present or not rows_present:
+            if not cols_present:
+                msg = msg+f"Cell types missing from adata.uns[{uns_key}] columns:\n" \
+             f"{[cell for cell in all_set if cell not in adata.uns[uns_key]]}\n"
+            elif not rows_present:
+                msg = msg+"Rows do not correspond to adata.obs_names.\n"
+            raise Exception(msg)
 
     # Getting minimum necessary information for edge counting #
     spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices = \
