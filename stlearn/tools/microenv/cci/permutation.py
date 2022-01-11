@@ -4,7 +4,6 @@ import pandas as pd
 from numba.typed import List
 import statsmodels.api as sm
 from statsmodels.stats.multitest import multipletests
-from timeit import time
 
 from tqdm import tqdm
 from sklearn.cluster import AgglomerativeClustering
@@ -12,10 +11,7 @@ from sklearn.cluster import AgglomerativeClustering
 from anndata import AnnData
 from .base import lr, calc_neighbours, get_spot_lrs, get_lrs_scores, get_scores
 from .merge import merge
-from .perm_utils import nonzero_quantile, get_lr_quants, get_lr_zeroprops, \
-                        get_lr_bounds, get_similar_genes, \
-                        get_similar_genes_Quantiles, gen_rand_pairs, \
-                        get_similar_genesFAST, get_lr_features, get_lr_bg
+from .perm_utils import get_lr_features, get_lr_bg
 
 # Newest method #
 def perform_spot_testing(adata: AnnData,

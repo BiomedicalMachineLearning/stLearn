@@ -3,7 +3,6 @@
 """Tests for `stlearn` package."""
 
 import os
-print( os.getcwd() )
 
 import unittest
 

@@ -237,7 +237,7 @@ def get_neighbourhoods(adata):
         neighbourhood_bcs = List()
         neighbourhood_indices = List()
         spot_bcs = adata.obs_names.values.astype(str)
-        str_dtype = f'<U{len(spot_bcs[0])}' # ensures correct typing
+        str_dtype = f'<U{max([len(bc) for bc in spot_bcs])}' # ensures correct typing
         for i in range(adata.shape[0]):
             neigh_bcs = np.array(adata.obsm['spot_neigh_bcs'].values[i,
                                                                :][0].split(','))

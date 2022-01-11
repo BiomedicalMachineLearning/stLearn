@@ -144,6 +144,7 @@ def run(adata: AnnData, lrs: np.array,
 def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
               bg_genes: np.array=None,
               min_sig_spots: int=1, species: str='human',
+              p_cutoff: float=.01, q_cutoff: float=0.5, onts: str='BP',
               verbose: bool=True):
     """ Runs a basic GO analysis on the genes in the top ranked LR pairs.
         Only supported for human and mouse species.
@@ -156,6 +157,9 @@ def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
     n_top: int              The top number of LR pairs to use.
     min_sig_spots: int      Minimum no. of significant spots pairs must have to be considered.
     species: str            Species to perform the GO testing for.
+    p_cutoff: float         P-value & P-adj cutoff below which results will be returned.
+    q_cutoff: float         Q-value cutoff below which results will be returned.
+    onts: str               As per clusterProfiler; One of "BP", "MF", and "CC" subontologies, or "ALL" for all three.
     Returns
     -------
     adata: AnnData          Relevant information stored: adata.uns['lr_go']
@@ -180,7 +184,8 @@ def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
         bg_genes = np.unique([lr_.split('_') for lr_ in all_lrs])
 
     #### Running the GO analysis ####
-    go_results = run_GO(top_genes, bg_genes, species, r_path)
+    go_results = run_GO(top_genes, bg_genes, species, r_path,
+                        p_cutoff=p_cutoff, q_cutoff=q_cutoff, onts=onts)
     adata.uns['lr_go'] = go_results
     if verbose:
         print("GO results saved to adata.uns['lr_go']")
@@ -223,6 +228,9 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
         obs_key, uns_key = use_label, use_label
 
     # Getting the cell/tissue types that we are actually testing #
+    if obs_key not in adata.obs:
+        raise Exception(f"Missing {obs_key} from adata.obs, need this even if "
+                        f"using mixture mode.")
     tissue_types = adata.obs[obs_key].values.astype(str)
     all_set = np.unique(tissue_types)
 

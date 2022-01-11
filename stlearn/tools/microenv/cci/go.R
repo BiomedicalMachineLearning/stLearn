@@ -6,7 +6,9 @@ library(org.Hs.eg.db)
 #library(enrichplot)
 #library(ggplot2)
 
-GO_analyse <- function(genes, bg_genes, species, onts='BP') {
+GO_analyse <- function(genes, bg_genes, species,
+                       p_cutoff, q_cutoff, onts) {
+                       #p_cutoff=.01, q_cutoff=0.5, onts='BP') {
   # Main function for performing the GO analysis #
 
   # Selecting correct species database #
@@ -15,10 +17,10 @@ GO_analyse <- function(genes, bg_genes, species, onts='BP') {
 
   # Performing the enrichment #
   em <- enrichGO(genes, db, ont=onts, keyType='SYMBOL',
-                 pvalueCutoff=.01, qvalueCutoff=.05, universe=bg_genes)
+                 pvalueCutoff=p_cutoff, qvalueCutoff=q_cutoff, universe=bg_genes)
 
   result <- em@result
-  sig_results <- result[,'p.adjust']<.05
+  sig_results <- result[,'p.adjust']<p_cutoff
   result <- result[sig_results,]
 
   #### Couldn't get the visualising functioning in reasonable way ####

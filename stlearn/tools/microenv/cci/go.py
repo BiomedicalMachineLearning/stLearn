@@ -4,7 +4,8 @@
 import os
 import stlearn.tools.microenv.cci.r_helpers as rhs
 
-def run_GO(genes, bg_genes, species, r_path):
+def run_GO(genes, bg_genes, species, r_path,
+           p_cutoff=.01, q_cutoff=0.5, onts='BP'):
     """ Running GO term analysis.
     """
 
@@ -21,8 +22,15 @@ def run_GO(genes, bg_genes, species, r_path):
 
     # Running the function on the genes #
     genes_r = rhs.ro.StrVector( genes )
-    bg_genes_r = rhs.ro.StrVector( bg_genes )
-    go_results_r = go_analyse_r(genes_r, bg_genes_r, species)
+    if type(bg_genes)!=type(None):
+        bg_genes_r = rhs.ro.StrVector( bg_genes )
+    else:
+        bg_genes_r = rhs.ro.r['as.null']()
+    p_cutoff_r = rhs.ro.FloatVector( [p_cutoff] )
+    q_cutoff_r = rhs.ro.FloatVector( [q_cutoff] )
+    onts_r = rhs.ro.StrVector( [onts] )
+    go_results_r = go_analyse_r(genes_r, bg_genes_r, species,
+                                p_cutoff_r, q_cutoff_r, onts_r)
     with rhs.localconverter(rhs.ro.default_converter + rhs.pandas2ri.converter):
         go_results = rhs.ro.conversion.rpy2py(go_results_r)
 
