@@ -866,7 +866,7 @@ def lr_chord_plot(adata: AnnData, use_label: str,
         return fig, ax
 
 def grid_plot(adata, use_label: str=None, n_row: int=10, n_col: int=10,
-             show: bool=False):
+             size: int=1, figsize=(4.5, 4.5), show: bool=False):
     """ Plots grid over the top of spatial data to show how cells will be grouped if gridded.
         Parameters
         ----------
@@ -883,7 +883,8 @@ def grid_plot(adata, use_label: str=None, n_row: int=10, n_col: int=10,
     grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
     xmin, xmax = min(xedges), max(xedges)
     ymin, ymax = min(yedges), max(yedges)
-    fig, ax = plt.subplots(figsize=(4.5, 4.5))
+
+    fig, ax = plt.subplots(figsize=figsize)
 
     # Plotting the points #
     if type(use_label)!=type(None):
@@ -896,7 +897,7 @@ def grid_plot(adata, use_label: str=None, n_row: int=10, n_col: int=10,
         stack = np.vstack([xs, ys])
         cell_colors = gaussian_kde(stack)(stack)
 
-    ax.scatter(xs, -ys, c=cell_colors)
+    ax.scatter(xs, -ys, s=size, c=cell_colors)
     ax.vlines(xedges, -ymin, -ymax, color='#36454F')
     ax.hlines(-yedges, xmin, xmax, color='#36454F')
 
