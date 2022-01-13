@@ -54,6 +54,111 @@ def load_lrs(names: Union[str, list, None]=None, species: str='human') \
 
     return lrs_full
 
+def grid(adata, n_row: int=10, n_col: int=10, use_label: str=None
+         ):
+    """ Creates a new anndata representing a gridded version of the data; can be used upstream of CCI pipeline.
+    NOTE: intended use is for single cell spatial data, not Visium or other lower resolution tech.
+    Parameters
+    ----------
+    adata: AnnData          The data object.
+    n_row: int              The number of rows in the grid.
+    n_col: int              The number of columns in the grid.
+    use_label: str          The cell type labels in adata.obs to join together & save as deconvolution data.
+    Returns
+    -------
+    grid_data: AnnData      Equivalent expression data to adata, except values have been summed by cells that fall within defined bins.
+    """
+
+    # Retrieving the coordinates of each grid #
+    n_squares = n_row * n_col
+    cell_bcs = adata.obs_names.values
+    xs, ys = adata.obs["imagecol"].values, adata.obs["imagerow"].values
+
+    grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
+
+    grid_expr = np.zeros((n_squares, adata.shape[1]))
+    grid_coords = np.zeros((n_squares, 2))
+    grid_bcs = []
+    grid_cell_counts = []
+    gridded_cells = []
+    cell_grid = []
+    # If use_label specified, then will generate deconvolution information
+    if type(use_label)!=type(None):
+        cell_labels = adata.obs[use_label].values.astype(str)
+        cell_set = np.unique( cell_labels )
+        cell_info = np.zeros((n_squares, len(cell_set)))
+
+    # generate grids from top to bottom and left to right
+    n = 0
+    for i in range(n_col):
+        x_left, x_right = xedges[i], xedges[i+1]
+        for j in range(n_row):
+            y_down, y_up = yedges[j], yedges[j+1]
+            grid_coords[n,:] = [(x_right+x_left)/2, (y_up+y_down)/2]
+
+            # Now determining the cells within the gridded area #
+            if i != n_col-1 and j == n_row-1: # top left corner
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys <= y_up) & (ys > y_down)
+            elif i == n_col-1 and j != n_row-1: # bottom righ corner
+                x_true = (xs > x_left) & (xs <= x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+            else: # average case
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+
+            grid_cells = cell_bcs[x_true & y_true]
+            grid_cells_str = ','.join( grid_cells )
+            grid_bcs.append( grid_cells_str )
+            grid_cell_counts.append( len(grid_cells) )
+            gridded_cells.extend( grid_cells )
+            cell_grid.extend( [f'grid_{n}']*len(grid_cells) )
+
+            # Summing the expression across these cells to get the grid expression #
+            if len(grid_cells) > 0:
+                cell_bool = [cell in grid_cells for cell in cell_bcs]
+                grid_expr[n,:] = adata.X[cell_bool,:].sum(axis=0)
+
+            # If we have cell type information, will record #
+            if type(use_label)!=type(None) and len(grid_cells) > 0:
+                grid_cell_types = cell_labels[cell_bool]
+                cell_info[n,:] = [len(np.where(grid_cell_types==ct)[0])/
+                                  len(grid_cell_types) for ct in cell_set]
+
+            n += 1
+
+    # Creating gridded anndata #
+    grid_expr = pd.DataFrame(grid_expr,
+                             index=[f'grid_{i}' for i in range(n_squares)],
+                             columns=adata.var_names.values.astype(str))
+    grid_data = AnnData(grid_expr)
+    grid_data.obs['imagecol'] = grid_coords[:,0]
+    grid_data.obs['imagerow'] = grid_coords[:,1]
+    grid_data.obs['n_cells'] = grid_cell_counts
+    grid_data.obsm['spatial'] = grid_coords
+    grid_data.uns['spatial'] = adata.uns['spatial']
+
+    if type(use_label) != type(None):
+        grid_data.uns[use_label] = pd.DataFrame(cell_info,
+                                   index=grid_data.obs_names.values.astype(str),
+                                                               columns=cell_set)
+        max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
+        cell_set = np.unique( grid_data.uns[use_label].columns.values )
+        grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
+        grid_data.obs[use_label] = grid_data.obs[use_label].astype('category')
+
+    # Subsetting to only gridded spots that contain cells #
+    grid_data = grid_data[grid_data.obs['n_cells']>0,:].copy()
+    if type(use_label) != type(None):
+        grid_data.uns[use_label] = grid_data.uns[use_label].loc[
+                                                          grid_data.obs_names,:]
+
+    grid_data.uns['grid_counts'] = grid_counts
+    grid_data.uns['grid_xedges'] = xedges
+    grid_data.uns['grid_yedges'] = yedges
+
+    return grid_data
+
 def run(adata: AnnData, lrs: np.array,
         use_label: str = None, use_het: str = 'cci_het',
         distance: int = None, n_pairs: int = 1000,

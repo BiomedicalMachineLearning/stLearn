@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib as mpl
 import numpy as np
+import stlearn.plotting.utils as utils
 
 
 def deconvolution_plot(
@@ -29,6 +30,8 @@ def deconvolution_plot(
     dpi: int = 150,
     output: str = None,
     copy: bool = False,
+    figsize: tuple=(6.4, 4.8),
+    show=True,
 ) -> Optional[AnnData]:
 
     """\
@@ -80,7 +83,7 @@ def deconvolution_plot(
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     label = adata.obsm["deconvolution"].T
 
@@ -176,4 +179,5 @@ def deconvolution_plot(
     if output is not None:
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
-    plt.show()
+    if show:
+        plt.show()
