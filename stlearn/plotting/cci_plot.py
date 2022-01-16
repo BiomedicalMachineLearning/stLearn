@@ -628,7 +628,7 @@ def ccinet_plot(adata: AnnData, use_label: str, lr: str = None,
 
     # Determining node colors #
     nodes = np.unique(list(graph.nodes.keys()))
-    node_colors = get_colors(adata, 'cell_type', cmap, label_set=nodes)
+    node_colors = get_colors(adata, use_label, cmap, label_set=nodes)
     if not np.all(np.array(node_names)==nodes):
         nodes_indices = [np.where(nodes == node)[0][0]
                          for node in node_names]
