@@ -838,6 +838,12 @@ def lr_chord_plot(adata: AnnData, use_label: str,
     all_zero = np.array([np.all(np.logical_and(flux[i,keep]==0,flux[keep, i]==0))
                 for i in range(len(keep))])
     keep[all_zero] = False
+    if np.all(keep==False): # If we don't keep anything, warn the user
+        print(f"Warning: for {lr} at the current min_ints ({min_ints}), there "
+              f"are no interaction to display. Adjust min_ints to a lower value"
+              f" to visualise chordplot for this LR.")
+        return
+
     flux = flux[:, keep]
     flux = flux[keep, :].astype(float)
 
