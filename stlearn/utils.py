@@ -98,7 +98,7 @@ def _check_img(
     """
     if img is None and spatial_data is not None and img_key is _empty:
         img_key = next(
-            (k for k in ["hires", "lowres"] if k in spatial_data["images"]),
+            (k for k in ["hires", "lowres", "fulres"] if k in spatial_data["images"]),
         )  # Throws StopIteration Error if keys not present
     if img is None and spatial_data is not None and img_key is not None:
         img = spatial_data["images"][img_key]
