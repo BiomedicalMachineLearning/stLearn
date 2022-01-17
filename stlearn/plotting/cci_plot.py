@@ -834,8 +834,13 @@ def lr_chord_plot(adata: AnnData, use_label: str,
     # Limit of 10 for good display #
     if sum(keep) > n_top_ccis:
         keep = np.argsort(-total_ints)[0:n_top_ccis]
+    # Filter any with all zeros after filtering #
+    all_zero = np.array([np.all(np.logical_and(flux[i,keep]==0,flux[keep, i]==0))
+                for i in range(len(keep))])
+    keep[all_zero] = False
     flux = flux[:, keep]
     flux = flux[keep, :].astype(float)
+
     #print(flux)
     # Add pseudocount to row/column which has all zeros for the incoming
     # so can make the connection between the two
