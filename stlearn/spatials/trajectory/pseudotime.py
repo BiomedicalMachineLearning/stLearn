@@ -233,18 +233,18 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
     H.remove_edges_from(edge_to_remove)
 
     # Extract all available paths
-    all_paths = []
+    all_paths = {}
+
     for source in H.nodes:
         for target in H.nodes:
             paths = nx.all_simple_paths(H, source=source, target=target)
-            for path in paths:
+            for i, path in enumerate(paths):
                 if len(path) < max_nodes:
-                    all_paths.append(path)
-    all_paths.sort()
+                    all_paths[i] = path
+
     # all_paths = list(map(lambda x: " - ".join(np.array(x).astype(str)),all_paths))
 
     adata.uns["available_paths"] = all_paths
-
     print(
         "All available trajectory paths are stored in adata.uns['available_paths'] with length < "
         + str(max_nodes)
