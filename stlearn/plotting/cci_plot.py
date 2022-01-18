@@ -42,7 +42,7 @@ from bokeh.plotting import show
 """ Functions for visualising the overall LR results and diagnostics.
 """
 
-def lr_diagnostics(adata, highlight_lrs: list=None,
+def lr_diagnostics(adata, highlight_lrs: list=None, n_top: int=None,
                    color0: str='turquoise', color1: str='plum',
                    figsize: tuple=(10,4), lr_text_fp: dict=None,
                                                                show: bool=True):
@@ -52,20 +52,22 @@ def lr_diagnostics(adata, highlight_lrs: list=None,
     ----------
     adata: AnnData          The data object including the cell types to count
     highlight_lrs: list     List of LRs to highlight, will add text and change point color for these LR pairs.
+    n_top: int              The number of LRs to display. If None shows all.
     lr_text_fp: dict        Font dict for the LR text if highlight_lrs not None.
     axis_text_fp: dict      Font dict for the
     Returns
     -------
     Figure, Axes            Figure and axes of the plot, if show=False.
     """
-
+    if type(n_top)==type(None):
+        n_top = adata.uns['lr_summary'].shape[0]
     fig, axes = plt.subplots(ncols=2, figsize=figsize)
     cci_hs.lr_scatter(adata, 'nonzero-median', highlight_lrs=highlight_lrs,
-                                        n_top=adata.shape[0], color=color0,
+                                        n_top=n_top, color=color0,
                                               ax=axes[0], lr_text_fp=lr_text_fp,
                                                                      show=False)
     cci_hs.lr_scatter(adata, 'zero-prop', highlight_lrs=highlight_lrs,
-                                        n_top=adata.shape[0], color=color1,
+                                        n_top=n_top, color=color1,
                                               ax=axes[1], lr_text_fp=lr_text_fp,
                                                                      show=False)
     if show:

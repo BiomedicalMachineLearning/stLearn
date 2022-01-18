@@ -13,6 +13,7 @@ from .permutation import perform_spot_testing
 from .go import run_GO
 from .het import count, get_data_for_counting, get_interaction_matrix, \
                          get_interaction_pvals
+from statsmodels.stats.multitest import multipletests
 
 ################################################################################
             # Functions related to Ligand-Receptor interactions #
@@ -246,6 +247,76 @@ def run(adata: AnnData, lrs: np.array,
                                                                     verbose,
                                                                 save_bg=save_bg)
 
+def adj_pvals(adata, pval_adj_cutoff: float=0.05, correct_axis: str='spot',
+              adj_method: str='fdr_bh',
+              ):
+    """ Performs p-value adjustment and determination of significant spots.
+    Default settings of this function are already applied
+    Parameters
+    ----------
+    adata: AnnData          Must have st.tl.cci.run performed prior.
+    pval_adj_cutoff: float  Cutoff for spot to be significant based on adjusted p-value.
+    correct_axis: str       Either 'spot', 'LR', or None; former corrects for number of LRs tested in each spot, middle corrects for number of spots tested per LR, and latter performs no adjustment (uses p-value for significant testing)
+    adj_method: str         Any method supported by statsmodels.stats.multitest.multipletests; https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
+    Returns
+    -------
+    adata: AnnData          Adjusts all of the LR results; warning, does not adjust celltype-celltype results from running ran st.tl.run_cci downstream.
+    """
+    if 'lr_summary' not in adata.uns:
+        raise Exception("Need to run st.tl.cci.run first.")
+
+    scores = adata.obsm['lr_scores']
+    sig_scores = scores.copy()
+    ps = adata.obsm['p_vals']
+    padjs = np.ones(ps.shape)
+    if correct_axis == 'spot':
+        for spot_i in range(ps.shape[0]):
+            lr_indices = np.where(scores[spot_i, :] > 0)[0]
+            if len(lr_indices) > 0:
+                spot_ps = ps[spot_i, lr_indices]
+                spot_padjs = multipletests(spot_ps, method=adj_method)[1]
+                padjs[spot_i, lr_indices] = spot_padjs
+                sig_scores[
+                          spot_i, lr_indices[spot_padjs >= pval_adj_cutoff]] = 0
+    elif correct_axis == 'LR':
+        for lr_i in range(ps.shape[1]):
+            spot_indices = np.where(scores[:, lr_i] > 0)[0]
+            if len(spot_indices) > 0:
+                lr_ps = ps[spot_indices, lr_i]
+                spot_padjs = multipletests(lr_ps, method=adj_method)[1]
+                padjs[spot_indices, lr_i] = spot_padjs
+                sig_scores[
+                          spot_indices[spot_padjs >= pval_adj_cutoff], lr_i] = 0
+    elif type(correct_axis)==type(None):
+        padjs = ps.copy()
+        sig_scores[padjs >= pval_adj_cutoff] = 0
+    else:
+        raise Exception(f"Invalid correct_axis input, must be one of: "
+                        f"'LR', 'spot', or None")
+
+    # Counting spots significant per lr #
+    lr_counts = (padjs < pval_adj_cutoff).sum(axis=0)
+    lr_counts_pval = (ps < pval_adj_cutoff).sum(axis=0)
+
+    # Re-ranking LRs based on these counts & updating LR ordering #
+    adata.uns['lr_summary'].loc[:, 'n_spots_sig'] = lr_counts
+    adata.uns['lr_summary'].loc[:, 'n_spots_sig_pval'] = lr_counts_pval
+    new_order = np.argsort(-adata.uns['lr_summary'].loc[:, 'n_spots_sig'].values)
+    adata.uns['lr_summary'] = adata.uns['lr_summary'].iloc[new_order, :]
+    print(f"Updated adata.uns[lr_summary]")
+    scores_ordered = scores[:, new_order]
+    sig_scores_ordered = sig_scores[:, new_order]
+    ps_ordered = ps[:, new_order]
+    padjs_ordered = padjs[:, new_order]
+    log10padjs = -np.log10(padjs_ordered)
+
+    keys = ['lr_scores', 'lr_sig_scores', 'p_vals', 'p_adjs', '-log10(p_adjs)']
+    values = [scores_ordered, sig_scores_ordered, ps_ordered, padjs_ordered,
+              log10padjs]
+    for i in range(len(keys)):
+        adata.obsm[keys[i]] = values[i]
+        print(f"Updated adata.obsm[{keys[i]}]")
+
 def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
               bg_genes: np.array=None,
               min_sig_spots: int=1, species: str='human',
@@ -277,7 +348,7 @@ def run_lr_go(adata: AnnData, r_path: str, n_top: int=100,
 
     #### Getting the genes from the top LR pairs ####
     if 'lr_summary' not in adata.uns:
-        raise Exception("Need to run st.tl.cci_rank.run first.")
+        raise Exception("Need to run st.tl.cci.run first.")
     lrs = adata.uns['lr_summary'].index.values.astype(str)
     n_sig = adata.uns['lr_summary'].loc[:,'n_spots_sig'].values.astype(int)
     top_lrs = lrs[n_sig>min_sig_spots][0:n_top]
@@ -324,7 +395,7 @@ def run_cci(adata: AnnData, use_label: str, spot_mixtures: bool = False,
 									   		  in adata.uns['lr_summary'].columns
     if not ran_lr and not ran_sig:
         raise Exception("No LR results testing results found, " 
-                        "please run st.tl.cci_rank.run first")
+                        "please run st.tl.cci.run first")
 
     # Ensuring compatibility with current way of adding label_transfer to object
     if use_label == "label_transfer" or use_label == "predictions":
