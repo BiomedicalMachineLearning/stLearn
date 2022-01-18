@@ -58,6 +58,10 @@ def tiling(
     if image.dtype == np.float32 or image.dtype == np.float64:
         image = (image * 255).astype(np.uint8)
     img_pillow = Image.fromarray(image)
+
+    if img_pillow.mode == "RGBA":
+        img_pillow = img_pillow.convert("RGB")
+
     tile_names = []
 
     with tqdm(
