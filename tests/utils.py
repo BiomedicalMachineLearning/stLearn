@@ -3,9 +3,9 @@ import scanpy as sc
 from PIL import Image
 import numpy as np
 
+
 def read_test_data():
-    """ Reads in test data to run unit tests.
-    """
+    """Reads in test data to run unit tests."""
     # Determining path of this file #
     path = os.path.dirname(os.path.realpath(__file__))
     adata = sc.read_h5ad(f"{path}/test_data/test_data.h5")

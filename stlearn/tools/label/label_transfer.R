@@ -54,9 +54,3 @@ label_transfer <- function(st_expr_df, sc_expr_df, sc_labels) {
 
   return( as.data.frame( transfer_scores ) )
 }
-
-
-
-
-
-

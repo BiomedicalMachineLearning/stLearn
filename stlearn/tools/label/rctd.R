@@ -50,5 +50,3 @@ rctd <- function(st_counts, st_coords, sc_counts, sc_labels,
 
   return( norm_weights )
 }
-
-

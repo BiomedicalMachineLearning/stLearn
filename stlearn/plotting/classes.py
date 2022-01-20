@@ -54,7 +54,7 @@ class SpatialBasePlot(Spatial):
         use_raw: Optional[bool] = False,
         fname: Optional[str] = None,
         dpi: Optional[int] = 120,
-        **kwds
+        **kwds,
     ):
         super().__init__(
             adata,
@@ -107,8 +107,10 @@ class SpatialBasePlot(Spatial):
         scanpy_cmap = ["vega_10_scanpy", "vega_20_scanpy", "default_102", "default_28"]
         stlearn_cmap = ["jana_40", "default"]
         cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
-        error_msg = "cmap must be a matplotlib.colors.LinearSegmentedColormap OR" \
-                    "one of these: "+str(cmap_available)
+        error_msg = (
+            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
+            "one of these: " + str(cmap_available)
+        )
         if type(cmap) == str:
             assert cmap in cmap_available, error_msg
         elif type(cmap) != matplotlib.colors.LinearSegmentedColormap:
@@ -138,8 +140,9 @@ class SpatialBasePlot(Spatial):
 
         if self.list_clusters is not None:
             # IF not all clusters specified, subset, otherwise just copy.
-            if len(self.list_clusters) != \
-                          len(self.adata[0].obs[self.use_label].cat.categories):
+            if len(self.list_clusters) != len(
+                self.adata[0].obs[self.use_label].cat.categories
+            ):
                 self.query_adata = self.query_adata[
                     self.query_adata.obs.query(
                         create_query(self.list_clusters, self.use_label)
@@ -166,8 +169,9 @@ class SpatialBasePlot(Spatial):
 
     def _plot_colorbar(self, plot_ax: Axes, color_bar_label: str = ""):
 
-        cb = plt.colorbar(plot_ax, aspect=10, shrink=0.5, cmap=self.cmap,
-                                                          label=color_bar_label)
+        cb = plt.colorbar(
+            plot_ax, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
+        )
         cb.outline.set_visible(False)
 
     def _remove_axis(self, main_ax: Axes):
@@ -182,8 +186,9 @@ class SpatialBasePlot(Spatial):
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
     def _add_color_bar(self, plot, color_bar_label: str = ""):
-        cb = plt.colorbar(plot, aspect=10, shrink=0.5, cmap=self.cmap,
-                                                          label=color_bar_label)
+        cb = plt.colorbar(
+            plot, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
+        )
         cb.outline.set_visible(False)
 
     def _add_title(self):
@@ -247,7 +252,7 @@ class GenePlot(SpatialBasePlot):
         step_size: Optional[int] = None,
         vmin: float = None,
         vmax: float = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             adata=adata,
@@ -379,7 +384,7 @@ class GenePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
             c=gene_values,
         )
         return plot
@@ -409,7 +414,7 @@ class GenePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
@@ -514,20 +519,19 @@ class ClusterPlot(SpatialBasePlot):
 
     def _add_cluster_colors(self):
         if self.use_label + "_colors" not in self.adata[0].uns:
-            #self.adata[0].uns[self.use_label + "_set"] = []
+            # self.adata[0].uns[self.use_label + "_set"] = []
             self.adata[0].uns[self.use_label + "_colors"] = []
 
-            for i, cluster in \
-                    enumerate(self.adata[0].obs.groupby(self.use_label)):
+            for i, cluster in enumerate(self.adata[0].obs.groupby(self.use_label)):
                 self.adata[0].uns[self.use_label + "_colors"].append(
                     matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
                 )
-                #self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
+                # self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
 
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
-        #for i, cluster in enumerate(self.query_adata.obs[self.use_label].cat.categories):
+        # for i, cluster in enumerate(self.query_adata.obs[self.use_label].cat.categories):
         for i, cluster in enumerate(self.query_adata.obs.groupby(self.use_label)):
 
             # Plot scatter plot based on pixel of spots
@@ -535,11 +539,11 @@ class ClusterPlot(SpatialBasePlot):
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
             ]
 
-            if self.use_label+'_colors' in self.adata[0].uns:
-                #label_set = self.adata[0].uns[self.use_label+'_set']
-                #col_index = [index for index, label in enumerate(label_set)
+            if self.use_label + "_colors" in self.adata[0].uns:
+                # label_set = self.adata[0].uns[self.use_label+'_set']
+                # col_index = [index for index, label in enumerate(label_set)
                 #                                        if label==cluster[0]][0]
-                color = self.adata[0].uns[self.use_label+'_colors'][i]#[col_index]
+                color = self.adata[0].uns[self.use_label + "_colors"][i]  # [col_index]
             else:
                 color = self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))
 
@@ -812,7 +816,7 @@ class SubClusterPlot(SpatialBasePlot):
         cluster: Optional[int] = 0,
         text_box_size: Optional[float] = 5,
         bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             adata=adata,
@@ -870,7 +874,7 @@ class SubClusterPlot(SpatialBasePlot):
             edgecolor="none",
             s=self.size,
             marker="o",
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap)==str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
             c=colors,
             alpha=self.cell_alpha,
         )
@@ -979,8 +983,9 @@ class CciPlot(GenePlot):
         use_het: Optional[str] = "het",
         contour: bool = False,
         step_size: Optional[int] = None,
-        vmin: float = None, vmax: float = None,
-        **kwargs
+        vmin: float = None,
+        vmax: float = None,
+        **kwargs,
     ):
         super().__init__(
             adata=adata,
@@ -1005,7 +1010,8 @@ class CciPlot(GenePlot):
             gene_symbols=use_het,
             contour=contour,
             step_size=step_size,
-            vmin=vmin, vmax=vmax,
+            vmin=vmin,
+            vmax=vmax,
         )
 
         self.title = title
@@ -1044,28 +1050,30 @@ class LrResultPlot(GenePlot):
         # cci_rank param
         contour: bool = False,
         step_size: Optional[int] = None,
-        vmin: float = None, vmax: float = None,
-        **kwargs
+        vmin: float = None,
+        vmax: float = None,
+        **kwargs,
     ):
         # Making sure cci_rank has been run first #
-        if 'lr_summary' not in adata.uns:
-            raise Exception(f'To visualise LR interaction results, must run'
-                            f'st.pl.cci.run first.')
+        if "lr_summary" not in adata.uns:
+            raise Exception(
+                f"To visualise LR interaction results, must run" f"st.pl.cci.run first."
+            )
 
         # By default, using the LR with most significant spots #
         if type(use_lr) == type(None):
-            use_lr = adata.uns['lr_summary'].index.values[0]
-        elif use_lr not in adata.uns['lr_summary'].index:
-            raise Exception(f'use_lr must be one of:\n' 
-                            f'{adata.uns["lr_summary"].index}')
+            use_lr = adata.uns["lr_summary"].index.values[0]
+        elif use_lr not in adata.uns["lr_summary"].index:
+            raise Exception(
+                f"use_lr must be one of:\n" f'{adata.uns["lr_summary"].index}'
+            )
         else:
             use_lr = str(use_lr)
 
         # Checking is a valid result #
-        res_info = ['lr_scores', 'p_vals', 'p_adjs',
-                    '-log10(p_adjs)', 'lr_sig_scores']
+        res_info = ["lr_scores", "p_vals", "p_adjs", "-log10(p_adjs)", "lr_sig_scores"]
         if use_result not in res_info:
-            raise Exception(f'use_result must be one of:\n{res_info}')
+            raise Exception(f"use_result must be one of:\n{res_info}")
         else:
             self.use_result = use_result
 
@@ -1092,11 +1100,13 @@ class LrResultPlot(GenePlot):
             gene_symbols=use_lr,
             contour=contour,
             step_size=step_size,
-            vmin=vmin, vmax=vmax,
+            vmin=vmin,
+            vmax=vmax,
         )
 
     def _get_gene_expression(self):
         use_lr = self.gene_symbols[0]
-        index = np.where(self.query_adata.uns['lr_summary'].index.values == \
-                         use_lr)[0][0]
-        return self.query_adata.obsm[self.use_result][:,index]
+        index = np.where(self.query_adata.uns["lr_summary"].index.values == use_lr)[0][
+            0
+        ]
+        return self.query_adata.obsm[self.use_result][:, index]

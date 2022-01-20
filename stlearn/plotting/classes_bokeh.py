@@ -807,7 +807,7 @@ class BokehLRPlot(Spatial):
         # for key in list(self.adata[0].obsm.keys()):
         #     if len(self.adata[0].obsm[key].shape) == 1:
         #         available_het.append(key)
-        lrs = list( adata.uns['lr_summary'].index.values.astype(str) )
+        lrs = list(adata.uns["lr_summary"].index.values.astype(str))
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
@@ -831,15 +831,18 @@ class BokehLRPlot(Spatial):
         #     completions=lrs,
         #     min_characters=1,
         # )
-        self.lr_select =Select(title="Ligand-receptor:", value=lrs[0],
-                               options=lrs,)
+        self.lr_select = Select(
+            title="Ligand-receptor:",
+            value=lrs[0],
+            options=lrs,
+        )
 
         self.output_backend = Select(
             title="Select output backend:", value="webgl", options=["webgl", "svg"]
         )
 
         inputs = column(
-            #self.het_select,
+            # self.het_select,
             self.lr_select,
             self.data_alpha,
             self.tissue_alpha,
@@ -859,7 +862,7 @@ class BokehLRPlot(Spatial):
             self.data_alpha.on_change("value", self.update_data)
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
-            #self.het_select.on_change("value", self.update_data)
+            # self.het_select.on_change("value", self.update_data)
             self.lr_select.on_change("value", self.update_data)
 
         handler = FunctionHandler(modify_fig)
@@ -869,14 +872,14 @@ class BokehLRPlot(Spatial):
     def make_fig(self):
 
         fig = figure(
-            title=self.lr_select.value,#self.het_select.value,
+            title=self.lr_select.value,  # self.het_select.value,
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
             output_backend=self.output_backend.value,
         )
 
         colors = self._get_lr(self.lr_select.value)
-        #colors = self._get_het(self.het_select.value)
+        # colors = self._get_het(self.het_select.value)
 
         s1 = ColumnDataSource(data=dict(x=self.imagecol, y=self.imagerow, color=colors))
 
@@ -943,14 +946,15 @@ class BokehLRPlot(Spatial):
         return colors
 
     def _get_lr(self, lr):
-        if lr not in self.adata[0].uns['lr_summary'].index:
+        if lr not in self.adata[0].uns["lr_summary"].index:
             raise ValueError(lr + " is not exist in the data, please try another het")
 
-        lr_bool = self.adata[0].uns['lr_summary'].index.values.astype(str)==lr
+        lr_bool = self.adata[0].uns["lr_summary"].index.values.astype(str) == lr
         lr_index = np.where(lr_bool)[0][0]
-        colors = self.adata[0].obsm['lr_sig_scores'][:,lr_index]
+        colors = self.adata[0].obsm["lr_sig_scores"][:, lr_index]
 
         return colors
+
 
 class BokehSpatialCciPlot(Spatial):
     def __init__(
@@ -982,7 +986,7 @@ class BokehSpatialCciPlot(Spatial):
         # for key in list(self.adata[0].obsm.keys()):
         #     if len(self.adata[0].obsm[key].shape) == 1:
         #         available_het.append(key)
-        lrs = list( adata.uns['lr_summary'].index.values.astype(str) )
+        lrs = list(adata.uns["lr_summary"].index.values.astype(str))
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
@@ -998,31 +1002,37 @@ class BokehSpatialCciPlot(Spatial):
         )
 
         # Getting the annnotations for which CCI has been performed.. #
-        annots = [opt.replace('lr_cci_', '') for opt in adata.uns.keys()
-                  if opt.startswith('lr_cci_') and 'raw' not in opt]
+        annots = [
+            opt.replace("lr_cci_", "")
+            for opt in adata.uns.keys()
+            if opt.startswith("lr_cci_") and "raw" not in opt
+        ]
         self.annot_select = Select(
-                     title="Cell-type annotation select:",
-                                   value=annots[0], options=annots,)
-        self.lr_select = Select(title="Ligand-receptor:", value=lrs[0],
-                               options=lrs,)
+            title="Cell-type annotation select:",
+            value=annots[0],
+            options=annots,
+        )
+        self.lr_select = Select(
+            title="Ligand-receptor:",
+            value=lrs[0],
+            options=lrs,
+        )
 
         self.list_cluster = CheckboxGroup(
-            labels=list(self.adata[0].obs[
-                                       self.annot_select.value].cat.categories),
+            labels=list(self.adata[0].obs[self.annot_select.value].cat.categories),
             active=list(
                 np.array(
-                    range(0,
-                       len(self.adata[0].obs[self.annot_select.value].unique()))
+                    range(0, len(self.adata[0].obs[self.annot_select.value].unique()))
                 )
             ),
         )
 
         self.output_backend = Select(
-         title="Select output backend:", value="webgl", options=["webgl", "svg"]
+            title="Select output backend:", value="webgl", options=["webgl", "svg"]
         )
 
         inputs = column(
-            #self.het_select,
+            # self.het_select,
             self.annot_select,
             self.lr_select,
             self.data_alpha,
@@ -1045,7 +1055,7 @@ class BokehSpatialCciPlot(Spatial):
             self.tissue_alpha.on_change("value", self.update_data)
             self.spot_size.on_change("value", self.update_data)
             self.arrow_size.on_change("value", self.update_data)
-            #self.het_select.on_change("value", self.update_data)
+            # self.het_select.on_change("value", self.update_data)
             self.annot_select.on_change("value", self.update_data)
             self.lr_select.on_change("value", self.update_data)
 
@@ -1059,7 +1069,7 @@ class BokehSpatialCciPlot(Spatial):
             title="Spatial CCI plot",
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend=self.output_backend.value
+            output_backend=self.output_backend.value,
         )
 
         fig.image_rgba(
@@ -1072,13 +1082,11 @@ class BokehSpatialCciPlot(Spatial):
         )
 
         # Get query clusters
-        selected = self.annot_select.value.strip('raw_')
+        selected = self.annot_select.value.strip("raw_")
         command = []
         for i in self.list_cluster.active:
-            command.append(selected
-                            + ' == "'
-                            + self.adata[0].obs[selected].cat.categories[i]
-                            + '"'
+            command.append(
+                selected + ' == "' + self.adata[0].obs[selected].cat.categories[i] + '"'
             )
         tmp = self.adata[0].obs.query(" or ".join(command))
 
@@ -1087,11 +1095,11 @@ class BokehSpatialCciPlot(Spatial):
         x = tmp_adata.obsm["spatial"][:, 0] * self.scale_factor
         y = tmp_adata.obsm["spatial"][:, 1] * self.scale_factor
 
-        category_items = self.adata[0].obs[ selected ].cat.categories
+        category_items = self.adata[0].obs[selected].cat.categories
         palette = self.adata[0].uns[selected + "_colors"]
         colormap = dict(zip(category_items, palette))
-        color = list(tmp[ selected ].map(colormap))
-        cluster = list(tmp[ selected ])
+        color = list(tmp[selected].map(colormap))
+        cluster = list(tmp[selected])
 
         s1 = ColumnDataSource(data=dict(x=x, y=y, color=color, cluster=cluster))
         if len(category_items[0]) > 5:
@@ -1119,10 +1127,12 @@ class BokehSpatialCciPlot(Spatial):
 
         #### Adding in the arrows for the interaction edges !!! #####
         forward_edges, reverse_edges = self._get_cci_lr_edges()
-        self._add_edges(fig, self.adata[0], forward_edges,
-                        self.arrow_size.value, forward=True)
-        self._add_edges(fig, self.adata[0], reverse_edges,
-                        self.arrow_size.value, forward=False)
+        self._add_edges(
+            fig, self.adata[0], forward_edges, self.arrow_size.value, forward=True
+        )
+        self._add_edges(
+            fig, self.adata[0], reverse_edges, self.arrow_size.value, forward=False
+        )
 
         fig.toolbar.logo = None
         fig.xaxis.visible = False
@@ -1158,16 +1168,15 @@ class BokehSpatialCciPlot(Spatial):
         selected = self.annot_select.value
 
         # Extracting the data #
-        l, r = lr.split('_')
-        lr_index = np.where(adata.uns['lr_summary'].index.values == lr)[0][0]
+        l, r = lr.split("_")
+        lr_index = np.where(adata.uns["lr_summary"].index.values == lr)[0][0]
         L_bool = adata[:, l].X.toarray()[:, 0] > 0
         R_bool = adata[:, r].X.toarray()[:, 0] > 0
-        sig_bool = adata.obsm['lr_sig_scores'][:, lr_index] > 0
-        int_df = adata.uns[f'per_lr_cci_{selected}'][lr]
+        sig_bool = adata.obsm["lr_sig_scores"][:, lr_index] > 0
+        int_df = adata.uns[f"per_lr_cci_{selected}"][lr]
 
         ###### Getting the edges, from sig-L->R and sig-R<-L ##########
-        forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool,
-                                                 sig_bool)
+        forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
 
         ###### Subsetting to cell types with significant interactions ########
         spot_bcs = adata.obs_names.values.astype(str)
@@ -1181,10 +1190,12 @@ class BokehSpatialCciPlot(Spatial):
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
                 k_ = [0, 1] if i == 0 else [1, 0]
-                celltype0 = np.where(label_set == \
-                                     spot_labels[spot_bcs == edge[k_[0]]])[0][0]
-                celltype1 = np.where(label_set == \
-                                     spot_labels[spot_bcs == edge[k_[1]]])[0][0]
+                celltype0 = np.where(label_set == spot_labels[spot_bcs == edge[k_[0]]])[
+                    0
+                ][0]
+                celltype1 = np.where(label_set == spot_labels[spot_bcs == edge[k_[1]]])[
+                    0
+                ][0]
                 celltypes = np.array([celltype0, celltype1])
                 if interact_bool[celltypes[k_[0]], celltypes[k_[1]]]:
                     edges_sub[i].append(edge)
@@ -1195,29 +1206,33 @@ class BokehSpatialCciPlot(Spatial):
     def _add_edges(fig, adata, edges, arrow_size, forward=True, scale_factor=1):
         """Gets edges for input."""
         for i, edge in enumerate(edges):
-            cols = ['imagecol', 'imagerow']
+            cols = ["imagecol", "imagerow"]
             if forward:
                 edge0, edge1 = edge
             else:
                 edge0, edge1 = edge[::-1]
 
             # Arrow details #
-            x1, y1 = adata.obs.loc[edge0, cols].values.astype(
-                                                           float) * scale_factor
-            x2, y2 = adata.obs.loc[edge1, cols].values.astype(
-                                                           float) * scale_factor
+            x1, y1 = adata.obs.loc[edge0, cols].values.astype(float) * scale_factor
+            x2, y2 = adata.obs.loc[edge1, cols].values.astype(float) * scale_factor
 
-            fig.add_layout(Arrow(end=VeeHead(size=arrow_size),
-                                 line_color="black",
-                               x_start=x1, y_start=y1, x_end=x2, y_end=y2))
-
+            fig.add_layout(
+                Arrow(
+                    end=VeeHead(size=arrow_size),
+                    line_color="black",
+                    x_start=x1,
+                    y_start=y1,
+                    x_end=x2,
+                    y_end=y2,
+                )
+            )
 
     def update_list(self, attrname, old, name):
 
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
 
-        selected = self.annot_select.value.strip('raw_')
+        selected = self.annot_select.value.strip("raw_")
         cluster_plot(self.adata[0], use_label=selected, show_plot=False)
 
         # self.list_cluster = CheckboxGroup(
@@ -1226,12 +1241,11 @@ class BokehSpatialCciPlot(Spatial):
         #         np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
         #     ),
         # )
-        self.list_cluster.labels = list(
-            self.adata[0].obs[selected].cat.categories
-        )
+        self.list_cluster.labels = list(self.adata[0].obs[selected].cat.categories)
         self.list_cluster.active = list(
             np.array(range(0, len(self.adata[0].obs[selected].unique())))
         )
+
 
 class Annotate(Spatial):
     def __init__(

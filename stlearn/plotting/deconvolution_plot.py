@@ -17,7 +17,7 @@ def deconvolution_plot(
     data_alpha: float = 1.0,
     threshold: float = 0.0,
     cmap: str = "tab20",
-    colors: list = None, # The colors to use for each label...
+    colors: list = None,  # The colors to use for each label...
     tissue_alpha: float = 1.0,
     title: str = None,
     spot_size: Union[float, int] = 10,
@@ -30,7 +30,7 @@ def deconvolution_plot(
     dpi: int = 150,
     output: str = None,
     copy: bool = False,
-    figsize: tuple=(6.4, 4.8),
+    figsize: tuple = (6.4, 4.8),
     show=True,
 ) -> Optional[AnnData]:
 
@@ -146,8 +146,9 @@ def deconvolution_plot(
 
     if type(colors) == type(None):
         ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
-        cb = mpl.colorbar.ColorbarBase(ax_cb, cmap=my_cmap,
-                                       norm=my_norm, ticks=color_vals)
+        cb = mpl.colorbar.ColorbarBase(
+            ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals
+        )
 
         cb.ax.tick_params(size=0)
         loc = np.array(color_vals) + 0.5

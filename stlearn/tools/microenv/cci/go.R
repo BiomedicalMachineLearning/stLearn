@@ -35,10 +35,3 @@ GO_analyse <- function(genes, bg_genes, species,
   #all_results <- list('go_df'= results, 'go_vis' = p)
   return( result )
 }
-
-
-
-
-
-
-

@@ -75,7 +75,7 @@ bbox_to_anchor
 
 doc_lr_plot = """\
 adata
-    AnnData object with run st.tl.cci_rank.run performed on. 
+    AnnData object with run st.tl.cci_rank.run performed on.
 lr
     Ligand receptor paid (in format L_R)
 min_expr
@@ -103,13 +103,13 @@ middle_size_prop
 outer_size_prop
     Multiplier which controls size of the outter point.
 pt_scale
-    Multiplier which scales overall point size of all points plotted. 
+    Multiplier which scales overall point size of all points plotted.
 title
-    Title of the plot. 
+    Title of the plot.
 show_image
-    Whether to show the background H&E or not. 
+    Whether to show the background H&E or not.
 kwargs
-    Extra arguments parsed to the other plotting functions such as gene_plot, cluster_plot, &/or het_plot. 
+    Extra arguments parsed to the other plotting functions such as gene_plot, cluster_plot, &/or het_plot.
 """
 
 doc_het_plot = """\
@@ -122,7 +122,7 @@ step_size
 vmin
     Lower end of scale bar.
 vmax
-    Upper end of scale bar. 
+    Upper end of scale bar.
 """
 
 doc_subcluster_plot = """\

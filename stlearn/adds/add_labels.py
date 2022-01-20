@@ -33,9 +33,7 @@ def labels(
     """
     labels = pd.read_csv(label_filepath, index_col=index_col, sep=sep)
     uns_key = "label_transfer" if type(use_label) == type(None) else use_label
-    adata.uns[uns_key] = labels.drop(
-        ["predicted.id", "prediction.score.max"], axis=1
-    )
+    adata.uns[uns_key] = labels.drop(["predicted.id", "prediction.score.max"], axis=1)
 
     key_add = "predictions" if type(use_label) == type(None) else use_label
     key_source = "predicted.id"

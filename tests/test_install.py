@@ -4,6 +4,7 @@ Tests that everything is installed correctly.
 
 import unittest
 
+
 class TestCCI(unittest.TestCase):
     """Tests for `stlearn` importability, i.e. correct installation."""
 
@@ -13,7 +14,3 @@ class TestCCI(unittest.TestCase):
     def test_cci(self):
         """Tests CCI can be imported."""
         import stlearn.tools.microenv.cci.analysis as an
-
-
-
-

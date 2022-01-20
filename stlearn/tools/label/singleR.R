@@ -25,6 +25,3 @@ singleR <- function(st_expr_df, sc_expr_df, sc_labels,
 
   return( scores_df )
 }
-
-
-
