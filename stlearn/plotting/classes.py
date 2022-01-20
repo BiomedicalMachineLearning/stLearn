@@ -541,9 +541,10 @@ class ClusterPlot(SpatialBasePlot):
 
             if self.use_label + "_colors" in self.adata[0].uns:
                 # label_set = self.adata[0].uns[self.use_label+'_set']
-                # col_index = [index for index, label in enumerate(label_set)
-                #                                        if label==cluster[0]][0]
-                color = self.adata[0].uns[self.use_label + "_colors"][i]  # [col_index]
+                label_set = self.adata[0].obs[self.use_label
+                                             ].cat.categories.values.astype(str)
+                col_index = np.where(label_set==cluster[0])[0][0]
+                color = self.adata[0].uns[self.use_label + "_colors"][col_index]
             else:
                 color = self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))
 

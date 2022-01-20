@@ -1058,10 +1058,11 @@ def lr_chord_plot(
     min_ints: int = 2,
     n_top_ccis: int = 10,
     cmap: str = "default",
-    show: bool = True,
     sig_interactions: bool = True,
-    title=None,
     label_size: int = 10,
+    title: str=None,
+    figsize: tuple=(8,8),
+    show: bool = True,
 ):
     """Chord diagram of interactions between cell types.
     Parameters
@@ -1070,16 +1071,22 @@ def lr_chord_plot(
     use_label: str    Indicates the cell type labels or deconvolution results use for cell-cell interaction counting by LR pairs.
     lr: str    The LR pair to visualise the cci_rank network for. If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
     min_ints: int    Minimum no. of interactions celltypes must have to be shown.
-
+    n_top_ccis: int  Maximum no. of CCIs to show, will take the top number of these to display.
+    cmap: str       Cmap to use to get colors if colors not already in adata.uns[f'{use_label}_colors']
+    sig_interactions: bool  Whether to show only significant CCIs or all interaction counts (always for significant LR hotspots).
+    label_size: str     The size of the cell type labels to render.
+    title: str      The title above the plot; informative default is determined based on input.
+    figsize: tuple  Figure dimensions.
+    show: bool      Show or not; if not return figure & axes.
     Returns
     -------
-    fig, ax: matplotlib.figure.Figure, matplotlib.figure.Axes   Axes where the heatmap was drawn on if show=False.
+    fig, ax: matplotlib.figure.Figure, matplotlib.figure.Axes Axes where the heatmap was drawn on if show=False.
     """
     # Either plotting overall interactions, or just for a particular LR #
     int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
 
     int_df = int_df.transpose()
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=figsize)
 
     flux = int_df.values
     total_ints = flux.sum(axis=1) + flux.sum(axis=0) - flux.diagonal()
