@@ -73,6 +73,45 @@ bbox_to_anchor
     Set the position of box of color bar. Default is `(1,1)`
 """
 
+doc_lr_plot = """\
+adata
+    AnnData object with run st.tl.cci_rank.run performed on.
+lr
+    Ligand receptor paid (in format L_R)
+min_expr
+    Minimum expression for gene to be considered expressed.
+sig_spots
+    Whether to filter to significant spots or not.
+use_label
+    Label to use for the inner points, can be in adata.obs or in the lr stats of adata.uns['per_lr_results'][lr].columns
+use_mix
+    The deconvolution/label_transfer results to use for visualising pie charts in the inner point, not currently implimented.
+outer_mode
+    Either 'binary', 'continuous', or None; controls how ligand-receptor expression shown (or not shown).
+l_cmap
+    matplotlib cmap controlling ligand continous expression.
+r_cmap
+    matplotlib cmap controlling receptor continuous expression.
+lr_cmap
+    matplotlib cmap controlling the ligand receptor binary expression, but have atleast 4 colours.
+inner_cmap
+    matplotlib cmap controlling the inner point colours.
+inner_size_prop
+    multiplier which controls size of inner points.
+middle_size_prop
+    Multiplier which controls size of middle point (only relevant when outer_mode='continuous')
+outer_size_prop
+    Multiplier which controls size of the outter point.
+pt_scale
+    Multiplier which scales overall point size of all points plotted.
+title
+    Title of the plot.
+show_image
+    Whether to show the background H&E or not.
+kwargs
+    Extra arguments parsed to the other plotting functions such as gene_plot, cluster_plot, &/or het_plot.
+"""
+
 doc_het_plot = """\
 use_het
     Single gene (str) or multiple genes (list) that user wants to display. It should be available in `adata.var_names`.
@@ -80,6 +119,10 @@ contour
     Option to show the contour plot.
 step_size
     Determines the number and positions of the contour lines / regions.
+vmin
+    Lower end of scale bar.
+vmax
+    Upper end of scale bar.
 """
 
 doc_subcluster_plot = """\

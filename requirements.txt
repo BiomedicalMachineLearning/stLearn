@@ -1,5 +1,5 @@
 bokeh == 2.3.0
-fa2 == 0.3.5
+#fa2 == 0.3.5
 Pillow==9.0.0
 scanpy==1.8.2
 scikit-image==0.18.2
