@@ -252,11 +252,11 @@ def add_arrows(
 
     library_id = list(adata.uns["spatial"].keys())[0]
     # TODO the below could cause issues by hardcoding tissue res. #
-    res = adata.uns["spatial"][library_id]['use_quality']
+    res = adata.uns["spatial"][library_id]["use_quality"]
     scale_factor = adata.uns["spatial"][library_id]["scalefactors"][
         f"tissue_{res}_scalef"
     ]
-    #scale_factor = 1
+    # scale_factor = 1
 
     L_bool = l_expr > min_expr
     R_bool = r_expr > min_expr

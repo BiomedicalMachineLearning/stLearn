@@ -397,7 +397,7 @@ def lr_plot(
     arrow_vmax: float = None,
     sig_cci: bool = False,
     lr_colors: dict = None,
-    figsize: tuple=(6.4, 4.8),
+    figsize: tuple = (6.4, 4.8),
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -1063,8 +1063,8 @@ def lr_chord_plot(
     cmap: str = "default",
     sig_interactions: bool = True,
     label_size: int = 10,
-    title: str=None,
-    figsize: tuple=(8,8),
+    title: str = None,
+    figsize: tuple = (8, 8),
     show: bool = True,
 ):
     """Chord diagram of interactions between cell types.
@@ -1193,12 +1193,15 @@ def grid_plot(
     else:
         return fig, ax
 
+
 ####################### Bokeh Interactive Plots ################################
+
 
 def lr_plot_interactive(adata: AnnData):
     bokeh_object = BokehLRPlot(adata)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
+
 
 def spatialcci_plot_interactive(adata: AnnData):
     bokeh_object = BokehSpatialCciPlot(adata)
