@@ -20,7 +20,7 @@ from typing import Tuple  # Classes
 import warnings
 
 from .classes import CciPlot, LrResultPlot
-from .classes_bokeh import BokehLRPlot
+from .classes_bokeh import BokehSpatialCciPlot, BokehLRPlot
 from ._docs import doc_spatial_base_plot, doc_het_plot, doc_lr_plot
 from ..utils import Empty, _empty, _AxesSubplot, _docs_params
 from .utils import get_cmap, check_cmap
@@ -397,6 +397,7 @@ def lr_plot(
     arrow_vmax: float = None,
     sig_cci: bool = False,
     lr_colors: dict = None,
+    figsize: tuple=(6.4, 4.8),
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -491,7 +492,7 @@ def lr_plot(
 
     # Dealing with the axis #
     if type(fig) == type(None) or type(ax) == type(None):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
 
     expr = adata.to_df()
     l_expr = expr.loc[:, l].values
@@ -542,6 +543,8 @@ def lr_plot(
             show_image=show_image,
             **kwargs,
         )
+        print()
+        plt.show()
 
     # Showing continuous gene expression of the LR pair #
     elif outer_mode == "continuous":
@@ -1190,15 +1193,32 @@ def grid_plot(
     else:
         return fig, ax
 
+####################### Bokeh Interactive Plots ################################
+
+def lr_plot_interactive(adata: AnnData):
+    bokeh_object = BokehLRPlot(adata)
+    output_notebook()
+    show(bokeh_object.app, notebook_handle=True)
+
+def spatialcci_plot_interactive(adata: AnnData):
+    bokeh_object = BokehSpatialCciPlot(adata)
+    output_notebook()
+    show(bokeh_object.app, notebook_handle=True)
+
+
+# def het_plot_interactive(adata: AnnData):
+#     bokeh_object = BokehCciPlot(adata)
+#     output_notebook()
+#     show(bokeh_object.app, notebook_handle=True)
+
 
 # Bokeh & old grid plots;
 # has not been tested since multi-LR testing implimentation.
 
-
-def het_plot_interactive(adata: AnnData):
-    bokeh_object = BokehCciPlot(adata)
-    output_notebook()
-    show(bokeh_object.app, notebook_handle=True)
+# def het_plot_interactive(adata: AnnData):
+#     bokeh_object = BokehCciPlot(adata)
+#     output_notebook()
+#     show(bokeh_object.app, notebook_handle=True)
 
 
 # def grid_plot(
