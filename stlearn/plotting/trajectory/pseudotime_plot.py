@@ -27,7 +27,7 @@ def pseudotime_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
-    show_trajectory: bool = False,
+    show_trajectories: bool = False,
     reverse: bool = False,
     show_node: bool = True,
     show_plot: bool = True,
@@ -196,14 +196,14 @@ def pseudotime_plot(
                     ),
                 )
 
-    if show_trajectory:
+    if show_trajectories:
 
         used_colors = adata.uns[use_label + "_colors"]
         cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
 
         cmap = plt.get_cmap(cmaps)
 
-        if "PTS_graph" in adata.uns:
+        if "PTS_graph" not in adata.uns:
             raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
         tmp = _read_graph(adata, "PTS_graph")

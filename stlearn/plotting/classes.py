@@ -407,7 +407,7 @@ class GenePlot(SpatialBasePlot):
             self.step_size = int(np.max(z) / 50)
             if self.step_size < 1:
                 self.step_size = 1
-        # Creating contour plot with a step size of 10
+        # Creating contour plot with a step size of 1
 
         cs = plt.contourf(
             xi,
