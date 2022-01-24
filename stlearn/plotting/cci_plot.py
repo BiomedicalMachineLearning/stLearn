@@ -541,10 +541,9 @@ def lr_plot(
             ax=ax,
             fig=fig,
             show_image=show_image,
+            show_plot=False,
             **kwargs,
         )
-        print()
-        plt.show()
 
     # Showing continuous gene expression of the LR pair #
     elif outer_mode == "continuous":
@@ -571,6 +570,7 @@ def lr_plot(
             fig=fig,
             crop=False,
             show_image=show_image,
+            show=False,
             **kwargs,
         )
         gene_plot(
@@ -583,6 +583,7 @@ def lr_plot(
             fig=fig,
             crop=False,
             show_image=show_image,
+            show=False,
             **kwargs,
         )
 
@@ -614,6 +615,7 @@ def lr_plot(
                 ax=ax,
                 fig=fig,
                 show_image=show_image,
+                show=False,
                 **kwargs,
             )
 

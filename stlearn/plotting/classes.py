@@ -128,8 +128,10 @@ class SpatialBasePlot(Spatial):
         if show_image:
             self._add_image(self.ax)
 
-        if show_plot == False:
-            plt.close(self.fig)
+        ## Don't want to do this, since then can't build on figure when parsing
+        ## fig, ax as input
+        # if show_plot == False:
+        #     plt.close(self.fig)
 
     def _select_clusters(self):
         def create_query(list_cl, use_label):
