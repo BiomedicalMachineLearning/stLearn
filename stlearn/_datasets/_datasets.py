@@ -11,7 +11,7 @@ def example_bcba() -> AnnData:
     """
     settings.datasetdir.mkdir(exist_ok=True)
     filename = settings.datasetdir / "example_bcba.h5"
-    url = "https://uc3d57a8599f02aa11c7a99072ce.dl.dropboxusercontent.com/cd/0/get/BeJMbXOnccg58fDHHwX87sW1CUdl0kq2oCziBL-akIXM0ghZH5zC7VIbPM5QW-yJZfI1NXNVOZ5Ki9rJcf2AexRuqWo2XEDfDoBOv6cxh82p71eVpGdfSnh0ZIaa_nKfTFWdyvXcHlGng-6i364ylnAi/file#"
+    url = "https://www.dropbox.com/s/u3m2f16mvdom1am/example_bcba.h5ad?dl=1"
     if not filename.is_file():
         sc.readwrite._download(url=url, path=filename)
     adata = sc.read_h5ad(filename)
