@@ -615,7 +615,7 @@ def lr_plot(
                 ax=ax,
                 fig=fig,
                 show_image=show_image,
-                show=False,
+                show_plot=False,
                 **kwargs,
             )
 
