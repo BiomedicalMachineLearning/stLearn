@@ -201,7 +201,7 @@ def lr_go(
     """Plots the results from the LR GO analysis."""
     # Making sure LR GO has been run #
     if "lr_go" not in adata.uns:
-        raise Exception("Need to run st.tl.cci_rank.run_lr_go() first!")
+        raise Exception("Need to run st.tl.cci.run_lr_go() first!")
 
     go_results = adata.uns["lr_go"]
     gos = go_results.loc[:, "Description"].values.astype(str)

@@ -124,9 +124,10 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.a
 
         # Getting the edges in this neighbourhood #
         edges = init_edge_list(neighbourhood_bcs)  # Note this has 1 pseudo edge
-        get_between_spot_edge_array(
-            edges, neigh_bcs, neigh_indices, gene_bools[i], cell_data
-        )
+        if len(spot_indices) != 0:
+            get_between_spot_edge_array(
+                edges, neigh_bcs, neigh_indices, gene_bools[i], cell_data
+            )
         edge_list.append(edges[1:])
 
     return edge_list
