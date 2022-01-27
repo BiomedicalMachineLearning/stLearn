@@ -4,7 +4,7 @@ library(RCTD)
 library(data.table)
 
 rctd <- function(st_counts, st_coords, sc_counts, sc_labels,
-                 min_cells, n_cores) {
+                 doublet_mode, min_cells, n_cores) {
   ###### Performs RCTD deconvolution of the st data from sc data #######
 
   # Making sure correct namings #
@@ -41,7 +41,7 @@ rctd <- function(st_counts, st_coords, sc_counts, sc_labels,
   ##############################################################################
                         # Running RCTD #
   ##############################################################################
-  myRCTD <- run.RCTD(myRCTD, doublet_mode = "full")
+  myRCTD <- run.RCTD(myRCTD, doublet_mode = doublet_mode)
 
   ### Getting & normalising the results ###
   results <- myRCTD@results$weights

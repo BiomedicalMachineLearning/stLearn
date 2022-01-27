@@ -26,7 +26,7 @@ def perform_spot_testing(
     pval_adj_cutoff: float = 0.05,
     verbose: bool = True,
     save_bg=False,
-    n_groups=None,
+    neg_binom=False,
     quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1),
 ):
     """Calls significant spots by creating random gene pairs with similar
@@ -119,13 +119,33 @@ def perform_spot_testing(
                 adata.uns["lrs_to_bg"][lr_] = background
                 adata.uns["lr_spot_indices"][lr_] = spot_indices
 
-            for spot_i, spot_index in enumerate(spot_indices):
-                n_greater = len(
-                    np.where(background[spot_i, :] >= lr_scores[spot_index, lr_j])[0]
-                )
-                n_greater = n_greater if n_greater != 0 else 1  # pseudocount
-                pvals[spot_index, lr_j] = n_greater / background.shape[1]
-                spot_lr_indices[spot_index].append(lr_j)
+            if not neg_binom: # Calculate empirical p-values per-spot
+                for spot_i, spot_index in enumerate(spot_indices):
+                    n_greater = len(
+                        np.where(background[spot_i, :] >= lr_scores[spot_index, lr_j])[0]
+                    )
+                    n_greater = n_greater if n_greater != 0 else 1  # pseudocount
+                    pvals[spot_index, lr_j] = n_greater / background.shape[1]
+                    spot_lr_indices[spot_index].append(lr_j)
+            else: # Fitting NB per LR
+                lr_j_scores = lr_scores[spot_indices, lr_j]
+                bg_ = background.ravel()
+                bg_wScore = np.array(list(lr_j_scores) + list(bg_))
+
+                ##### 1) rounding discretisation
+                # First multiple to get minimum value to be one before rounding #
+                bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
+                bg_1 = np.round(bg_1)
+                lr_j_scores_1 = bg_1[0:len(lr_j_scores)]
+                bg_1 = bg_1[len(lr_j_scores):len(bg_1)]
+
+                ###### Getting the pvalue from negative binomial approach
+                round_pvals, _, _, _ = get_stats(lr_j_scores_1, bg_1, len(bg_1),
+                                                 neg_binom=True,
+                                                 return_negbinom_params=False)
+                pvals[spot_indices, lr_j] = round_pvals
+                for spot_index in spot_indices:
+                    spot_lr_indices[spot_index].append( lr_j )
 
             pbar.update(1)
 
@@ -178,7 +198,6 @@ def perform_spot_testing(
             "rows in adata.uns['lr_summary']."
         )
         print("Summary of LR results in adata.uns['lr_summary'].")
-
 
 # Version 2, no longer in use, see above for newest method #
 def perform_perm_testing(

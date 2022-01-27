@@ -185,6 +185,7 @@ def run(
     min_spots: int = 10,
     min_expr: float = 0,
     save_bg: bool = False,
+    neg_binom: bool = False,
     n_cpus: int = None,
     verbose: bool = True,
 ):
@@ -204,6 +205,7 @@ def run(
     min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
     min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
     save_bg: bool           Whether to save the background per LR pair; for method development only. Not recommended since huge memory.
+    neg_binom: bool         Whether to fit a negative binomial distribution for all background scores generated across spots per LR after discretising the random scores. Can be extremely slow, do not recommend if n_pairs>1000.
     n_cpus: int             The number of cpus to use for multi-threading; by default will use all available.
     verbose: bool           True if print dialogue to user during run-time.
     Returns
@@ -284,6 +286,7 @@ def run(
         pval_adj_cutoff,
         verbose,
         save_bg=save_bg,
+        neg_binom=neg_binom,
     )
 
 

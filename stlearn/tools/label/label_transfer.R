@@ -48,6 +48,7 @@ label_transfer <- function(st_expr_df, sc_expr_df, sc_labels) {
   print("Finished finding anchors.")
   predictions.assay <- TransferData(anchorset = anchors,
                                     refdata = sc$cell_type, prediction.assay=T,
+                                    k.weight=20,
                                     weight.reduction = st[["pca"]], dims = 1:30)
   print("Finished label transferring.")
   transfer_scores <- predictions.assay@data
