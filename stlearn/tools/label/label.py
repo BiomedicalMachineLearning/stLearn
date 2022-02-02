@@ -10,10 +10,11 @@ import scanpy as sc
 import stlearn.tools.microenv.cci.r_helpers as rhs
 
 
-def run_label_transfer(st_data, sc_data, sc_label_col, r_path,
-                       st_label_col=None, n_highly_variable=2000):
+def run_label_transfer(
+    st_data, sc_data, sc_label_col, r_path, st_label_col=None, n_highly_variable=2000
+):
     """Runs Seurat label transfer."""
-    st_label_col = sc_label_col if type(st_label_col)==type(None) else st_label_col
+    st_label_col = sc_label_col if type(st_label_col) == type(None) else st_label_col
 
     # Setting up the R environment #
     rhs.rpy2_setup(r_path)
@@ -41,8 +42,9 @@ def run_label_transfer(st_data, sc_data, sc_label_col, r_path,
     sc.pp.highly_variable_genes(
         sc_data, n_top_genes=n_highly_variable, flavor="seurat_v3"
     )
-    genes_bool = np.logical_or(sc_data.var["highly_variable"].values,
-                               st_data.var["highly_variable"].values)
+    genes_bool = np.logical_or(
+        sc_data.var["highly_variable"].values, st_data.var["highly_variable"].values
+    )
     sc_data = sc_data[:, genes_bool]
     st_data = st_data[:, genes_bool]
     print(
@@ -65,8 +67,7 @@ def run_label_transfer(st_data, sc_data, sc_label_col, r_path,
     print("Finished py->rpy conversion.")
 
     # Running label transfer #
-    label_transfer_scores_r = label_transfer_r(st_expr_df_r, sc_expr_df_r,
-                                               sc_labels_r)
+    label_transfer_scores_r = label_transfer_r(st_expr_df_r, sc_expr_df_r, sc_labels_r)
     print("Finished label transfer.")
     with rhs.localconverter(rhs.ro.default_converter + rhs.pandas2ri.converter):
         label_transfer_scores = rhs.ro.conversion.rpy2py(label_transfer_scores_r)
@@ -85,6 +86,7 @@ def run_label_transfer(st_data, sc_data, sc_label_col, r_path,
     print(f"Spot labels added to st_data.obs[{st_label_col}].")
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
 
+
 def get_counts(data):
     """Gets count data from anndata if available."""
     # Standard layer has counts #
@@ -97,15 +99,13 @@ def get_counts(data):
         and hasattr(data, "raw")
         and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
     ):
-        counts = data.raw.to_adata()[data.obs_names,
-                                     data.var_names].to_df().transpose()
+        counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     elif (
         type(data.X) == np.ndarray
         and hasattr(data, "raw")
         and np.all(np.mod(data.raw.X[0, :], 1) == 0)
     ):
-        counts = data.raw.to_adata()[data.obs_names,
-                                     data.var_names].to_df().transpose()
+        counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     else:
         raise Exception(
             "Inputted AnnData dosn't contain counts, only normalised "
@@ -123,7 +123,7 @@ def run_rctd(
     st_label_col=None,
     n_highly_variable=5000,
     min_cells=10,
-    doublet_mode='full',
+    doublet_mode="full",
     n_cores=1,
 ):
     """Runs RCTD for deconvolution."""
@@ -156,8 +156,9 @@ def run_rctd(
     sc.pp.highly_variable_genes(
         sc_data, n_top_genes=n_highly_variable, flavor="seurat_v3"
     )
-    genes_bool = np.logical_or(sc_data.var["highly_variable"].values,
-                               st_data.var["highly_variable"].values)
+    genes_bool = np.logical_or(
+        sc_data.var["highly_variable"].values, st_data.var["highly_variable"].values
+    )
 
     ###### Getting the count data (if available) ############
     st_counts = get_counts(st_data)
@@ -181,8 +182,13 @@ def run_rctd(
     ######## Running RCTD ##########
     print("Running RCTD...")
     rctd_proportions_r = rctd_r(
-        st_counts_r, st_coords_r, sc_counts_r, sc_labels_r,
-        doublet_mode, min_cells, n_cores,
+        st_counts_r,
+        st_coords_r,
+        sc_counts_r,
+        sc_labels_r,
+        doublet_mode,
+        min_cells,
+        n_cores,
     )
     print("Finished RCTD deconvolution.")
     with rhs.localconverter(rhs.ro.default_converter + rhs.pandas2ri.converter):
@@ -194,7 +200,9 @@ def run_rctd(
     labels = [rctd_proportions.columns.values[argmax] for argmax in argmaxs]
     st_data_orig.obs[st_label_col] = labels
     st_data_orig.obs[st_label_col] = st_data_orig.obs[st_label_col].astype("category")
-    st_data_orig.uns[st_label_col] = rctd_proportions.loc[st_data_orig.obs_names.values, :]
+    st_data_orig.uns[st_label_col] = rctd_proportions.loc[
+        st_data_orig.obs_names.values, :
+    ]
 
     print(f"Spot labels added to st_data.obs[{st_label_col}].")
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
@@ -240,8 +248,9 @@ def run_singleR(
     sc.pp.highly_variable_genes(
         sc_data, n_top_genes=n_highly_variable, flavor="seurat_v3"
     )
-    genes_bool = np.logical_or(sc_data.var["highly_variable"].values,
-                               st_data.var["highly_variable"].values)
+    genes_bool = np.logical_or(
+        sc_data.var["highly_variable"].values, st_data.var["highly_variable"].values
+    )
     sc_data = sc_data[:, genes_bool]
     st_data = st_data[:, genes_bool]
     print(f"Finished selecting & subsetting to hvgs.")

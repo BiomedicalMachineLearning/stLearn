@@ -14,10 +14,8 @@ def kmeans(
     n_init: int = 10,
     max_iter: int = 300,
     tol: float = 0.0001,
-    precompute_distances: str = "auto",
     random_state: str = None,
     copy_x: bool = True,
-    n_jobs: int = None,
     algorithm: str = "auto",
     key_added: str = "kmeans",
     copy: bool = False,
@@ -42,8 +40,6 @@ def kmeans(
         single run.
     tol
         Relative tolerance with regards to inertia to declare convergence.
-    precompute_distances
-        Precompute distances (faster but takes more memory).
     random_state
         Determines random number generation for centroid initialization. Use
         an int to make the randomness deterministic.
@@ -55,9 +51,6 @@ def kmeans(
         numerical differences may be introduced by subtracting and then adding
         the data mean, in this case it will also not ensure that data is
         C-contiguous which may cause a significant slowdown.
-    n_jobs
-        The number of jobs to use for the computation. This works by computing
-        each of the n_init runs in parallel.
     algorithm
         K-means algorithm to use. The classical EM-style algorithm is "full".
         The "elkan" variation is more efficient by using the triangle
@@ -82,10 +75,8 @@ def kmeans(
         n_init=n_init,
         max_iter=max_iter,
         tol=tol,
-        precompute_distances=precompute_distances,
         random_state=random_state,
         copy_x=copy_x,
-        n_jobs=n_jobs,
         algorithm=algorithm,
     ).fit(data)
 
