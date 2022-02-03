@@ -10,7 +10,7 @@ from .base import get_lrs_scores
 
 
 def nonzero_quantile(expr, q, interpolation):
-    """ Calculating the non-zero quantiles. """
+    """Calculating the non-zero quantiles."""
     nonzero_expr = expr[expr > 0]
     quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation)
     if type(quants) != np.array and type(quants) != np.ndarray:
@@ -19,7 +19,7 @@ def nonzero_quantile(expr, q, interpolation):
 
 
 def getzero_prop(expr):
-    """ Calculating the proportion of zeros. """
+    """Calculating the proportion of zeros."""
     zero_bool = expr == 0
     n_zeros = len(np.where(zero_bool)[0])
     zero_prop = [n_zeros / len(expr)]

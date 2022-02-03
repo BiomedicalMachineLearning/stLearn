@@ -45,7 +45,7 @@ importlib.reload(cci_hs)
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-# Functions for visualising the overall LR results and diagnostics.
+#### Functions for visualising the overall LR results and diagnostics.
 
 
 def lr_diagnostics(
@@ -325,6 +325,7 @@ def lr_go(
         show_all=n_top <= max_text,
     )
 
+
 def cci_check(
     adata: AnnData,
     use_label: str,
@@ -537,6 +538,7 @@ def lr_result_plot(
         vmax,
     )
 
+
 # TODO finish writing the documentation for this parameter.
 # @_docs_params(het_plot=doc_lr_plot)
 def lr_plot(
@@ -566,7 +568,7 @@ def lr_plot(
     sig_cci: bool = False,
     lr_colors: dict = None,
     figsize: tuple = (6.4, 4.8),
-    use_mix: None,
+    use_mix=None,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -958,6 +960,7 @@ def het_plot(
 
 # Functions relating to visualising celltype-celltype interactions after
 # calling: st.tl.cci_rank.run_cci
+
 
 def ccinet_plot(
     adata: AnnData,
@@ -1359,6 +1362,7 @@ def lr_chord_plot(
         plt.show()
     else:
         return fig, ax
+
 
 def grid_plot(
     adata,

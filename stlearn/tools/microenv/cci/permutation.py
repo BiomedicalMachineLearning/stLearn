@@ -497,7 +497,7 @@ def get_stats(
         mu = np.exp(res.params[0])
         alpha = res.params[1]
         Q = 0
-        size = 1.0 / alpha * mu ** Q
+        size = 1.0 / alpha * mu**Q
         prob = size / (size + mu)
 
         if return_negbinom_params:  # For testing purposes #

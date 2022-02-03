@@ -582,7 +582,7 @@ def _mat_mat_corr_sparse(
 
     X_bar = np.reshape(np.array(X.mean(axis=1)), (-1, 1))
     X_std = np.reshape(
-        np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar ** 2)), (-1, 1)
+        np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar**2)), (-1, 1)
     )
 
     y_bar = np.reshape(np.mean(Y, axis=0), (1, -1))
