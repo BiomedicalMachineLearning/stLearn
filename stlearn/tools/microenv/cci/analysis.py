@@ -24,13 +24,11 @@ from statsmodels.stats.multitest import multipletests
 ################################################################################
 def load_lrs(names: Union[str, list, None] = None, species: str = "human") -> np.array:
     """Loads inputted LR database, & concatenates into consistent database set of pairs without duplicates. If None loads 'connectomeDB2020_lit'.
+
     Parameters
     ----------
-    names: list   Databases to load, options: \
-                'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). \
-                If more than one specified, loads all & removes duplicates.
+    names: list     Databases to load, options: 'connectomeDB2020_lit' (literature verified), 'connectomeDB2020_put' (putative). If more than one specified, loads all & removes duplicates.
     species: str    Format of the LR genes, either 'human' or 'mouse'.
-
     Returns
     -------
     lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
@@ -66,17 +64,25 @@ def load_lrs(names: Union[str, list, None] = None, species: str = "human") -> np
 
 
 def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
-    """Creates a new anndata representing a gridded version of the data; can be used upstream of CCI pipeline.
-    NOTE: intended use is for single cell spatial data, not Visium or other lower resolution tech.
+    """Creates a new anndata representing a gridded version of the data; can be
+        used upstream of CCI pipeline. NOTE: intended use is for single cell
+        spatial data, not Visium or other lower resolution tech.
+
     Parameters
     ----------
-    adata: AnnData          The data object.
-    n_row: int              The number of rows in the grid.
-    n_col: int              The number of columns in the grid.
-    use_label: str          The cell type labels in adata.obs to join together & save as deconvolution data.
+    adata: AnnData
+        The data object.
+    n_row: int
+        The number of rows in the grid.
+    n_col: int
+        The number of columns in the grid.
+    use_label: str
+        The cell type labels in adata.obs to join together & save as deconvolution data.
     Returns
     -------
-    grid_data: AnnData      Equivalent expression data to adata, except values have been summed by cells that fall within defined bins.
+    grid_data: AnnData
+        Equivalent expression data to adata, except values have been summed by
+        cells that fall within defined bins.
     """
 
     # Retrieving the coordinates of each grid #
@@ -176,41 +182,75 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
 def run(
     adata: AnnData,
     lrs: np.array,
-    use_label: str = None,
-    use_het: str = "cci_het",
+    min_spots: int = 10,
     distance: int = None,
     n_pairs: int = 1000,
+    n_cpus: int = None,
+    use_label: str = None,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
-    min_spots: int = 10,
     min_expr: float = 0,
     save_bg: bool = False,
     neg_binom: bool = False,
-    n_cpus: int = None,
     verbose: bool = True,
 ):
-    """Wrapper function for performing CCI analysis, varrying the analysis based
-        on the inputted data / state of the anndata object.
+    """Performs stLearn LR analysis.
+
     Parameters
-    ----------
-    adata: AnnData          The data object including the cell types to count.
-    lrs:    np.array        The LR pairs to score/test for enrichment (in format 'L1_R1')
-    use_label: str          The cell type results to use in counting.
-    use_het:                The storage place for cell heterogeneity results in adata.obsm.
-    distance: int           Distance to determine the neighbours (default is the nearest neighbour), distance=0 means within spot
-    n_pairs: int            Number of random pairs to generate when performing the background distribution.
-    adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for multiple hypothesis testing correction.
-    pval_adj_cutoff: float  P-value below which LR is considered significant in spot neighbourhood.
-    pval_adj_axis: str      Defines how pval adjustment performed; 'lrs_per_spot' to correct by no. of LRs tested in spot, 'spots_per_lr' to correct for no. of spots tested for LR.
-    min_spots: int          Minimum number of spots with an LR score to be considered for further testing.
-    min_expr: float         Minimum gene expression of either L or R for spot to be considered to have reasonable score.
-    save_bg: bool           Whether to save the background per LR pair; for method development only. Not recommended since huge memory.
-    neg_binom: bool         Whether to fit a negative binomial distribution for all background scores generated across spots per LR after discretising the random scores. Can be extremely slow, do not recommend if n_pairs>1000.
-    n_cpus: int             The number of cpus to use for multi-threading; by default will use all available.
-    verbose: bool           True if print dialogue to user during run-time.
+    -----------
+    adata: AnnData
+        The data object.
+    lrs: np.array
+        The LR pairs to score/test for enrichment (in format 'L1_R1').
+    min_spots: int
+        Minimum number of spots with an LR score for an LR to be considered for
+        further testing.
+    distance: int
+        Distance to determine the neighbours (default [None] is immediately
+        adjacent neighbours if using Visium), distance=0 means within spot
+        (only for non-single-cell spatial data).
+    n_pairs: int
+        Number of random pairs of genes to generate when creating the background
+        distribution per LR pair; higher than more accurate p-value estimation.
+    n_cpus: int
+        The number of cpus to use for multi-threading.
+    use_label: str
+        The cell type deconvolution results to use in counting stored in
+        adata.uns; if not specified only considered LR expression without cell
+        heterogeneity.
+    adj_method: str
+        Parsed to statsmodels.stats.multitest.multipletests for multiple
+        hypothesis testing correction; see there for other options.
+    pval_adj_cutoff: float
+        P-value below which LR is considered significant in spot neighbourhood.
+    min_expr: float
+        Minimum gene expression of either L or R for spot to be considered to
+        expression of either.
+    save_bg: bool
+        Whether to save the background per LR pair; for method development only.
+        Not recommended since huge memory.
+    neg_binom: bool
+        Whether to fit a negative binomial distribution for all background
+        scores generated across spots per LR after discretising the random
+        scores. Can be extremely slow.
+    verbose: bool
+        Whether print dialogue to user during run-time.
     Returns
-    -------
-    adata: AnnData          Relevant information stored: adata.uns['het'], adata.uns['lr_summary'], & data.uns['per_lr_results'].
+    --------
+    adata: AnnData
+    Relevant information stored:
+        adata.uns['lr_summary']
+            Summary of significant spots detected per LR,
+            the LRs listed in the index is the same order of LRs in the columns of
+            results stored in adata.obsm below. Hence the order of this must be maintained.
+        adata.obsm
+            Additional keys are added; 'lr_scores', 'lr_sig_scores', 'p_vals',
+            'p_adjs', '-log10(p_adjs)'. All are numpy matrices, with columns
+            referring to the LRs listed in adata.uns['lr_summary']. 'lr_scores'
+            is the raw scores, while 'lr_sig_scores' is the same except only for
+            significant scores; non-significant scores are set to zero.
+        adata.obsm['het']
+            Only if use_label specified; contains the counts of the cell types found per spot.
     """
     # Setting threads for paralellisation #
     if type(n_cpus) != type(None):
@@ -253,10 +293,10 @@ def run(
             print("Calculating cell hetereogeneity...")
 
         # Calculating cell heterogeneity #
-        count(adata, distance=distance, use_label=use_label, use_het=use_het)
+        count(adata, distance=distance, use_label=use_label, use_het=use_label)
 
     het_vals = (
-        np.array([1] * len(adata)) if use_het not in adata.obsm else adata.obsm[use_het]
+        np.array([1] * len(adata)) if use_label not in adata.obsm else adata.obsm[use_label]
     )
 
     """ 1. Filter any LRs without stored expression.
@@ -297,16 +337,26 @@ def adj_pvals(
     adj_method: str = "fdr_bh",
 ):
     """Performs p-value adjustment and determination of significant spots.
-    Default settings of this function are already applied
+        Default settings of this function are already run in st.tl.cci.run.
+
     Parameters
     ----------
-    adata: AnnData          Must have st.tl.cci.run performed prior.
-    pval_adj_cutoff: float  Cutoff for spot to be significant based on adjusted p-value.
-    correct_axis: str       Either 'spot', 'LR', or None; former corrects for number of LRs tested in each spot, middle corrects for number of spots tested per LR, and latter performs no adjustment (uses p-value for significant testing)
-    adj_method: str         Any method supported by statsmodels.stats.multitest.multipletests; https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
+    adata: AnnData
+        Must have st.tl.cci.run performed prior.
+    pval_adj_cutoff: float
+        Cutoff for spot to be significant based on adjusted p-value.
+    correct_axis: str
+        Either 'spot', 'LR', or None; former corrects for number of LRs tested
+        in each spot, middle corrects for number of spots tested per LR, and
+        latter performs no adjustment (uses p-value for significant testing)
+    adj_method: str
+        Any method supported by statsmodels.stats.multitest.multipletests;
+        https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
     Returns
     -------
-    adata: AnnData          Adjusts all of the LR results; warning, does not adjust celltype-celltype results from running ran st.tl.run_cci downstream.
+    adata: AnnData
+        Adjusts all of the LR results; warning, does not adjust
+        celltype-celltype results from running ran st.tl.run_cci downstream.
     """
     if "lr_summary" not in adata.uns:
         raise Exception("Need to run st.tl.cci.run first.")
@@ -379,18 +429,30 @@ def run_lr_go(
 
     Parameters
     ----------
-    adata: AnnData          Must have had st.tl.cci_rank.run() called prior.
-    r_path: str             Path to R, must have clusterProfiler installed.
-    bg_genes: np.array      Genes to be used as the background. If None, defaults to all genes in lr database: 'connectomeDB2020_put'.
-    n_top: int              The top number of LR pairs to use.
-    min_sig_spots: int      Minimum no. of significant spots pairs must have to be considered.
-    species: str            Species to perform the GO testing for.
-    p_cutoff: float         P-value & P-adj cutoff below which results will be returned.
-    q_cutoff: float         Q-value cutoff below which results will be returned.
-    onts: str               As per clusterProfiler; One of "BP", "MF", and "CC" subontologies, or "ALL" for all three.
+    adata: AnnData
+        Must have had st.tl.cci_rank.run() called prior.
+    r_path: str
+        Path to R, must have clusterProfiler, org.Mm.eg.db, and org.Hs.eg.db
+        installed.
+    bg_genes: np.array
+        Genes to be used as the background. If None, defaults to all genes in
+        lr database: 'connectomeDB2020_put'.
+    n_top: int
+        The top number of LR pairs to use.
+    min_sig_spots: int
+        Minimum no. of significant spots pairs must have to be considered.
+    species: str
+        Species to perform the GO testing for.
+    p_cutoff: float
+        P-value & P-adj cutoff below which results will be returned.
+    q_cutoff: float
+        Q-value cutoff below which results will be returned.
+    onts: str
+        As per clusterProfiler; One of "BP", "MF", and "CC" subontologies, or "ALL" for all three.
     Returns
     -------
-    adata: AnnData          Relevant information stored: adata.uns['lr_go']
+    adata: AnnData
+        Relevant information stored in adata.uns['lr_go']
     """
     #### Making sure inputted correct species ####
     all_species = ["human", "mouse"]
@@ -440,20 +502,65 @@ def run_cci(
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data randomisation.
+
     Parameters
     ----------
-    adata: AnnData          Must have had st.tl.cci_rank.run() called prior.
-    use_label: str          If !spot_mixtures, is a key in adata.obs, else key in adata.obsm.
-    spot_mixtures: bool     If true, indicates using deconvolution data, hence use_label refers to adata.obsm.
-    min_spots: int          Specifies the minimum number of spots where LR score present to include in subsequent analysis.
-    sig_spots: bool         If true, only consider edges which include a signficant spot from calling st.tl.run()
-    cell_prop_cutoff: float Only relevant if spot_mixtures==True, indicates cutoff where cell type considered found in spot.
-    p_cutoff: float         Value at which p is considered significant.
-    n_perms: int            Number of randomisations of cell data to generate p-values.
-    verbose: bool           True if print dialogue to user during run-time.
+    adata: AnnData
+        Must have had st.tl.cci_rank.run() called prior.
+    use_label: str
+        If !spot_mixtures, is a key in adata.obs, else key in adata.uns.
+        Note if spot_mixtures specified, must have both the deconvolution data
+        in adata.uns[use_label] and the dominant cell type per spot stored in
+        adata.obs[use_label]. See tutorial for example.
+    spot_mixtures: bool
+        If true, indicates using deconvolution data, hence use_label
+        refers to adata.uns.
+    min_spots: int
+        Specifies the minimum number of spots where LR score present to
+        include in subsequent analysis.
+    sig_spots: bool
+        If true, only consider edges which include a signficant spot from
+        calling st.tl.cci.run()
+    cell_prop_cutoff: float
+        Only relevant if spot_mixtures==True, indicates cutoff where cell type
+        considered found in spot.
+    p_cutoff: float
+        Value at which p is considered significant.
+    n_perms: int
+        Number of randomisations of cell data to generate p-values.
+    verbose: bool
+        True if print dialogue to user during run-time.
     Returns
     -------
-    adata: AnnData          Relevant information stored: adata.uns[f'*_use_label']
+    adata: AnnData
+        Relevant information stored
+            adata.uns['lr_summary']
+                Additional columns; f"n_cci_sig_{use_label}",
+                f"n-spot_cci_{use_label}", f"n-spot_cci_sig_{use_label}".
+                Former is the no. of CCIs significant for the LR, middle is
+                the no. of individual spot-spot interactions across all CCIs for
+                LR, and latter is the no. of significant individual spot
+                interactions.
+            adata.uns
+                Dataframes added:
+                    f"lr_cci_raw_{use_label}"
+                        The raw count of spot-spot interactions across all LR
+                        pairs for each possible CCI.
+                    f"lr_cci_raw_{use_label}"
+                        The count of significant spot-spot interactions across
+                        all LR pairs for each possible CCI.
+                Dictionaries added:
+                    f"per_lr_cci_pvals_{use_label}"
+                        Each key refers to a LR, with the value being a dataframe
+                        listing the p-values for each potential CCI.
+                    f"per_lr_cci_raw_{use_label}"
+                        Each key refers to a LR, with the value being a dataframe
+                        listing the count of spot-spot interactions via the LR in
+                        significant LR neighbourhoods stratified by each
+                        celltype-celltype combination.
+                    f"per_lr_cci_{use_label}"
+                        The same as f"per_lr_cci_raw_{use_label}", except
+                        subsetted to significant CCIs.
     """
     ran_lr = "lr_summary" in adata.uns
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns

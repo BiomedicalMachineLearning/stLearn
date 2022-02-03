@@ -59,17 +59,29 @@ def lr_diagnostics(
     show: bool = True,
 ):
     """Diagnostic plot looking at relationship between technical features of lrs and lr rank.
+        Two plots generated: left is the average of the median for nonzero
+        expressing spots for both the ligand and the receptor on the y-axis, &
+        LR-rank by no. of significant spots on the x-axis. Right is the average
+        of the proportion of zeros for the ligand and receptor gene on teh y-axis.
 
     Parameters
     ----------
-    adata: AnnData          The data object including the cell types to count
-    highlight_lrs: list     List of LRs to highlight, will add text and change point color for these LR pairs.
-    n_top: int              The number of LRs to display. If None shows all.
-    lr_text_fp: dict        Font dict for the LR text if highlight_lrs not None.
-    axis_text_fp: dict      Font dict for the
+    adata: AnnData
+        The data object on which st.tl.cci.run has been applied.
+    highlight_lrs: list
+        List of LRs to highlight, will add text and change point color for these LR pairs.
+    n_top: int
+        The number of LRs to display. If None shows all.
+    color0: str
+        The color of the nonzero-median scatter plot.
+    lr_text_fp: dict
+        Font dict for the LR text if highlight_lrs not None.
+    axis_text_fp: dict
+        Font dict for the axis text labels.
     Returns
     -------
-    Figure, Axes            Figure and axes of the plot, if show=False.
+    Figure, Axes
+        Figure and axes of the plot, if show=False.
     """
     if type(n_top) == type(None):
         n_top = adata.uns["lr_summary"].shape[0]
@@ -117,7 +129,37 @@ def lr_summary(
 
     Parameters
     ----------
-    adata: AnnData          The data object including the cell types to count
+    adata: AnnData
+        The data object on which st.tl.cci.run has been applied.
+    n_top: int
+        The no. of LRs to plot.
+    highlight_lrs: list
+        A list of LRs to highlight on the plot, will added text and change color
+        of points for these LRs. Useful for highlighting LRs of interest.
+    y: str
+        The way to rank the LRs, default is by the no. of signifcant spots,
+        but can be any column in adata.uns['lr_summary'].
+    color: str
+        The color of the points.
+    figsize: tuple
+        Size of the figure; (width, height).
+    highlight_color: str
+        Only relevant if highlight_lrs specified; controls colour of LRs to
+        highlight.
+    max_text: int
+        If the no. of n_top is above this limit, stop showing text to indicate
+        the LR names. Allows to see global shape without crowding with LR name
+        text.
+    lr_text_fp: dict
+        Matplotlib font dictionary specifying text details, eg fontsize.
+    ax: Axes
+        Axes on which to draw the scatter plot; if not inputted constructs own.
+    show: bool
+        Whether to show the plot, if False will return the ax.
+    Returns
+    _______
+    Axes
+        If show=False, returns the ax for additional modification.
     """
     allowed = ["n_spots", "n_spots_sig", "n_spots_sig_pval"]
     if y not in allowed:
@@ -151,7 +193,40 @@ def lr_n_spots(
     show_title: bool = True,
     show: bool = True,
 ):
-    """Bar plot showing for each LR no. of sig versus non-sig spots."""
+    """Bar plot showing for each LR no. of sig versus non-sig spots.
+
+    Parameters
+    ----------
+    adata: AnnData
+        Data on which st.tl.cci.run has been applied.
+    n_top: int
+        The no. of LRs to display, ranked by adata.uns['lr_summary']
+    font_dict: dict
+        dictionary specifying matplotlib font parameters e.g. weight.
+    xtick_dict: dict
+        dictionary specifying matplotlib font parameters for x labels e.g. weight.
+    bar_width: int
+        Width of each bar in the bar plot.
+    max_text: int
+        If n_top exceeds this number, stop showing the LR text, since can cause
+        crowding.
+    non_sig_color: str
+        Specifies the color for bar plot proportion indicating no. of non-sig
+        spots.
+    sig_color: str
+        Specifies color for bars indicating the sig. spots counts.
+    figsize: tuple
+        Specifies figure dimensions.
+    show_title: bool
+        Whether to show title on outputted plot.
+    show: bool
+        Whether to show the plot; if false returns the figure & axes for further
+        modification.
+    Returns
+    -------
+    Fig, Axes
+        Figure & axes with the plot draw on; only if show=False. Else None.
+    """
     if type(font_dict) == type(None):
         font_dict = {"weight": "bold", "size": 12}
     if type(xtick_dict) == type(None):
@@ -198,7 +273,31 @@ def lr_go(
     max_text: int = 50,
     show: bool = True,
 ):
-    """Plots the results from the LR GO analysis."""
+    """Plots the results from the LR GO analysis.
+
+    Parameters
+    ----------
+    adata: AnnData
+        Data object on which st.tl.cci.lr & st.tl.cci.run_lr_go has been called.
+    n_top: int
+        Specifies the no. of GO terms to show.
+    highlight_go: list
+        Names of GO terms to highlight in different color & text.
+    figsize: tuple
+        Size of the figure.
+    rot: int
+        Rotation of the text labels for the GO terms.
+    lr_text_fp: dict
+        Dictionary specifying matplotlib text params that control rendering of
+        label on the points.
+    highlight_color: str
+        The color to plot the GO terms specified in highlight_go.
+    max_text: int
+        If n_top exceeds this number, stop showing the GO text, since can cause
+        crowding.
+    show: bool
+        Whether to show the plot.
+    """
     # Making sure LR GO has been run #
     if "lr_go" not in adata.uns:
         raise Exception("Need to run st.tl.cci.run_lr_go() first!")
@@ -226,7 +325,6 @@ def lr_go(
         show_all=n_top <= max_text,
     )
 
-
 def cci_check(
     adata: AnnData,
     use_label: str,
@@ -236,8 +334,28 @@ def cci_check(
     tick_size=14,
     show=True,
 ):
-    """Checks relationship between no. of significant CCI-LR interactions and
-    cell type frequency.
+    """Checks relationship between no. of significant CCI-LR interactions and cell type frequency.
+
+    Parameters
+    ----------
+    adata: AnnData
+        Data on which st.tl.cci.run & st.tl.cci.run_cci has been performed.
+    use_label: str
+        The cell type label information used when running st.tl.cci.run_cci
+    figsize: tuple
+        Size of outputted figure.
+    cell_label_size: int
+        Size of the cell labels put on top of the bar chart.
+    axis_text_size: int
+        Size of the axis text.
+    tick_size: int
+        Size of the ticks displayed at bottom of chart.
+    show: bool
+        Whether to show the plot or not; if false returns figure & axes.
+    Returns
+    -------
+    Figure, Ax1, Ax2
+        The figure, axes for the barchart, and twin axes for the lineplot.
     """
     labels = adata.obs[use_label].values.astype(str)
     label_set = np.array(list(adata.obs[use_label].cat.categories))
@@ -307,8 +425,6 @@ def cci_check(
 
 
 # Functions for visualisation the LR results per spot.
-
-
 def lr_result_plot(
     adata: AnnData,
     use_lr: Optional["str"] = None,
@@ -317,7 +433,6 @@ def lr_result_plot(
     title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "Spectral_r",
-    list_clusters: Optional[list] = None,
     ax: Optional[matplotlib.axes._subplots.Axes] = None,
     fig: Optional[matplotlib.figure.Figure] = None,
     show_plot: Optional[bool] = True,
@@ -325,19 +440,73 @@ def lr_result_plot(
     show_image: Optional[bool] = True,
     show_color_bar: Optional[bool] = True,
     crop: Optional[bool] = True,
-    margin: Optional[bool] = 100,
+    margin: Optional[float] = 100,
     size: Optional[float] = 7,
     image_alpha: Optional[float] = 1.0,
     cell_alpha: Optional[float] = 1.0,
     use_raw: Optional[bool] = False,
     fname: Optional[str] = None,
     dpi: Optional[int] = 120,
-    # cci_rank param
     contour: bool = False,
     step_size: Optional[int] = None,
     vmin: float = None,
     vmax: float = None,
 ):
+    """Plots the per spot statistics for given LR.
+
+    Parameters
+    ----------
+    adata: AnnData
+        Data on which st.tl.cci.run has been performed
+    use_lr: str
+        LR to show results for.
+    use_result: str
+        LR matrix in data.obsm; 'lr_scores', 'lr_sig_scores', 'p_vals', 'p_adjs'
+        '-log10(p_adjs)'.
+    title: str
+        Plot title.
+    figsize: tuple
+        Figure size.
+    cmap: str
+        Color of points.
+    ax: Axes
+        Axes on which to plot.
+    fig: Figure
+        Figure associated with axes.
+    show_plot: bool
+        Whether to show plot or not.
+    show_axis: bool
+        Whether to show axis or not.
+    show_image: bool
+        Whether to plot the image.
+    show_color_bar: bool
+        Whether to show the color bar.
+    crop: bool
+        Whether to crop the image down to match spatial coordinates of gene
+        spot present.
+    margin: float
+        Margin around the points for the image.
+    size: float
+        Size of the points.
+    image_alpha: float
+        Transparency of image.
+    cell_alpha: float
+        Transparency of points.
+    use_raw: bool
+        Whether to use adata.raw or not.
+    fname: str
+        Name of file to save plot to.
+    dpi: int
+        Plot saving quality.
+    contour: bool
+        Whether to plot as contour.
+    step_size: int
+        Step size of contour==True
+    vmin: float
+        Minimum value of scale bar.
+    vmax: float
+        Maximum value of scale bar.
+    """
     LrResultPlot(
         adata,
         use_lr,
@@ -346,7 +515,7 @@ def lr_result_plot(
         title,
         figsize,
         cmap,
-        list_clusters,
+        None,
         ax,
         fig,
         show_plot,
@@ -368,7 +537,7 @@ def lr_result_plot(
         vmax,
     )
 
-
+# TODO finish writing the documentation for this parameter.
 # @_docs_params(het_plot=doc_lr_plot)
 def lr_plot(
     adata: AnnData,
@@ -376,7 +545,6 @@ def lr_plot(
     min_expr: float = 0,
     sig_spots=True,
     use_label: str = None,
-    use_mix: str = None,
     outer_mode: str = "continuous",
     l_cmap=None,
     r_cmap=None,
@@ -398,9 +566,56 @@ def lr_plot(
     sig_cci: bool = False,
     lr_colors: dict = None,
     figsize: tuple = (6.4, 4.8),
+    use_mix: None,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
+    """Creates different kinds of spatial visualisations for the LR plot.
+        To see combinations of parameters refer to stLearn CCI tutorial.
+
+    Parameters
+    ----------
+    adata: Anndata
+        Data on which st.tl.cci.run has been performed; extra options unlocked
+        below when have performed st.tl.cci.run_cci as well.
+    lr: str
+        The LR to display results for.
+    min_expr: float
+        The minimum expr above which LR considered expressed when using
+    sig_spots: bool
+        Whether to subset to significant spots or not.
+    use_label: str
+        The cell type labels to use.
+    outer_mode: str
+        The mode for the larger points when displaying LR expression;
+        can either be 'discrete' or 'continuous'; former discretizes LR expression
+        while latter shows continous expression.
+    l_cmap: str
+        Cmap for coloring the ligand expression.
+    r_cmap: str
+        Cmap for coloring the receptor expression.
+    lr_cmap: str
+        Cmap for coloring coexpression.
+    inner_cmap: str
+        Cmap for the innter point
+    inner_size_prop: float
+    middle_size_prop: float
+    outer_size_prop: float
+    pt_scale: float
+    title: str
+    show_image: bool
+    show_arrows: bool
+    fig: Figure
+    ax: Axes
+    arrow_head_width: float
+    arrow_width: float
+    arrow_cmap: float
+    arrow_vmax: float
+    sig_cci: bool
+    lr_colors: dict
+    figsize: tuple
+    kwargs:
+    """
 
     # Input checking #
     l, r = lr.split("_")
@@ -743,7 +958,6 @@ def het_plot(
 
 # Functions relating to visualising celltype-celltype interactions after
 # calling: st.tl.cci_rank.run_cci
-
 
 def ccinet_plot(
     adata: AnnData,
@@ -1145,7 +1359,6 @@ def lr_chord_plot(
         plt.show()
     else:
         return fig, ax
-
 
 def grid_plot(
     adata,
