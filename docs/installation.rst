@@ -57,13 +57,11 @@ Access to:
 
  - https://www.lfd.uci.edu/~gohlke/pythonlibs/#louvain-igraph
 
-Download 2 files: python_igraph‑0.7.1.post6‑cp38‑cp38‑win_amd64.whl and louvain‑0.6.1‑cp38‑cp38‑win_amd64.whl
+ - https://www.lfd.uci.edu/~gohlke/pythonlibs/#leidenalg
 
-You have to change to downloaded files directory and install it:
-::
+Download 3 files: igraph‑0.9.9‑cp38‑cp38‑win_amd64.whl, louvain‑0.7.1‑cp38‑cp38‑win_amd64.whl, leidenalg‑0.8.8‑cp38‑cp38‑win_amd64.whl
 
-	pip install python_igraph‑0.7.1.post6‑cp38‑cp38‑win_amd64.whl
-	pip install louvain‑0.6.1‑cp38‑cp38‑win_amd64.whl
+You have to change to downloaded files directory and install those packages.
 
 **Step 4:**
 

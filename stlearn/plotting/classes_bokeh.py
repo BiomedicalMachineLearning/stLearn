@@ -1161,7 +1161,7 @@ class BokehSpatialCciPlot(Spatial):
         self.layout.children[1] = self.make_fig()
 
     def _get_cci_lr_edges(self):
-        """ Gets edge list of significant interactions for LR pair. """
+        """Gets edge list of significant interactions for LR pair."""
 
         adata = self.adata[0]
         lr = self.lr_select.value

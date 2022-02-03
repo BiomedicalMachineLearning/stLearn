@@ -223,7 +223,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
 
 
 def get_neighbourhoods(adata):
-    """ Gets the neighbourhood information. """
+    """Gets the neighbourhood information."""
 
     # Old stlearn version where didn't store neighbourhood barcodes, not good
     #   for anndata subsetting!!

@@ -55,7 +55,7 @@ def calculate_weight_matrix(
             adata.obs[["imagecol", "imagerow"]],
             metric="euclidean",
         )
-        unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+        unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
         pd_norm = np.where(pd >= unit, 0, 1)
 
         md = 1 - pairwise_distances(
@@ -75,7 +75,7 @@ def calculate_weight_matrix(
 
     else:
         pd = pairwise_distances(adata.obs[["imagecol", "imagerow"]], metric="euclidean")
-        unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+        unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
         pd_norm = np.where(pd >= rate * unit, 0, 1)
 
         md = 1 - pairwise_distances(adata.obsm["X_morphology"], metric="cosine")
