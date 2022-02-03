@@ -27,7 +27,7 @@ import stlearn
 import os
 
 if not os.path.isdir("./_static"):
-    url = "https://www.dropbox.com/s/mky2cp1ksjc4bes/downloads.zip"
+    url = "https://www.dropbox.com/s/6mgg4p978zwyxy9/download.zip?dl=1"
     os.system("wget " + url)
     os.system("unzip downloads.zip")
 
@@ -75,7 +75,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "stLearn"
-copyright = "2020, Genomics and Machine Learning lab"
+copyright = "2022, Genomics and Machine Learning lab"
 author = "Genomics and Machine Learning lab"
 
 # The version info for the project you're documenting, acts as replacement
@@ -199,7 +199,7 @@ nbsphinx_thumbnails = {
     "tutorials/stSME_clustering": "_static/img/thumbnail/sme.png",
     "tutorials/stSME_comparison": "_static/img/thumbnail/com.png",
     "tutorials/Pseudo-time-space-tutorial": "_static/img/thumbnail/psts.png",
-    "tutorials/stLearn-CCI": "_static/img/thumbnail/cci_rank.png",
+    "tutorials/stLearn-CCI": "_static/img/thumbnail/cci.png",
     "tutorials/Read_MERFISH": "_static/img/thumbnail/mer.png",
     "tutorials/Read_seqfish": "_static/img/thumbnail/seq.png",
     "tutorials/Working-with-Old-Spatial-Transcriptomics-data": "_static/img/thumbnail/legacy.png",
@@ -209,23 +209,5 @@ nbsphinx_thumbnails = {
     "tutorials/Working_with_scanpy": "_static/img/thumbnail/scanpy.png",
     "tutorials/Core_plots": "_static/img/thumbnail/core_plots.png",
     "tutorials/Read_any_data": "_static/img/thumbnail/any.png",
+    "tutorials/Integration_multiple_datasets": "_static/img/thumbnail/integrate.png",
 }
-
-
-# import nbclean, glob
-# from pathlib import Path
-
-# for filename in glob.glob('../tutorials/*.ipynb', recursive=True):
-#    Path(filename).rename(filename.split("/")[-1])
-
-
-# with open("./list_tutorial.txt") as f:
-#     content = f.readlines()
-
-# content = [x.strip() for x in content]
-
-
-# for filename in glob.glob('*.ipynb', recursive=True):
-#     ntbk = nbclean.NotebookCleaner(filename)
-#     ntbk.clear('stderr')
-#     ntbk.save(filename)

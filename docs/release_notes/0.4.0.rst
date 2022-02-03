@@ -1,0 +1,8 @@
+0.4.0 `2022-02-03`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. rubric:: Feature
+
+- Upgrade stSME, PSTS and CCI analysis methods.
+
+- Add CCI analysis functions: :func:`~stlearn.tl.cci.load_lrs`, :func:`~stlearn.tl.cci.grid`, :func:`~stlearn.tl.cci.run`, :func:`~stlearn.tl.cci.adj_pvals`, :func:`~stlearn.tl.cci.run_lr_go`, :func:`~stlearn.pl.lr_summary`, :func:`~stlearn.pl.lr_diagnostics`, :func:`~stlearn.pl.lr_n_spots`, :func:`~stlearn.pl.lr_go`, :func:`~stlearn.pl.lr_result_plot`, :func:`~stlearn.pl.lr_plot`, :func:`~stlearn.pl.cci_check`, :func:`~stlearn.pl.ccinet_plot`, :func:`~stlearn.pl.lr_chord_plot`, :func:`~stlearn.pl.lr_cci_map`, :func:`~stlearn.pl.cci_map`, :func:`~stlearn.pl.lr_plot_interactive`, :func:`~stlearn.pl.spatialcci_plot_interactive`
