@@ -29,6 +29,7 @@ import os
 if not os.path.isdir("./_static"):
     url = "https://www.dropbox.com/s/6mgg4p978zwyxy9/download.zip?dl=1"
     os.system("wget " + url)
+    os.system("mv downloads.zip?dl=1 downloads.zip")
     os.system("unzip downloads.zip")
 
 # -- General configuration ---------------------------------------------
