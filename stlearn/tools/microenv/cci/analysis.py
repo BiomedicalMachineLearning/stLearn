@@ -621,6 +621,10 @@ def run_cci(
     best_lr_indices = np.where(lr_summary.values[:, col_i] > min_spots)[0]
     best_lrs = lr_summary.index.values[best_lr_indices]
     lr_genes = np.unique([lr.split("_") for lr in best_lrs])
+    if len(lr_genes)==0:
+        raise Exception("No LR pairs returned with current filtering params; \n"
+                        "may need to adjust min_spots, sig_spots parameters, "
+                        "or re-run st.tl.cci.run with more relaxed parameters.")
     lr_expr = adata[:, lr_genes].to_df()
 
     # Sig-CCIs across all LRs #
