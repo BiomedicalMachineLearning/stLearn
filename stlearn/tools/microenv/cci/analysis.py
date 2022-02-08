@@ -296,7 +296,9 @@ def run(
         count(adata, distance=distance, use_label=use_label, use_het=use_label)
 
     het_vals = (
-        np.array([1] * len(adata)) if use_label not in adata.obsm else adata.obsm[use_label]
+        np.array([1] * len(adata))
+        if use_label not in adata.obsm
+        else adata.obsm[use_label]
     )
 
     """ 1. Filter any LRs without stored expression.

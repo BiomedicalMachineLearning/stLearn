@@ -15,6 +15,7 @@ Tutorials
    tutorials/Interactive_plot
    tutorials/Core_plots
    tutorials/ST_deconvolution_visualization
+   tutorials/Integration_multiple_datasets
 
 
 .. nbgallery::

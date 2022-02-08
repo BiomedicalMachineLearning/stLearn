@@ -37,7 +37,11 @@ In the new release, we provide the interactive plots:
 Latest additions
 ----------------
 
+.. include:: release_notes/0.4.0.rst
+
 .. include:: release_notes/0.3.2.rst
+
+
 
 
 .. toctree::

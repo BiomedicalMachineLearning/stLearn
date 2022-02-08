@@ -45,7 +45,7 @@ importlib.reload(cci_hs)
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-# Functions for visualising the overall LR results and diagnostics.
+#### Functions for visualising the overall LR results and diagnostics.
 
 
 def lr_diagnostics(
@@ -324,6 +324,7 @@ def lr_go(
         point_size_name="n-genes",
         show_all=n_top <= max_text,
     )
+
 
 def cci_check(
     adata: AnnData,
@@ -990,6 +991,7 @@ def het_plot(
 # Functions relating to visualising celltype-celltype interactions after
 # calling: st.tl.cci_rank.run_cci
 
+
 def ccinet_plot(
     adata: AnnData,
     use_label: str,
@@ -1418,6 +1420,7 @@ def lr_chord_plot(
         plt.show()
     else:
         return fig, ax
+
 
 def grid_plot(
     adata,

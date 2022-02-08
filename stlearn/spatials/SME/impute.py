@@ -257,7 +257,7 @@ def pseudo_spot(
 
     point_tree = scipy.spatial.cKDTree(coor)
     n_neighbour = []
-    unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+    unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
     for i in range(len(impute_coor)):
         current_neighbour = point_tree.query_ball_point(
             impute_coor.values[i], round(unit)

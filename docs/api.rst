@@ -107,6 +107,7 @@ Spatial: `spatial`
    spatial.trajectory.compare_transitions
    spatial.trajectory.detect_transition_markers_clades
    spatial.trajectory.detect_transition_markers_branches
+   spatial.trajectory.set_root
 
 .. module:: stlearn.spatial.morphology
 .. currentmodule:: stlearn
@@ -145,13 +146,12 @@ Tools: `tl`
 .. autosummary::
    :toctree: .
 
-   tl.cci.lr
-   tl.cci.het.count
-   tl.cci.het.create_grids
-   tl.cci.het.count_grid
-   tl.cci.merge
-   tl.cci.permutation
-
+   tl.cci.load_lrs
+   tl.cci.grid
+   tl.cci.run
+   tl.cci.adj_pvals
+   tl.cci.run_lr_go
+   tl.cci.run_cci
 
 Plot: `pl`
 -------------------
@@ -162,6 +162,7 @@ Plot: `pl`
 .. autosummary::
    :toctree: .
 
+   pl.QC_plot
    pl.gene_plot
    pl.gene_plot_interactive
    pl.cluster_plot
@@ -170,11 +171,20 @@ Plot: `pl`
    pl.subcluster_plot
    pl.non_spatial_plot
    pl.deconvolution_plot
-   pl.QC_plot
-   pl.het_plot
-   pl.het_plot_interactive
-   pl.grid_plot
    pl.plot_mask
+   pl.lr_summary
+   pl.lr_diagnostics
+   pl.lr_n_spots
+   pl.lr_go
+   pl.lr_result_plot
+   pl.lr_plot
+   pl.cci_check
+   pl.ccinet_plot
+   pl.lr_chord_plot
+   pl.lr_cci_map
+   pl.cci_map
+   pl.lr_plot_interactive
+   pl.spatialcci_plot_interactive
 
 .. module:: stlearn.pl.trajectory
 .. currentmodule:: stlearn
