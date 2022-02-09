@@ -4,4 +4,4 @@ numba==0.53.1
 Pillow==9.0.0
 scanpy==1.8.2
 scikit-image==0.18.2
-tensorflow==2.7.0
+tensorflow==2.7.1
