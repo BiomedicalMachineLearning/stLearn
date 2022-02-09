@@ -256,6 +256,15 @@ def run(
     if type(n_cpus) != type(None):
         numba.set_num_threads(n_cpus)
 
+    # Making sure none of the var_names contains '_' already, these will need
+    # to be renamed.
+    prob_genes = [gene for gene in adata.var_names if '_' in gene]
+    if len(prob_genes)>0:
+        raise Exception("Detected '_' within some gene names, which breaks " +\
+                    "internal string handling for the lrs in format 'L_R'.\n"+\
+                    "Recommend to rename adata.var_names or remove these "+\
+                        f"genes from adata:\n {prob_genes}")
+
     # Calculating neighbour & storing #
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
