@@ -434,7 +434,7 @@ def permutation(
     # log back the original query
     adata.uns["lr"] = query_pair
 
-    ##### Negative Binomial fit - dosn't make sense, distribution not neg binom
+    #### Negative Binomial fit
     pvals, pvals_adj, log10_pvals, lr_sign = get_stats(
         scores, background, neg_binom, adj_method
     )
@@ -483,7 +483,7 @@ def get_stats(
     -------
     stats: tuple          Per spot pvalues, pvals_adj, log10_pvals_adj, lr_sign (the LR scores for significant spots).
     """
-    ##### Negative Binomial fit - dosn't make sense, distribution not neg binom
+    ##### Negative Binomial fit
     if neg_binom:
         # Need to make full background for fitting !!!
         background = np.array(list(background) + [0] * (total_bg - len(background)))
