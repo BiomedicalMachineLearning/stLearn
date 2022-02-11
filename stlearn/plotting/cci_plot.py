@@ -538,6 +538,7 @@ def lr_result_plot(
         vmax,
     )
 
+
 # @_docs_params(het_plot=doc_lr_plot)
 def lr_plot(
     adata: AnnData,
@@ -566,7 +567,7 @@ def lr_plot(
     sig_cci: bool = False,
     lr_colors: dict = None,
     figsize: tuple = (6.4, 4.8),
-    use_mix: bool=None,
+    use_mix: bool = None,
     # plotting params
     **kwargs,
 ) -> Optional[AnnData]:
@@ -1170,6 +1171,7 @@ def ccinet_plot(
 
     if return_pos:
         return pos
+
 
 # TODO continue writing documentation from here
 def cci_map(
