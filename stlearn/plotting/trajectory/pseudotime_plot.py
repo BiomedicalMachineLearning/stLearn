@@ -305,5 +305,5 @@ def get_cluster(search, dictionary):
 def get_node(node_list, split_node):
     result = np.array([])
     for node in node_list:
-        result = np.append(result, np.array(split_node[str(node)]).astype(int))
+        result = np.append(result, np.array(split_node[int(node)]).astype(int))
     return result.astype(int)

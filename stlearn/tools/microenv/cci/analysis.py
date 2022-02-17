@@ -258,12 +258,14 @@ def run(
 
     # Making sure none of the var_names contains '_' already, these will need
     # to be renamed.
-    prob_genes = [gene for gene in adata.var_names if '_' in gene]
-    if len(prob_genes)>0:
-        raise Exception("Detected '_' within some gene names, which breaks " +\
-                    "internal string handling for the lrs in format 'L_R'.\n"+\
-                    "Recommend to rename adata.var_names or remove these "+\
-                        f"genes from adata:\n {prob_genes}")
+    prob_genes = [gene for gene in adata.var_names if "_" in gene]
+    if len(prob_genes) > 0:
+        raise Exception(
+            "Detected '_' within some gene names, which breaks "
+            + "internal string handling for the lrs in format 'L_R'.\n"
+            + "Recommend to rename adata.var_names or remove these "
+            + f"genes from adata:\n {prob_genes}"
+        )
 
     # Calculating neighbour & storing #
     distance = calc_distance(adata, distance)
@@ -632,10 +634,12 @@ def run_cci(
     best_lr_indices = np.where(lr_summary.values[:, col_i] > min_spots)[0]
     best_lrs = lr_summary.index.values[best_lr_indices]
     lr_genes = np.unique([lr.split("_") for lr in best_lrs])
-    if len(lr_genes)==0:
-        raise Exception("No LR pairs returned with current filtering params; \n"
-                        "may need to adjust min_spots, sig_spots parameters, "
-                        "or re-run st.tl.cci.run with more relaxed parameters.")
+    if len(lr_genes) == 0:
+        raise Exception(
+            "No LR pairs returned with current filtering params; \n"
+            "may need to adjust min_spots, sig_spots parameters, "
+            "or re-run st.tl.cci.run with more relaxed parameters."
+        )
     lr_expr = adata[:, lr_genes].to_df()
 
     # Sig-CCIs across all LRs #
