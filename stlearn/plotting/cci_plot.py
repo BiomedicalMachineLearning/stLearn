@@ -1173,6 +1173,7 @@ def ccinet_plot(
     if return_pos:
         return pos
 
+
 def cci_map(
     adata: AnnData,
     use_label: str,
