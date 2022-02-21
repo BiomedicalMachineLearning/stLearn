@@ -818,7 +818,6 @@ def lr_plot(
             fig=fig,
             crop=False,
             show_image=show_image,
-            show=False,
             **kwargs,
         )
         gene_plot(
@@ -831,7 +830,6 @@ def lr_plot(
             fig=fig,
             crop=False,
             show_image=show_image,
-            show=False,
             **kwargs,
         )
 
