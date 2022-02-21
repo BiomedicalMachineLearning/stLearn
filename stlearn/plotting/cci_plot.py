@@ -1227,7 +1227,7 @@ def cci_map(
 
     # Rank by total interactions #
     int_vals = int_df.values
-    total_ints = int_vals.sum(axis=1) + int_vals.sum(axis=0) - int_vals.diagonal()
+    total_ints = int_vals.sum(axis=1)+int_vals.sum(axis=0)-int_vals.diagonal()
     order = np.argsort(-total_ints)
     int_df = int_df.iloc[order, order[::-1]]
 
