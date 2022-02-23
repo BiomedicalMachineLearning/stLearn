@@ -96,7 +96,8 @@ def gene_plot(
         use_raw=use_raw,
         fname=fname,
         dpi=dpi,
-        vmin=vmin, vmax=vmax
+        vmin=vmin,
+        vmax=vmax,
     )
 
 

@@ -428,11 +428,13 @@ class GenePlot(SpatialBasePlot):
         else:
             return gene_values > threshold
 
+
 ################################################################
 #                                                              #
 #                      Feature plot class                      #
 #                                                              #
 ################################################################
+
 
 class FeaturePlot(SpatialBasePlot):
     def __init__(
@@ -522,13 +524,14 @@ class FeaturePlot(SpatialBasePlot):
 
         if self.feature not in self.query_adata.obs:
             raise ValueError(
-                self.feature
-                + " is not in data.obs, please try another feature"
+                self.feature + " is not in data.obs, please try another feature"
             )
-        elif not isinstance(self.query_adata.obs[self.feature].values[0],
-                                                                numbers.Number):
-            raise ValueError(self.feature+
-                    " in data.obs is not continuous, please try another feature"
+        elif not isinstance(
+            self.query_adata.obs[self.feature].values[0], numbers.Number
+        ):
+            raise ValueError(
+                self.feature
+                + " in data.obs is not continuous, please try another feature"
             )
 
         colors = self.query_adata.obs[self.feature]
@@ -595,6 +598,7 @@ class FeaturePlot(SpatialBasePlot):
             return np.repeat(True, len(feature_values))
         else:
             return feature_values > threshold
+
 
 ################################################################
 #                                                              #

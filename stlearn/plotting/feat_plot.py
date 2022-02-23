@@ -23,7 +23,7 @@ from stlearn.utils import Empty, _empty, _AxesSubplot, _docs_params
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-#@_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
+# @_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def feat_plot(
     adata: AnnData,
     feature: str = None,
@@ -96,8 +96,6 @@ def feat_plot(
         use_raw=use_raw,
         fname=fname,
         dpi=dpi,
-        vmin=vmin, vmax=vmax
+        vmin=vmin,
+        vmax=vmax,
     )
-
-
-
