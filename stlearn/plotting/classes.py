@@ -8,6 +8,7 @@ from typing import Optional, Union, Mapping  # Special
 from typing import Sequence, Iterable  # ABCs
 from typing import Tuple  # Classes
 
+import numbers
 import numpy as np
 import pandas as pd
 from anndata import AnnData
@@ -427,6 +428,173 @@ class GenePlot(SpatialBasePlot):
         else:
             return gene_values > threshold
 
+################################################################
+#                                                              #
+#                      Feature plot class                      #
+#                                                              #
+################################################################
+
+class FeaturePlot(SpatialBasePlot):
+    def __init__(
+        self,
+        adata: AnnData,
+        # plotting param
+        title: Optional["str"] = None,
+        figsize: Optional[Tuple[float, float]] = None,
+        cmap: Optional[str] = "Spectral_r",
+        use_label: Optional[str] = None,
+        list_clusters: Optional[list] = None,
+        ax: Optional[matplotlib.axes._subplots.Axes] = None,
+        fig: Optional[matplotlib.figure.Figure] = None,
+        show_plot: Optional[bool] = True,
+        show_axis: Optional[bool] = False,
+        show_image: Optional[bool] = True,
+        show_color_bar: Optional[bool] = True,
+        color_bar_label: Optional[str] = "",
+        crop: Optional[bool] = True,
+        margin: Optional[bool] = 100,
+        size: Optional[float] = 7,
+        image_alpha: Optional[float] = 1.0,
+        cell_alpha: Optional[float] = 1.0,
+        use_raw: Optional[bool] = False,
+        fname: Optional[str] = None,
+        dpi: Optional[int] = 120,
+        # gene plot param
+        feature: str = None,
+        threshold: Optional[float] = None,
+        contour: bool = False,
+        step_size: Optional[int] = None,
+        vmin: float = None,
+        vmax: float = None,
+        **kwargs,
+    ):
+        super().__init__(
+            adata=adata,
+            title=title,
+            figsize=figsize,
+            cmap=cmap,
+            use_label=use_label,
+            list_clusters=list_clusters,
+            ax=ax,
+            fig=fig,
+            show_plot=show_plot,
+            show_axis=show_axis,
+            show_image=show_image,
+            show_color_bar=show_color_bar,
+            crop=crop,
+            margin=margin,
+            size=size,
+            image_alpha=image_alpha,
+            cell_alpha=cell_alpha,
+            use_raw=use_raw,
+            fname=fname,
+            dpi=dpi,
+        )
+
+        self.step_size = step_size
+
+        self.title = feature
+        self._add_title()
+
+        self.feature = feature
+
+        feature_values = self._get_feature_values()
+
+        self.available_ids = self._add_threshold(feature_values, threshold)
+
+        self.vmin, self.vmax = vmin, vmax
+
+        if contour:
+            plot = self._plot_contour(feature_values[self.available_ids])
+        else:
+            plot = self._plot_feature(feature_values[self.available_ids])
+
+        if show_color_bar:
+            self._add_color_bar(plot, color_bar_label=color_bar_label)
+
+        if crop:
+            self._crop_image(self.ax, margin)
+
+        if fname != None:
+            self._save_output()
+
+    def _get_feature_values(self):
+
+        if self.feature not in self.query_adata.obs:
+            raise ValueError(
+                self.feature
+                + " is not in data.obs, please try another feature"
+            )
+        elif not isinstance(self.query_adata.obs[self.feature].values[0],
+                                                                numbers.Number):
+            raise ValueError(self.feature+
+                    " in data.obs is not continuous, please try another feature"
+            )
+
+        colors = self.query_adata.obs[self.feature]
+
+        return colors
+
+    def _plot_feature(self, feature_values: pd.Series):
+
+        if type(self.vmin) == type(None) and type(self.vmax) == type(None):
+            vmin = min(feature_values)
+            vmax = max(feature_values)
+        else:
+            vmin, vmax = self.vmin, self.vmax
+
+        # Plot scatter plot based on pixel of spots
+        imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
+        imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
+        plot = self.ax.scatter(
+            imgcol_new,
+            imgrow_new,
+            edgecolor="none",
+            alpha=self.cell_alpha,
+            s=self.size,
+            marker="o",
+            vmin=vmin,
+            vmax=vmax,
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            c=feature_values,
+        )
+        return plot
+
+    def _plot_contour(self, feature_values: pd.Series):
+
+        imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
+        imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
+        # Extracting x,y and values (z)
+        z = feature_values
+        y = imgrow_new
+        x = imgcol_new
+
+        # Interpolating values to get better coverage
+        xi = np.linspace(x.min(), x.max(), 100)
+        yi = np.linspace(y.min(), y.max(), 100)
+        zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="linear")
+
+        if self.step_size == None:
+            self.step_size = int(np.max(z) / 50)
+            if self.step_size < 1:
+                self.step_size = 1
+        # Creating contour plot with a step size of 1
+
+        cs = plt.contourf(
+            xi,
+            yi,
+            zi,
+            range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
+            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            alpha=self.cell_alpha,
+        )
+        return cs
+
+    def _add_threshold(self, feature_values, threshold):
+        if threshold == None:
+            return np.repeat(True, len(feature_values))
+        else:
+            return feature_values > threshold
 
 ################################################################
 #                                                              #

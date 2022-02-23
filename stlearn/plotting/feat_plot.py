@@ -1,3 +1,7 @@
+"""
+Plotting of continuous features stored in adata.obs.
+"""
+
 from matplotlib import pyplot as plt
 from PIL import Image
 import pandas as pd
@@ -11,7 +15,7 @@ from typing import Tuple  # Classes
 from anndata import AnnData
 import warnings
 
-from stlearn.plotting.classes import GenePlot
+from stlearn.plotting.classes import FeaturePlot
 from stlearn.plotting.classes_bokeh import BokehGenePlot
 from stlearn.plotting._docs import doc_spatial_base_plot, doc_gene_plot
 from stlearn.utils import Empty, _empty, _AxesSubplot, _docs_params
@@ -19,13 +23,11 @@ from stlearn.utils import Empty, _empty, _AxesSubplot, _docs_params
 from bokeh.io import push_notebook, output_notebook
 from bokeh.plotting import show
 
-
-@_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
-def gene_plot(
+#@_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
+def feat_plot(
     adata: AnnData,
-    gene_symbols: Union[str, list] = None,
+    feature: str = None,
     threshold: Optional[float] = None,
-    method: str = "CumSum",
     contour: bool = False,
     step_size: Optional[int] = None,
     title: Optional["str"] = None,
@@ -52,28 +54,26 @@ def gene_plot(
     vmax: Optional[float] = None,
 ) -> Optional[AnnData]:
     """\
-    Allows the visualization of a single gene or multiple genes as the values
-    of dot points or contour in the Spatial transcriptomics array.
+    Allows the visualization of a continuous features stored in adata.obs
+     for Spatial transcriptomics array.
 
 
     Parameters
     -------------------------------------
     {spatial_base_plot}
-    {gene_plot}
+    {feature_plot}
 
     Examples
     -------------------------------------
     >>> import stlearn as st
     >>> adata = st.datasets.example_bcba()
-    >>> genes = ["BRCA1","BRCA2"]
-    >>> st.pl.gene_plot(adata, gene_symbols = genes)
+    >>> st.pl.gene_plot(adata, 'dpt_pseudotime')
 
     """
-    GenePlot(
+    FeaturePlot(
         adata,
-        gene_symbols=gene_symbols,
+        feature=feature,
         threshold=threshold,
-        method=method,
         contour=contour,
         step_size=step_size,
         title=title,
@@ -100,7 +100,4 @@ def gene_plot(
     )
 
 
-def gene_plot_interactive(adata: AnnData):
-    bokeh_object = BokehGenePlot(adata)
-    output_notebook()
-    show(bokeh_object.app, notebook_handle=True)
+

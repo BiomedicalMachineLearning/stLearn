@@ -1,5 +1,6 @@
 from .plotting.gene_plot import gene_plot
 from .plotting.gene_plot import gene_plot_interactive
+from .plotting.feat_plot import feat_plot
 from .plotting.cluster_plot import cluster_plot
 from .plotting.cluster_plot import cluster_plot_interactive
 from .plotting.subcluster_plot import subcluster_plot
