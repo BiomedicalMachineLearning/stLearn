@@ -256,11 +256,11 @@ def add_arrows(
         f"tissue_{res}_scalef"
     ]
     # scale_factor = 1
-    #scale_factor = 1 # scale factor pretty much isn't used since always parsed as 1
-                     # in the base plotting function class.
-                     # Reason why is because scale_factor refers to scaling the
-                     # image to match the spot spatial coordinates, not the
-                     # the spots to match the image coordinates!!!
+    # scale_factor = 1 # scale factor pretty much isn't used since always parsed as 1
+    # in the base plotting function class.
+    # Reason why is because scale_factor refers to scaling the
+    # image to match the spot spatial coordinates, not the
+    # the spots to match the image coordinates!!!
 
     L_bool = l_expr > min_expr
     R_bool = r_expr > min_expr
@@ -383,7 +383,7 @@ def add_arrows_by_edges(
 ):
     """Adds the arrows using an edge list."""
     for i, edge in enumerate(edges):
-        #cols = ["imagecol", "imagerow"]
+        # cols = ["imagecol", "imagerow"]
         if forward:
             edge0, edge1 = edge
         else:
@@ -392,10 +392,10 @@ def add_arrows_by_edges(
         # Arrow details #
         # x1, y1 = adata.obs.loc[edge0, cols].values.astype(float) * scale_factor
         # x2, y2 = adata.obs.loc[edge1, cols].values.astype(float) * scale_factor
-        edge0_index = np.where(adata.obs_names.values==edge0)[0][0]
-        edge1_index = np.where(adata.obs_names.values==edge1)[0][0]
-        x1, y1 = adata.obsm['spatial'][edge0_index, :] * scale_factor
-        x2, y2 = adata.obsm['spatial'][edge1_index, :] * scale_factor
+        edge0_index = np.where(adata.obs_names.values == edge0)[0][0]
+        edge1_index = np.where(adata.obs_names.values == edge1)[0][0]
+        x1, y1 = adata.obsm["spatial"][edge0_index, :] * scale_factor
+        x2, y2 = adata.obsm["spatial"][edge1_index, :] * scale_factor
         dx, dy = (x2 - x1) * 0.75, (y2 - y1) * 0.75
         arrow_color = "k" if type(edge_colors) == type(None) else edge_colors[i]
 
