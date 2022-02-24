@@ -1,0 +1,79 @@
+
+
+{% extends 'base.html' %}
+{% set active_page = "index" %}
+{% block content %}
+
+<div class="card">
+   <div class="card-header card-header-primary">
+		<h4 class="card-title">stLearn toolkit</h4>
+		<p class="card-category">Introduction</p>
+   </div>
+   <div class="card-body">
+		<article class="markdown-body entry-content container-lg" itemprop="text"><p align="center">
+  <a target="_blank" rel="noopener noreferrer" href="https://camo.githubusercontent.com/f37fd12e918aed80275ee5004936795983d849729c4e2af6ed7c0458b6ed5a52/68747470733a2f2f692e696d6775722e636f6d2f7966586c43594f2e706e67"><img src="https://camo.githubusercontent.com/f37fd12e918aed80275ee5004936795983d849729c4e2af6ed7c0458b6ed5a52/68747470733a2f2f692e696d6775722e636f6d2f7966586c43594f2e706e67" alt="deepreg_logo" title="DeepReg" width="300" data-canonical-src="https://i.imgur.com/yfXlCYO.png" style="max-width:100%;"></a>
+</p>
+<table align="center">
+  <tbody><tr>
+    <td>
+      <b>Package</b>
+    </td>
+    <td>
+      <a href="https://pypi.python.org/pypi/stlearn/" rel="nofollow">
+      <img src="https://camo.githubusercontent.com/5bf7ce68a4ea58bf4468279922ac9eff4c0ea2df05e404d587d0a07aa382b4f9/68747470733a2f2f696d672e736869656c64732e696f2f707970692f762f73746c6561726e2e737667" alt="PyPI Version" data-canonical-src="https://img.shields.io/pypi/v/stlearn.svg" style="max-width:100%;">
+      </a>
+      <a href="https://pepy.tech/project/stlearn" rel="nofollow">
+      <img src="https://camo.githubusercontent.com/3669aac3a577fc3f4e5d7977ac04b4c7bc2b13413798e871c11f801bc37c782e/68747470733a2f2f7374617469632e706570792e746563682f706572736f6e616c697a65642d62616467652f73746c6561726e3f706572696f643d746f74616c26756e6974733d696e7465726e6174696f6e616c5f73797374656d266c6566745f636f6c6f723d677265792672696768745f636f6c6f723d6f72616e6765266c6566745f746578743d446f776e6c6f616473" alt="PyPI downloads" data-canonical-src="https://static.pepy.tech/personalized-badge/stlearn?period=total&amp;units=international_system&amp;left_color=grey&amp;right_color=orange&amp;left_text=Downloads" style="max-width:100%;">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b>Documentation</b>
+    </td>
+    <td>
+      <a href="https://stlearn.readthedocs.io/en/latest/" rel="nofollow">
+      <img src="https://camo.githubusercontent.com/5aadea35c531d70989a2702d78f4576a3b3d9816f2e509eb3d2ba25ff11dbfda/68747470733a2f2f72656164746865646f63732e6f72672f70726f6a656374732f73746c6561726e2f62616467652f3f76657273696f6e3d6c6174657374" alt="Documentation Status" data-canonical-src="https://readthedocs.org/projects/stlearn/badge/?version=latest" style="max-width:100%;">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+     <b>Paper</b>
+    </td>
+    <td>
+      <a href="https://doi.org/10.1101/2020.05.31.125658" rel="nofollow"><img src="https://camo.githubusercontent.com/7406cc20d938fecd314a2de3d071b57cc7fbd7488a38da76e1533030957ec57b/68747470733a2f2f7a656e6f646f2e6f72672f62616467652f444f492f31302e313030372f3937382d332d3331392d37363230372d345f31352e737667" alt="DOI" data-canonical-src="https://zenodo.org/badge/DOI/10.1007/978-3-319-76207-4_15.svg" style="max-width:100%;"></a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b>License</b>
+    </td>
+    <td>
+      <a href="http://perso.crans.org/besson/LICENSE.html" rel="nofollow"><img src="https://camo.githubusercontent.com/39e1979dd608fb1f2c31a137b17b381b3c7c9752a17a62d962b6206b63b705c9/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d4253442d626c75652e737667" alt="LICENSE" data-canonical-src="https://img.shields.io/badge/License-BSD-blue.svg" style="max-width:100%;"></a>
+    </td>
+  </tr>
+</tbody></table>
+<h1><a id="user-content-stlearn---a-downstream-analysis-toolkit-for-spatial-transcriptomic-data" class="anchor" aria-hidden="true" href="#stlearn---a-downstream-analysis-toolkit-for-spatial-transcriptomic-data"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>stLearn - A downstream analysis toolkit for Spatial Transcriptomic data</h1>
+<p><strong>stLearn</strong> is designed to comprehensively analyse Spatial Transcriptomics (ST) data to investigate complex biological processes within an undissociated tissue. ST is emerging as the “next generation” of single-cell RNA sequencing because it adds spatial and morphological context to the transcriptional profile of cells in an intact tissue section. However, existing ST analysis methods typically use the captured spatial and/or morphological data as a visualisation tool rather than as informative features for model development. We have developed an analysis method that exploits all three data types: Spatial distance, tissue Morphology, and gene Expression measurements (SME) from ST data. This combinatorial approach allows us to more accurately model underlying tissue biology, and allows researchers to address key questions in three major research areas: cell type identification, spatial trajectory reconstruction, and the study of cell-cell interactions within an undissociated tissue sample.</p>
+<hr>
+<h2><a id="user-content-getting-started" class="anchor" aria-hidden="true" href="#getting-started"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Getting Started</h2>
+<ul>
+<li><a href="https://stlearn.readthedocs.io/en/latest/" rel="nofollow">Documentation and Tutorials</a></li>
+</ul>
+<h2><a id="user-content-citing-stlearn" class="anchor" aria-hidden="true" href="#citing-stlearn"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Citing stLearn</h2>
+<p>If you have used stLearn in your research, please consider citing us:</p>
+<blockquote>
+<p>Pham <em>et al.</em>, (2020). stLearn: integrating spatial location, tissue morphology and gene expression to find cell types, cell-cell interactions and spatial trajectories within undissociated tissues
+<em>biorxiv</em>
+<a href="https://doi.org/10.1101/2020.05.31.125658" rel="nofollow">https://doi.org/10.1101/2020.05.31.125658</a></p>
+</blockquote>
+</article>
+   </div>
+</div>
+
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}

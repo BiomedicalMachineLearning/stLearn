@@ -33,7 +33,7 @@ setup(
     description="A downstream analysis toolkit for Spatial Transcriptomic data",
     entry_points={
         "console_scripts": [
-            "stlearn=stlearn.cli:main",
+            "stlearn=stlearn.app.app:main",
         ],
     },
     install_requires=requirements,

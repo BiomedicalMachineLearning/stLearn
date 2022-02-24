@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card">
+   <div class="card-header card-header-primary">
+		<h4 class="card-title">Cell-cell interaction plot</h4>
+		<p class="card-category">Interactive version</p>
+   </div>
+   <div class="card-body">
+		 {{ script|safe }}
+		 <div id="overlay">
+	         <img src="{{ url_for('static', filename='img/loading_gif.gif') }}" alt="Loading" />
+	         Loading plot...
+         </div>
+   </div>
+</div>
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}
