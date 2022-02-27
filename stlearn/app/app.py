@@ -1,3 +1,14 @@
+import os, sys, subprocess
+
+sys.path.append(os.path.dirname(__file__))
+
+try:
+    import flask
+except ImportError:
+    subprocess.call(
+        "pip install -r " + os.path.dirname(__file__) + "//requirements.txt", shell=True
+    )
+
 from flask import (
     Flask,
     render_template,
@@ -17,9 +28,7 @@ import traceback
 
 import tempfile
 import shutil
-import os, sys
 
-sys.path.append(os.path.dirname(__file__))
 import stlearn
 import scanpy
 import numpy

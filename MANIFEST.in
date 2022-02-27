@@ -9,5 +9,6 @@ recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
+recursive-include stlearn/app *.txt
 recursive-include stlearn/app/templates *
 recursive-include stlearn/app/static *
