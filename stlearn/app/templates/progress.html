@@ -1,0 +1,19 @@
+{# Code which displays the progress bar, indicating where in the analysis the
+	user is.
+#}
+
+
+{% for key, value in step_log.items() %}
+	{% if 'params' not in key %}
+		{% if value[0] %}
+			<li class="list-group-item"><span class="badge badge-pill badge-success">Success</span> {{ value[1] }} </li>
+		{% else %}
+			<li class="list-group-item"><span class="badge badge-pill badge-danger">None</span> {{ value[1] }} </li>
+		{% endif %}
+	{% endif %}
+{% endfor %}
+
+
+<form action="/save_adata" method="post">
+    <button name="forwardBtn" type="submit" class="btn">Save adata</button>
+</form>

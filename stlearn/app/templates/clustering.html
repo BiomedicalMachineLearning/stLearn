@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+ <div class="card">
+   <div class="card-header card-header-primary">
+		<h4 class="card-title">Clustering</h4>
+   </div>
+   <div class="card-body">
+
+	{# Below indicates whether clustering already completed #}
+	{% include "flash_header.html" %}
+
+	{# Below is the form. #}
+    {% with superForm=clustering_form %}
+    {% include "superform.html" %}
+    {% endwith %}
+   </div>
+</div>
+
+
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+
+  $('#registerForm > div:nth-child(6)').css({"display" : "block"});
+  $('#registerForm > div:nth-child(7)').css({"display" : "none"});
+  $('#registerForm > div:nth-child(8)').css({"display" : "none"});
+
+  $("#registerForm > div:nth-child(5)").change(function() {
+      if ($(this).find(":selected").val() == "KMeans") {
+        console.log($(this).val())
+        $('#registerForm > div:nth-child(6)').css({"display" : "block"});
+        $('#registerForm > div:nth-child(7)').css({"display" : "none"});
+        $('#registerForm > div:nth-child(8)').css({"display" : "none"});
+      } else {
+        $('#registerForm > div:nth-child(6)').css({"display" : "none"});
+        $('#registerForm > div:nth-child(7)').css({"display" : "block"});
+        $('#registerForm > div:nth-child(8)').css({"display" : "block"});
+      }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>stLearn - Interactive App version</title>
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='/img/favicon.png') }}"/>
+  {% block resource %}
+
+  {% endblock %}
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+  <link href="{{ url_for('static', filename='/css/material-dashboard.min.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='/css/style.css') }}" rel="stylesheet" />
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+  <!-- Material Kit CSS -->
+
+</head>
+
+<body>
+
+
+
+  <div class="wrapper ">
+     <!--
+      Status box
+  -->
+    <div class="card right" style="width: 18rem;">
+      <ul class="list-group list-group-flush">
+        {% block status %}
+        {% endblock %}
+      </ul>
+    </div>
+
+    <div class="sidebar" data-color="purple" data-background-color="white">
+      <!--
+      Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+      Tip 2: you can also add an image using data-image tag
+  -->
+      <div class="logo">
+        <a href="/" class="simple-text logo-mini">
+          stLearn
+        </a>
+      </div>
+      <div class="sidebar-wrapper">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="material-icons">home</i>
+              <p>Homepage</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/upload">
+              <i class="material-icons">drive_folder_upload</i>
+              <p>Upload files</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="preprocessing" href="/preprocessing">
+              <i class="material-icons">settings_suggest</i>
+              <p>Preprocessing</p>
+            </a>
+          </li><li class="nav-item">
+            <a class="nav-link disabled" id="lr" href="/lr">
+              <i class="material-icons">cable</i>
+              <p>LR interaction</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="cci" href="/cci">
+              <i class="material-icons">cable</i>
+              <p>Cell-cell interaction</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="clustering" href="/clustering">
+              <i class="material-icons">grid_4x4</i>
+              <p>SME clustering</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="psts" href="/psts">
+              <i class="material-icons">air</i>
+              <p>PSTS analysis</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="dea" href="/dea">
+              <i class="material-icons">group_work</i>
+              <p>DEA analysis</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="gene_plot" href="/gene_plot">
+              <i class="material-icons">lens_blur</i>
+              <p>Gene plot</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="annotate_plot" href="/annotate_plot">
+              <i class="material-icons">mode_edit</i>
+              <p>Annotation plot</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="cluster_plot" href="/cluster_plot">
+              <i class="material-icons">analytics</i>
+              <p>Cluster plot</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" id="lr_plot" href="/lr_plot">
+              <i class="material-icons">calendar_view_month</i>
+              <p>LR plot</p>
+            </a>
+          </li>
+	        <li class="nav-item">
+            <a class="nav-link disabled" id="spatial_cci_plot" href="/spatial_cci_plot">
+              <i class="material-icons">calendar_view_month</i>
+              <p>Spatial CCI plot</p>
+            </a>
+          </li>
+          <!-- your sidebar here -->
+        </ul>
+      </div>
+    </div>
+    <div class="main-panel">
+      <div class="content">
+        <div class="container-fluid">
+          {% block content %}
+        {% endblock %}
+
+        </div>
+      </div>
+      <footer class="footer">
+        <div class="container-fluid">
+          <nav class="float-left">
+            <ul>
+              <li>
+                <a href="https://github.com/BiomedicalMachineLearning/stLearn">
+                  Genomics and Machine Learning Lab
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <div class="copyright float-right">
+            &copy;
+            <script>
+              document.write(new Date().getFullYear())
+            </script>
+
+          </div>
+          <!-- your footer here -->
+        </div>
+      </footer>
+    </div>
+  </div>
+
+
+
+
+<!--   Core JS Files   -->
+  <script src="{{ url_for('static', filename='/js/core/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='/js/core/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='/js/core/bootstrap-material-design.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='/js/plugins/perfect-scrollbar.jquery.min.js') }}"></script>
+<script>
+    $('a[href="' + this.location.pathname + '"]').parents('li,ul').addClass('active');
+
+    {% if step_log.cci[0] %}
+      $( "#cci_plot" ).removeClass( "disabled" )
+      $( "#spatial_cci_plot" ).removeClass( "disabled" )
+    {% endif %}
+
+    {% if step_log.lr[0] %}
+      $( "#lr_plot" ).removeClass( "disabled" )
+    {% endif %}
+
+    {% if step_log.clustering[0] %}
+      $( "#psts" ).removeClass( "disabled" )
+      $( "#cluster_plot" ).removeClass( "disabled" )
+      $( "#dea" ).removeClass( "disabled" )
+    {% endif %}
+
+    {% if step_log.preprocessed[0] %}
+      $( "#lr" ).removeClass( "disabled" )
+      $( "#cci" ).removeClass( "disabled" )
+      $( "#clustering" ).removeClass( "disabled" )
+    {% endif %}
+
+    {% if step_log.uploaded[0] %}
+      $( "#preprocessing" ).removeClass( "disabled" )
+      $( "#gene_plot" ).removeClass( "disabled" )
+      $( "#annotate_plot" ).removeClass( "disabled" )
+    {% endif %}
+
+</script>
+
+<script type="text/javascript">
+  $("#overlay").fadeOut(1000000);
+</script>
+
+  {% block javascript %}
+    {% endblock %}
+</body>
+
+</html>

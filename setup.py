@@ -33,7 +33,7 @@ setup(
     description="A downstream analysis toolkit for Spatial Transcriptomic data",
     entry_points={
         "console_scripts": [
-            "stlearn=stlearn.cli:main",
+            "stlearn=stlearn.app.app:main",
         ],
     },
     install_requires=requirements,
@@ -48,6 +48,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/BiomedicalMachineLearning/stLearn",
-    version="0.4.0",
+    version="0.4.1",
     zip_safe=False,
 )

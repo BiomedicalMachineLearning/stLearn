@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<!-- Modal -->
+
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Please choose the main cluster you want to do the PSTS analysis:</h5>
+      </div>
+      <div class="modal-body">
+        <div class="btn-group">
+			  <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			    Cluster list:
+			  </button>
+			  <form action="http://localhost:5000/convert_clusters" method="POST" >
+			  <div class="dropdown-menu">
+
+			  	{%for cluster in menu%}
+
+				    <input class="dropdown-item" type="submit" name="convert_clusters" value="{{cluster}}" ></input>
+				{%endfor%}
+
+
+			  </div>
+			  </form>
+			</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}

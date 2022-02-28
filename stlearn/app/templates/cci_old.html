@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+	<div class="card-header card-header-primary">
+		<h4 class="card-title">Cell-cell interaction analysis</h4>
+	</div>
+	<div class="card-body">
+
+		{# Gives the user errors if didn't fill out form correctly #}
+		{% include "flash_header.html" %}
+
+		{# Below is the form. #}
+	    {% with superForm=cci_form %}
+	    {% include "superform.html" %}
+	    {% endwith %}
+
+		<footer>
+			<font color="red"> *Optional </font>
+			<br />
+			<font color="red"> **Required </font>
+		</footer>
+	</div>
+</div>
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}

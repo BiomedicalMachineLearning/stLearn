@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+	<div class="card-header card-header-primary">
+		<h4 class="card-title">Preprocessing</h4>
+	</div>
+	<div class="card-body">
+
+	{# Below indicates whether pre-processing already completed #}
+	{% include "flash_header.html" %}
+
+	{# Below is the form. #}
+    {% with superForm=preprocess_form %}
+    {% include "superform.html" %}
+    {% endwith %}
+
+	</div>
+</div>
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}
