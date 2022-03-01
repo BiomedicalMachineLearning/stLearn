@@ -28,6 +28,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
     description="A downstream analysis toolkit for Spatial Transcriptomic data",
@@ -48,6 +49,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/BiomedicalMachineLearning/stLearn",
-    version="0.4.1",
+    version="0.4.5",
     zip_safe=False,
 )

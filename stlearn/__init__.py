@@ -2,7 +2,7 @@
 
 __author__ = """Genomics and Machine Learning lab"""
 __email__ = "duy.pham@uq.edu.au"
-__version__ = "0.4.1"
+__version__ = "0.4.5"
 
 
 from . import add
