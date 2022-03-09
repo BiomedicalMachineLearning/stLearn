@@ -21,7 +21,7 @@ test_requirements = []
 setup(
     author="Genomics and Machine Learning lab",
     author_email="duy.pham@uq.edu.au",
-    python_requires=">=3.8",
+    python_requires=">=3.7",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -49,6 +49,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/BiomedicalMachineLearning/stLearn",
-    version="0.4.5",
+    version="0.4.6",
     zip_safe=False,
 )
