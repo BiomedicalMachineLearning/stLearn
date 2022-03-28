@@ -376,14 +376,8 @@ class GenePlot(SpatialBasePlot):
             vmin, vmax = self.vmin, self.vmax
 
         # Plot scatter plot based on pixel of spots
-        imgcol_new = (
-            self.query_adata[gene_values.index, :].obsm["spatial"][:, 0]
-            * self.scale_factor
-        )
-        imgrow_new = (
-            self.query_adata[gene_values.index, :].obsm["spatial"][:, 1]
-            * self.scale_factor
-        )
+        imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
+        imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         plot = self.ax.scatter(
             imgcol_new,
             imgrow_new,
