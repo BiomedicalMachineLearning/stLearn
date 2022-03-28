@@ -1,6 +1,7 @@
 import click
 from .. import __version__
-from .app import app
+
+import os
 
 
 @click.group(
@@ -17,11 +18,14 @@ from .app import app
     help="Show the software version and exit.",
 )
 def main():
+    os._exit
     click.echo("Please run `stlearn launch` to start the web app")
 
 
 @main.command(short_help="Launch the stlearn interactive app")
 def launch():
+    from .app import app
+
     try:
         app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
     except OSError as e:
