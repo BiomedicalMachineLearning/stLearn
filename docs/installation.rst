@@ -5,6 +5,9 @@ Installation
 ============
 
 
+Install by Anaconda
+---------------
+
 **Step 1:**
 
 Prepare conda environment for stLearn
@@ -15,12 +18,25 @@ Prepare conda environment for stLearn
 
 **Step 2:**
 
+You can directly install stlearn in the anaconda by:
 ::
 
-	conda config --add channels conda-forge
-	conda install louvain leidenalg
+	conda install -c conda-forge stlearn
 
-**Step 3:**
+Install by PyPi
+---------------
+
+**Step 1:**
+
+Prepare conda environment for stLearn
+::
+
+	conda create -n stlearn python=3.8
+	conda activate stlearn
+
+**Step 2:**
+
+Install stlearn using `pip`
 ::
 
 	pip install -U stlearn

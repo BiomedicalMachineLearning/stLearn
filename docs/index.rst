@@ -21,7 +21,10 @@ stLearn is designed to comprehensively analyse Spatial Transcriptomics (ST) data
 
 We also published stLearn-interactive which is a python-based interactive website for working with all the functions from stLearn and upgrade with some bokeh-based plots.
 
-stLearn-interactive source code and installation: `Github <https://github.com/BiomedicalMachineLearning/stlearn_interactive>`_ and `Wiki page <https://github.com/BiomedicalMachineLearning/stlearn_interactive/wiki/stLearn-interactive-tutorial>`_
+To run the stlearn interaction webapp in your local, run:
+::
+
+   stlearn launch
 
 
 New features
@@ -37,7 +40,7 @@ In the new release, we provide the interactive plots:
 Latest additions
 ----------------
 
-.. include:: release_notes/0.4.0.rst
+.. include:: release_notes/0.4.6.rst
 
 .. include:: release_notes/0.3.2.rst
 
@@ -50,6 +53,7 @@ Latest additions
 
 
    installation
+   interactive
    tutorials
    api
    release_notes/index

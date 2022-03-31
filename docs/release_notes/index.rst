@@ -1,9 +1,9 @@
 Release notes
 ===================================================
 
-Version 0.3.2
+Version 0.4.6
 ---------------------------
 
-.. include:: 0.3.2.rst
+.. include:: 0.4.6.rst
 
-.. include:: 0.4.0.rst
+.. include:: 0.3.2.rst
