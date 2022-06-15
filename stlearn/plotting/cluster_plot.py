@@ -53,6 +53,12 @@ def cluster_plot(
     text_box_size: Optional[float] = 5,
     color_bar_size: Optional[float] = 10,
     bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
+    # trajectory
+    trajectory_node_size: Optional[int] = 10,
+    trajectory_alpha: Optional[float] = 1.0,
+    trajectory_width: Optional[float] = 2.5,
+    trajectory_edge_color: Optional[str] = "#f4efd3",
+    trajectory_arrowsize: Optional[int] = 17,
 ) -> Optional[AnnData]:
 
     """\
@@ -106,6 +112,11 @@ def cluster_plot(
         text_box_size=text_box_size,
         color_bar_size=color_bar_size,
         bbox_to_anchor=bbox_to_anchor,
+        trajectory_node_size=trajectory_node_size,
+        trajectory_alpha=trajectory_alpha,
+        trajectory_width=trajectory_width,
+        trajectory_edge_color=trajectory_edge_color,
+        trajectory_arrowsize=trajectory_arrowsize,
     )
 
 
