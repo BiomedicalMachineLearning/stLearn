@@ -640,6 +640,12 @@ class ClusterPlot(SpatialBasePlot):
         text_box_size: Optional[float] = 5,
         color_bar_size: Optional[float] = 10,
         bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
+        # trajectory
+        trajectory_node_size: Optional[int] = 10,
+        trajectory_alpha: Optional[float] = 1.0,
+        trajectory_width: Optional[float] = 2.5,
+        trajectory_edge_color: Optional[str] = "#f4efd3",
+        trajectory_arrowsize: Optional[int] = 17,
     ):
         super().__init__(
             adata=adata,
@@ -683,6 +689,13 @@ class ClusterPlot(SpatialBasePlot):
         if show_subcluster:
             self._add_sub_clusters()
         if show_trajectories:
+
+            self.trajectory_node_size = trajectory_node_size
+            self.trajectory_alpha = trajectory_alpha
+            self.trajectory_width = trajectory_width
+            self.trajectory_edge_color = trajectory_edge_color
+            self.trajectory_arrowsize = trajectory_arrowsize
+
             self._add_trajectories()
 
         if crop:
@@ -913,11 +926,11 @@ class ClusterPlot(SpatialBasePlot):
             nx.draw_networkx_edges(
                 G,
                 pos=centroid_dict,
-                node_size=10,
-                alpha=1.0,
-                width=2.5,
-                edge_color="#f4efd3",
-                arrowsize=17,
+                node_size=self.trajectory_node_size,
+                alpha=self.trajectory_alpha,
+                width=self.trajectory_width,
+                edge_color=self.trajectory_edge_color,
+                arrowsize=self.trajectory_arrowsize,
                 arrowstyle="<|-",
                 connectionstyle="arc3,rad=0.2",
             )
@@ -925,11 +938,11 @@ class ClusterPlot(SpatialBasePlot):
             nx.draw_networkx_edges(
                 G,
                 pos=centroid_dict,
-                node_size=10,
-                alpha=1.0,
-                width=2.5,
-                edge_color="#f4efd3",
-                arrowsize=17,
+                node_size=self.trajectory_node_size,
+                alpha=self.trajectory_alpha,
+                width=self.trajectory_width,
+                edge_color=self.trajectory_edge_color,
+                arrowsize=self.trajectory_arrowsize,
                 arrowstyle="-|>",
                 connectionstyle="arc3,rad=0.2",
             )
