@@ -50,7 +50,7 @@ def pseudotime_plot(
     library_id
         Library id stored in AnnData.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     list_clusters
         Choose set of clusters that will display in the plot.
     cell_alpha

@@ -27,7 +27,7 @@ def check_trajectory(
     ), "Please run the pseudotime or choose the right one!"
     assert (
         use_label in adata.obs.columns
-    ), "Please run the clustering or choose the right label!"
+    ), "Please run the cluster or choose the right label!"
     assert basis in adata.obsm, (
         "Please run the " + basis + "before you check the trajectory!"
     )

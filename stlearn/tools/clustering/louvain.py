@@ -55,7 +55,7 @@ def louvain(
     random_state
         Change the initialization of the optimization.
     restrict_to
-        Restrict the clustering to the categories within the key for sample
+        Restrict the cluster to the categories within the key for sample
         annotation, tuple needs to contain ``(obs_key, list_of_categories)``.
     key_added
         Key under which to add the cluster labels. (default: ``'louvain'``)
@@ -63,7 +63,7 @@ def louvain(
         Sparse adjacency matrix of the graph, defaults to
         ``adata.uns['neighbors']['connectivities']``.
     flavor
-        Choose between to packages for computing the clustering.
+        Choose between to packages for computing the cluster.
         ``'vtraag'`` is much more powerful, and the default.
     directed
         Interpret the ``adjacency`` matrix as directed graph?
@@ -103,5 +103,5 @@ def louvain(
         copy=copy,
     )
 
-    print("Applying Louvain clustering ...")
-    print("Louvain clustering is done! The labels are stored in adata.obs['louvain']")
+    print("Applying Louvain cluster ...")
+    print("Louvain cluster is done! The labels are stored in adata.obs['louvain']")

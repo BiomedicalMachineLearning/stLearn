@@ -56,7 +56,7 @@ def cluster_plot(
 ) -> Optional[AnnData]:
 
     """\
-    Allows the visualization of a clustering results as the discretes values
+    Allows the visualization of a cluster results as the discretes values
     of dot points in the Spatial transcriptomics array. We also support to
     visualize the spatial trajectory results
 

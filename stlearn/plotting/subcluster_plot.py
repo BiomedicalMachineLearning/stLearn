@@ -66,7 +66,7 @@ def subcluster_plot(
     assert use_label != None, "Please select `use_label` parameter"
     assert (
         use_label in adata.obs.columns
-    ), "Please run `stlearn.spatial.clustering.localization` function!"
+    ), "Please run `stlearn.spatial.cluster.localization` function!"
 
     SubClusterPlot(
         adata,

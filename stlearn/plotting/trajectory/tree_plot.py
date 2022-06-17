@@ -42,7 +42,7 @@ def tree_plot(
     library_id
         Library id stored in AnnData.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     figsize
         Change figure size.
     data_alpha

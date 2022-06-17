@@ -22,7 +22,7 @@ def kmeans(
 ) -> Optional[AnnData]:
 
     """\
-    Perform kmeans clustering for spatial transcriptomics data
+    Perform kmeans cluster for spatial transcriptomics data
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ def kmeans(
 
     data = adata.obsm[use_data]
 
-    print("Applying Kmeans clustering ...")
+    print("Applying Kmeans cluster ...")
 
     kmeans = KMeans(
         n_clusters=n_clusters,
@@ -85,6 +85,6 @@ def kmeans(
         categories=natsorted(np.unique(np.array(kmeans.labels_)).astype("U")),
     )
 
-    print('Kmeans clustering is done! The labels are stored in adata.obs["kmeans"]')
+    print('Kmeans cluster is done! The labels are stored in adata.obs["kmeans"]')
 
     return adata if copy else None

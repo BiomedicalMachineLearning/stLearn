@@ -15,14 +15,14 @@ def localization(
 ) -> Optional[AnnData]:
 
     """\
-    Perform local clustering by using DBSCAN.
+    Perform local cluster by using DBSCAN.
 
     Parameters
     ----------
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     eps
         The maximum distance between two samples for one to be considered as
         in the neighborhood of the other. This is not a maximum bound on the

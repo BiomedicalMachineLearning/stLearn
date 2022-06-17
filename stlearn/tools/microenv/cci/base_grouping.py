@@ -22,7 +22,7 @@ def get_hotspots(
     plot_diagnostics: bool = False,
     show_plot: bool = False,
 ):
-    """Determines the hotspots for the inputted scores by progressively setting more stringent cutoffs & clustering in space, chooses point which maximises number of clusters.
+    """Determines the hotspots for the inputted scores by progressively setting more stringent cutoffs & cluster in space, chooses point which maximises number of clusters.
     Parameters
     ----------
     adata: AnnData          The data object

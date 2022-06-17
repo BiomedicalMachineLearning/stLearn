@@ -24,7 +24,7 @@ def add_loupe_clusters(
     annotation_path
         Path of the output of label transfer result by Seurat
     use_label
-        Choosing clustering type.
+        Choosing cluster type.
     threshold
         Quantile threshold of label
     copy
@@ -32,7 +32,7 @@ def add_loupe_clusters(
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
-    **[clustering method name]_anno** : `adata.obs` field
+    **[cluster method name]_anno** : `adata.obs` field
         The annotation of cluster results.
 
     """

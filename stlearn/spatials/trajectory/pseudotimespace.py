@@ -24,7 +24,7 @@ def pseudotimespace_global(
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     list_clusters
         List of cluster used to reconstruct spatial trajectory.
     w
@@ -69,7 +69,7 @@ def pseudotimespace_local(
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     cluster
         Cluster used to reconstruct intraregional spatial trajectory.
     w

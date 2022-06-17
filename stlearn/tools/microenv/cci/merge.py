@@ -9,7 +9,7 @@ def merge(
     use_het: str = "cci_het",
     verbose: bool = True,
 ) -> AnnData:
-    """Merge results from cell type heterogeneity and L-R clustering
+    """Merge results from cell type heterogeneity and L-R cluster
     Parameters
     ----------
     adata: AnnData          The data object including the cell types to count

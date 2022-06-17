@@ -21,7 +21,7 @@ def non_spatial_plot(
     """\
     A wrap function to plot all the non-spatial plot from scanpy.
 
-    This function will produce 3 plots: PAGA graph, clustering plot in PAGA space and
+    This function will produce 3 plots: PAGA graph, cluster plot in PAGA space and
     DPT in PAGA space.
 
     Parameters
@@ -29,7 +29,7 @@ def non_spatial_plot(
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     dpi
         Set dpi as the resolution for the plot.
     Returns

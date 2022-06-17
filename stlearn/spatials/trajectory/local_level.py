@@ -24,7 +24,7 @@ def local_level(
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     cluster
         Choose cluster to perform local spatial trajectory inference.
     threshold

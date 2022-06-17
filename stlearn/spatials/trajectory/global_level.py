@@ -30,7 +30,7 @@ def global_level(
     list_clusters
         Setup a list of cluster to perform pseudo-space-time
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     return_graph
         Return PTS graph
     w

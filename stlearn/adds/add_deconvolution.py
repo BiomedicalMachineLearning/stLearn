@@ -25,7 +25,7 @@ def add_deconvolution(
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
-    **[clustering method name]_anno** : `adata.obs` field
+    **[cluster method name]_anno** : `adata.obs` field
         The annotation of cluster results.
 
     """

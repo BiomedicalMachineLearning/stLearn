@@ -41,7 +41,7 @@ def local_plot(
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     use_cluster
         Choose a specific clusters that will display in the plot.
     data_alpha

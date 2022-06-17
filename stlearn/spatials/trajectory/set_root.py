@@ -14,7 +14,7 @@ def set_root(adata: AnnData, use_label: str, cluster: str, use_raw: bool = False
     adata
         Annotated data matrix.
     use_label
-        Use label result of clustering method.
+        Use label result of cluster method.
     cluster
         Choose cluster to use as root
     use_raw
