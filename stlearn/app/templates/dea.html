@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+	<div class="card-header card-header-primary">
+		<h4 class="card-title">Differential expression analysis</h4>
+	</div>
+	<div class="card-body">
+
+	{# Below indicates whether dea already completed #}
+	{% include "flash_header.html" %}
+
+	{# Below is the form. #}
+    {% with superForm=dea_form %}
+    {% include "superform.html" %}
+    {% endwith %}
+
+	</div>
+</div>
+{% endblock %}
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}

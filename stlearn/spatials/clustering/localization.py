@@ -47,7 +47,7 @@ def localization(
 
         tmp = adata.obs[adata.obs[use_label] == i]
 
-        clustering = DBSCAN(eps=eps, min_samples=0, algorithm="kd_tree").fit(
+        clustering = DBSCAN(eps=eps, min_samples=1, algorithm="kd_tree").fit(
             tmp[["imagerow", "imagecol"]]
         )
 

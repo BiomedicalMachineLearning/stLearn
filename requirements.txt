@@ -1,7 +1,9 @@
-bokeh == 2.3.0
-numba==0.53.1
-#fa2 == 0.3.5
-Pillow==9.0.0
-scanpy==1.8.2
-scikit-image==0.18.2
-tensorflow==2.7.0
+bokeh>= 2.4.2
+click>=8.0.4
+leidenalg
+louvain
+numpy>=1.18,<1.22
+Pillow>=9.0.1
+scanpy>=1.8.2
+scikit-image>=0.19.2
+tensorflow

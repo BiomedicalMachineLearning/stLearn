@@ -1,0 +1,80 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card">
+   <div class="card-header card-header-primary">
+		<h4 class="card-title">Uploading files</h4>
+   </div>
+   <div class="card-body">
+		<div class="frame">
+			<form action = "http://localhost:5000/folder_uploader" method = "POST" enctype = "multipart/form-data" class = "center">
+				<div class="title">
+					<h2>Option 1: Open Visium data</h2>
+				</div>
+
+				<div class="title">
+					<h5>Please select the path to your Visium folder. It should include: <br><b>filtered_feature_bc_matrix.h5</b> file and the <b>spatial</b> folder</h5>
+				</div>
+
+
+
+				<div class="dropzone">
+					<input type="file" webkitdirectory mozdirectory name = "file" class="upload-input" id="customFile" />
+				</div>
+
+				<button type="submit" class="btn" name="uploadbutton" onclick="$('#loading').show();">Upload folder</button>
+
+			</form>
+			<div id="loading" style="display:none;"> Loading data...<img src="{{ url_for('static', filename='img/loading_gif.gif') }}" alt=""/></div>
+		</div>
+
+		<br>
+		<div class="frame">
+			<form action = "http://localhost:5000/file_uploader" method = "POST" enctype = "multipart/form-data" class = "center">
+				<div class="title">
+					<h2>Option 2: Open AnnData object</h2>
+				</div>
+
+				<div class="title">
+					<h5>Please select the path to the AnnData <b>.h5ad</b> file</h5>
+				</div>
+
+
+
+				<div class="dropzone">
+					<input type="file" name = "file" class="upload-input" id="customFile" />
+				</div>
+
+				<button type="submit" class="btn" name="uploadbutton" onclick="$('#loading').show();">Upload file</button>
+
+			</form>
+			<div id="loading" style="display:none;"> Loading data...<img src="{{ url_for('static', filename='img/loading_gif.gif') }}" alt=""/></div>
+		</div>
+
+
+   </div>
+   <div class="card-footer">
+
+
+	{% include "flash_header.html" %}
+	   </div>
+</div>
+
+{% endblock %}
+
+
+{% block status %}
+{% include "progress.html" %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+	$(document).ready(function() {
+    $('#file').bind("click",function()
+    { if(!$('#customFile').val()){
+                alert("empty");
+                return false;} });  });
+</script>
+{% endblock %}

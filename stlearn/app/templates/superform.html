@@ -1,0 +1,76 @@
+{# Generalised, injectable html for rendering a WTForm generated using:
+	source.forms.forms.createSuperForm()
+#}
+
+{% block content %}
+<div>
+	{# Pre-processing form #}
+	<form id="registerForm" class="form form-register"
+	      method="POST" action="" role="form" enctype="multipart/form-data">
+           {{ superForm.csrf_token }}
+		   {{ superForm.hidden_tag() }}
+
+            {# Iterating through and adding each element appropriately #}
+            {% for element in superForm.elements %}
+
+                {# Determining Field type #}
+                {% if superForm['element_fields'][loop.index0] == 'Title' %}
+                    <h3 class="mt-5">{{ element }}</h3>
+
+				{% elif superForm['element_fields'][loop.index0] == 'SelectMultipleField' %}
+                    <div class="form_group">
+                        {{ superForm[element].label }}
+                        {{ superForm[element](class_="form-control", rows=5, multiple=True) }}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'SelectField' %}
+                    <div class="form-group">
+                        {{ element }}
+                        {{ superForm[element](class_="form-control")}}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'StringField' %}
+                    <div class="form-group">
+                        {{ element }}
+                        {{ superForm[element](
+                                  placeholder=superForm[element+'_placeholder'],
+                                                        class_="form-control")}}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'IntegerField' %}
+                    <div class="form-group">
+                        {{ element }}
+                        {{ superForm[element](
+                                  value=superForm[element+'_placeholder'],
+                                                        class_="form-control")}}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'BooleanField' %}
+                    <div class="form-group">
+                        {{ element }}
+                        {{ superForm[element](
+                                  checked=superForm[element+'_placeholder'],
+                                                        class_="form-control")}}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'FloatField' %}
+                    <div class="form-group">
+                        {{ element }}
+                        {{ superForm[element](
+                                  value=superForm[element+'_placeholder'],
+                                                        class_="form-control")}}
+                    </div>
+
+				{% elif superForm['element_fields'][loop.index0] == 'FileField' %}
+                    {{ element }}
+                    {{ superForm[element] }}
+
+                {% endif %}
+            {% endfor %}
+
+		{# Button which controls form submission #}
+		<p><input class="btn btn-primary" type="submit" onclick="$('#loading').show();" value={{"Submit"}}></p>
+	</form>
+    <div id="loading" style="display:none;"> Processing...<img src="{{ url_for('static', filename='img/Settings.gif') }}" alt=""/></div>
+</div>
+{% endblock %}

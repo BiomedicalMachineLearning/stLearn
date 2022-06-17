@@ -16,6 +16,12 @@
       <img src="https://static.pepy.tech/personalized-badge/stlearn?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads"
         alt="PyPI downloads">
       </a>
+      <a href="https://anaconda.org/conda-forge/stlearn">
+      <img src="https://anaconda.org/conda-forge/stlearn/badges/downloads.svg" alt="Conda downloads">
+      </a>
+      <a href="https://anaconda.org/conda-forge/stlearn">
+      <img src="https://anaconda.org/conda-forge/stlearn/badges/installer/conda.svg" alt="Install">
+      </a>
     </td>
   </tr>
   <tr>
@@ -42,7 +48,7 @@
       <b>License</b>
     </td>
     <td>
-      <a href="http://perso.crans.org/besson/LICENSE.html"><img src="https://img.shields.io/badge/License-BSD-blue.svg"
+      <a href="https://github.com/BiomedicalMachineLearning/stLearn/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-BSD-blue.svg"
         alt="LICENSE"></a>
     </td>
   </tr>
