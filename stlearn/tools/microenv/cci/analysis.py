@@ -620,6 +620,11 @@ def run_cci(
                 msg = msg + "Rows do not correspond to adata.obs_names.\n"
             raise Exception(msg)
 
+        #### Checking for case where have cell types that are never dominant
+        #### in a spot, so need to include these in all_set
+        if len(all_set) < adata.uns[uns_key].shape[1]:
+            all_set = adata.uns[uns_key].columns.values.astype( str )
+
     # Getting minimum necessary information for edge counting #
     (
         spot_bcs,
