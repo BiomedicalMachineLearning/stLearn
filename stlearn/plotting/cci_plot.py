@@ -388,7 +388,7 @@ def cci_check(
     order = np.argsort(cell_counts)
     cell_counts = cell_counts[order]
     cell_sigs = cell_sigs[order]
-    colors = colors[order]
+    colors = np.array(colors)[order]
     label_set = label_set[order]
 
     # Plotting bar plot #
