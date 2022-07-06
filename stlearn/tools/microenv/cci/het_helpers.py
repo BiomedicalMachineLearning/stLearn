@@ -6,6 +6,7 @@ import numpy as np
 from numba.typed import List
 from numba import njit
 
+
 @njit
 def edge_core(
     cell_data: np.ndarray,

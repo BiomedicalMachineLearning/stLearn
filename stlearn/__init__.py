@@ -23,5 +23,6 @@ from .wrapper.read import ReadSeqFish
 from .wrapper.read import create_stlearn
 from ._settings import settings
 from .wrapper.convert_scanpy import convert_scanpy
+from .wrapper.concatenate_spatial_adata import concatenate_spatial_adata
 
 # from . import cli
