@@ -65,12 +65,6 @@
 
 - [Documentation and Tutorials](https://stlearn.readthedocs.io/en/latest/)
 
-## New features
-
-`stlearn.pl.gene_plot_interactive`
-
-<img src="https://media.giphy.com/media/hUHAZcbVMm5pdUKMq4/giphy.gif" width="600" height="432" />
-
 ## Citing stLearn
 
 If you have used stLearn in your research, please consider citing us:
