@@ -623,7 +623,7 @@ def run_cci(
         #### Checking for case where have cell types that are never dominant
         #### in a spot, so need to include these in all_set
         if len(all_set) < adata.uns[uns_key].shape[1]:
-            all_set = adata.uns[uns_key].columns.values.astype( str )
+            all_set = adata.uns[uns_key].columns.values.astype(str)
 
     # Getting minimum necessary information for edge counting #
     (

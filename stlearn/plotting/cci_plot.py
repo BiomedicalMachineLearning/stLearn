@@ -1378,7 +1378,7 @@ def lr_chord_plot(
     cmap: str = "default",
     sig_interactions: bool = True,
     label_size: int = 10,
-    label_rotation: float=0,
+    label_rotation: float = 0,
     title: str = None,
     figsize: tuple = (8, 8),
     show: bool = True,
@@ -1422,7 +1422,7 @@ def lr_chord_plot(
     label_size: str
         The size of the cell type labels to render.
     label_rotation: float
-        Rotation of the cell type label text. 
+        Rotation of the cell type label text.
     title: str
         The title above the plot; informative default is determined based on input.
     figsize: tuple
@@ -1450,13 +1450,10 @@ def lr_chord_plot(
         keep = np.argsort(-total_ints)[0:n_top_ccis]
     # Filter any with all zeros after filtering #
     all_zero = np.array(
-        [
-            np.all(np.logical_and(flux[i, keep] == 0, flux[keep, i] == 0))
-            for i in keep
-        ]
+        [np.all(np.logical_and(flux[i, keep] == 0, flux[keep, i] == 0)) for i in keep]
     )
-    keep = keep[all_zero==False]
-    if len(keep)==0:  # If we don't keep anything, warn the user
+    keep = keep[all_zero == False]
+    if len(keep) == 0:  # If we don't keep anything, warn the user
         print(
             f"Warning: for {lr} at the current min_ints ({min_ints}), there "
             f"are no interaction to display. Adjust min_ints to a lower value"
@@ -1490,12 +1487,15 @@ def lr_chord_plot(
         x, y = nodePos[i][0:2]
         rotation = nodePos[i][2]
         # Prevent text going upside down at certain rotations
-        if (rotation < 90 and rotation > 18 and label_rotation!=0) or \
-           (rotation < 120 and rotation > 90):
+        if (rotation < 90 and rotation > 18 and label_rotation != 0) or (
+            rotation < 120 and rotation > 90
+        ):
             label_rotation_ = -label_rotation
         else:
             label_rotation_ = label_rotation
-        ax.text(x, y, nodes[i], rotation=nodePos[i][2]+label_rotation_, **prop)  # size=10,
+        ax.text(
+            x, y, nodes[i], rotation=nodePos[i][2] + label_rotation_, **prop
+        )  # size=10,
     fig.suptitle(title, fontsize=12, fontweight="bold")
     if show:
         plt.show()
