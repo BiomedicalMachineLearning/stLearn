@@ -721,7 +721,7 @@ class BokehClusterPlot(Spatial):
         plt.rc("font", size=12)
 
         fig, ax = plt.subplots(figsize=(12, 5))
-        sc.tl.dendrogram(adata, groupby="leiden")
+        sc.tl.dendrogram(adata, groupby=self.use_label.value)
         if self.plot_select.value == "matrixplot":
             sc.pl.rank_genes_groups_matrixplot(
                 adata,
