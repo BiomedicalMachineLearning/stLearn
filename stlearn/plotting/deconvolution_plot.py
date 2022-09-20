@@ -144,7 +144,7 @@ def deconvolution_plot(
             textprops={"fontsize": 5},
         )
 
-    if type(colors) == type(None):
+    if show_legend == True:
         ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
         cb = mpl.colorbar.ColorbarBase(
             ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals
