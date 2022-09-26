@@ -9,7 +9,7 @@ import numpy as np
 from flask import flash
 from source.forms import forms
 
-from source.forms.utils import flash_errors, savePlot
+from source.forms.utils import flash_errors
 import source.forms.view_helpers as vhs
 import traceback
 
@@ -238,8 +238,6 @@ def run_clustering(request, adata, step_log):
                 sc.tl.paga(adata, groups="leiden")
                 st.pl.cluster_plot(adata, use_label="leiden")
 
-            savePlot("clustering.png")
-
             step_log["clustering"][0] = True
             flash("Clustering is completed!")
 
@@ -330,7 +328,6 @@ def run_psts(request, adata, step_log):
                 list_clusters=node_order,
                 show_subcluster=True,
             )
-            savePlot("trajectory_inference.png")
 
             step_log["psts"][0] = True
             flash("Trajectory inference is completed!")

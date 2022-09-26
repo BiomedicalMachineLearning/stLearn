@@ -11,15 +11,6 @@ def flash_errors(form, category="warning"):
             flash(getattr(form, field).label.text + " - " + error + ", category")
 
 
-def savePlot(plot_name, dpi=100, tight_layout=True, folder="temp_plots/"):
-    """Deals with the current matplotlib.pyplot."""
-
-    if tight_layout:
-        plt.tight_layout()
-
-    plt.savefig(folder + plot_name, dpi=dpi, format=plot_name.split(".")[-1])
-
-
 def get_all_paths(adata):
 
     import networkx as nx
