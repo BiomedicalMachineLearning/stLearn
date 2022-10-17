@@ -85,3 +85,11 @@ a.disabled, fieldset:disabled a {
     width: 50%;
     margin: auto;
 }
+
+.sidebar {
+    width: 285px;
+}
+
+.sidebar .sidebar-wrapper {
+    width: 285px;
+}
