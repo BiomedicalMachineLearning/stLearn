@@ -192,8 +192,8 @@ def pseudotime(
 
 def replace_with_dict(ar, dic):
     # Extract out keys and values
-    k = np.array(list(dic.keys()))
-    v = np.array(list(dic.values()))
+    k = np.array(list(dic.keys()), dtype=object)
+    v = np.array(list(dic.values()), dtype=object)
 
     out = np.zeros_like(ar)
     for key, val in zip(k, v):

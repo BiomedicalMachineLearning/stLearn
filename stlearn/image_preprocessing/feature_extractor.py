@@ -46,7 +46,7 @@ def extract_feature(
     **X_morphology** : `adata.obsm` field
         Dimension reduced latent morphological features.
     """
-    feature_df = pd.DataFrame()
+    feature_dfs = []
     model = Model(cnn_base)
 
     if "tile_path" not in adata.obs:
@@ -65,8 +65,10 @@ def extract_feature(
             if verbose:
                 print("extract feature for spot: {}".format(str(spot)))
             features = encode(tile, model)
-            feature_df[spot] = features
+            feature_dfs.append(pd.DataFrame(features, columns=[spot]))
             pbar.update(1)
+
+    feature_df = pd.concat(feature_dfs, axis=1)
 
     adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
 

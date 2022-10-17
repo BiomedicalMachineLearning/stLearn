@@ -95,7 +95,7 @@ class TestCCI(unittest.TestCase):
 
         ############# Basic case, should populate with all edges ###############
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float)
+        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
         het_hs.get_between_spot_edge_array(
             edge_list, neighbourhood_bcs, neighbourhood_indices, neigh_bool, cell_data
         )
@@ -156,7 +156,7 @@ class TestCCI(unittest.TestCase):
         # Removing the centre-spot as being the cell type of interest #
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
         neigh_bool[0] = False
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float)
+        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
         cell_data[0] = 0
         neigh_bcs = neighbourhood_bcs[1:]
         neigh_indices = neighbourhood_indices[1:]
@@ -179,7 +179,7 @@ class TestCCI(unittest.TestCase):
 
         ### Corner spot valid neighbour, not cell type, not spot of interest ###
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float)
+        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
         cell_data[1] = 0
         neigh_bcs, neigh_indices = List(), List()
         for i in range(len(cell_data)):
@@ -217,7 +217,7 @@ class TestCCI(unittest.TestCase):
                 * One is cell type 1, two are cell type 2.
         """
         cell_annots = [1, 2, 3, 2, 1, 3, 2]
-        cell_data = np.zeros((len(cell_annots), 3), dtype=np.float)
+        cell_data = np.zeros((len(cell_annots), 3), dtype=np.float64)
         for i, annot in enumerate(cell_annots):
             cell_data[i, annot - 1] = 1
         all_set = np.array([str(i) for i in range(1, 4)])
