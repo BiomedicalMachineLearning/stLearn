@@ -77,7 +77,7 @@ def tiling(
             tile = img_pillow.crop(
                 (imagecol_left, imagerow_down, imagecol_right, imagerow_up)
             )
-            tile.thumbnail((target_size, target_size), Image.ANTIALIAS)
+            tile.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
             tile.resize((target_size, target_size))
             tile_name = str(imagecol) + "-" + str(imagerow) + "-" + str(crop_size)
             out_tile = Path(out_path) / (tile_name + ".jpeg")

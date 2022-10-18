@@ -15,7 +15,7 @@ def get_all_paths(adata):
 
     import networkx as nx
 
-    G = nx.from_numpy_matrix(adata.uns["paga"]["connectivities_tree"].toarray())
+    G = nx.from_numpy_array(adata.uns["paga"]["connectivities_tree"].toarray())
     mapping = {int(k): v for k, v in zip(G.nodes, adata.obs.clusters.cat.categories)}
     G = nx.relabel_nodes(G, mapping)
 

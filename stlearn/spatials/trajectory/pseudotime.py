@@ -151,7 +151,7 @@ def pseudotime(
         node_convert[pair[1]] = pair[0]
 
     adata.uns["global_graph"] = {}
-    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_matrix(G)
+    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_array(G)
     adata.uns["global_graph"]["node_dict"] = node_convert
 
     # Create centroid dict for subclusters
@@ -211,7 +211,7 @@ def selection_sort(x):
 def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key):
 
     # Read original PAGA graph
-    G = nx.from_numpy_matrix(adata.uns["paga"]["connectivities"].toarray())
+    G = nx.from_numpy_array(adata.uns["paga"]["connectivities"].toarray())
     edge_weights = nx.get_edge_attributes(G, "weight")
     G.remove_edges_from((e for e, w in edge_weights.items() if w < threshold))
 

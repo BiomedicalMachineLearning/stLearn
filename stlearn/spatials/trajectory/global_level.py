@@ -170,7 +170,7 @@ def global_level(
         node_convert[pair[1]] = pair[0]
 
     adata.uns["PTS_graph"] = {}
-    adata.uns["PTS_graph"]["graph"] = nx.to_scipy_sparse_matrix(H_sub)
+    adata.uns["PTS_graph"]["graph"] = nx.to_scipy_sparse_array(H_sub)
     adata.uns["PTS_graph"]["node_dict"] = node_convert
 
     if return_graph:

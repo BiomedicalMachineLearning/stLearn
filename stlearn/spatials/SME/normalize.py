@@ -1,7 +1,7 @@
 from typing import Optional
 from anndata import AnnData
 import numpy as np
-from scipy.sparse.csr import csr_matrix
+from scipy.sparse import csr_matrix
 import pandas as pd
 from ._weighting_matrix import (
     calculate_weight_matrix,

@@ -121,11 +121,11 @@ def _check_coords(
 def _read_graph(adata: AnnData, graph_type: Optional[str]):
 
     if graph_type == "PTS_graph":
-        graph = nx.from_scipy_sparse_matrix(
+        graph = nx.from_scipy_sparse_array(
             adata.uns[graph_type]["graph"], create_using=nx.DiGraph
         )
     else:
-        graph = nx.from_scipy_sparse_matrix(adata.uns[graph_type]["graph"])
+        graph = nx.from_scipy_sparse_array(adata.uns[graph_type]["graph"])
     node_dict = adata.uns[graph_type]["node_dict"]
     node_dict = {int(k): int(v) for k, v in node_dict.items()}
 

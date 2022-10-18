@@ -29,7 +29,7 @@ def weight_optimizing_global(
         for i in range(0, int(1 / step + 1)):
 
             Gs.append(
-                nx.adjacency_matrix(
+                nx.to_scipy_sparse_array(
                     global_level(
                         adata,
                         use_label=use_label,
