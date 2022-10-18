@@ -20,8 +20,8 @@ class TestPSTS(unittest.TestCase):
     def test_PSTS(self):
         sc.pp.pca(adata)
         sc.pp.neighbors(adata)
-        sc.tl.leiden(adata, resolution=0.6)
-        sc.tl.louvain(adata)
+        sc.tl.leiden(adata)
+        # sc.tl.louvain(adata)
 
         adata.uns["iroot"] = np.flatnonzero(adata.obs["leiden"] == "0")[0]
         st.spatial.trajectory.pseudotime(
