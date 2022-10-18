@@ -19,9 +19,12 @@ class TestPSTS(unittest.TestCase):
 
     def test_PSTS(self):
         sc.pp.pca(adata)
+        print("Done PCA!")
         sc.pp.neighbors(adata)
+        print("Done KNN!")
         sc.tl.leiden(adata, resolution=0.6)
-        sc.tl.louvain(adata)
+        print("Done leiden!")
+        # sc.tl.louvain(adata)
 
         adata.uns["iroot"] = np.flatnonzero(adata.obs["leiden"] == "0")[0]
         st.spatial.trajectory.pseudotime(
@@ -33,3 +36,4 @@ class TestPSTS(unittest.TestCase):
         st.spatial.trajectory.detect_transition_markers_clades(
             adata, clade=0, use_raw_count=False, cutoff_spearman=0.3
         )
+        print("Done PSTS!")

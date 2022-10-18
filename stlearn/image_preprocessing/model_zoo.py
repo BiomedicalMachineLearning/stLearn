@@ -57,4 +57,4 @@ class Model:
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
         x = self.preprocess(x.astype(K.floatx()))
-        return self.model.predict(x, batch_size=self.batch_size)
+        return self.model.predict(x, batch_size=self.batch_size, verbose=False)

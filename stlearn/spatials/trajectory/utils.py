@@ -170,7 +170,7 @@ def _eigs(M, which="SR", k=None):
             pass
         inds = inds[:k]
         evals = evals[inds]
-        evecs = np.matrix(evecs[:, inds])
+        evecs = np.array(evecs[:, inds])
     return np.real(evals), np.real(evecs)
 
 
@@ -386,9 +386,9 @@ def resistance_matrix(A, check_connected=True):
     # check if graph is connected
     if check_connected:
         if issparse(A):
-            G = nx.from_scipy_sparse_matrix(A)
+            G = nx.from_scipy_sparse_array(A)
         else:
-            G = nx.from_numpy_matrix(A)
+            G = nx.from_numpy_array(A)
         if not nx.is_connected(G):
             raise UndefinedException(
                 "Graph is not connected. " "Resistance matrix is undefined."
@@ -471,9 +471,9 @@ def renormalized_res_mat(A, beta=1):
     resistance_matrix
     """
     if issparse(A):
-        G = nx.from_scipy_sparse_matrix(A)
+        G = nx.from_scipy_sparse_array(A)
     else:
-        G = nx.from_numpy_matrix(A)
+        G = nx.from_numpy_array(A)
     n = len(G)
     subgraphR = []
     for subgraph in nx.connected_component_subgraphs(G):
@@ -521,9 +521,9 @@ def conductance_matrix(A):
     renormalized_res_mat
     """
     if issparse(A):
-        G = nx.from_scipy_sparse_matrix(A)
+        G = nx.from_scipy_sparse_array(A)
     else:
-        G = nx.from_numpy_matrix(A)
+        G = nx.from_numpy_array(A)
     subgraphC = []
     for subgraph in nx.connected_component_subgraphs(G):
         a_sub = nx.adjacency_matrix(subgraph)
