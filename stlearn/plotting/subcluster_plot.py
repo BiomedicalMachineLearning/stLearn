@@ -41,6 +41,7 @@ def subcluster_plot(
     dpi: Optional[int] = 120,
     # subcluster plot param
     cluster: Optional[int] = 0,
+    threshold_spots: Optional[int] = 5,
     text_box_size: Optional[float] = 5,
     bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
 ) -> Optional[AnnData]:
@@ -90,4 +91,5 @@ def subcluster_plot(
         text_box_size=text_box_size,
         bbox_to_anchor=bbox_to_anchor,
         cluster=cluster,
+        threshold_spots=threshold_spots,
     )

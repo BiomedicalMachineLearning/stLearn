@@ -21,6 +21,7 @@ def pseudotime(
     reverse: bool = False,
     pseudotime_key: str = "dpt_pseudotime",
     max_nodes: int = 4,
+    run_knn: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -76,9 +77,11 @@ def pseudotime(
     localization(adata, use_label=use_label, eps=eps)
 
     # Running knn
-    from stlearn.pp import neighbors
 
-    neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
+    if run_knn:
+        from stlearn.pp import neighbors
+
+        neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
 
     # Running paga
     scanpy.tl.paga(adata, groups=use_label)

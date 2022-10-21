@@ -58,6 +58,7 @@ def localization(
             sublabels.append(str(i) + "_" + str(label))
         tmp["sub_labels"] = sublabels
         subclusters_list.append(tmp["sub_labels"])
+
     subclusters = pd.concat(subclusters_list)
     pd.reset_option("mode.chained_assignment")
 
@@ -67,9 +68,10 @@ def localization(
         left_index=True,
         right_index=True,
     )
+
     # Convert to numeric
     converted = dict(enumerate(adata.obs["sub_cluster_labels"].unique()))
-    inv_map = {v: k for k, v in converted.items()}
+    inv_map = {v: str(k) for k, v in converted.items()}
     adata.obs["sub_cluster_labels"] = adata.obs["sub_cluster_labels"].replace(inv_map)
 
     adata.obs["sub_cluster_labels"] = pd.Categorical(

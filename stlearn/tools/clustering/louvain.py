@@ -104,4 +104,6 @@ def louvain(
     )
 
     print("Applying Louvain cluster ...")
-    print("Louvain cluster is done! The labels are stored in adata.obs['louvain']")
+    print(
+        "Louvain cluster is done! The labels are stored in adata.obs['%s']" % key_added
+    )

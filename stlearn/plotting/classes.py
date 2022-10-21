@@ -1003,6 +1003,7 @@ class SubClusterPlot(SpatialBasePlot):
         dpi: Optional[int] = 120,
         # subcluster plot param
         cluster: Optional[int] = 0,
+        threshold_spots: Optional[int] = 5,
         text_box_size: Optional[float] = 5,
         bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
         **kwargs,
@@ -1032,9 +1033,9 @@ class SubClusterPlot(SpatialBasePlot):
         self.text_box_size = text_box_size
         self.cluster = cluster
 
-        self._plot_subclusters()
+        subset = self._plot_subclusters(threshold_spots)
 
-        self._add_subclusters_label()
+        self._add_subclusters_label(subset)
 
         if crop:
             self._crop_image(self.ax, margin)
@@ -1042,12 +1043,22 @@ class SubClusterPlot(SpatialBasePlot):
         if fname != None:
             self._save_output()
 
-    def _plot_subclusters(self):
-        subset = self.adata[0].obs[
-            self.adata[0].obs[self.use_label] == str(self.cluster)
-        ]
+    def _plot_subclusters(self, threshold_spots):
+        subset = (
+            self.adata[0]
+            .obs[self.adata[0].obs[self.use_label] == str(self.cluster)]
+            .copy()
+        )
+
+        meaningful_sub = []
+        for i in subset["sub_cluster_labels"].unique():
+            if len(subset[subset["sub_cluster_labels"] == str(i)]) > threshold_spots:
+                meaningful_sub.append(i)
+
+        subset = subset[subset["sub_cluster_labels"].isin(meaningful_sub)]
+
         colors = subset["sub_cluster_labels"]
-        sub_anndata = self.adata[0][subset.index, :]
+        sub_anndata = self.adata[0][subset.index, :].copy()
         self.imgcol_new = sub_anndata.obsm["spatial"][:, 0] * self.scale_factor
         self.imgrow_new = sub_anndata.obsm["spatial"][:, 1] * self.scale_factor
 
@@ -1068,33 +1079,13 @@ class SubClusterPlot(SpatialBasePlot):
             alpha=self.cell_alpha,
         )
 
-    def _add_subclusters_label(self):
-        if (
-            len(
-                self.adata[0]
-                .obs[self.adata[0].obs[self.use_label] == str(self.cluster)][
-                    "sub_cluster_labels"
-                ]
-                .unique()
-            )
-            < 2
-        ):
-            centroids = [
-                centroidpython(
-                    self.adata[0]
-                    .obs[self.adata[0].obs[self.use_label] == str(self.cluster)][
-                        ["imagecol", "imagerow"]
-                    ]
-                    .values
-                )
-            ]
-            classes = np.array(
-                [
-                    self.adata[0].obs[
-                        self.adata[0].obs[self.use_label] == str(self.cluster)
-                    ]["sub_cluster_labels"][0]
-                ]
-            )
+        return subset
+
+    def _add_subclusters_label(self, subset):
+        if len(subset["sub_cluster_labels"].unique()) < 2:
+            print("lower than 2")
+            centroids = [centroidpython(subset[["imagecol", "imagerow"]].values)]
+            classes = np.array([subset["sub_cluster_labels"][0]])
 
         else:
             from sklearn.neighbors import NearestCentroid
@@ -1102,9 +1093,7 @@ class SubClusterPlot(SpatialBasePlot):
             clf = NearestCentroid()
             clf.fit(
                 np.column_stack((self.imgcol_new, self.imgrow_new)),
-                self.adata[0].obs[
-                    self.adata[0].obs[self.use_label] == str(self.cluster)
-                ]["sub_cluster_labels"],
+                subset["sub_cluster_labels"],
             )
 
             centroids = clf.centroids_
