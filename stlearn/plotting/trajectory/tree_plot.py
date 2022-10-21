@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib
 import numpy as np
 import networkx as nx
+import math
 import random
 from stlearn._compat import Literal
 from typing import Optional, Union
@@ -11,7 +12,7 @@ from anndata import AnnData
 import warnings
 import io
 from copy import deepcopy
-from ...utils import _read_graph
+from stlearn.utils import _read_graph
 
 
 def tree_plot(
@@ -29,6 +30,7 @@ def tree_plot(
     dpi: int = 180,
     show_all: bool = False,
     show_plot: bool = True,
+    ncols: int = 4,
     copy: bool = False,
 ) -> Optional[AnnData]:
 
@@ -71,171 +73,44 @@ def tree_plot(
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 
-    for node in G.nodes:
-        if node == 9999:
-            break
-        tmp_img = _generate_image(
-            adata,
-            library_id,
-            sub_cluster=node,
-            zoom=zoom,
-            spot_size=spot_size,
-            fontsize=fontsize,
-            show_all=show_all,
-            use_label=use_label,
-        )
+    G.remove_node(9999)
 
-        G.nodes[node]["image"] = tmp_img
+    start_nodes = []
+    disconnected_nodes = []
+    for node in G.in_degree():
+        if node[1] == 0:
+            start_nodes.append(node[0])
 
-    # plt.rcParams['figure.dpi'] = dpi
-    pos = hierarchy_pos(G, 9999)
-    fig = plt.figure(figsize=figsize)
-    a = plt.subplot(111)
+    for node in G.out_degree():
+        if node[1] == 0:
+            disconnected_nodes.append(node[0])
 
-    a.axis("off")
-    nx.draw_networkx_edges(
-        G,
-        pos,
-        ax=a,
-        arrowstyle="-",
-        edge_color="#ADABAF",
-        connectionstyle="angle3,angleA=0,angleB=90",
-    )
-    trans = a.transData.transform
-    trans2 = fig.transFigure.inverted().transform
+    start_nodes = list(set(start_nodes) - set(disconnected_nodes))
+    start_nodes.sort()
 
-    p2 = piesize / 2
+    nrows = math.ceil(len(start_nodes) / ncols)
 
-    for n in G:
-        if n == 9999:
-            xx, yy = trans(pos[n])  # figure coordinates
-            xa, ya = trans2((xx, yy))  # axes coordinates
-            a = plt.axes([xa - p2, ya - p2, piesize, piesize])
-            a.axis("off")
-            a.text(
-                0.5,
-                0.9,
-                "Pseudoroot",
-                horizontalalignment="center",
-                verticalalignment="center",
-                transform=a.transAxes,
-                bbox=dict(facecolor="#F9F9F9", boxstyle="round", edgecolor="#D1D1D1"),
+    superfig, axs = plt.subplots(nrows, ncols, figsize=figsize)
+    axs = axs.ravel()
+
+    for idx in range(0, nrows * ncols):
+        try:
+            generate_tree_viz(
+                adata, use_label, G, axs[idx], starter_node=start_nodes[idx]
             )
-            break
-
-        xx, yy = trans(pos[n])  # figure coordinates
-        xa, ya = trans2((xx, yy))  # axes coordinates
-        a = plt.axes([xa - p2, ya - p2, piesize, piesize])
-
-        subset = adata.obs[adata.obs["sub_cluster_labels"] == str(n)]
-        color = adata.uns[use_label + "_colors"][int(subset[use_label][0])]
-
-        a.text(
-            0.5,
-            1.2,
-            str(n),
-            horizontalalignment="center",
-            verticalalignment="center",
-            transform=a.transAxes,
-            color="black",
-            fontsize=fontsize,
-            zorder=3,
-            bbox=dict(facecolor=color, boxstyle="round"),
-        )
-        # a.set_aspect('equal')
-        a.axis("off")
-        a.imshow(G.nodes[n]["image"])
-        # plt.rcParams.update(plt.rcParamsDefault)
+        except:
+            axs[idx] = axs[idx].axis("off")
 
     if name is None:
         name = use_label
 
     if output is not None:
-        fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
+        superfig.savefig(
+            output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0
+        )
 
     if show_plot == True:
         plt.show()
-
-
-def _generate_image(
-    adata,
-    library_id,
-    sub_cluster,
-    zoom=10,
-    spot_size=100,
-    fontsize=6,
-    dpi=96,
-    use_label="louvain",
-    data_alpha=1,
-    show_all=False,
-):
-
-    # plt.rcParams['axes.linewidth'] = 4
-
-    # plt.rcParams['axes.edgecolor'] = "#D1D1D1"
-
-    subset = adata.obs[adata.obs["sub_cluster_labels"] == str(sub_cluster)]
-    base = subset[["imagecol", "imagerow"]].values
-    if len(base) < 25:
-        zoom = zoom * 20
-        spot_size = spot_size * 3
-    elif len(base) > 2000:
-        zoom = zoom / 4
-        spot_size = spot_size / 5
-    x = base[:, 0]
-    y = base[:, 1]
-    # plt.rcParams['figure.dpi'] = 300
-
-    fig2, ax2 = plt.subplots()
-
-    for axis in ["top", "bottom", "left", "right"]:
-        ax2.spines[axis].set_linewidth(0.5)
-        ax2.spines[axis].set_color("#D1D1D1")
-
-    color = adata.uns[use_label + "_colors"][int(subset[use_label][0])]
-
-    image = adata.uns["spatial"][library_id]["images"][
-        adata.uns["spatial"][library_id]["use_quality"]
-    ]
-
-    ax2.imshow(image, alpha=1)
-    ax2.scatter(x, y, s=spot_size, alpha=data_alpha, edgecolor="none", c=color)
-
-    # ax2.axis('off')
-    ax2.get_xaxis().set_ticks([])
-    ax2.get_yaxis().set_ticks([])
-
-    try:
-        ptp_bound = np.array(base).ptp(axis=0)
-    except:
-        print(base)
-
-    m = 0
-    n = 0
-    if np.abs((y.min() - ptp_bound[1] * zoom) - (y.max() + ptp_bound[1] * zoom)) < 50:
-        m = m + 50
-    elif np.abs((x.min() - ptp_bound[1] * zoom) - (x.max() + ptp_bound[1] * zoom)) < 50:
-        n = n + 50
-    ax2.set_xlim(x.min() - ptp_bound[0] * zoom - n, x.max() + ptp_bound[0] * zoom - n)
-
-    ax2.set_ylim(y.min() - ptp_bound[1] * zoom - m, y.max() + ptp_bound[1] * zoom + m)
-
-    plt.gca().invert_yaxis()
-    if show_all:
-        plt.show()
-    buf = io.BytesIO()
-    fig2.savefig(
-        buf,
-        format="png",
-        dpi=dpi,
-        transparent=True,
-        bbox_inches="tight",
-        pad_inches=0.1,
-    )
-    buf.seek(0)
-    pil_img = deepcopy(Image.open(buf))
-    plt.close(fig2)
-    return pil_img
 
 
 def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5):
@@ -312,3 +187,32 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
         return pos
 
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
+
+
+def generate_tree_viz(adata, use_label, G, axis, starter_node):
+    tmp_edges = []
+    for edge in G.edges():
+        if starter_node == edge[0]:
+            tmp_edges.append(edge)
+    tmp_D = nx.DiGraph()
+    tmp_D.add_edges_from(tmp_edges)
+
+    pos = hierarchy_pos(tmp_D)
+    a = axis
+
+    a.axis("off")
+    colors = []
+    for n in tmp_D:
+        subset = adata.obs[adata.obs["sub_cluster_labels"] == str(n)]
+        colors.append(adata.uns[use_label + "_colors"][int(subset[use_label][0])])
+
+    nx.draw_networkx_edges(
+        tmp_D,
+        pos,
+        ax=a,
+        arrowstyle="-",
+        edge_color="#ADABAF",
+        connectionstyle="angle3,angleA=0,angleB=90",
+    )
+    nx.draw_networkx_nodes(tmp_D, pos, node_color=colors, ax=a)
+    nx.draw_networkx_labels(tmp_D, pos, font_color="black", ax=a)
