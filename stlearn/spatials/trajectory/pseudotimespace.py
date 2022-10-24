@@ -11,7 +11,7 @@ def pseudotimespace_global(
     use_rep: str = "X_pca",
     n_dims: int = 40,
     list_clusters: list = [],
-    w: float = None,
+    model: str = "spatial",
     step=0.01,
     k=10,
 ) -> Optional[AnnData]:
@@ -38,10 +38,18 @@ def pseudotimespace_global(
     Anndata
     """
 
-    if w is None:
+    if model == "mixed":
 
         w = weight_optimizing_global(
             adata, use_label=use_label, list_clusters=list_clusters, step=step, k=k
+        )
+    elif model == "spatial":
+        w = 0
+    elif model == "gene_expression":
+        w = 1
+    else:
+        raise ValidationError(
+            "Please choose the right model! Available models: 'mixed', 'spatial' and 'gene_expression' "
         )
 
     global_level(
