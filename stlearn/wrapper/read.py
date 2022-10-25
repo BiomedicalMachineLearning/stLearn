@@ -412,6 +412,98 @@ def ReadSeqFish(
     return adata
 
 
+def ReadXenium(
+    h5_file: Union[str, Path],
+    cell_summary_file: Union[str, Path],
+    image_path: Optional[Path] = None,
+    library_id: str = None,
+    scale: float = 1.0,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 15,
+    background_color: _background = "white",
+) -> AnnData:
+
+    """\
+    Read Xenium data
+
+    Parameters
+    ----------
+    h5_file
+        Path to count matrix file.
+    cell_summary_file
+        Path to cell summary CSV file.
+    image_path
+        Path to image. Only need when loading full resolution image.
+    library_id
+        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+    scale
+        Set scale factor.
+    quality
+        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+    spot_diameter_fullres
+        Diameter of spot in full resolution
+    background_color
+        Color of the backgound. Only `black` or `white` is allowed.
+    Returns
+    -------
+    AnnData
+    """
+
+    metadata = pd.read_csv(cell_summary_file)
+
+    adata = scanpy.read_10x_h5(h5_file)
+
+    spatial = metadata[["x_centroid", "y_centroid"]]
+    spatial.columns = ["imagecol", "imagerow"]
+
+    adata.obsm["spatial"] = spatial.values
+
+    if scale == None:
+        max_coor = np.max(adata.obsm["spatial"])
+        scale = 2000 / max_coor
+
+    if library_id is None:
+        library_id = "Xenium_data"
+
+    adata.obs["imagecol"] = spatial["imagecol"].values * scale
+    adata.obs["imagerow"] = spatial["imagerow"].values * scale
+
+    if image_path != None:
+        stlearn.add.image(
+            adata,
+            library_id=library_id,
+            quality=quality,
+            imgpath=image_path,
+            scale=scale,
+        )
+    else:
+        # Create image
+        max_size = np.max([adata.obs["imagecol"].max(), adata.obs["imagerow"].max()])
+        max_size = int(max_size + 0.1 * max_size)
+
+        if background_color == "black":
+            image = Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
+        else:
+            image = Image.new("RGBA", (max_size, max_size), (255, 255, 255, 255))
+        imgarr = np.array(image)
+
+        # Create spatial dictionary
+        adata.uns["spatial"] = {}
+        adata.uns["spatial"][library_id] = {}
+        adata.uns["spatial"][library_id]["images"] = {}
+        adata.uns["spatial"][library_id]["images"][quality] = imgarr
+        adata.uns["spatial"][library_id]["use_quality"] = quality
+        adata.uns["spatial"][library_id]["scalefactors"] = {}
+        adata.uns["spatial"][library_id]["scalefactors"][
+            "tissue_" + quality + "_scalef"
+        ] = scale
+        adata.uns["spatial"][library_id]["scalefactors"][
+            "spot_diameter_fullres"
+        ] = spot_diameter_fullres
+
+    return adata
+
+
 def create_stlearn(
     count: pd.DataFrame,
     spatial: pd.DataFrame,

@@ -62,12 +62,9 @@ def get_node(node_list, split_node):
 
 
 def check_sublist(full, sub):
-    index_bool = []
-    for barcode in full:
-        if barcode in sub:
-            index_bool.append(True)
-        else:
-            index_bool.append(False)
+    set_sub = set(sub)
+    index_bool = [x in set_sub for x in full]
+
     return index_bool
 
 
