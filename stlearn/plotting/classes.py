@@ -674,6 +674,7 @@ class ClusterPlot(SpatialBasePlot):
         self._add_cluster_colors()
 
         self._plot_clusters()
+
         self.threshold_spots = threshold_spots
         self.text_box_size = text_box_size
         self.color_bar_size = color_bar_size
@@ -688,6 +689,7 @@ class ClusterPlot(SpatialBasePlot):
 
         if show_subcluster:
             self._add_sub_clusters()
+
         if show_trajectories:
 
             self.trajectory_node_size = trajectory_node_size
