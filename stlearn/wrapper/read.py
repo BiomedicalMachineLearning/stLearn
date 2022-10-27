@@ -413,7 +413,7 @@ def ReadSeqFish(
 
 
 def ReadXenium(
-    h5_file: Union[str, Path],
+    feature_cell_matrix_file: Union[str, Path],
     cell_summary_file: Union[str, Path],
     image_path: Optional[Path] = None,
     library_id: str = None,
@@ -428,8 +428,8 @@ def ReadXenium(
 
     Parameters
     ----------
-    h5_file
-        Path to count matrix file.
+    feature_cell_matrix_file
+        Path to feature cell count matrix file. Only support h5ad file now.
     cell_summary_file
         Path to cell summary CSV file.
     image_path
@@ -451,7 +451,7 @@ def ReadXenium(
 
     metadata = pd.read_csv(cell_summary_file)
 
-    adata = scanpy.read_10x_h5(h5_file)
+    adata = scanpy.read_10x_h5(feature_cell_matrix_file)
 
     spatial = metadata[["x_centroid", "y_centroid"]]
     spatial.columns = ["imagecol", "imagerow"]

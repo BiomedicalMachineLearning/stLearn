@@ -4,7 +4,8 @@ Author: Duy Pham
 Date: 20 Feb 2021
 """
 
-from typing import Optional, Union, Mapping  # Special
+from lib2to3.pgen2.token import OP
+from typing import Optional, Union, Mapping, List  # Special
 from typing import Sequence, Iterable  # ABCs
 from typing import Tuple  # Classes
 
@@ -47,6 +48,7 @@ class SpatialBasePlot(Spatial):
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
         color_bar_label: Optional[str] = "",
+        zoom_coord: Optional[float] = None,
         crop: Optional[bool] = True,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
@@ -129,10 +131,11 @@ class SpatialBasePlot(Spatial):
         if show_image:
             self._add_image(self.ax)
 
-        ## Don't want to do this, since then can't build on figure when parsing
-        ## fig, ax as input
-        # if show_plot == False:
-        #     plt.close(self.fig)
+        if zoom_coord is not None:
+            self._zoom_image(self.ax, zoom_coord)
+            crop = False
+        if crop:
+            self._crop_image(self.ax, margin)
 
     def _select_clusters(self):
         def create_query(list_cl, use_label):
@@ -188,9 +191,19 @@ class SpatialBasePlot(Spatial):
 
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
+    def _zoom_image(self, main_ax: _AxesSubplot, zoom_coord: Optional[float]):
+
+        main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
+        main_ax.set_ylim(zoom_coord[2], zoom_coord[3])
+
     def _add_color_bar(self, plot, color_bar_label: str = ""):
         cb = plt.colorbar(
-            plot, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
+            plot,
+            aspect=10,
+            shrink=0.5,
+            cmap=self.cmap,
+            label=color_bar_label,
+            loc="best",
         )
         cb.outline.set_visible(False)
 
@@ -240,6 +253,7 @@ class GenePlot(SpatialBasePlot):
         show_color_bar: Optional[bool] = True,
         color_bar_label: Optional[str] = "",
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
         image_alpha: Optional[float] = 1.0,
@@ -270,6 +284,7 @@ class GenePlot(SpatialBasePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
@@ -313,9 +328,6 @@ class GenePlot(SpatialBasePlot):
 
         if show_color_bar:
             self._add_color_bar(plot, color_bar_label=color_bar_label)
-
-        if crop:
-            self._crop_image(self.ax, margin)
 
         if fname != None:
             self._save_output()
@@ -454,6 +466,7 @@ class FeaturePlot(SpatialBasePlot):
         show_color_bar: Optional[bool] = True,
         color_bar_label: Optional[str] = "",
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
         image_alpha: Optional[float] = 1.0,
@@ -483,6 +496,7 @@ class FeaturePlot(SpatialBasePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
@@ -513,9 +527,6 @@ class FeaturePlot(SpatialBasePlot):
 
         if show_color_bar:
             self._add_color_bar(plot, color_bar_label=color_bar_label)
-
-        if crop:
-            self._crop_image(self.ax, margin)
 
         if fname != None:
             self._save_output()
@@ -624,6 +635,7 @@ class ClusterPlot(SpatialBasePlot):
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 5,
         image_alpha: Optional[float] = 1.0,
@@ -660,6 +672,7 @@ class ClusterPlot(SpatialBasePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
@@ -699,9 +712,6 @@ class ClusterPlot(SpatialBasePlot):
             self.trajectory_arrowsize = trajectory_arrowsize
 
             self._add_trajectories()
-
-        if crop:
-            self._crop_image(self.ax, margin)
 
         if fname != None:
             self._save_output()
@@ -783,26 +793,7 @@ class ClusterPlot(SpatialBasePlot):
             imgcol_new = subset_spatial[:, 0] * self.scale_factor
             imgrow_new = subset_spatial[:, 1] * self.scale_factor
 
-            # if (
-            #     len(
-            #         self.query_adata.obs[
-            #             self.query_adata.obs[self.use_label] == str(label)
-            #         ][self.use_label].cat.categories
-            #     )
-            #     < 2
-            # ):
             centroids = [centroidpython(imgcol_new, imgrow_new)]
-
-            # else:
-            #     from sklearn.neighbors import NearestCentroid
-
-            #     clf = NearestCentroid()
-            #     clf.fit(
-            #         np.column_stack((imgcol_new, imgrow_new)),
-            #         np.repeat(label, len(imgcol_new)),
-            #     )
-
-            #     centroids = clf.centroids_
 
             if centroids[0][0] < 1500:
                 x = -100
@@ -997,6 +988,7 @@ class SubClusterPlot(SpatialBasePlot):
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 5,
         image_alpha: Optional[float] = 1.0,
@@ -1023,6 +1015,7 @@ class SubClusterPlot(SpatialBasePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
@@ -1038,9 +1031,6 @@ class SubClusterPlot(SpatialBasePlot):
         subset = self._plot_subclusters(threshold_spots)
 
         self._add_subclusters_label(subset)
-
-        if crop:
-            self._crop_image(self.ax, margin)
 
         if fname != None:
             self._save_output()
@@ -1152,6 +1142,7 @@ class CciPlot(GenePlot):
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
         image_alpha: Optional[float] = 1.0,
@@ -1179,6 +1170,7 @@ class CciPlot(GenePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
@@ -1220,6 +1212,7 @@ class LrResultPlot(GenePlot):
         show_image: Optional[bool] = True,
         show_color_bar: Optional[bool] = True,
         crop: Optional[bool] = True,
+        zoom_coord: Optional[float] = None,
         margin: Optional[bool] = 100,
         size: Optional[float] = 7,
         image_alpha: Optional[float] = 1.0,
@@ -1269,6 +1262,7 @@ class LrResultPlot(GenePlot):
             show_axis=show_axis,
             show_image=show_image,
             show_color_bar=show_color_bar,
+            zoom_coord=zoom_coord,
             crop=crop,
             margin=margin,
             size=size,
