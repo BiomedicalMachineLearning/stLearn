@@ -74,7 +74,8 @@ def pseudotime(
     # Localize
     from stlearn.spatials.clustering import localization
 
-    localization(adata, use_label=use_label, eps=eps)
+    if "sub_clusters_laber" not in adata.obs.columns:
+        localization(adata, use_label=use_label, eps=eps)
 
     # Running knn
 
