@@ -895,6 +895,7 @@ class ClusterPlot(SpatialBasePlot):
                             boxstyle="round",
                             alpha=1.0,
                         ),
+                        clip_on=True,
                     )
 
     def _add_trajectories(self):
