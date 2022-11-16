@@ -631,6 +631,8 @@ def run_cci(
             all_set = adata.uns[uns_key].columns.values.astype(str)
 
     # Getting minimum necessary information for edge counting #
+    if verbose:
+        print("Getting information for CCI counting...")
     (
         spot_bcs,
         cell_data,
