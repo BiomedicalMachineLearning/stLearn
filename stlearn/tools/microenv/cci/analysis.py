@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from typing import Union
 from anndata import AnnData
+from tqdm import tqdm
 from .base import calc_neighbours, get_lrs_scores, calc_distance
 from .permutation import perform_spot_testing
 from .go import run_GO
@@ -661,29 +662,21 @@ def run_cci(
     lr_n_spot_cci = np.zeros((lr_summary.shape[0]))
     lr_n_spot_cci_sig = np.zeros((lr_summary.shape[0]))
     lr_n_cci_sig = np.zeros((lr_summary.shape[0]))
-    for i, best_lr in enumerate(best_lrs):
-        l, r = best_lr.split("_")
+    with tqdm(
+            total=best_lrs,
+            desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
+            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+            disable=verbose == False,
+    ) as pbar:
+        for i, best_lr in enumerate(best_lrs):
+            l, r = best_lr.split("_")
 
-        L_bool = lr_expr.loc[:, l].values > 0
-        R_bool = lr_expr.loc[:, r].values > 0
-        lr_index = np.where(adata.uns["lr_summary"].index.values == best_lr)[0][0]
-        sig_bool = adata.obsm[col][:, lr_index] > 0
+            L_bool = lr_expr.loc[:, l].values > 0
+            R_bool = lr_expr.loc[:, r].values > 0
+            lr_index = np.where(adata.uns["lr_summary"].index.values == best_lr)[0][0]
+            sig_bool = adata.obsm[col][:, lr_index] > 0
 
-        int_matrix = get_interaction_matrix(
-            cell_data,
-            neighbourhood_bcs,
-            neighbourhood_indices,
-            all_set,
-            sig_bool,
-            L_bool,
-            R_bool,
-            cell_prop_cutoff,
-        ).astype(int)
-
-        if n_perms > 0:
-            int_pvals = get_interaction_pvals(
-                int_matrix,
-                n_perms,
+            int_matrix = get_interaction_matrix(
                 cell_data,
                 neighbourhood_bcs,
                 neighbourhood_indices,
@@ -692,27 +685,43 @@ def run_cci(
                 L_bool,
                 R_bool,
                 cell_prop_cutoff,
-            )
-        else:
-            int_pvals = np.ones( int_matrix.shape )
+            ).astype(int)
 
-        # Setting spot counts to 0 for non-significant ccis #
-        sig_int_matrix = int_matrix.copy()
-        sig_int_matrix[int_pvals > p_cutoff] = 0
+            if n_perms > 0:
+                int_pvals = get_interaction_pvals(
+                    int_matrix,
+                    n_perms,
+                    cell_data,
+                    neighbourhood_bcs,
+                    neighbourhood_indices,
+                    all_set,
+                    sig_bool,
+                    L_bool,
+                    R_bool,
+                    cell_prop_cutoff,
+                )
+            else:
+                int_pvals = np.ones( int_matrix.shape )
 
-        # Summarising n-spots sig/non-sig across ccis & total cci_rank for lr pair
-        lr_n_spot_cci[best_lr_indices[i]] = int_matrix.sum()
-        lr_n_spot_cci_sig[best_lr_indices[i]] = sig_int_matrix.sum()
-        lr_n_cci_sig[best_lr_indices[i]] = (int_pvals < p_cutoff).sum()
+            # Setting spot counts to 0 for non-significant ccis #
+            sig_int_matrix = int_matrix.copy()
+            sig_int_matrix[int_pvals > p_cutoff] = 0
 
-        raw_matrix += int_matrix
-        all_matrix += sig_int_matrix
-        int_df = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
-        sig_int_df = pd.DataFrame(sig_int_matrix, index=all_set, columns=all_set)
-        pval_df = pd.DataFrame(int_pvals, index=all_set, columns=all_set)
-        per_lr_cci[best_lr] = sig_int_df
-        per_lr_cci_pvals[best_lr] = pval_df
-        per_lr_cci_raw[best_lr] = int_df
+            # Summarising n-spots sig/non-sig across ccis & total cci_rank for lr pair
+            lr_n_spot_cci[best_lr_indices[i]] = int_matrix.sum()
+            lr_n_spot_cci_sig[best_lr_indices[i]] = sig_int_matrix.sum()
+            lr_n_cci_sig[best_lr_indices[i]] = (int_pvals < p_cutoff).sum()
+
+            raw_matrix += int_matrix
+            all_matrix += sig_int_matrix
+            int_df = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
+            sig_int_df = pd.DataFrame(sig_int_matrix, index=all_set, columns=all_set)
+            pval_df = pd.DataFrame(int_pvals, index=all_set, columns=all_set)
+            per_lr_cci[best_lr] = sig_int_df
+            per_lr_cci_pvals[best_lr] = pval_df
+            per_lr_cci_raw[best_lr] = int_df
+            
+            pbar.update(1)
 
     # Saving results to anndata #
     adata.uns["lr_summary"][f"n_cci_sig_{use_label}"] = lr_n_cci_sig
