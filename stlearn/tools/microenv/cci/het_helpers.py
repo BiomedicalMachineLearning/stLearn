@@ -221,6 +221,70 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
+def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
+    """Retrieves the minimal information necessary to perform edge counting."""
+    # First determining how the edge counting needs to be performed #
+    # Ensuring compatibility with current way of adding label_transfer to object
+    if use_label == "label_transfer" or use_label == "predictions":
+        obs_key, uns_key = "predictions", "label_transfer"
+    else:
+        obs_key, uns_key = use_label, use_label
+
+    # Getting the neighbourhoods #
+    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+
+    # Getting the cell type information; if not mixtures then populate
+    # matrix with one's indicating pure spots.
+    if mix_mode:
+        cell_props = adata.uns[uns_key]
+        cols = cell_props.columns.values.astype(str)
+        col_order = [
+            np.where([cell_type in col for col in cols])[0][0] for cell_type in all_set
+        ]
+        cell_data = adata.uns[uns_key].iloc[:, col_order].values.astype(np.float64)
+    else:
+        cell_labels = adata.obs.loc[:, obs_key].values
+        cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
+        for i, cell_type in enumerate(all_set):
+            cell_data[:, i] = (
+                (cell_labels == cell_type).astype(np.int_).astype(np.float64)
+            )
+
+    spot_bcs = adata.obs_names.values.astype(str)
+    return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
+
+@njit
+def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
+    """Gets the neighbourhood information, njit compiled."""
+
+    # Determining the neighbour spots used for significance testing #
+    neighbours = List()
+    neighbourhood_bcs = List()
+    neighbourhood_indices = List()
+    max_len = 0
+    for bc in spot_bcs:
+        max_len = len(bc) if len(bc)>max_len else max_len
+
+    str_dtype = f"<U{max_len}"  # ensures correct typing
+    for i in range(spot_neigh_bcs.shape[0]):
+        neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
+        neigh_bcs = neigh_bcs[neigh_bcs != ""]
+        neigh_bcs_sub = List()
+        for neigh_bc in neigh_bcs:
+            if neigh_bc in spot_bcs:
+                neigh_bcs_sub.append( neigh_bc )
+        neigh_bcs = np.full((len(neigh_bcs_sub)), fill_value='', dtype=str_dtype)
+        neigh_indices = np.full(len(neigh_bcs_sub), fill_value=int(0),
+                                dtype=np.int64)
+        for i, neigh_bc in enumerate(neigh_bcs_sub):
+            neigh_indices[i] = np.where(spot_bcs == neigh_bc)[0][0]
+            neigh_bcs[i] = neigh_bc
+
+        neighbours.append(neigh_indices)
+        neighbourhood_indices.append((i, neigh_indices))
+        neighbourhood_bcs.append((spot_bcs[i], neigh_bcs))
+
+    return neighbours, neighbourhood_bcs, neighbourhood_indices
 
 def get_neighbourhoods(adata):
     """Gets the neighbourhood information."""
@@ -246,27 +310,33 @@ def get_neighbourhoods(adata):
             neighbourhood_indices.append((spot_i, neighbours[spot_i]))
             neighbourhood_bcs.append((spot_bcs[spot_i], spot_bcs[neighbours[spot_i]]))
     else:  # Newer version
-        # Determining the neighbour spots used for significance testing #
-        neighbours = List()
-        neighbourhood_bcs = List()
-        neighbourhood_indices = List()
+
         spot_bcs = adata.obs_names.values.astype(str)
-        str_dtype = f"<U{max([len(bc) for bc in spot_bcs])}"  # ensures correct typing
-        for i in range(adata.shape[0]):
-            neigh_bcs = np.array(
-                adata.obsm["spot_neigh_bcs"].values[i, :][0].split(",")
-            )
-            neigh_bcs = neigh_bcs[neigh_bcs != ""]
-            neigh_bcs = np.array(
-                [neigh_bc for neigh_bc in neigh_bcs if neigh_bc in spot_bcs],
-                dtype=str_dtype,
-            )
-            neigh_indices = np.array(
-                [np.where(spot_bcs == neigh_bc)[0][0] for neigh_bc in neigh_bcs],
-                dtype=np.int64,
-            )
-            neighbours.append(neigh_indices)
-            neighbourhood_indices.append((i, neigh_indices))
-            neighbourhood_bcs.append((spot_bcs[i], neigh_bcs))
+        spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values
+        return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs)
+
+        # Slow version
+        # Determining the neighbour spots used for significance testing #
+        # neighbours = List()
+        # neighbourhood_bcs = List()
+        # neighbourhood_indices = List()
+        # spot_bcs = adata.obs_names.values.astype(str)
+        # str_dtype = f"<U{max([len(bc) for bc in spot_bcs])}"  # ensures correct typing
+        # for i in range(adata.shape[0]):
+        #     neigh_bcs = np.array(
+        #         adata.obsm["spot_neigh_bcs"].values[i, :][0].split(",")
+        #     )
+        #     neigh_bcs = neigh_bcs[neigh_bcs != ""]
+        #     neigh_bcs = np.array(
+        #         [neigh_bc for neigh_bc in neigh_bcs if neigh_bc in spot_bcs],
+        #         dtype=str_dtype,
+        #     )
+        #     neigh_indices = np.array(
+        #         [np.where(spot_bcs == neigh_bc)[0][0] for neigh_bc in neigh_bcs],
+        #         dtype=np.int64,
+        #     )
+        #     neighbours.append(neigh_indices)
+        #     neighbourhood_indices.append((i, neigh_indices))
+        #     neighbourhood_bcs.append((spot_bcs[i], neigh_bcs))
 
     return neighbours, neighbourhood_bcs, neighbourhood_indices
