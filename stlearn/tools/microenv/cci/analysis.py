@@ -720,7 +720,7 @@ def run_cci(
             per_lr_cci[best_lr] = sig_int_df
             per_lr_cci_pvals[best_lr] = pval_df
             per_lr_cci_raw[best_lr] = int_df
-            
+
             pbar.update(1)
 
     # Saving results to anndata #
