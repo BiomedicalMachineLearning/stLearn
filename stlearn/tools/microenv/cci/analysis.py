@@ -541,6 +541,10 @@ def run_cci(
         Value at which p is considered significant.
     n_perms: int
         Number of randomisations of cell data to generate p-values.
+        If set to 0, then performs no permutations, but still does perform
+        raw counting of the cell type interactions with each LR hotspot. This
+        can still be visualised downstream by setting paramters to plot
+        significant interactions to false.
     verbose: bool
         True if print dialogue to user during run-time.
     Returns
@@ -676,18 +680,21 @@ def run_cci(
             cell_prop_cutoff,
         ).astype(int)
 
-        int_pvals = get_interaction_pvals(
-            int_matrix,
-            n_perms,
-            cell_data,
-            neighbourhood_bcs,
-            neighbourhood_indices,
-            all_set,
-            sig_bool,
-            L_bool,
-            R_bool,
-            cell_prop_cutoff,
-        )
+        if n_perms > 0:
+            int_pvals = get_interaction_pvals(
+                int_matrix,
+                n_perms,
+                cell_data,
+                neighbourhood_bcs,
+                neighbourhood_indices,
+                all_set,
+                sig_bool,
+                L_bool,
+                R_bool,
+                cell_prop_cutoff,
+            )
+        else:
+            int_pvals = np.ones( int_matrix.shape )
 
         # Setting spot counts to 0 for non-significant ccis #
         sig_int_matrix = int_matrix.copy()
