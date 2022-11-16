@@ -14,6 +14,7 @@ from .permutation import perform_spot_testing
 from .go import run_GO
 from .het import (
     count,
+    get_neighbourhoods,
     get_data_for_counting,
     get_interaction_matrix,
     get_interaction_pvals,
@@ -630,15 +631,22 @@ def run_cci(
         if len(all_set) < adata.uns[uns_key].shape[1]:
             all_set = adata.uns[uns_key].columns.values.astype(str)
 
-    # Getting minimum necessary information for edge counting #
+    #### Getting minimum necessary information for edge counting ####
+    if verbose:
+        print("Getting cached neighbourhood information...")
+    # Getting the neighbourhoods #
+    _, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+
     if verbose:
         print("Getting information for CCI counting...")
-    (
-        spot_bcs,
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-    ) = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    spot_bcs, cell_data = get_data_for_counting(adata, use_label,
+                                                              mix_mode, all_set)
+    # (
+    #     spot_bcs,
+    #     cell_data,
+    #     neighbourhood_bcs,
+    #     neighbourhood_indices,
+    # ) = get_data_for_counting_OLD(adata, use_label, mix_mode, all_set)
 
     lr_summary = adata.uns["lr_summary"]
     col_i = 1 if sig_spots else 0
