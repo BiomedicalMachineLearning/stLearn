@@ -327,11 +327,12 @@ def get_neighbourhoods(adata):
 
         str_dtype = f"<U{max_len}"  # ensures correct typing
 
+        n_spots = len(spot_bcs)
         neigh_indices = np.zeros((n_spots), np.int64)
         neigh_bcs = np.empty((n_spots), str_dtype)
 
         return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs,
-                                       len(spot_bcs), str_dtype,
+                                       n_spots, str_dtype,
                                        neigh_indices, neigh_bcs)
 
         # Slow version
