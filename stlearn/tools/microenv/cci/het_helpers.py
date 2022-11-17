@@ -272,16 +272,14 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
     #neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
 
     for i in range(spot_neigh_bcs.shape[0]):
-        neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
+        neigh_bcs = spot_neigh_bcs[i, :][0].split(",")
         neigh_bcs = neigh_bcs[neigh_bcs != ""]
         neigh_bcs_sub = List()
         for neigh_bc in neigh_bcs:
             if neigh_bc in spot_bcs:
                 neigh_bcs_sub.append( neigh_bc )
-        neigh_bcs = np.full((len(neigh_bcs_sub)), fill_value='',
-                                                                dtype=str_dtype)
-        neigh_indices = np.full(len(neigh_bcs_sub), fill_value=int(0),
-                                                                 dtype=np.int64)
+        neigh_bcs = np.empty((len(neigh_bcs_sub)),  dtype=str_dtype)
+        neigh_indices = np.empty(len(neigh_bcs_sub), dtype=np.int64)
         for i, neigh_bc in enumerate(neigh_bcs_sub):
             neigh_indices[i] = np.where(spot_bcs == neigh_bc)[0][0]
             neigh_bcs[i] = neigh_bc
