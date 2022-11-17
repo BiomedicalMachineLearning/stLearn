@@ -264,7 +264,7 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
     # Determining the neighbour spots used for significance testing #
     ### Some initialisation of the lists with correct types for complilation ###
     neighbours = List( [neigh_indices] )[1:]
-    neighbourhood_bcs = List([ (spot_bcs[0], neigh_bcs) ])[1:]
+    neighbourhood_bcs = List() #List([ (spot_bcs[0], neigh_bcs) ])[1:]
     neighbourhood_indices = List([ (0, neigh_indices) ])[1:]
 
     #neighbours = List( numba.int64[:] )
