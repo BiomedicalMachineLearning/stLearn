@@ -253,19 +253,15 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
 @jit
-def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
+def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
+                            str_dtype: str):
     """Gets the neighbourhood information, njit compiled."""
 
     # Determining the neighbour spots used for significance testing #
     neighbours = List()
     neighbourhood_bcs = List()
     neighbourhood_indices = List()
-    max_len = 0
-    for bc in spot_bcs:
-        if len(bc) > max_len:
-            max_len = len(bc)
 
-    str_dtype = f"<U{max_len}"  # ensures correct typing
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
         neigh_bcs = neigh_bcs[neigh_bcs != ""]
@@ -273,9 +269,10 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
         for neigh_bc in neigh_bcs:
             if neigh_bc in spot_bcs:
                 neigh_bcs_sub.append( neigh_bc )
-        neigh_bcs = np.full((len(neigh_bcs_sub)), fill_value='', dtype=str_dtype)
+        neigh_bcs = np.full((len(neigh_bcs_sub)), fill_value='',
+                                                                dtype=str_dtype)
         neigh_indices = np.full(len(neigh_bcs_sub), fill_value=int(0),
-                                dtype=np.int64)
+                                                                 dtype=np.int64)
         for i, neigh_bc in enumerate(neigh_bcs_sub):
             neigh_indices[i] = np.where(spot_bcs == neigh_bc)[0][0]
             neigh_bcs[i] = neigh_bc
@@ -313,7 +310,15 @@ def get_neighbourhoods(adata):
 
         spot_bcs = adata.obs_names.values.astype(str)
         spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values
-        return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs)
+
+        max_len = 0
+        for bc in spot_bcs:
+            if len(bc) > max_len:
+                max_len = len(bc)
+
+        str_dtype = f"<U{max_len}"  # ensures correct typing
+
+        return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs, str_dtype)
 
         # Slow version
         # Determining the neighbour spots used for significance testing #
