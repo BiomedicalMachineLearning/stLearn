@@ -262,7 +262,8 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
     neighbourhood_indices = List()
     max_len = 0
     for bc in spot_bcs:
-        max_len = len(bc) if len(bc)>max_len else max_len
+        if len(bc) > max_len:
+            max_len = len(bc)
 
     str_dtype = f"<U{max_len}"  # ensures correct typing
     for i in range(spot_neigh_bcs.shape[0]):
