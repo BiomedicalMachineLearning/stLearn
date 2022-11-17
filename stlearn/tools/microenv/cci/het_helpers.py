@@ -3,6 +3,8 @@ Helper functions for het.py; primarily counting help.
 """
 
 import numpy as np
+import numba
+from numba import types
 from numba.typed import List
 from numba import njit, jit
 
@@ -198,7 +200,8 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
         obs_key, uns_key = use_label, use_label
 
     # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(
+                                                                          adata)
 
     # Getting the cell type information; if not mixtures then populate
     # matrix with one's indicating pure spots.
@@ -263,8 +266,12 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
     neigh_bcs = np.full((len(spot_bcs)), fill_value='', dtype=str_dtype)
 
     neighbours = List( [neigh_indices] )[1:]
-    neighbourhood_bcs = List([ (0, neigh_indices) ])[1:]
-    neighbourhood_indices = List([ (spot_bcs[0], neigh_bcs) ])[1:]
+    neighbourhood_bcs = List([ (spot_bcs[0], neigh_bcs) ])[1:]
+    neighbourhood_indices = List([ (0, neigh_indices) ])[1:]
+
+    #neighbours = List( numba.int64[:] )
+    #neighbourhood_bcs = List((numba.int64, numba.int64[:]))
+    #neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
 
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
