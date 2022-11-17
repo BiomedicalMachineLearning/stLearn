@@ -255,7 +255,7 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
-@jit
+@njit
 def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
                             str_dtype: str):
     """Gets the neighbourhood information, njit compiled."""
