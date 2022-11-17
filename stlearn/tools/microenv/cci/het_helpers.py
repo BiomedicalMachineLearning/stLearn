@@ -258,9 +258,13 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
     """Gets the neighbourhood information, njit compiled."""
 
     # Determining the neighbour spots used for significance testing #
-    neighbours = List()
-    neighbourhood_bcs = List()
-    neighbourhood_indices = List()
+    ### Some initialisation of the lists with correct types for complilation ###
+    neigh_indices = np.full(len(spot_bcs), fill_value=int(0), dtype=np.int64)
+    neigh_bcs = np.full((len(spot_bcs)), fill_value='', dtype=str_dtype)
+
+    neighbours = List( [neigh_indices] )[1:]
+    neighbourhood_bcs = List([ (i, neigh_indices) ])[1:]
+    neighbourhood_indices = List([ (spot_bcs[0], neigh_bcs) ])[1:]
 
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
