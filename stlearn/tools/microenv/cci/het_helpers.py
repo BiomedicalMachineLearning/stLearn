@@ -253,7 +253,7 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
-@njit
+#@njit
 def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
     """Gets the neighbourhood information, njit compiled."""
 
@@ -280,9 +280,9 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray):
             neigh_indices[i] = np.where(spot_bcs == neigh_bc)[0][0]
             neigh_bcs[i] = neigh_bc
 
-        neighbours.append(neigh_indices)
-        neighbourhood_indices.append((i, neigh_indices))
-        neighbourhood_bcs.append((spot_bcs[i], neigh_bcs))
+        neighbours.append( neigh_indices )
+        neighbourhood_indices.append( (i, neigh_indices) )
+        neighbourhood_bcs.append( (spot_bcs[i], neigh_bcs) )
 
     return neighbours, neighbourhood_bcs, neighbourhood_indices
 
