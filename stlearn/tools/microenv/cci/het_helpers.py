@@ -331,6 +331,9 @@ def get_neighbourhoods(adata):
         neigh_indices = np.zeros((n_spots), np.int64)
         neigh_bcs = np.empty((n_spots), str_dtype)
 
+        print(type(neigh_indices))
+        print(type(neigh_bcs))
+
         return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs,
                                        n_spots, str_dtype,
                                        neigh_indices, neigh_bcs)
