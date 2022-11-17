@@ -318,7 +318,7 @@ def get_neighbourhoods(adata):
     else:  # Newer version
 
         spot_bcs = adata.obs_names.values.astype(str)
-        spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values
+        spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values.astype(str)
 
         max_len = 0
         for bc in spot_bcs:
