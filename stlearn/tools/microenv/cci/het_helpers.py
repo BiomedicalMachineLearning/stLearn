@@ -273,7 +273,7 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
 
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = spot_neigh_bcs[i, :][0].split(",")
-        neigh_bcs = neigh_bcs[neigh_bcs != ""]
+        #neigh_bcs = neigh_bcs[neigh_bcs != ""]
         neigh_bcs_sub = List()
         for neigh_bc in neigh_bcs:
             if neigh_bc in spot_bcs:
