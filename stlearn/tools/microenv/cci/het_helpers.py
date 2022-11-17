@@ -263,7 +263,7 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
     neigh_bcs = np.full((len(spot_bcs)), fill_value='', dtype=str_dtype)
 
     neighbours = List( [neigh_indices] )[1:]
-    neighbourhood_bcs = List([ (i, neigh_indices) ])[1:]
+    neighbourhood_bcs = List([ (0, neigh_indices) ])[1:]
     neighbourhood_indices = List([ (spot_bcs[0], neigh_bcs) ])[1:]
 
     for i in range(spot_neigh_bcs.shape[0]):
