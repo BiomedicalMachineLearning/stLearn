@@ -257,14 +257,12 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
 
 @njit
 def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
-                            n_spots: int, str_dtype: str):
+                            n_spots: int, str_dtype: str,
+                            neigh_indices: np.array, neigh_bcs: np.array):
     """Gets the neighbourhood information, njit compiled."""
 
     # Determining the neighbour spots used for significance testing #
     ### Some initialisation of the lists with correct types for complilation ###
-    neigh_indices = np.zeros((n_spots), np.int64)
-    neigh_bcs = np.empty((n_spots), str_dtype)
-
     neighbours = List( [neigh_indices] )[1:]
     neighbourhood_bcs = List([ (spot_bcs[0], neigh_bcs) ])[1:]
     neighbourhood_indices = List([ (0, neigh_indices) ])[1:]
@@ -329,8 +327,12 @@ def get_neighbourhoods(adata):
 
         str_dtype = f"<U{max_len}"  # ensures correct typing
 
+        neigh_indices = np.zeros((n_spots), np.int64)
+        neigh_bcs = np.empty((n_spots), str_dtype)
+
         return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs,
-                                                       len(spot_bcs), str_dtype)
+                                       len(spot_bcs), str_dtype,
+                                       neigh_indices, neigh_bcs)
 
         # Slow version
         # Determining the neighbour spots used for significance testing #
