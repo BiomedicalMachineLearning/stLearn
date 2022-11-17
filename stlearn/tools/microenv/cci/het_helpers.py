@@ -281,8 +281,8 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
 
         #neigh_bcs_array = np.empty((len(neigh_bcs_sub)), str_dtype)
         neigh_indices = np.zeros((len(neigh_bcs_sub)), dtype=np.int64)
-        for i, neigh_bc in enumerate(neigh_bcs_sub):
-            neigh_indices[i] = np.where(spot_bcs == neigh_bc)[0][0]
+        for j, neigh_bc in enumerate(neigh_bcs_sub):
+            neigh_indices[j] = np.where(spot_bcs == neigh_bc)[0][0]
             #neigh_bcs_array.append( neigh_bc )
 
         neighbours.append( neigh_indices )
