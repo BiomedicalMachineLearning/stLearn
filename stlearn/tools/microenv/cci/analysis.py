@@ -19,7 +19,7 @@ from .het import (
     get_data_for_counting,
     get_interaction_matrix,
     get_interaction_pvals,
-    grid_data,
+    grid_parallel,
 )
 from statsmodels.stats.multitest import multipletests
 
@@ -155,7 +155,7 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
     #             ]
     #
     #         n += 1
-    grid_data(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
+    grid_parallel(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
               cell_bcs, grid_bcs, grid_cell_counts, gridded_cells, cell_grid,
               grid_expr, adata.X, use_label, cell_labels, cell_info, cell_set)
 
