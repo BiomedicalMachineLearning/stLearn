@@ -482,9 +482,9 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
     # generate grids from top to bottom and left to right
     for i in range(n_col):
         x_left, x_right = xedges[i], xedges[i + 1]
-        n = i * n_row
         for j in range(n_row):
-            n += j
+            n = (i * n_row) + j
+            
             y_down, y_up = yedges[j], yedges[j + 1]
             grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
 
