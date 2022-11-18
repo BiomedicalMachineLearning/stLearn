@@ -4,6 +4,7 @@
 
 import os
 import numba
+from numba import types
 from numba.typed import List
 import numpy as np
 import pandas as pd
@@ -104,10 +105,9 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
     #grid_cell_counts = []
     #gridded_cells = []
     #cell_grid = []
-    grid_bcs = List()
-    grid_cell_counts = List()
-    gridded_cells = List()
-    cell_grid = List()
+    #grid_bcs = List( types.unicode_type )
+    #grid_cell_counts = List( numba.int64 )
+    grid_cell_counts = np.zeros((n_squares), dtype=np.int64)
     # If use_label specified, then will generate deconvolution information
     cell_labels, cell_set, cell_info = None, None, None
     if type(use_label) != type(None):
@@ -156,7 +156,7 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
     #
     #         n += 1
     grid_parallel(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
-              cell_bcs, grid_bcs, grid_cell_counts, gridded_cells, cell_grid,
+              cell_bcs, grid_cell_counts,
               grid_expr, adata.X, use_label, cell_labels, cell_info, cell_set)
 
     # Creating gridded anndata #
