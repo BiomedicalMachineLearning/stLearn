@@ -468,7 +468,7 @@ def count_grid(
 
     return adata
 
-#@jit
+@njit
 def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
               n_row: int, n_col: int, xs: np.array, ys: np.array,
               cell_bcs: np.array,
@@ -484,7 +484,7 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
         x_left, x_right = xedges[i], xedges[i + 1]
         for j in range(n_row):
             n = (i * n_row) + j
-            
+
             y_down, y_up = yedges[j], yedges[j + 1]
             grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
 
