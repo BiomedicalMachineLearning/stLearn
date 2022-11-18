@@ -183,11 +183,11 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
     grid_data.uns["spatial"] = adata.uns["spatial"]
 
     if type(use_label) != type(None):
-        grid_data.uns[use_label] = pd.DataFrame(
-            cell_info, index=grid_data.obs_names.values.astype(str), columns=cell_set
+        grid_data.uns[use_label] = pd.DataFrame(cell_info,
+                  index=grid_data.obs_names.values.astype(str), columns=cell_set
         )
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
-        cell_set = np.unique(grid_data.uns[use_label].columns.values)
+        #cell_set = np.unique(grid_data.uns[use_label].columns.values)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
         grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
 
