@@ -189,7 +189,12 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
         #cell_set = np.unique(grid_data.uns[use_label].columns.values)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
-        grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
+        grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
+            list(adata.obs[use_label].cat.categories)
+        )
+        if f'{use_label}_colors' in adata.uns:
+            grid_data.uns[f'{use_label}_colors'] = \
+                                                adata.uns[f'{use_label}_colors']
 
     # Subsetting to only gridded spots that contain cells #
     grid_data = grid_data[grid_data.obs["n_cells"] > 0, :].copy()
