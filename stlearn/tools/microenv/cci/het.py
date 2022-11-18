@@ -466,3 +466,56 @@ def count_grid(
         )
 
     return adata
+
+@jit
+def grid_data(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
+              n_row: int, n_col: int, xs: np.array, ys: np.array,
+              cell_bcs: np.array, grid_bcs: np.array,
+              grid_cell_counts: List, gridded_cells: List, cell_grid: List,
+              grid_expr: np.ndarray, cell_expr: np.ndarray,
+              use_label: bool, cell_labels: np.array, cell_info: np.ndarray,
+              cell_set: np.array,
+            ):
+    """ Grids the gene expression information.
+    """
+
+    # generate grids from top to bottom and left to right
+    for i in range(n_col):
+        x_left, x_right = xedges[i], xedges[i + 1]
+        n = i * n_row
+        for j in range(n_row):
+            n += j
+            y_down, y_up = yedges[j], yedges[j + 1]
+            grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
+
+            # Now determining the cells within the gridded area #
+            if i != n_col - 1 and j == n_row - 1:  # top left corner
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys <= y_up) & (ys > y_down)
+            elif i == n_col - 1 and j != n_row - 1:  # bottom righ corner
+                x_true = (xs > x_left) & (xs <= x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+            else:  # average case
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+
+            cell_bool = x_true & y_true
+            grid_cells = cell_bcs[ cell_bool ]
+            grid_cells_str = ",".join(grid_cells)
+            grid_bcs.append(grid_cells_str)
+            grid_cell_counts.append(len(grid_cells))
+            gridded_cells.extend(grid_cells)
+            cell_grid.extend([f"grid_{n}"] * len(grid_cells))
+
+            # Summing the expression across these cells to get the grid expression #
+            if len(grid_cells) > 0:
+                grid_expr[n, :] = cell_expr[cell_bool, :].sum(axis=0)
+
+            # If we have cell type information, will record #
+            if type(use_label) != type(None) and len(grid_cells) > 0:
+                grid_cell_types = cell_labels[cell_bool]
+                cell_info[n, :] = [
+                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
+                    for ct in cell_set
+                ]
+

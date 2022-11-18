@@ -4,6 +4,7 @@
 
 import os
 import numba
+from numba.typed import List
 import numpy as np
 import pandas as pd
 from typing import Union
@@ -18,6 +19,7 @@ from .het import (
     get_data_for_counting,
     get_interaction_matrix,
     get_interaction_pvals,
+    grid_data,
 )
 from statsmodels.stats.multitest import multipletests
 
@@ -96,56 +98,64 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
 
     grid_expr = np.zeros((n_squares, adata.shape[1]))
     grid_coords = np.zeros((n_squares, 2))
-    grid_bcs = []
-    grid_cell_counts = []
-    gridded_cells = []
-    cell_grid = []
+    #grid_bcs = []
+    #grid_cell_counts = []
+    #gridded_cells = []
+    #cell_grid = []
+    grid_bcs = List()
+    grid_cell_counts = List()
+    gridded_cells = List()
+    cell_grid = List()
     # If use_label specified, then will generate deconvolution information
+    cell_labels, cell_set, cell_info = None, None, None
     if type(use_label) != type(None):
         cell_labels = adata.obs[use_label].values.astype(str)
         cell_set = np.unique(cell_labels)
         cell_info = np.zeros((n_squares, len(cell_set)))
 
-    # generate grids from top to bottom and left to right
-    n = 0
-    for i in range(n_col):
-        x_left, x_right = xedges[i], xedges[i + 1]
-        for j in range(n_row):
-            y_down, y_up = yedges[j], yedges[j + 1]
-            grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
-
-            # Now determining the cells within the gridded area #
-            if i != n_col - 1 and j == n_row - 1:  # top left corner
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys <= y_up) & (ys > y_down)
-            elif i == n_col - 1 and j != n_row - 1:  # bottom righ corner
-                x_true = (xs > x_left) & (xs <= x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-            else:  # average case
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-
-            grid_cells = cell_bcs[x_true & y_true]
-            grid_cells_str = ",".join(grid_cells)
-            grid_bcs.append(grid_cells_str)
-            grid_cell_counts.append(len(grid_cells))
-            gridded_cells.extend(grid_cells)
-            cell_grid.extend([f"grid_{n}"] * len(grid_cells))
-
-            # Summing the expression across these cells to get the grid expression #
-            if len(grid_cells) > 0:
-                cell_bool = [cell in grid_cells for cell in cell_bcs]
-                grid_expr[n, :] = adata.X[cell_bool, :].sum(axis=0)
-
-            # If we have cell type information, will record #
-            if type(use_label) != type(None) and len(grid_cells) > 0:
-                grid_cell_types = cell_labels[cell_bool]
-                cell_info[n, :] = [
-                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
-                    for ct in cell_set
-                ]
-
-            n += 1
+    # # generate grids from top to bottom and left to right
+    # n = 0
+    # for i in range(n_col):
+    #     x_left, x_right = xedges[i], xedges[i + 1]
+    #     for j in range(n_row):
+    #         y_down, y_up = yedges[j], yedges[j + 1]
+    #         grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
+    #
+    #         # Now determining the cells within the gridded area #
+    #         if i != n_col - 1 and j == n_row - 1:  # top left corner
+    #             x_true = (xs >= x_left) & (xs < x_right)
+    #             y_true = (ys <= y_up) & (ys > y_down)
+    #         elif i == n_col - 1 and j != n_row - 1:  # bottom righ corner
+    #             x_true = (xs > x_left) & (xs <= x_right)
+    #             y_true = (ys < y_up) & (ys >= y_down)
+    #         else:  # average case
+    #             x_true = (xs >= x_left) & (xs < x_right)
+    #             y_true = (ys < y_up) & (ys >= y_down)
+    #
+    #         grid_cells = cell_bcs[x_true & y_true]
+    #         grid_cells_str = ",".join(grid_cells)
+    #         grid_bcs.append(grid_cells_str)
+    #         grid_cell_counts.append(len(grid_cells))
+    #         gridded_cells.extend(grid_cells)
+    #         cell_grid.extend([f"grid_{n}"] * len(grid_cells))
+    #
+    #         # Summing the expression across these cells to get the grid expression #
+    #         if len(grid_cells) > 0:
+    #             cell_bool = [cell in grid_cells for cell in cell_bcs]
+    #             grid_expr[n, :] = adata.X[cell_bool, :].sum(axis=0)
+    #
+    #         # If we have cell type information, will record #
+    #         if type(use_label) != type(None) and len(grid_cells) > 0:
+    #             grid_cell_types = cell_labels[cell_bool]
+    #             cell_info[n, :] = [
+    #                 len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
+    #                 for ct in cell_set
+    #             ]
+    #
+    #         n += 1
+    grid_data(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
+              cell_bcs, grid_bcs, grid_cell_counts, gridded_cells, cell_grid,
+              grid_expr, adata.X, use_label, cell_labels, cell_info, cell_set)
 
     # Creating gridded anndata #
     grid_expr = pd.DataFrame(
