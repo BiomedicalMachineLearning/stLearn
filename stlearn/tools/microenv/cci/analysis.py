@@ -89,6 +89,8 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
         cells that fall within defined bins.
     """
 
+    print("Gridding...")
+
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
     cell_bcs = adata.obs_names.values
@@ -153,7 +155,6 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
     #             ]
     #
     #         n += 1
-    print("Gridding...")
     grid_data(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
               cell_bcs, grid_bcs, grid_cell_counts, gridded_cells, cell_grid,
               grid_expr, adata.X, use_label, cell_labels, cell_info, cell_set)
