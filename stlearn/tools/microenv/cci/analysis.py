@@ -100,10 +100,13 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
 
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
-    cell_bcs = adata.obs_names.values
-    xs, ys = adata.obs["imagecol"].values, adata.obs["imagerow"].values
+    cell_bcs = adata.obs_names.values.astype(str)
+    xs, ys = adata.obs["imagecol"].values.astype(int), \
+             adata.obs["imagerow"].values.astype(int)
 
     grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
+    grid_counts, xedges, yedges = grid_counts.astype(int), \
+                                      xedges.astype(float), yedges.astype(float)
 
     grid_expr = np.zeros((n_squares, adata.shape[1]))
     grid_coords = np.zeros((n_squares, 2))
@@ -118,8 +121,8 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
     cell_labels, cell_set, cell_info = None, None, None
     if type(use_label) != type(None):
         cell_labels = adata.obs[use_label].values.astype(str)
-        cell_set = np.unique(cell_labels)
-        cell_info = np.zeros((n_squares, len(cell_set)))
+        cell_set = np.unique(cell_labels).astype(str)
+        cell_info = np.zeros((n_squares, len(cell_set)), dtype=np.int64)
 
     # # generate grids from top to bottom and left to right
     # n = 0
