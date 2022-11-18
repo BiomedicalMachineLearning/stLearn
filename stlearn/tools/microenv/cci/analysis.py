@@ -189,6 +189,7 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
         #cell_set = np.unique(grid_data.uns[use_label].columns.values)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
+        grid_data.obs[use_label] = grid_data.obs[use_label].astype('category')
         grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
             list(adata.obs[use_label].cat.categories)
         )
