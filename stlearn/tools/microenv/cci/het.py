@@ -4,7 +4,7 @@ from anndata import AnnData
 import scipy.spatial as spatial
 
 from numba.typed import List
-from numba import njit, jit
+from numba import njit, jit, prange
 
 from stlearn.tools.microenv.cci.het_helpers import (
     edge_core,
@@ -468,7 +468,7 @@ def count_grid(
 
     return adata
 
-@njit
+@jit(parallel=True)
 def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
               n_row: int, n_col: int, xs: np.array, ys: np.array,
               cell_bcs: np.array,
@@ -480,7 +480,7 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
     """ Grids the gene expression information.
     """
     # generate grids from top to bottom and left to right
-    for i in range(n_col):
+    for i in prange(n_col):
         x_left, x_right = xedges[i], xedges[i + 1]
         for j in range(n_row):
             n = (i * n_row) + j
@@ -492,7 +492,7 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
             if i != n_col - 1 and j == n_row - 1:  # top left corner
                 x_true = (xs >= x_left) & (xs < x_right)
                 y_true = (ys <= y_up) & (ys > y_down)
-            elif i == n_col - 1 and j != n_row - 1:  # bottom righ corner
+            elif i == n_col - 1 and j != n_row - 1:  # bottom right corner
                 x_true = (xs > x_left) & (xs <= x_right)
                 y_true = (ys < y_up) & (ys >= y_down)
             else:  # average case

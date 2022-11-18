@@ -68,7 +68,8 @@ def load_lrs(names: Union[str, list, None] = None, species: str = "human") -> np
     return lrs_full
 
 
-def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
+def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
+         n_cpus: int=1):
     """Creates a new anndata representing a gridded version of the data; can be
         used upstream of CCI pipeline. NOTE: intended use is for single cell
         spatial data, not Visium or other lower resolution tech.
@@ -83,6 +84,8 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
         The number of columns in the grid.
     use_label: str
         The cell type labels in adata.obs to join together & save as deconvolution data.
+    n_cpus: int
+        Number of threads to use.
     Returns
     -------
     grid_data: AnnData
@@ -91,6 +94,9 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
     """
 
     print("Gridding...")
+    # Setting threads for paralellisation #
+    if type(n_cpus) != type(None):
+        numba.set_num_threads( n_cpus )
 
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
