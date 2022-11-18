@@ -474,7 +474,7 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
               cell_bcs: np.array,
               grid_cell_counts: np.array,
               grid_expr: np.ndarray, cell_expr: np.ndarray,
-              use_label: bool, cell_labels: np.array, cell_info: np.ndarray,
+              use_label_bool: bool, cell_labels: np.array, cell_info: np.ndarray,
               cell_set: np.array,
             ):
     """ Grids the gene expression information.
@@ -512,7 +512,7 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
                 grid_expr[n, :] = cell_expr[cell_bool, :].sum(axis=0)
 
             # If we have cell type information, will record #
-            if type(use_label) != type(None) and len(grid_cells) > 0:
+            if use_label_bool and len(grid_cells) > 0:
                 grid_cell_types = cell_labels[cell_bool]
                 cell_info[n, :] = [
                   len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
