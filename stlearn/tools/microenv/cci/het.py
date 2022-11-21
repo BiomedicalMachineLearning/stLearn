@@ -217,7 +217,7 @@ def get_interaction_pvals(
 
     # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
-    for i in range(n_perms):
+    for i in prange(n_perms):
         # Permuting the cell data by swapping between spots for each column #
         if not discrete:
             perm_data = cell_data.copy()
