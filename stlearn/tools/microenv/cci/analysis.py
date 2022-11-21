@@ -122,7 +122,7 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
     if type(use_label) != type(None):
         cell_labels = adata.obs[use_label].values.astype(str)
         cell_set = np.unique(cell_labels).astype(str)
-        cell_info = np.zeros((n_squares, len(cell_set)), dtype=np.int64)
+        cell_info = np.zeros((n_squares, len(cell_set)), dtype=np.float64)
 
     # # generate grids from top to bottom and left to right
     # n = 0
@@ -200,7 +200,8 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
     # Subsetting to only gridded spots that contain cells #
     grid_data = grid_data[grid_data.obs["n_cells"] > 0, :].copy()
     if type(use_label) != type(None):
-        grid_data.uns[use_label] = grid_data.uns[use_label].loc[grid_data.obs_names, :]
+        grid_data.uns[use_label] = grid_data.uns[use_label].loc[
+                                                         grid_data.obs_names, :]
 
     grid_data.uns["grid_counts"] = grid_counts
     grid_data.uns["grid_xedges"] = xedges
