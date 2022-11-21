@@ -10,6 +10,6 @@ pygments
 recommonmark
 sphinx
 sphinx-autodoc-typehints
-sphinx_gallery
+sphinx_gallery==0.10.1
 sphinx_rtd_theme
 typing_extensions

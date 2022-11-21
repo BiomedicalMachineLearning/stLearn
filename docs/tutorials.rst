@@ -8,6 +8,8 @@ Tutorials
    tutorials/stSME_comparison
    tutorials/Pseudo-time-space-tutorial
    tutorials/stLearn-CCI
+   tutorials/Xenium_PSTS
+   tutorials/Xenium_CCI
 
 .. nbgallery::
    :caption: Visualisation and additional functionalities:
