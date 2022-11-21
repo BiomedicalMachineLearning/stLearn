@@ -639,8 +639,7 @@ def run_cci(
 
     if verbose:
         print("Getting information for CCI counting...")
-    spot_bcs, cell_data = get_data_for_counting(adata, use_label,
-                                                              mix_mode, all_set)
+    spot_bcs, cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
     # (
     #     spot_bcs,
     #     cell_data,
@@ -673,10 +672,10 @@ def run_cci(
     lr_n_spot_cci_sig = np.zeros((lr_summary.shape[0]))
     lr_n_cci_sig = np.zeros((lr_summary.shape[0]))
     with tqdm(
-            total=best_lrs,
-            desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-            disable=verbose == False,
+        total=best_lrs,
+        desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        disable=verbose == False,
     ) as pbar:
         for i, best_lr in enumerate(best_lrs):
             l, r = best_lr.split("_")
@@ -711,7 +710,7 @@ def run_cci(
                     cell_prop_cutoff,
                 )
             else:
-                int_pvals = np.ones( int_matrix.shape )
+                int_pvals = np.ones(int_matrix.shape)
 
             # Setting spot counts to 0 for non-significant ccis #
             sig_int_matrix = int_matrix.copy()

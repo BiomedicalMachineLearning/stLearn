@@ -8,6 +8,7 @@ from numba import types
 from numba.typed import List
 from numba import njit, jit
 
+
 @njit
 def edge_core(
     cell_data: np.ndarray,
@@ -200,8 +201,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
         obs_key, uns_key = use_label, use_label
 
     # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(
-                                                                          adata)
+    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # Getting the cell type information; if not mixtures then populate
     # matrix with one's indicating pure spots.
@@ -222,6 +222,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
 
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
+
 
 def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     """Retrieves the minimal information necessary to perform edge counting."""
@@ -255,51 +256,57 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
+
 @njit
-def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
-                            n_spots: int, str_dtype: str,
-                            neigh_indices: np.array, neigh_bcs: np.array):
+def get_neighbourhoods_FAST(
+    spot_bcs: np.array,
+    spot_neigh_bcs: np.ndarray,
+    n_spots: int,
+    str_dtype: str,
+    neigh_indices: np.array,
+    neigh_bcs: np.array,
+):
     """Gets the neighbourhood information, njit compiled."""
 
     # Determining the neighbour spots used for significance testing #
     ### Some initialisation of the lists with correct types for complilation ###
-    neighbours = List( [neigh_indices] )[1:]
-    neighbourhood_bcs = List() #List([ (spot_bcs[0], neigh_bcs) ])[1:]
-    neighbourhood_indices = List([ (0, neigh_indices) ])[1:]
+    neighbours = List([neigh_indices])[1:]
+    neighbourhood_bcs = List()  # List([ (spot_bcs[0], neigh_bcs) ])[1:]
+    neighbourhood_indices = List([(0, neigh_indices)])[1:]
 
-    #neighbours = List( numba.int64[:] )
-    #neighbourhood_bcs = List((numba.int64, numba.int64[:]))
-    #neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
+    # neighbours = List( numba.int64[:] )
+    # neighbourhood_bcs = List((numba.int64, numba.int64[:]))
+    # neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
 
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = spot_neigh_bcs[i, :][0].split(",")
-        #neigh_bcs = neigh_bcs[neigh_bcs != ""]
+        # neigh_bcs = neigh_bcs[neigh_bcs != ""]
         neigh_bcs_sub = List()
         for neigh_bc in neigh_bcs:
             if neigh_bc in spot_bcs:
-                neigh_bcs_sub.append( neigh_bc )
+                neigh_bcs_sub.append(neigh_bc)
 
-        #neigh_bcs_array = np.empty((len(neigh_bcs_sub)), str_dtype)
-        neigh_bcs_array = np.empty(len(neigh_bcs_sub),
-                                                     dtype=neigh_bcs_sub._dtype)
+        # neigh_bcs_array = np.empty((len(neigh_bcs_sub)), str_dtype)
+        neigh_bcs_array = np.empty(len(neigh_bcs_sub), dtype=neigh_bcs_sub._dtype)
         neigh_indices = np.zeros((len(neigh_bcs_sub)), dtype=np.int64)
         for j, neigh_bc in enumerate(neigh_bcs_sub):
             neigh_bcs_array[j] = neigh_bc
 
             for k, bc in enumerate(spot_bcs):
-                if neigh_bc==bc:
+                if neigh_bc == bc:
                     neigh_indices[j] = k
                     break
 
-            #neigh_indices[j] = np.where(spot_bcs == neigh_bc)[0][0]
-            #neigh_bcs_array.append( neigh_bc )
+            # neigh_indices[j] = np.where(spot_bcs == neigh_bc)[0][0]
+            # neigh_bcs_array.append( neigh_bc )
 
-        neighbours.append( neigh_indices )
-        neighbourhood_indices.append( (i, neigh_indices) )
-        neighbourhood_bcs.append( (spot_bcs[i], neigh_bcs_array) )
-        #neighbourhood_bcs.append((spot_bcs[i], np.asarray(neigh_bcs_sub)))
+        neighbours.append(neigh_indices)
+        neighbourhood_indices.append((i, neigh_indices))
+        neighbourhood_bcs.append((spot_bcs[i], neigh_bcs_array))
+        # neighbourhood_bcs.append((spot_bcs[i], np.asarray(neigh_bcs_sub)))
 
     return neighbours, neighbourhood_bcs, neighbourhood_indices
+
 
 def get_neighbourhoods(adata):
     """Gets the neighbourhood information."""
@@ -343,9 +350,9 @@ def get_neighbourhoods(adata):
         print(type(neigh_indices))
         print(type(neigh_bcs))
 
-        return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs,
-                                       n_spots, str_dtype,
-                                       neigh_indices, neigh_bcs)
+        return get_neighbourhoods_FAST(
+            spot_bcs, spot_neigh_bcs, n_spots, str_dtype, neigh_indices, neigh_bcs
+        )
 
         # Slow version
         # Determining the neighbour spots used for significance testing #
