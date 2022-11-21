@@ -27,7 +27,7 @@ import stlearn
 import os
 
 if not os.path.isdir("./_static"):
-    url = "https://www.dropbox.com/s/6mgg4p978zwyxy9/download.zip?dl=1"
+    url = "https://www.dropbox.com/s/akhl2mr9kn0e0lh/download.zip?dl=1"
     os.system("wget " + url)
     os.system("mv download.zip?dl=1 download.zip")
     os.system("unzip download.zip")
@@ -47,7 +47,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "nbsphinx",
-    "jupyter_sphinx.embed_widgets",
+    "jupyter_sphinx",
     "sphinx_gallery.load_style",
 ]
 
@@ -211,4 +211,6 @@ nbsphinx_thumbnails = {
     "tutorials/Core_plots": "_static/img/thumbnail/core_plots.png",
     "tutorials/Read_any_data": "_static/img/thumbnail/any.png",
     "tutorials/Integration_multiple_datasets": "_static/img/thumbnail/integrate.png",
+    "tutorials/Xenium_PSTS": "_static/img/thumbnail/xenium_psts.png",
+    "tutorials/Xenium_CCI": "_static/img/thumbnail/xenium_cci.png",
 }
