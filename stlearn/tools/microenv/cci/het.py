@@ -468,7 +468,7 @@ def count_grid(
 
     return adata
 
-@jit(parallel=True)
+@jit(parallel=True, forceobj=True, nopython=False)
 def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
               n_row: int, n_col: int, xs: np.array, ys: np.array,
               cell_bcs: np.array,
