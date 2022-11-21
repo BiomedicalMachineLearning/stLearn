@@ -1,15 +1,15 @@
 -r ../requirements.txt
-ipyvolume==0.6.0a1
+ipyvolume
 ipywebrtc
 ipywidgets
-jupyter_sphinx==0.1.4
-nbclean>=0.3.2
+jupyter_sphinx
+nbclean
 nbformat
-nbsphinx>=0.7.0
-pygments >= 2.4.1
+nbsphinx
+pygments
 recommonmark
-sphinx==3.0.0
+sphinx
 sphinx-autodoc-typehints
 sphinx_gallery
-sphinx_rtd_theme>=0.3.1
+sphinx_rtd_theme
 typing_extensions

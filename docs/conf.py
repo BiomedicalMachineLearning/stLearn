@@ -47,7 +47,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "nbsphinx",
-    "jupyter_sphinx.embed_widgets",
+    "jupyter_sphinx",
     "sphinx_gallery.load_style",
 ]
 
