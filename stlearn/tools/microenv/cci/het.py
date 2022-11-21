@@ -188,7 +188,7 @@ def count_interactions(
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
-
+@jit(parallel=True, nopython=False)
 def get_interaction_pvals(
     int_matrix,
     n_perms,
@@ -207,8 +207,14 @@ def get_interaction_pvals(
 
     # Counting how many times permutation of spots cell data creates interaction
     # counts greater than that observed, in order to calculate p-values.
-    greater_counts = np.zeros(int_matrix.shape).astype(int)
-    indices = np.array([i for i in range(cell_data.shape[0])])
+    shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
+    # Storing the instances where the count is greater randomly for each perm.
+    # Allows for embarassing parallelisation.
+    greater_counts = np.zeros(shape_, dtype=np.int64)
+    indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
+    for i in range(cell_data.shape[0]):
+        indices[i] = i
+
     # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
     for i in range(n_perms):
@@ -232,14 +238,15 @@ def get_interaction_pvals(
             L_bool,
             R_bool,
             cell_prop_cutoff,
-        ).astype(int)
-        perm_greater = (perm_matrix >= int_matrix).astype(int)
-        greater_counts += perm_greater
+        )
+        #perm_greater = (perm_matrix >= int_matrix).astype(int)
+        perm_greater = perm_matrix >= int_matrix
+        greater_counts[i,:,:] = perm_greater
 
     # Calculating the pvalues #
-    int_pvals = greater_counts / n_perms
+    total_greater_counts = greater_counts.sum(axis=0) # cts * ct counts
+    int_pvals = total_greater_counts / n_perms
     return int_pvals
-
 
 @njit
 def get_interaction_matrix(
@@ -283,7 +290,7 @@ def get_interaction_matrix(
 
     # Counting the number of unique interacting edges
     # between different cell type via indicate LR
-    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]))
+    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]), dtype=np.int64)
     edge_i = 0
     for i in range(all_set.shape[0]):
         for j in range(all_set.shape[0]):

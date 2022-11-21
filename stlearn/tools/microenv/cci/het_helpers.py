@@ -200,8 +200,8 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
         obs_key, uns_key = use_label, use_label
 
     # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(
-                                                                          adata)
+    #neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(
+    #                                                                      adata)
 
     # Getting the cell type information; if not mixtures then populate
     # matrix with one's indicating pure spots.
@@ -221,7 +221,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
             )
 
     spot_bcs = adata.obs_names.values.astype(str)
-    return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
+    return spot_bcs, cell_data, #neighbourhood_bcs, neighbourhood_indices
 
 def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     """Retrieves the minimal information necessary to perform edge counting."""
@@ -255,7 +255,7 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
     spot_bcs = adata.obs_names.values.astype(str)
     return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
 
-@njit
+#@njit
 def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
                             n_spots: int, str_dtype: str,
                             neigh_indices: np.array, neigh_bcs: np.array):
@@ -280,8 +280,7 @@ def get_neighbourhoods_FAST(spot_bcs: np.array, spot_neigh_bcs: np.ndarray,
                 neigh_bcs_sub.append( neigh_bc )
 
         #neigh_bcs_array = np.empty((len(neigh_bcs_sub)), str_dtype)
-        neigh_bcs_array = np.empty(len(neigh_bcs_sub),
-                                                     dtype=neigh_bcs_sub._dtype)
+        neigh_bcs_array = np.empty(len(neigh_bcs_sub), dtype=str_dtype)
         neigh_indices = np.zeros((len(neigh_bcs_sub)), dtype=np.int64)
         for j, neigh_bc in enumerate(neigh_bcs_sub):
             neigh_bcs_array[j] = neigh_bc
@@ -339,9 +338,6 @@ def get_neighbourhoods(adata):
         n_spots = len(spot_bcs)
         neigh_indices = np.zeros((n_spots), dtype=np.int64)
         neigh_bcs = np.empty((n_spots), dtype=str_dtype)
-
-        print(type(neigh_indices))
-        print(type(neigh_bcs))
 
         return get_neighbourhoods_FAST(spot_bcs, spot_neigh_bcs,
                                        n_spots, str_dtype,

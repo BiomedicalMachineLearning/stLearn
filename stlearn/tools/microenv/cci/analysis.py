@@ -496,8 +496,9 @@ def run_cci(
     min_spots: int = 3,
     sig_spots: bool = True,
     cell_prop_cutoff: float = 0.2,
-    p_cutoff=0.05,
-    n_perms=100,
+    p_cutoff: float=0.05,
+    n_perms: int=100,
+    n_cpus: int=1,
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data randomisation.
@@ -531,6 +532,8 @@ def run_cci(
         raw counting of the cell type interactions with each LR hotspot. This
         can still be visualised downstream by setting paramters to plot
         significant interactions to false.
+    n_cpus: int
+        cpu resources to use.
     verbose: bool
         True if print dialogue to user during run-time.
     Returns
@@ -565,6 +568,10 @@ def run_cci(
                         The same as f"per_lr_cci_raw_{use_label}", except
                         subsetted to significant CCIs.
     """
+    # Setting threads for paralellisation #
+    if type(n_cpus) != type(None):
+        numba.set_num_threads(n_cpus)
+
     ran_lr = "lr_summary" in adata.uns
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
     if not ran_lr and not ran_sig:
@@ -657,7 +664,7 @@ def run_cci(
     lr_n_spot_cci_sig = np.zeros((lr_summary.shape[0]))
     lr_n_cci_sig = np.zeros((lr_summary.shape[0]))
     with tqdm(
-            total=best_lrs,
+            total=len(best_lrs),
             desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
             disable=verbose == False,
@@ -733,9 +740,9 @@ def run_cci(
     if verbose:
         print(
             f"Significant counts of cci_rank interactions for all LR pairs in "
-            f"{f'lr_cci_{use_label}'}"
+            f"{f'data.uns[lr_cci_{use_label}]'}"
         )
         print(
             f"Significant counts of cci_rank interactions for each LR pair "
-            f"stored in dictionary {f'per_lr_cci_{use_label}'}"
+            f"stored in dictionary {f'data.uns[per_lr_cci_{use_label}]'}"
         )
