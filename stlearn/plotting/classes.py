@@ -203,7 +203,6 @@ class SpatialBasePlot(Spatial):
             shrink=0.5,
             cmap=self.cmap,
             label=color_bar_label,
-            loc="best",
         )
         cb.outline.set_visible(False)
 
