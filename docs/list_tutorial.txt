@@ -7,3 +7,5 @@ https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutor
 https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutorials/stLearn-CCI.ipynb
 https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutorials/stSME_clustering.ipynb
 https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutorials/stSME_comparison.ipynb
+https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutorials/Xenium_PSTS.ipynb
+https://raw.githubusercontent.com/BiomedicalMachineLearning/stLearn/master/tutorials/Xenium_CCI.ipynb
