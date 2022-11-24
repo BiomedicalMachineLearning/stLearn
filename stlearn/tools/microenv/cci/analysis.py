@@ -4,6 +4,8 @@
 
 import os
 import numba
+from numba import types
+from numba.typed import List
 import numpy as np
 import pandas as pd
 from typing import Union
@@ -18,6 +20,7 @@ from .het import (
     get_data_for_counting,
     get_interaction_matrix,
     get_interaction_pvals,
+    grid_parallel,
 )
 from statsmodels.stats.multitest import multipletests
 
@@ -65,7 +68,14 @@ def load_lrs(names: Union[str, list, None] = None, species: str = "human") -> np
     return lrs_full
 
 
-def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
+def grid(
+    adata,
+    n_row: int = 10,
+    n_col: int = 10,
+    use_label: str = None,
+    n_cpus: int = 1,
+    verbose: bool = True,
+):
     """Creates a new anndata representing a gridded version of the data; can be
         used upstream of CCI pipeline. NOTE: intended use is for single cell
         spatial data, not Visium or other lower resolution tech.
@@ -80,72 +90,63 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
         The number of columns in the grid.
     use_label: str
         The cell type labels in adata.obs to join together & save as deconvolution data.
+    n_cpus: int
+        Number of threads to use.
     Returns
     -------
     grid_data: AnnData
         Equivalent expression data to adata, except values have been summed by
         cells that fall within defined bins.
     """
+    if verbose:
+        print("Gridding...")
+
+    # Setting threads for paralellisation #
+    if type(n_cpus) != type(None):
+        numba.set_num_threads(n_cpus)
 
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
-    cell_bcs = adata.obs_names.values
-    xs, ys = adata.obs["imagecol"].values, adata.obs["imagerow"].values
+    cell_bcs = adata.obs_names.values.astype(str)
+    xs, ys = adata.obs["imagecol"].values.astype(int), adata.obs[
+        "imagerow"
+    ].values.astype(int)
 
     grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
+    grid_counts, xedges, yedges = (
+        grid_counts.astype(int),
+        xedges.astype(float),
+        yedges.astype(float),
+    )
 
     grid_expr = np.zeros((n_squares, adata.shape[1]))
     grid_coords = np.zeros((n_squares, 2))
-    grid_bcs = []
-    grid_cell_counts = []
-    gridded_cells = []
-    cell_grid = []
+    grid_cell_counts = np.zeros((n_squares), dtype=np.int64)
     # If use_label specified, then will generate deconvolution information
+    cell_labels, cell_set, cell_info = None, None, None
     if type(use_label) != type(None):
         cell_labels = adata.obs[use_label].values.astype(str)
-        cell_set = np.unique(cell_labels)
-        cell_info = np.zeros((n_squares, len(cell_set)))
+        cell_set = np.unique(cell_labels).astype(str)
+        cell_info = np.zeros((n_squares, len(cell_set)), dtype=np.float64)
 
-    # generate grids from top to bottom and left to right
-    n = 0
-    for i in range(n_col):
-        x_left, x_right = xedges[i], xedges[i + 1]
-        for j in range(n_row):
-            y_down, y_up = yedges[j], yedges[j + 1]
-            grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
-
-            # Now determining the cells within the gridded area #
-            if i != n_col - 1 and j == n_row - 1:  # top left corner
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys <= y_up) & (ys > y_down)
-            elif i == n_col - 1 and j != n_row - 1:  # bottom righ corner
-                x_true = (xs > x_left) & (xs <= x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-            else:  # average case
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-
-            grid_cells = cell_bcs[x_true & y_true]
-            grid_cells_str = ",".join(grid_cells)
-            grid_bcs.append(grid_cells_str)
-            grid_cell_counts.append(len(grid_cells))
-            gridded_cells.extend(grid_cells)
-            cell_grid.extend([f"grid_{n}"] * len(grid_cells))
-
-            # Summing the expression across these cells to get the grid expression #
-            if len(grid_cells) > 0:
-                cell_bool = [cell in grid_cells for cell in cell_bcs]
-                grid_expr[n, :] = adata.X[cell_bool, :].sum(axis=0)
-
-            # If we have cell type information, will record #
-            if type(use_label) != type(None) and len(grid_cells) > 0:
-                grid_cell_types = cell_labels[cell_bool]
-                cell_info[n, :] = [
-                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
-                    for ct in cell_set
-                ]
-
-            n += 1
+    # Performing grid operation in parallel #
+    grid_parallel(
+        grid_coords,
+        xedges,
+        yedges,
+        n_row,
+        n_col,
+        xs,
+        ys,
+        cell_bcs,
+        grid_cell_counts,
+        grid_expr,
+        adata.X,
+        type(use_label) != type(None),
+        cell_labels,
+        cell_info,
+        cell_set,
+    )
 
     # Creating gridded anndata #
     grid_expr = pd.DataFrame(
@@ -165,9 +166,13 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None):
             cell_info, index=grid_data.obs_names.values.astype(str), columns=cell_set
         )
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
-        cell_set = np.unique(grid_data.uns[use_label].columns.values)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
         grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
+        grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
+            list(adata.obs[use_label].cat.categories)
+        )
+        if f"{use_label}_colors" in adata.uns:
+            grid_data.uns[f"{use_label}_colors"] = adata.uns[f"{use_label}_colors"]
 
     # Subsetting to only gridded spots that contain cells #
     grid_data = grid_data[grid_data.obs["n_cells"] > 0, :].copy()
@@ -512,8 +517,9 @@ def run_cci(
     min_spots: int = 3,
     sig_spots: bool = True,
     cell_prop_cutoff: float = 0.2,
-    p_cutoff=0.05,
-    n_perms=100,
+    p_cutoff: float = 0.05,
+    n_perms: int = 100,
+    n_cpus: int = 1,
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data randomisation.
@@ -547,6 +553,8 @@ def run_cci(
         raw counting of the cell type interactions with each LR hotspot. This
         can still be visualised downstream by setting paramters to plot
         significant interactions to false.
+    n_cpus: int
+        cpu resources to use.
     verbose: bool
         True if print dialogue to user during run-time.
     Returns
@@ -581,6 +589,10 @@ def run_cci(
                         The same as f"per_lr_cci_raw_{use_label}", except
                         subsetted to significant CCIs.
     """
+    # Setting threads for paralellisation #
+    if type(n_cpus) != type(None):
+        numba.set_num_threads(n_cpus)
+
     ran_lr = "lr_summary" in adata.uns
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
     if not ran_lr and not ran_sig:
@@ -639,13 +651,14 @@ def run_cci(
 
     if verbose:
         print("Getting information for CCI counting...")
-    # spot_bcs, cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
-    (
-        spot_bcs,
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-    ) = get_data_for_counting_OLD(adata, use_label, mix_mode, all_set)
+
+    spot_bcs, cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    # (
+    #     spot_bcs,
+    #     cell_data,
+    #     neighbourhood_bcs,
+    #     neighbourhood_indices,
+    # ) = get_data_for_counting_OLD(adata, use_label, mix_mode, all_set)
 
     lr_summary = adata.uns["lr_summary"]
     col_i = 1 if sig_spots else 0
@@ -672,7 +685,7 @@ def run_cci(
     lr_n_spot_cci_sig = np.zeros((lr_summary.shape[0]))
     lr_n_cci_sig = np.zeros((lr_summary.shape[0]))
     with tqdm(
-        total=best_lrs,
+        total=len(best_lrs),
         desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
         disable=verbose == False,
@@ -748,9 +761,9 @@ def run_cci(
     if verbose:
         print(
             f"Significant counts of cci_rank interactions for all LR pairs in "
-            f"{f'lr_cci_{use_label}'}"
+            f"{f'data.uns[lr_cci_{use_label}]'}"
         )
         print(
             f"Significant counts of cci_rank interactions for each LR pair "
-            f"stored in dictionary {f'per_lr_cci_{use_label}'}"
+            f"stored in dictionary {f'data.uns[per_lr_cci_{use_label}]'}"
         )

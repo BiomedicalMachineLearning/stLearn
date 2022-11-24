@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from anndata import AnnData
 import scipy.spatial as spatial
+
 from numba.typed import List
-from numba import njit, jit
+from numba import njit, jit, prange
 
 from stlearn.tools.microenv.cci.het_helpers import (
     edge_core,
@@ -188,6 +189,7 @@ def count_interactions(
     return int_matrix if trans_dir else int_matrix.transpose()
 
 
+@jit(parallel=True, nopython=False)
 def get_interaction_pvals(
     int_matrix,
     n_perms,
@@ -206,11 +208,17 @@ def get_interaction_pvals(
 
     # Counting how many times permutation of spots cell data creates interaction
     # counts greater than that observed, in order to calculate p-values.
-    greater_counts = np.zeros(int_matrix.shape).astype(int)
-    indices = np.array([i for i in range(cell_data.shape[0])])
+    shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
+    # Storing the instances where the count is greater randomly for each perm.
+    # Allows for embarassing parallelisation.
+    greater_counts = np.zeros(shape_, dtype=np.int64)
+    indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
+    for i in range(cell_data.shape[0]):
+        indices[i] = i
+
     # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
-    for i in range(n_perms):
+    for i in prange(n_perms):
         # Permuting the cell data by swapping between spots for each column #
         if not discrete:
             perm_data = cell_data.copy()
@@ -231,12 +239,14 @@ def get_interaction_pvals(
             L_bool,
             R_bool,
             cell_prop_cutoff,
-        ).astype(int)
-        perm_greater = (perm_matrix >= int_matrix).astype(int)
-        greater_counts += perm_greater
+        )
+        # perm_greater = (perm_matrix >= int_matrix).astype(int)
+        perm_greater = perm_matrix >= int_matrix
+        greater_counts[i, :, :] = perm_greater
 
     # Calculating the pvalues #
-    int_pvals = greater_counts / n_perms
+    total_greater_counts = greater_counts.sum(axis=0)  # cts * ct counts
+    int_pvals = total_greater_counts / n_perms
     return int_pvals
 
 
@@ -282,7 +292,7 @@ def get_interaction_matrix(
 
     # Counting the number of unique interacting edges
     # between different cell type via indicate LR
-    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]))
+    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]), dtype=np.int64)
     edge_i = 0
     for i in range(all_set.shape[0]):
         for j in range(all_set.shape[0]):
@@ -466,3 +476,63 @@ def count_grid(
         )
 
     return adata
+
+
+@jit(parallel=True, forceobj=True, nopython=False)
+def grid_parallel(
+    grid_coords: np.ndarray,
+    xedges: np.array,
+    yedges: np.array,
+    n_row: int,
+    n_col: int,
+    xs: np.array,
+    ys: np.array,
+    cell_bcs: np.array,
+    grid_cell_counts: np.array,
+    grid_expr: np.ndarray,
+    cell_expr: np.ndarray,
+    use_label_bool: bool,
+    cell_labels: np.array,
+    cell_info: np.ndarray,
+    cell_set: np.array,
+):
+    """Grids the gene expression information."""
+    # generate grids from top to bottom and left to right
+    for i in prange(n_col):
+        x_left, x_right = xedges[i], xedges[i + 1]
+        for j in range(n_row):
+            n = (i * n_row) + j
+
+            y_down, y_up = yedges[j], yedges[j + 1]
+            grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
+
+            # Now determining the cells within the gridded area #
+            if i != n_col - 1 and j == n_row - 1:  # top left corner
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys <= y_up) & (ys > y_down)
+            elif i == n_col - 1 and j != n_row - 1:  # bottom right corner
+                x_true = (xs > x_left) & (xs <= x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+            else:  # average case
+                x_true = (xs >= x_left) & (xs < x_right)
+                y_true = (ys < y_up) & (ys >= y_down)
+
+            cell_bool = x_true & y_true
+            grid_cells = cell_bcs[cell_bool]
+            # grid_cells_str = ",".join( grid_cells )
+            # grid_bcs.append( grid_cells_str )
+            grid_cell_counts[n] = len(grid_cells)
+            # gridded_cells.extend( grid_cells )
+            # cell_grid.extend( [f"grid_{n}"] * len(grid_cells) )
+
+            # Summing the expression across these cells to get the grid expression #
+            if len(grid_cells) > 0:
+                grid_expr[n, :] = cell_expr[cell_bool, :].sum(axis=0)
+
+            # If we have cell type information, will record #
+            if use_label_bool and len(grid_cells) > 0:
+                grid_cell_types = cell_labels[cell_bool]
+                cell_info[n, :] = [
+                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
+                    for ct in cell_set
+                ]
