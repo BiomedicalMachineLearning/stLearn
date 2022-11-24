@@ -630,6 +630,7 @@ def run_cci(
 
     if verbose:
         print("Getting information for CCI counting...")
+
     spot_bcs, cell_data = get_data_for_counting(adata, use_label,
                                                               mix_mode, all_set)
     # (
@@ -638,6 +639,7 @@ def run_cci(
     #     neighbourhood_bcs,
     #     neighbourhood_indices,
     # ) = get_data_for_counting_OLD(adata, use_label, mix_mode, all_set)
+
 
     lr_summary = adata.uns["lr_summary"]
     col_i = 1 if sig_spots else 0
