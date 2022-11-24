@@ -68,8 +68,14 @@ def load_lrs(names: Union[str, list, None] = None, species: str = "human") -> np
     return lrs_full
 
 
-def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
-         n_cpus: int=1, verbose: bool=True):
+def grid(
+    adata,
+    n_row: int = 10,
+    n_col: int = 10,
+    use_label: str = None,
+    n_cpus: int = 1,
+    verbose: bool = True,
+):
     """Creates a new anndata representing a gridded version of the data; can be
         used upstream of CCI pipeline. NOTE: intended use is for single cell
         spatial data, not Visium or other lower resolution tech.
@@ -97,17 +103,21 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
 
     # Setting threads for paralellisation #
     if type(n_cpus) != type(None):
-        numba.set_num_threads( n_cpus )
+        numba.set_num_threads(n_cpus)
 
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
     cell_bcs = adata.obs_names.values.astype(str)
-    xs, ys = adata.obs["imagecol"].values.astype(int), \
-             adata.obs["imagerow"].values.astype(int)
+    xs, ys = adata.obs["imagecol"].values.astype(int), adata.obs[
+        "imagerow"
+    ].values.astype(int)
 
     grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
-    grid_counts, xedges, yedges = grid_counts.astype(int), \
-                                      xedges.astype(float), yedges.astype(float)
+    grid_counts, xedges, yedges = (
+        grid_counts.astype(int),
+        xedges.astype(float),
+        yedges.astype(float),
+    )
 
     grid_expr = np.zeros((n_squares, adata.shape[1]))
     grid_coords = np.zeros((n_squares, 2))
@@ -120,10 +130,23 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
         cell_info = np.zeros((n_squares, len(cell_set)), dtype=np.float64)
 
     # Performing grid operation in parallel #
-    grid_parallel(grid_coords, xedges, yedges, n_row, n_col, xs, ys,
-              cell_bcs, grid_cell_counts,
-              grid_expr, adata.X, type(use_label)!=type(None),
-                  cell_labels, cell_info, cell_set)
+    grid_parallel(
+        grid_coords,
+        xedges,
+        yedges,
+        n_row,
+        n_col,
+        xs,
+        ys,
+        cell_bcs,
+        grid_cell_counts,
+        grid_expr,
+        adata.X,
+        type(use_label) != type(None),
+        cell_labels,
+        cell_info,
+        cell_set,
+    )
 
     # Creating gridded anndata #
     grid_expr = pd.DataFrame(
@@ -139,24 +162,22 @@ def grid(adata, n_row: int = 10, n_col: int = 10, use_label: str = None,
     grid_data.uns["spatial"] = adata.uns["spatial"]
 
     if type(use_label) != type(None):
-        grid_data.uns[use_label] = pd.DataFrame(cell_info,
-                  index=grid_data.obs_names.values.astype(str), columns=cell_set
+        grid_data.uns[use_label] = pd.DataFrame(
+            cell_info, index=grid_data.obs_names.values.astype(str), columns=cell_set
         )
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
-        grid_data.obs[use_label] = grid_data.obs[use_label].astype('category')
+        grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
         grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
             list(adata.obs[use_label].cat.categories)
         )
-        if f'{use_label}_colors' in adata.uns:
-            grid_data.uns[f'{use_label}_colors'] = \
-                                                adata.uns[f'{use_label}_colors']
+        if f"{use_label}_colors" in adata.uns:
+            grid_data.uns[f"{use_label}_colors"] = adata.uns[f"{use_label}_colors"]
 
     # Subsetting to only gridded spots that contain cells #
     grid_data = grid_data[grid_data.obs["n_cells"] > 0, :].copy()
     if type(use_label) != type(None):
-        grid_data.uns[use_label] = grid_data.uns[use_label].loc[
-                                                         grid_data.obs_names, :]
+        grid_data.uns[use_label] = grid_data.uns[use_label].loc[grid_data.obs_names, :]
 
     grid_data.uns["grid_counts"] = grid_counts
     grid_data.uns["grid_xedges"] = xedges
@@ -496,9 +517,9 @@ def run_cci(
     min_spots: int = 3,
     sig_spots: bool = True,
     cell_prop_cutoff: float = 0.2,
-    p_cutoff: float=0.05,
-    n_perms: int=100,
-    n_cpus: int=1,
+    p_cutoff: float = 0.05,
+    n_perms: int = 100,
+    n_cpus: int = 1,
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data randomisation.
@@ -631,15 +652,13 @@ def run_cci(
     if verbose:
         print("Getting information for CCI counting...")
 
-    spot_bcs, cell_data = get_data_for_counting(adata, use_label,
-                                                              mix_mode, all_set)
+    spot_bcs, cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
     # (
     #     spot_bcs,
     #     cell_data,
     #     neighbourhood_bcs,
     #     neighbourhood_indices,
     # ) = get_data_for_counting_OLD(adata, use_label, mix_mode, all_set)
-
 
     lr_summary = adata.uns["lr_summary"]
     col_i = 1 if sig_spots else 0
@@ -666,10 +685,10 @@ def run_cci(
     lr_n_spot_cci_sig = np.zeros((lr_summary.shape[0]))
     lr_n_cci_sig = np.zeros((lr_summary.shape[0]))
     with tqdm(
-            total=len(best_lrs),
-            desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-            disable=verbose == False,
+        total=len(best_lrs),
+        desc=f"Counting celltype-celltype interactions per LR and permutating {n_perms} times.",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        disable=verbose == False,
     ) as pbar:
         for i, best_lr in enumerate(best_lrs):
             l, r = best_lr.split("_")
@@ -704,7 +723,7 @@ def run_cci(
                     cell_prop_cutoff,
                 )
             else:
-                int_pvals = np.ones( int_matrix.shape )
+                int_pvals = np.ones(int_matrix.shape)
 
             # Setting spot counts to 0 for non-significant ccis #
             sig_int_matrix = int_matrix.copy()

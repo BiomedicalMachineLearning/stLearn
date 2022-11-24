@@ -188,6 +188,7 @@ def count_interactions(
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
+
 @jit(parallel=True, nopython=False)
 def get_interaction_pvals(
     int_matrix,
@@ -239,14 +240,15 @@ def get_interaction_pvals(
             R_bool,
             cell_prop_cutoff,
         )
-        #perm_greater = (perm_matrix >= int_matrix).astype(int)
+        # perm_greater = (perm_matrix >= int_matrix).astype(int)
         perm_greater = perm_matrix >= int_matrix
-        greater_counts[i,:,:] = perm_greater
+        greater_counts[i, :, :] = perm_greater
 
     # Calculating the pvalues #
-    total_greater_counts = greater_counts.sum(axis=0) # cts * ct counts
+    total_greater_counts = greater_counts.sum(axis=0)  # cts * ct counts
     int_pvals = total_greater_counts / n_perms
     return int_pvals
+
 
 @njit
 def get_interaction_matrix(
@@ -475,17 +477,26 @@ def count_grid(
 
     return adata
 
+
 @jit(parallel=True, forceobj=True, nopython=False)
-def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
-              n_row: int, n_col: int, xs: np.array, ys: np.array,
-              cell_bcs: np.array,
-              grid_cell_counts: np.array,
-              grid_expr: np.ndarray, cell_expr: np.ndarray,
-              use_label_bool: bool, cell_labels: np.array, cell_info: np.ndarray,
-              cell_set: np.array,
-            ):
-    """ Grids the gene expression information.
-    """
+def grid_parallel(
+    grid_coords: np.ndarray,
+    xedges: np.array,
+    yedges: np.array,
+    n_row: int,
+    n_col: int,
+    xs: np.array,
+    ys: np.array,
+    cell_bcs: np.array,
+    grid_cell_counts: np.array,
+    grid_expr: np.ndarray,
+    cell_expr: np.ndarray,
+    use_label_bool: bool,
+    cell_labels: np.array,
+    cell_info: np.ndarray,
+    cell_set: np.array,
+):
+    """Grids the gene expression information."""
     # generate grids from top to bottom and left to right
     for i in prange(n_col):
         x_left, x_right = xedges[i], xedges[i + 1]
@@ -507,12 +518,12 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
                 y_true = (ys < y_up) & (ys >= y_down)
 
             cell_bool = x_true & y_true
-            grid_cells = cell_bcs[ cell_bool ]
-            #grid_cells_str = ",".join( grid_cells )
-            #grid_bcs.append( grid_cells_str )
+            grid_cells = cell_bcs[cell_bool]
+            # grid_cells_str = ",".join( grid_cells )
+            # grid_bcs.append( grid_cells_str )
             grid_cell_counts[n] = len(grid_cells)
-            #gridded_cells.extend( grid_cells )
-            #cell_grid.extend( [f"grid_{n}"] * len(grid_cells) )
+            # gridded_cells.extend( grid_cells )
+            # cell_grid.extend( [f"grid_{n}"] * len(grid_cells) )
 
             # Summing the expression across these cells to get the grid expression #
             if len(grid_cells) > 0:
@@ -522,7 +533,6 @@ def grid_parallel(grid_coords: np.ndarray, xedges: np.array, yedges: np.array,
             if use_label_bool and len(grid_cells) > 0:
                 grid_cell_types = cell_labels[cell_bool]
                 cell_info[n, :] = [
-                  len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
-                  for ct in cell_set
+                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
+                    for ct in cell_set
                 ]
-
