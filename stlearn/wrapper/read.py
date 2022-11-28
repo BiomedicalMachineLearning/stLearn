@@ -11,6 +11,8 @@ from .._compat import Literal
 import scanpy
 import scipy
 import matplotlib.pyplot as plt
+from matplotlib.image import imread
+import json
 
 _QUALITY = Literal["fulres", "hires", "lowres"]
 _background = ["black", "white"]
@@ -81,15 +83,97 @@ def Read10X(
         Spatial spot coordinates, usable as `basis` by :func:`~scanpy.pl.embedding`.
     """
 
-    from scanpy import read_visium
+    path = Path(path)
+    adata = scanpy.read_10x_h5(path / count_file, genome=genome)
 
-    adata = read_visium(
-        path,
-        genome=genome,
-        count_file=count_file,
-        library_id=library_id,
-        load_images=load_images,
+    adata.uns["spatial"] = dict()
+
+    from h5py import File
+
+    with File(path / count_file, mode="r") as f:
+        attrs = dict(f.attrs)
+    if library_id is None:
+        library_id = str(attrs.pop("library_ids")[0], "utf-8")
+
+    adata.uns["spatial"][library_id] = dict()
+
+    tissue_positions_file = (
+        path / "spatial/tissue_positions.csv"
+        if (path / "spatial/tissue_positions.csv").exists()
+        else path / "spatial/tissue_positions_list.csv"
     )
+
+    if load_images:
+        files = dict(
+            tissue_positions_file=tissue_positions_file,
+            scalefactors_json_file=path / "spatial/scalefactors_json.json",
+            hires_image=path / "spatial/tissue_hires_image.png",
+            lowres_image=path / "spatial/tissue_lowres_image.png",
+        )
+
+        # check if files exists, continue if images are missing
+        for f in files.values():
+            if not f.exists():
+                if any(x in str(f) for x in ["hires_image", "lowres_image"]):
+                    logg.warning(
+                        f"You seem to be missing an image file.\n"
+                        f"Could not find '{f}'."
+                    )
+                else:
+                    raise OSError(f"Could not find '{f}'")
+
+        adata.uns["spatial"][library_id]["images"] = dict()
+        for res in ["hires", "lowres"]:
+            try:
+                adata.uns["spatial"][library_id]["images"][res] = imread(
+                    str(files[f"{res}_image"])
+                )
+            except Exception:
+                raise OSError(f"Could not find '{res}_image'")
+
+        # read json scalefactors
+        adata.uns["spatial"][library_id]["scalefactors"] = json.loads(
+            files["scalefactors_json_file"].read_bytes()
+        )
+
+        adata.uns["spatial"][library_id]["metadata"] = {
+            k: (str(attrs[k], "utf-8") if isinstance(attrs[k], bytes) else attrs[k])
+            for k in ("chemistry_description", "software_version")
+            if k in attrs
+        }
+
+        # read coordinates
+        positions = pd.read_csv(files["tissue_positions_file"], header=None)
+        positions.columns = [
+            "barcode",
+            "in_tissue",
+            "array_row",
+            "array_col",
+            "pxl_col_in_fullres",
+            "pxl_row_in_fullres",
+        ]
+        positions.index = positions["barcode"]
+
+        adata.obs = adata.obs.join(positions, how="left")
+
+        adata.obsm["spatial"] = (
+            adata.obs[["pxl_row_in_fullres", "pxl_col_in_fullres"]]
+            .to_numpy()
+            .astype(int)
+        )
+        adata.obs.drop(
+            columns=["barcode", "pxl_row_in_fullres", "pxl_col_in_fullres"],
+            inplace=True,
+        )
+
+        # put image path in uns
+        if image_path is not None:
+            # get an absolute path
+            image_path = str(Path(image_path).resolve())
+            adata.uns["spatial"][library_id]["metadata"]["source_image_path"] = str(
+                image_path
+            )
+
     adata.var_names_make_unique()
 
     if library_id is None:
