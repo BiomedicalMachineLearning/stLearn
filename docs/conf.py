@@ -115,7 +115,7 @@ todo_include_todos = False
 
 
 def setup(app):
-    app.add_stylesheet("css/theme_override.css")
+    app.add_css_file("css/theme_override.css")
 
 
 html_theme = "sphinx_rtd_theme"
