@@ -26,7 +26,7 @@ from matplotlib.axes import Axes
 from abc import ABC
 
 
-class _AxesSubplot(Axes, axes.SubplotBase, ABC):
+class _AxesSubplot(Axes, axes.SubplotBase):
     """Intersection between Axes and SubplotBase: Has methods of both"""
 
 

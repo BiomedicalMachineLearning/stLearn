@@ -193,6 +193,10 @@ def Read10X(
     adata.obs["imagerow"] = image_coor[:, 1]
     adata.uns["spatial"][library_id]["use_quality"] = quality
 
+    adata.obs["array_row"] = adata.obs["array_row"].astype(int)
+    adata.obs["array_col"] = adata.obs["array_col"].astype(int)
+    adata.obsm["spatial"] = adata.obsm["spatial"].astype("int64")
+
     return adata
 
 

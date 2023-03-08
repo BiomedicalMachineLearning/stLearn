@@ -75,7 +75,7 @@ class BokehGenePlot(Spatial):
         view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+        view[:, :, :] = np.asarray(img_pillow)
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
@@ -159,7 +159,7 @@ class BokehGenePlot(Spatial):
 
         fig = figure(
             title=self.gene_select.value,
-            x_range=(0, self.dim - 150),
+            x_range=(0, self.dim),
             y_range=(self.dim, 0),
             output_backend=self.output_backend.value,
             name="GenePlot",
@@ -173,7 +173,7 @@ class BokehGenePlot(Spatial):
         fig.image_rgba(
             image=[self.image],
             x=0,
-            y=self.xdim,
+            y=0,
             dw=self.ydim,
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
@@ -251,11 +251,11 @@ class BokehGenePlot(Spatial):
         view2 = image2.view(dtype=np.uint8).reshape((ydim, xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view2[:, :, :] = np.flipud(np.asarray(img_pillow2))
+        view2[:, :, :] = np.asarray(img_pillow2)
 
         p = figure(
-            plot_width=910,
-            plot_height=int(910 / xdim * ydim) + 5,
+            width=910,
+            height=int(910 / xdim * ydim) + 5,
             output_backend=self.output_backend.value,
         )
 
@@ -346,7 +346,7 @@ class BokehClusterPlot(Spatial):
         view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+        view[:, :, :] = np.asarray(img_pillow)
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
@@ -556,7 +556,7 @@ class BokehClusterPlot(Spatial):
         fig.image_rgba(
             image=[self.image],
             x=0,
-            y=self.xdim,
+            y=0,
             dw=self.ydim,
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
@@ -682,11 +682,11 @@ class BokehClusterPlot(Spatial):
         view2 = image2.view(dtype=np.uint8).reshape((ydim, xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view2[:, :, :] = np.flipud(np.asarray(img_pillow2))
+        view2[:, :, :] = np.asarray(img_pillow2)
 
         p = figure(
-            plot_width=910,
-            plot_height=int(910 / xdim * ydim) + 5,
+            width=910,
+            height=int(910 / xdim * ydim) + 5,
             output_backend=self.output_backend.value,
         )
 
@@ -796,7 +796,7 @@ class BokehLRPlot(Spatial):
         view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+        view[:, :, :] = np.asarray(img_pillow)
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
@@ -883,7 +883,7 @@ class BokehLRPlot(Spatial):
         fig.image_rgba(
             image=[self.image],
             x=0,
-            y=self.xdim,
+            y=0,
             dw=self.ydim,
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
@@ -975,7 +975,7 @@ class BokehSpatialCciPlot(Spatial):
         view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+        view[:, :, :] = np.asarray(img_pillow)
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
@@ -1072,7 +1072,7 @@ class BokehSpatialCciPlot(Spatial):
         fig.image_rgba(
             image=[self.image],
             x=0,
-            y=self.xdim,
+            y=0,
             dw=self.ydim,
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,
@@ -1264,7 +1264,7 @@ class Annotate(Spatial):
         view = self.image.view(dtype=np.uint8).reshape((self.ydim, self.xdim, 4))
         # Copy the RGBA image into view, flipping it so it comes right-side up
         # with a lower-left origin
-        view[:, :, :] = np.flipud(np.asarray(img_pillow))
+        view[:, :, :] = np.asarray(img_pillow)
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
@@ -1320,7 +1320,7 @@ class Annotate(Spatial):
         fig.image_rgba(
             image=[self.image],
             x=0,
-            y=self.xdim,
+            y=0,
             dw=self.ydim,
             dh=self.xdim,
             global_alpha=self.tissue_alpha.value,

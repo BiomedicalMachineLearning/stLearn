@@ -417,19 +417,23 @@ def add_arrows_by_edges(
 def get_int_df(adata, lr, use_label, sig_interactions, title):
     """Retrieves the relevant interaction count matrix."""
     no_title = type(title) == type(None)
+    labels_ordered = adata.obs[use_label].cat.categories
     if type(lr) == type(None):  # No LR inputted, so just use all
         int_df = (
             adata.uns[f"lr_cci_{use_label}"]
             if sig_interactions
             else adata.uns[f"lr_cci_raw_{use_label}"]
-        )
+        )[labels_ordered].loc[labels_ordered]
         title = "Cell-Cell LR Interactions" if no_title else title
     else:
+
+        labels_ordered = adata.obs[use_label].cat.categories
         int_df = (
             adata.uns[f"per_lr_cci_{use_label}"][lr]
             if sig_interactions
             else adata.uns[f"per_lr_cci_raw_{use_label}"][lr]
-        )
+        )[labels_ordered].loc[labels_ordered]
+
         title = f"Cell-Cell {lr} interactions" if no_title else title
 
     return int_df, title

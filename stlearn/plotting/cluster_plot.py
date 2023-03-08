@@ -30,7 +30,7 @@ def cluster_plot(
     cmap: Optional[str] = "default",
     use_label: Optional[str] = None,
     list_clusters: Optional[list] = None,
-    ax: Optional[matplotlib.axes._subplots.Axes] = None,
+    ax: Optional[matplotlib.axes.Axes] = None,
     fig: Optional[matplotlib.figure.Figure] = None,
     show_plot: Optional[bool] = True,
     show_axis: Optional[bool] = False,

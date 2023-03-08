@@ -434,7 +434,7 @@ def lr_result_plot(
     title: Optional["str"] = None,
     figsize: Optional[Tuple[float, float]] = None,
     cmap: Optional[str] = "Spectral_r",
-    ax: Optional[matplotlib.axes._subplots.Axes] = None,
+    ax: Optional[matplotlib.axes.Axes] = None,
     fig: Optional[matplotlib.figure.Figure] = None,
     show_plot: Optional[bool] = True,
     show_axis: Optional[bool] = False,
@@ -919,7 +919,7 @@ def het_plot(
     cmap: Optional[str] = "Spectral_r",
     use_label: Optional[str] = None,
     list_clusters: Optional[list] = None,
-    ax: Optional[matplotlib.axes._subplots.Axes] = None,
+    ax: Optional[matplotlib.axes.Axes] = None,
     fig: Optional[matplotlib.figure.Figure] = None,
     show_plot: Optional[bool] = True,
     show_axis: Optional[bool] = False,
@@ -1069,7 +1069,6 @@ def ccinet_plot(
 
     # Either plotting overall interactions, or just for a particular LR #
     int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
-
     # Creating the interaction graph #
     all_set = int_df.index.values
     int_matrix = int_df.values
