@@ -244,9 +244,8 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
             paths = nx.all_simple_paths(H, source=source, target=target)
             for i, path in enumerate(paths):
                 if len(path) < max_nodes:
-                    all_paths[i] = path
+                    all_paths[str(i) + "_" + str(source) + "_" + str(target)] = path
 
-    # all_paths = list(map(lambda x: " - ".join(np.array(x).astype(str)),all_paths))
 
     adata.uns["available_paths"] = all_paths
     print(
