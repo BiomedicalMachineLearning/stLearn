@@ -19,7 +19,6 @@ def global_level(
     verbose: bool = True,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Perform global sptial trajectory inference.
 
@@ -152,7 +151,6 @@ def global_level(
     labels = nx.get_edge_attributes(H_sub, "weight")
 
     for edge, _ in labels.items():
-
         dm = dm_list[order_big_dict[query_dict[edge[0]]]]
         sdm = sdm_list[order_big_dict[query_dict[edge[0]]]]
 
@@ -160,7 +158,11 @@ def global_level(
             order_dict[edge[0]], order_dict[edge[1]]
         ] * (1 - w)
         H_sub[edge[0]][edge[1]]["weight"] = weight
-    # tmp = H_sub
+
+    # Set edges with weight=None to weight=0
+    for u, v, tmp in H_sub.edges(data=True):
+        if tmp.get("weight") is None:
+            H_sub[u][v]["weight"] = 0
 
     H_sub = nx.algorithms.tree.minimum_spanning_arborescence(H_sub)
     H_nodes = list(range(len(H_sub.nodes)))
@@ -236,7 +238,6 @@ def ordering_nodes(node_list, use_label, adata):
 
 
 def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
-
     tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
     chosen_adata1 = adata[list(tmp.index)]
     tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
@@ -267,7 +268,6 @@ def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
 
 
 def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
-
     tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
     chosen_adata1 = adata[list(tmp.index)]
     tmp = adata.obs[adata.obs[use_label] == str(cluster2)]

@@ -246,7 +246,6 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
                 if len(path) < max_nodes:
                     all_paths[str(i) + "_" + str(source) + "_" + str(target)] = path
 
-
     adata.uns["available_paths"] = all_paths
     print(
         "All available trajectory paths are stored in adata.uns['available_paths'] with length < "
