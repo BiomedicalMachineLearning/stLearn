@@ -20,7 +20,7 @@
       <img src="https://anaconda.org/conda-forge/stlearn/badges/downloads.svg" alt="Conda downloads">
       </a>
       <a href="https://anaconda.org/conda-forge/stlearn">
-      <img src="https://anaconda.org/conda-forge/stlearn/badges/installer/conda.svg" alt="Install">
+      <img src="https://anaconda.org/conda-forge/stlearn/badges/downloads.svg" alt="Install">
       </a>
     </td>
   </tr>
@@ -39,7 +39,7 @@
      <b>Paper</b>
     </td>
     <td>
-      <a href="https://doi.org/10.1101/2020.05.31.125658"><img src="https://zenodo.org/badge/DOI/10.1007/978-3-319-76207-4_15.svg"
+      <a href="https://doi.org/10.1038/s41467-023-43120-6"><img src="https://zenodo.org/badge/DOI/10.1038/s41467-023-43120-6.svg"
         alt="DOI"></a>
     </td>
   </tr>
