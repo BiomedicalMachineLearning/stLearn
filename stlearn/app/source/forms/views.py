@@ -280,11 +280,11 @@ def run_psts(request, adata, step_log):
     element_values = list(step_log["psts_params"].values())
 
     if element_values[4] == "Auto":
-        w = None
+        model = "mixed"
     elif element_values[4] == "Spatial distance only":
-        w = 0
+        model = "spatial"
     else:
-        w = 1
+        model = "gene_expression"
 
     if not form.validate_on_submit():
         flash_errors(form)
@@ -318,7 +318,7 @@ def run_psts(request, adata, step_log):
             )
             print(node_order)
             st.spatial.trajectory.pseudotimespace_global(
-                adata, use_label="clusters", list_clusters=node_order, w=w
+                adata, use_label="clusters", list_clusters=node_order, model=model
             )
 
             st.pl.cluster_plot(
