@@ -69,6 +69,6 @@
 
 If you have used stLearn in your research, please consider citing us:
 
-> Pham, Duy, et al. "Robust mapping of spatiotemporal trajectories and cell–cell interactions in healthy and diseased tissues." 
+> Pham, Duy, et al. "Robust mapping of spatiotemporal trajectories and cell–cell interactions in healthy and diseased tissues."
 > Nature Communications 14.1 (2023): 7739.
 > [https://doi.org/10.1101/2020.05.31.125658](https://doi.org/10.1038/s41467-023-43120-6)
