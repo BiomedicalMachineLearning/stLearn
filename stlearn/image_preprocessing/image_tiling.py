@@ -13,7 +13,7 @@ import os
 def tiling(
     adata: AnnData,
     out_path: Union[Path, str] = "./tiling",
-    library_id: str = None,
+    library_id: Union[str, None] = None,
     crop_size: int = 40,
     target_size: int = 299,
     verbose: bool = False,
@@ -78,7 +78,7 @@ def tiling(
                 (imagecol_left, imagerow_down, imagecol_right, imagerow_up)
             )
             tile.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
-            tile.resize((target_size, target_size))
+            tile = tile.resize((target_size, target_size))
             tile_name = str(imagecol) + "-" + str(imagerow) + "-" + str(crop_size)
             out_tile = Path(out_path) / (tile_name + ".jpeg")
             tile_names.append(str(out_tile))

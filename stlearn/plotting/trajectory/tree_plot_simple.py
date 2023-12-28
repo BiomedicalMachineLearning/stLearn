@@ -15,7 +15,7 @@ from copy import deepcopy
 from stlearn.utils import _read_graph
 
 
-def tree_plot(
+def tree_plot_simple(
     adata: AnnData,
     library_id: str = None,
     figsize: Union[float, int] = (10, 4),

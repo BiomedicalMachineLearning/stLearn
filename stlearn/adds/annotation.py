@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
 from anndata import AnnData
 from matplotlib import pyplot as plt
 from pathlib import Path
@@ -7,11 +7,10 @@ import os
 
 def annotation(
     adata: AnnData,
-    label_list: list,
+    label_list: List[str],
     use_label: str = "louvain",
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Adding annotation for cluster
 
@@ -38,8 +37,9 @@ def annotation(
     if len(label_list) != len(adata.obs[use_label].unique()):
         raise ValueError("Please give the correct number of label list!")
 
-    adata.obs[use_label + "_anno"] = adata.obs[use_label]
-    adata.obs[use_label + "_anno"].cat.categories = label_list
+    adata.obs[use_label + "_anno"] = adata.obs[use_label].cat.rename_categories(
+        label_list
+    )
 
     print("The annotation is added to adata.obs['" + use_label + "_anno" + "']")
 
