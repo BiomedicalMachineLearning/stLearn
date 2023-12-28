@@ -16,6 +16,7 @@ def tiling(
     library_id: Union[str, None] = None,
     crop_size: int = 40,
     target_size: int = 299,
+    img_fmt: str = "JPEG",
     verbose: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
@@ -80,15 +81,22 @@ def tiling(
             tile.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
             tile = tile.resize((target_size, target_size))
             tile_name = str(imagecol) + "-" + str(imagerow) + "-" + str(crop_size)
-            out_tile = Path(out_path) / (tile_name + ".jpeg")
-            tile_names.append(str(out_tile))
+
+            if img_fmt == "JPEG":
+                out_tile = Path(out_path) / (tile_name + ".jpeg")
+                tile_names.append(str(out_tile))
+                tile.save(out_tile, "JPEG")
+            else:
+                out_tile = Path(out_path) / (tile_name + ".png")
+                tile_names.append(str(out_tile))
+                tile.save(out_tile, "PNG")
+
             if verbose:
                 print(
                     "generate tile at location ({}, {})".format(
                         str(imagecol), str(imagerow)
                     )
                 )
-            tile.save(out_tile, "JPEG")
 
             pbar.update(1)
 
