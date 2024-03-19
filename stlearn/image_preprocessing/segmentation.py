@@ -158,7 +158,7 @@ def _calculate_morph_stats(tile_path):
     min_nucleus_area = 60
     im_nuclei_seg_mask = htk.segmentation.label.area_open(
         labels, min_nucleus_area
-    ).astype(np.int)
+    ).astype(np.int64)
 
     # compute nuclei properties
     objProps = skimage.measure.regionprops(im_nuclei_seg_mask)

@@ -1,5 +1,6 @@
 """Reading and Writing
 """
+
 from pathlib import Path, PurePath
 from typing import Optional, Union
 from anndata import AnnData
@@ -27,7 +28,6 @@ def Read10X(
     quality: _QUALITY = "hires",
     image_path: Union[str, Path] = None,
 ) -> AnnData:
-
     """\
     Read Visium data from 10X (wrap read_visium from scanpy)
 
@@ -209,7 +209,6 @@ def ReadOldST(
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
 ) -> AnnData:
-
     """\
     Read Old Spatial Transcriptomics data
 
@@ -258,7 +257,6 @@ def ReadSlideSeq(
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
 ) -> AnnData:
-
     """\
     Read Slide-seq data
 
@@ -340,7 +338,6 @@ def ReadMERFISH(
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
 ) -> AnnData:
-
     """\
     Read MERFISH data
 
@@ -423,7 +420,6 @@ def ReadSeqFish(
     spot_diameter_fullres: float = 50,
     background_color: _background = "white",
 ) -> AnnData:
-
     """\
     Read SeqFish data
 
@@ -510,7 +506,6 @@ def ReadXenium(
     spot_diameter_fullres: float = 15,
     background_color: _background = "white",
 ) -> AnnData:
-
     """\
     Read Xenium data
 

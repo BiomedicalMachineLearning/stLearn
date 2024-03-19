@@ -218,7 +218,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
         cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
         for i, cell_type in enumerate(all_set):
             cell_data[:, i] = (
-                (cell_labels == cell_type).astype(np.int_).astype(np.float64)
+                (cell_labels == cell_type).astype(np.int32).astype(np.float64)
             )
 
     spot_bcs = adata.obs_names.values.astype(str)
@@ -254,7 +254,7 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
         cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
         for i, cell_type in enumerate(all_set):
             cell_data[:, i] = (
-                (cell_labels == cell_type).astype(np.int_).astype(np.float64)
+                (cell_labels == cell_type).astype(np.int32).astype(np.float64)
             )
 
     spot_bcs = adata.obs_names.values.astype(str)

@@ -348,7 +348,7 @@ def get_interactions(
 
         A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
         n_true = A_gene1_sig_bool.sum()
-        A_gene1_sig_indices = np.zeros((1, n_true), dtype=np.int_)[
+        A_gene1_sig_indices = np.zeros((1, n_true), dtype=np.int32)[
             0, :
         ]  # np.where(A_gene1_sig_bool)[0]
         index = 0

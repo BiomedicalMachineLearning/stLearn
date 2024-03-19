@@ -194,7 +194,7 @@ class SpatialBasePlot(Spatial):
     def _zoom_image(self, main_ax: _AxesSubplot, zoom_coord: Optional[float]):
 
         main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
-        main_ax.set_ylim(zoom_coord[2], zoom_coord[3])
+        main_ax.set_ylim(zoom_coord[3], zoom_coord[2])
 
     def _add_color_bar(self, plot, color_bar_label: str = ""):
         cb = plt.colorbar(

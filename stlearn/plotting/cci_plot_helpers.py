@@ -198,9 +198,11 @@ def rank_scatter(
                 y[ranks_],
                 alpha=alpha,
                 c=highlight_color,
-                s=None
-                if type(point_sizes) == type(None)
-                else (point_sizes[ranks_] ** point_size_exp),
+                s=(
+                    None
+                    if type(point_sizes) == type(None)
+                    else (point_sizes[ranks_] ** point_size_exp)
+                ),
                 edgecolors=color,
             )
             ranks = ranks_ if not show_all else ranks
@@ -754,7 +756,16 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1):
         # This draws the outter ring #
         # IdeogramArc(start=start, end=end, radius=1.0, ax=ax,
         #            color=colors[i], width=width)
-        a = Arc((0, 0), diam, diam, 0, start, end, color=colors[i], lw=10)
+        a = Arc(
+            xy=(0, 0),
+            width=diam,
+            height=diam,
+            angle=0,
+            theta1=start,
+            theta2=end,
+            color=colors[i],
+            lw=10,
+        )
         ax.add_patch(a)
         start, end = pos[(i, i)]
         # This draws the paths to itself #
