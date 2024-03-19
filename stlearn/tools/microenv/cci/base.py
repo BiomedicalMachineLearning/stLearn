@@ -16,7 +16,6 @@ def lr(
     neighbours: list = None,
     fast: bool = True,
 ) -> AnnData:
-
     """Calculate the proportion of known ligand-receptor co-expression among the neighbouring spots or within spots
     Parameters
     ----------
@@ -111,7 +110,7 @@ def get_lrs_scores(
     lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
     if type(spot_indices) == type(None):
-        spot_indices = np.array(list(range(len(adata))), dtype=np.int_)
+        spot_indices = np.array(list(range(len(adata))), dtype=np.int32)
 
     spot_lr1s = get_spot_lrs(
         adata, lr_pairs=lrs, lr_order=True, filter_pairs=filter_pairs
@@ -208,7 +207,7 @@ def calc_neighbours(
                 distance,
             )
             if index:
-                n_index = np.array(n_index, dtype=np.int_)
+                n_index = np.array(n_index, dtype=np.int32)
                 neighbours.append(n_index[n_index != i])
             else:
                 n_spots = adata.obs_names[n_index]
@@ -286,6 +285,7 @@ def lr_pandas(
     -------
     lr_scores: numpy.ndarray   Cells*LR-scores.
     """
+
     # function to calculate mean of lr2 expression between neighbours or within spot (distance==0) for each spot
     def mean_lr2(x):
         # get lr2 expressions from the neighbour(s)
@@ -352,7 +352,6 @@ def lr_grid(
     radius: int = 1,
     verbose: bool = True,
 ) -> AnnData:
-
     """Calculate the proportion of known ligand-receptor co-expression among the neighbouring grids or within each grid
     Parameters
     ----------
