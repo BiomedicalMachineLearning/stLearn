@@ -15,7 +15,6 @@ def local_level(
     verbose: bool = True,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Perform local sptial trajectory inference (required run pseudotime first).
 

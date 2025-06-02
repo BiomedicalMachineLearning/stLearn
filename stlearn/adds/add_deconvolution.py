@@ -10,7 +10,6 @@ def add_deconvolution(
     annotation_path: Union[Path, str],
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Adding label transfered from Seurat
 

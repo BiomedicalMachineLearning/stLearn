@@ -1,5 +1,5 @@
-"""Logging and Profiling
-"""
+"""Logging and Profiling"""
+
 import logging
 from functools import update_wrapper, partial
 from logging import CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET

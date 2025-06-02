@@ -17,7 +17,6 @@ def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
 ) -> Optional[AnnData]:
-
     """\
     A wrap function to plot all the non-spatial plot from scanpy.
 

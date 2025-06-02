@@ -32,7 +32,6 @@ def local_plot(
     output: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Local spatial trajectory inference plot.
 

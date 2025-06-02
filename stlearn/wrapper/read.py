@@ -1,5 +1,4 @@
-"""Reading and Writing
-"""
+"""Reading and Writing"""
 
 from pathlib import Path, PurePath
 from typing import Optional, Union

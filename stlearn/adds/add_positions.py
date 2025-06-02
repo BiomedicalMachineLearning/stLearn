@@ -12,7 +12,6 @@ def positions(
     quality: str = "low",
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Adding spatial information into the Anndata object
 

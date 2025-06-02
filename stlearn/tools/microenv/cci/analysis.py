@@ -1,5 +1,5 @@
-""" Wrapper function for performing CCI analysis, varrying the analysis based on
-    the inputted data / state of the anndata object.
+"""Wrapper function for performing CCI analysis, varrying the analysis based on
+the inputted data / state of the anndata object.
 """
 
 import os
@@ -23,6 +23,7 @@ from .het import (
     grid_parallel,
 )
 from statsmodels.stats.multitest import multipletests
+
 
 ################################################################################
 # Functions related to Ligand-Receptor interactions #

@@ -13,7 +13,6 @@ def localization(
     min_samples: int = 0,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Perform local cluster by using DBSCAN.
 

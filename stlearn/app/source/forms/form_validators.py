@@ -1,5 +1,5 @@
-""" Contains different kinds of form validators.
-"""
+"""Contains different kinds of form validators."""
+
 from wtforms.validators import ValidationError
 
 

@@ -18,7 +18,6 @@ def run_fa(
     use_data: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Factor Analysis (FA)
     A simple linear generative model with Gaussian latent variables.

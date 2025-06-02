@@ -13,7 +13,6 @@ def add_loupe_clusters(
     key_add: str = "multiplex",
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Adding label transfered from Seurat
 

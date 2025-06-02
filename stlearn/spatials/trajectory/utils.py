@@ -581,9 +581,7 @@ def _mat_mat_corr_sparse(
     n = X.shape[1]
 
     X_bar = np.reshape(np.array(X.mean(axis=1)), (-1, 1))
-    X_std = np.reshape(
-        np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar**2)), (-1, 1)
-    )
+    X_std = np.reshape(np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar**2)), (-1, 1))
 
     y_bar = np.reshape(np.mean(Y, axis=0), (1, -1))
     y_std = np.reshape(np.std(Y, axis=0), (1, -1))
@@ -629,7 +627,7 @@ def _correlation_test_helper(
     """
 
     def perm_test_extractor(
-        res: Sequence[Tuple[np.ndarray, np.ndarray]]
+        res: Sequence[Tuple[np.ndarray, np.ndarray]],
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pvals, corr_bs = zip(*res)
         pvals = np.sum(pvals, axis=0) / float(n_perms)

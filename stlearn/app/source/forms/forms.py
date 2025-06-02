@@ -1,7 +1,7 @@
 """Purpose of this script is to create general forms that are programmable with
-	particular input. Will impliment forms for subsetting the data and
-	visualisation options in a general way so can be used with any
-	SingleCellAnalysis dataset.
+particular input. Will impliment forms for subsetting the data and
+visualisation options in a general way so can be used with any
+SingleCellAnalysis dataset.
 """
 
 import sys

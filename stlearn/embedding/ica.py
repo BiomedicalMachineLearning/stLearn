@@ -14,7 +14,6 @@ def run_ica(
     use_data: str = None,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     FastICA: a fast algorithm for Independent Component Analysis.
 

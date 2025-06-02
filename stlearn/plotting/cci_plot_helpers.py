@@ -1,5 +1,4 @@
-""" Helper functions for cci_plot.py.
-"""
+"""Helper functions for cci_plot.py."""
 
 import sys
 import math
@@ -159,7 +158,7 @@ def rank_scatter(
         y,
         alpha=alpha,
         c=color,
-        s=None if type(point_sizes) == type(None) else point_sizes ** point_size_exp,
+        s=None if type(point_sizes) == type(None) else point_sizes**point_size_exp,
         edgecolors="none",
     )
     y_min, y_max = ax.get_ylim()

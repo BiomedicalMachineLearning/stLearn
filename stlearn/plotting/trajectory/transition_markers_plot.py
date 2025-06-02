@@ -100,7 +100,7 @@ def transition_markers_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=6
+            size=6,
         )
         axes[1].text(
             rect.get_x() + 0.01,
@@ -108,7 +108,7 @@ def transition_markers_plot(
             p_value,
             color="w",
             **alignment,
-            size=6
+            size=6,
         )
 
     rects = axes[0].patches
@@ -125,7 +125,7 @@ def transition_markers_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=6
+            size=6,
         )
         axes[0].text(
             rect.get_x() - 0.01,
@@ -133,7 +133,7 @@ def transition_markers_plot(
             p_value,
             color="w",
             **alignment,
-            size=6
+            size=6,
         )
 
     plt.figtext(0.5, 0.9, trajectory, ha="center", va="center")

@@ -33,7 +33,6 @@ def deconvolution_plot(
     figsize: tuple = (6.4, 4.8),
     show=True,
 ) -> Optional[AnnData]:
-
     """\
     Clustering plot for sptial transcriptomics data. Also it has a function to display trajectory inference.
 

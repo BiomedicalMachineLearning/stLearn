@@ -12,7 +12,6 @@ def parsing(
     coordinates_file: Union[Path, str],
     copy: bool = True,
 ) -> Optional[AnnData]:
-
     """\
     Parsing the old spaital transcriptomics data
 

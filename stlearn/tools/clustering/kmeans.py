@@ -20,7 +20,6 @@ def kmeans(
     key_added: str = "kmeans",
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Perform kmeans cluster for spatial transcriptomics data
 

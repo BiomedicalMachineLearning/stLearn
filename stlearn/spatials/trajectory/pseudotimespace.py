@@ -15,7 +15,6 @@ def pseudotimespace_global(
     step=0.01,
     k=10,
 ) -> Optional[AnnData]:
-
     """\
     Perform pseudo-time-space analysis with global level.
 
@@ -68,7 +67,6 @@ def pseudotimespace_local(
     cluster: list = [],
     w: float = None,
 ) -> Optional[AnnData]:
-
     """\
     Perform pseudo-time-space analysis with local level.
 

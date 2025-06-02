@@ -39,7 +39,6 @@ def pseudotime_plot(
     copy: bool = False,
     ax=None,
 ) -> Optional[AnnData]:
-
     """\
     Global trajectory inference plot (Only DPT).
 

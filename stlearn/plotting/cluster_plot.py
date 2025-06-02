@@ -61,7 +61,6 @@ def cluster_plot(
     trajectory_edge_color: Optional[str] = "#f4efd3",
     trajectory_arrowsize: Optional[int] = 17,
 ) -> Optional[AnnData]:
-
     """\
     Allows the visualization of a cluster results as the discretes values
     of dot points in the Spatial transcriptomics array. We also support to

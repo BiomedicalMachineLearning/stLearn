@@ -548,7 +548,7 @@ class BokehClusterPlot(Spatial):
             title="Cluster plot",
             x_range=(0, self.dim - 150),
             y_range=(self.dim, 0),
-            output_backend=self.output_backend.value
+            output_backend=self.output_backend.value,
             # Specifying xdim/ydim isn't quire right :-(
             # width=xdim, height=ydim,
         )
@@ -1410,9 +1410,9 @@ class Annotate(Spatial):
             empty_array[:] = np.NaN
             empty_array = empty_array.astype(object)
             for i in range(0, len(self.adata[0].uns["annotation"])):
-                empty_array[
-                    [np.array(self.adata[0].uns["annotation"]["spot"][i])]
-                ] = str(self.adata[0].uns["annotation"]["label"][i])
+                empty_array[[np.array(self.adata[0].uns["annotation"]["spot"][i])]] = (
+                    str(self.adata[0].uns["annotation"]["label"][i])
+                )
 
             empty_array = pd.Series(empty_array).fillna("other")
             self.adata[0].obs["annotation"] = pd.Categorical(empty_array)

@@ -24,7 +24,6 @@ def pseudotime(
     run_knn: bool = False,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Perform pseudotime analysis.
 

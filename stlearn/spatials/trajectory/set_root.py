@@ -5,7 +5,6 @@ from stlearn.spatials.trajectory.utils import _correlation_test_helper
 
 
 def set_root(adata: AnnData, use_label: str, cluster: str, use_raw: bool = False):
-
     """\
     Automatically set the root index.
 

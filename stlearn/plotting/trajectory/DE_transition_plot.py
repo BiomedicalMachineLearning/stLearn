@@ -12,7 +12,6 @@ def DE_transition_plot(
     dpi: int = 150,
     output: str = None,
 ) -> Optional[AnnData]:
-
     """\
     Differential expression between transition markers.
 
@@ -136,7 +135,7 @@ def DE_transition_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=font_size
+            size=font_size,
         )
         axes[0][1].text(
             rect.get_x() + 0.01,
@@ -144,7 +143,7 @@ def DE_transition_plot(
             p_value,
             color="w",
             **alignment,
-            size=font_size
+            size=font_size,
         )
 
     rects = axes[0][0].patches
@@ -161,7 +160,7 @@ def DE_transition_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=font_size
+            size=font_size,
         )
         axes[0][0].text(
             rect.get_x() - 0.01,
@@ -169,7 +168,7 @@ def DE_transition_plot(
             p_value,
             color="w",
             **alignment,
-            size=font_size
+            size=font_size,
         )
 
     rects = axes[1][1].patches
@@ -186,7 +185,7 @@ def DE_transition_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=font_size
+            size=font_size,
         )
         axes[1][1].text(
             rect.get_x() + 0.01,
@@ -194,7 +193,7 @@ def DE_transition_plot(
             p_value,
             color="w",
             **alignment,
-            size=font_size
+            size=font_size,
         )
 
     rects = axes[1][0].patches
@@ -211,7 +210,7 @@ def DE_transition_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=font_size
+            size=font_size,
         )
         axes[1][0].text(
             rect.get_x() - 0.01,
@@ -219,7 +218,7 @@ def DE_transition_plot(
             p_value,
             color="w",
             **alignment,
-            size=font_size
+            size=font_size,
         )
 
     plt.figtext(

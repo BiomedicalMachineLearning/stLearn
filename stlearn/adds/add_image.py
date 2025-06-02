@@ -18,7 +18,6 @@ def image(
     spot_diameter_fullres: float = 50,
     copy: bool = False,
 ) -> Optional[AnnData]:
-
     """\
     Adding image data to the Anndata object
 

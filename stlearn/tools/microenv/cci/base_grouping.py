@@ -1,5 +1,5 @@
-""" Performs LR analysis by grouping LR pairs which having hotspots across
-    similar tissues.
+"""Performs LR analysis by grouping LR pairs which having hotspots across
+similar tissues.
 """
 
 from stlearn.pl import het_plot

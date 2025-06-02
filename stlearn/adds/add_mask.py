@@ -168,8 +168,8 @@ def apply_mask(
             """
             )
         mask_image_2d = mask_image.mean(axis=2)
-        apply_spot_mask = (
-            lambda x: [i, mask]
+        apply_spot_mask = lambda x: (
+            [i, mask]
             if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1
             else [x[key + "_code"], x[key]]
         )

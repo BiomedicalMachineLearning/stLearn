@@ -1,5 +1,4 @@
-""" Wrapper for performing the LR GO analysis.
-"""
+"""Wrapper for performing the LR GO analysis."""
 
 import os
 import stlearn.tools.microenv.cci.r_helpers as rhs

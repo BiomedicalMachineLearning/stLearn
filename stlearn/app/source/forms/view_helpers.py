@@ -1,5 +1,4 @@
-""" Helper functions for views.py.
-"""
+"""Helper functions for views.py."""
 
 import numpy
 
