@@ -2,7 +2,7 @@ import importlib
 import math
 import sys
 from typing import (
-    Optional,  # Special
+    Optional, Any,  # Special
 )
 
 import matplotlib
@@ -10,12 +10,14 @@ import matplotlib.patches as patches
 import networkx as nx
 import numpy as np
 import pandas as pd
+import matplotlib as plt
+import matplotlib.axes as plt_axis
+import matplotlib.figure as plt_figure
 from anndata import AnnData
 from bokeh.io import output_notebook
 from bokeh.plotting import show
-from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from numpy.typing import NDArray
+
 from scipy.stats import gaussian_kde
 
 import stlearn.plotting.cci_plot_helpers as cci_hs
@@ -59,18 +61,18 @@ def lr_diagnostics(
 
     Parameters
     ----------
-    adata: AnnData
+    adata (AnnData):
         The data object on which st.tl.cci.run has been applied.
-    highlight_lrs: list
+    highlight_lrs (list):
         List of LRs to highlight, will add text and change point color for these
         LR pairs.
-    n_top: int
+    n_top (int):
         The number of LRs to display. If None shows all.
-    color0: str
+    color0 (str):
         The color of the nonzero-median scatter plot.
-    lr_text_fp: dict
+    lr_text_fp (dict):
         Font dict for the LR text if highlight_lrs not None.
-    axis_text_fp: dict
+    axis_text_fp (dict):
         Font dict for the axis text labels.
     Returns
     -------
@@ -79,7 +81,7 @@ def lr_diagnostics(
     """
     if n_top is None:
         n_top = adata.uns["lr_summary"].shape[0]
-    fig, axes = plt.subplots(ncols=2, figsize=figsize)
+    fig, axes = plt.pyplot.subplots(ncols=2, figsize=figsize)
     cci_hs.lr_scatter(
         adata,
         "nonzero-median",
@@ -101,7 +103,7 @@ def lr_diagnostics(
         show=False,
     )
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
         return fig, axes
 
@@ -116,7 +118,7 @@ def lr_summary(
     highlight_color: str = "red",
     max_text: int = 50,
     lr_text_fp: dict = None,
-    ax: Axes = None,
+    ax: plt_axis.Axes = None,
     show: bool = True,
 ):
     """Plotting the top LRs ranked by number of significant spots.
@@ -230,7 +232,7 @@ def lr_n_spots(
     n_sig = adata.uns["lr_summary"].loc[:, "n_spots_sig"].values
     n_non_sig = adata.uns["lr_summary"].loc[:, "n_spots"].values - n_sig
     rank = list(range(len(n_sig)))
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.pyplot.subplots(figsize=figsize)
     ax.bar(rank[0:n_top], n_non_sig[0:n_top], bar_width, color=non_sig_color)
     ax.bar(
         rank[0:n_top],
@@ -251,7 +253,7 @@ def lr_n_spots(
     ax.spines["right"].set_visible(False)
 
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
         return fig, ax
 
@@ -387,7 +389,7 @@ def cci_check(
     label_set = label_set[order]
 
     # Plotting bar plot #
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.pyplot.subplots(figsize=figsize)
     ax.bar(xs, cell_counts, color=colors)
     text_dist = max(cell_counts) * 0.015
     fontdict = {"fontweight": "bold", "fontsize": cell_label_size}
@@ -415,7 +417,7 @@ def cci_check(
     fig.tight_layout()
 
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
         return fig, ax, ax2
 
@@ -429,7 +431,7 @@ def lr_result_plot(
     title: Optional["str"] = None,
     figsize: tuple[float, float] | None = None,
     cmap: str | None = "Spectral_r",
-    ax: matplotlib.axes.Axes | None = None,
+    ax: plt_axis.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
     show_plot: bool | None = True,
     show_axis: bool | None = False,
@@ -555,8 +557,8 @@ def lr_plot(
     title="",
     show_image: bool = True,
     show_arrows: bool = False,
-    fig: Figure = None,
-    ax: Axes = None,
+    fig: plt_figure.Figure = None,
+    ax: plt_axis.Axes = None,
     arrow_head_width: float = 4,
     arrow_width: float = 0.001,
     arrow_cmap: str = None,
@@ -909,7 +911,7 @@ def het_plot(
     cmap: str | None = "Spectral_r",
     use_label: str | None = None,
     list_clusters: list | None = None,
-    ax: matplotlib.axes.Axes | None = None,
+    ax: plt_axis.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
     show_plot: bool | None = True,
     show_axis: bool | None = False,
@@ -988,8 +990,8 @@ def het_plot(
 def ccinet_plot(
     adata: AnnData,
     use_label: str,
-    lr: str = None,
-    pos: dict = None,
+    lr: str | None = None,
+    pos: dict | None = None,
     return_pos: bool = False,
     cmap: str = "default",
     font_size: int = 12,
@@ -997,10 +999,10 @@ def ccinet_plot(
     node_size_scaler: int = 1,
     min_counts: int = 0,
     sig_interactions: bool = True,
-    fig: matplotlib.figure.Figure = None,
-    ax: matplotlib.axes.Axes = None,
+    fig_or_none: plt_figure.Figure | None = None,
+    ax_or_none: plt_axis.Axes | None = None,
     pad=0.25,
-    title: str = None,
+    title_or_none: str | None = None,
     figsize: tuple = (10, 10),
 ):
     """Circular celltype-celltype interaction network based on LR-CCI analysis.
@@ -1059,7 +1061,7 @@ def ccinet_plot(
         )
 
     # Either plotting overall interactions, or just for a particular LR #
-    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
+    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title_or_none)
     # Creating the interaction graph #
     all_set = int_df.index.values
     int_matrix = int_df.values
@@ -1113,8 +1115,10 @@ def ccinet_plot(
         node_colors = np.array(node_colors)[nodes_indices]
 
     #### Drawing the graph #####
-    if fig is None or ax is None:
-        fig, ax = plt.subplots(figsize=figsize, facecolor=[0.7, 0.7, 0.7, 0.4])
+    ax: plt_axis.Axes
+    fig: plt_figure.Figure
+    if fig_or_none is None or ax_or_none is None:
+        fig, ax = plt.pyplot.subplots(figsize=figsize, facecolor=[0.7, 0.7, 0.7, 0.4])
 
     # Adding in the self-loops #
     z = 55
@@ -1131,7 +1135,7 @@ def ccinet_plot(
             width=0.3,
             height=0.025,
             lw=5,
-            ec=plt.cm.get_cmap("Blues")(edge_weights[i]),
+            ec=plt.colormaps.get_cmap("Blues")(edge_weights[i]),
             angle=angle,
             theta1=z,
             theta2=360 - z,
@@ -1139,7 +1143,7 @@ def ccinet_plot(
         ax.add_patch(arc)
 
     # Drawing the main components of the graph #
-    edges = nx.draw_networkx(
+    nx.draw_networkx(
         graph,
         pos,
         node_size=node_sizes,
@@ -1150,11 +1154,11 @@ def ccinet_plot(
         font_size=font_size,
         font_weight="bold",
         edge_color=edge_weights,
-        edge_cmap=plt.cm.Blues,
+        edge_cmap=plt.colormaps.get_cmap("Blues"),
         ax=ax,
     )
     fig.suptitle(title, fontsize=30)
-    plt.tight_layout()
+    plt.pyplot.tight_layout()
 
     # Adding padding #
     xlims = ax.get_xlim()
@@ -1169,10 +1173,10 @@ def ccinet_plot(
 def cci_map(
     adata: AnnData,
     use_label: str,
-    lr: str = None,
-    ax: matplotlib.figure.Axes = None,
+    lr: str | None = None,
+    ax: plt_axis.Axes | None = None,
     show: bool = False,
-    figsize: tuple = None,
+    figsize: tuple | None = None,
     cmap: str = "Spectral_r",
     sig_interactions: bool = True,
     title=None,
@@ -1226,7 +1230,7 @@ def cci_map(
     # Reformat the interaction df #
     flat_df = create_flat_df(int_df)
 
-    ax = _box_map(
+    new_ax: plt_axis.Axes = _box_map(
         flat_df["x"],
         flat_df["y"],
         flat_df["value"].astype(int),
@@ -1235,24 +1239,24 @@ def cci_map(
         cmap=cmap,
     )
 
-    ax.set_ylabel("Sender")
-    ax.set_xlabel("Receiver")
-    plt.suptitle(title)
+    new_ax.set_ylabel("Sender")
+    new_ax.set_xlabel("Receiver")
+    plt.pyplot.suptitle(title)
 
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
-        return ax
+        return new_ax
 
 
 def lr_cci_map(
     adata: AnnData,
     use_label: str,
-    lrs: list or np.array = None,
+    lrs: Optional[list | np.ndarray] = None,
     n_top_lrs: int = 5,
     n_top_ccis: int = 15,
     min_total: int = 0,
-    ax: matplotlib.figure.Axes = None,
+    ax: plt_axis.Axes | None = None,
     figsize: tuple = (6.48, 4.8),
     show: bool = False,
     cmap: str = "Spectral_r",
@@ -1270,8 +1274,8 @@ def lr_cci_map(
         Indicates the cell type labels or deconvolution results used for
         the cell-cell interaction counting by LR pairs.
     lrs: list-like
-        LR pairs to show in the heatmap, if None then top 5 lrs with highest no.
-        of interactions used from adata.uns['lr_summary'].
+        LR pairs to show in the heatmap, if None then top 5 lrs with the highest no. of interactions used from
+        adata.uns['lr_summary'].
     n_top_lrs: int
         Indicates how many top lrs to show; is ignored if lrs is not None.
     n_top_ccis: int
@@ -1344,7 +1348,7 @@ def lr_cci_map(
     if flat_df.shape[0] == 0 or flat_df.shape[1] == 0:
         raise Exception(f"No interactions greater than min: {min_total}")
 
-    ax = _box_map(
+    new_ax: plt_axis.Axes = _box_map(
         flat_df["x"],
         flat_df["y"],
         flat_df["value"].astype(int),
@@ -1354,26 +1358,26 @@ def lr_cci_map(
         square_scaler=square_scaler,
     )
 
-    ax.set_ylabel("LR-pair")
-    ax.set_xlabel("Cell-cell interaction")
+    new_ax.set_ylabel("LR-pair")
+    new_ax.set_xlabel("Cell-cell interaction")
 
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
-        return ax
+        return new_ax
 
 
 def lr_chord_plot(
     adata: AnnData,
     use_label: str,
-    lr: str = None,
+    lr: str | None = None,
     min_ints: int = 2,
     n_top_ccis: int = 10,
     cmap: str = "default",
     sig_interactions: bool = True,
     label_size: int = 10,
     label_rotation: float = 0,
-    title: str = None,
+    title: str = "",
     figsize: tuple = (8, 8),
     show: bool = True,
 ):
@@ -1435,7 +1439,7 @@ def lr_chord_plot(
     int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
 
     int_df = int_df.transpose()
-    fig = plt.figure(figsize=figsize)
+    fig = plt.pyplot.figure(figsize=figsize)
 
     flux = int_df.values
     total_ints = flux.sum(axis=1) + flux.sum(axis=0) - flux.diagonal()
@@ -1473,10 +1477,10 @@ def lr_chord_plot(
     # Retrieving colors of cell types #
     colors = get_colors(adata, use_label, cmap=cmap, label_set=cell_names)
 
-    ax = plt.axes([0, 0, 1, 1])
+    ax = plt.pyplot.axes((0, 0, 1, 1))
     nodePos = chordDiagram(flux, ax, lim=1.25, colors=colors)
     ax.axis("off")
-    prop = dict(fontsize=label_size, ha="center", va="center")
+    prop: dict[str, Any] = dict(fontsize=label_size, ha="center", va="center")
     label_rotation_ = label_rotation
     for i in range(len(cell_names)):
         x, y = nodePos[i][0:2]
@@ -1493,14 +1497,14 @@ def lr_chord_plot(
         )  # size=10,
     fig.suptitle(title, fontsize=12, fontweight="bold")
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
         return fig, ax
 
 
 def grid_plot(
     adata,
-    use_label: str = None,
+    use_label: str | None = None,
     n_row: int = 10,
     n_col: int = 10,
     size: int = 1,
@@ -1534,7 +1538,7 @@ def grid_plot(
     xmin, xmax = min(xedges), max(xedges)
     ymin, ymax = min(yedges), max(yedges)
 
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.pyplot.subplots(figsize=figsize)
 
     # Plotting the points #
     if use_label is not None:
@@ -1552,7 +1556,7 @@ def grid_plot(
     ax.hlines(-yedges, xmin, xmax, color="#36454F")
 
     if show:
-        plt.show()
+        plt.pyplot.show()
     else:
         return fig, ax
 
@@ -1582,7 +1586,6 @@ def spatialcci_plot_interactive(adata: AnnData):
     bokeh_object = BokehSpatialCciPlot(adata)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
-
 
 # def het_plot_interactive(adata: AnnData):
 #     bokeh_object = BokehCciPlot(adata)
