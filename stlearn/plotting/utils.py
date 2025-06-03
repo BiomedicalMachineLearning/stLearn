@@ -33,10 +33,10 @@ def centroidpython(x, y):
 
 def get_cluster(search, dictionary):
     for (
-            cl,
-            sub,
+        cl,
+        sub,
     ) in (
-            dictionary.items()
+        dictionary.items()
     ):  # for name, age in dictionary.iteritems():  (for Python 2.x)
         if search in sub:
             return cl
@@ -91,8 +91,8 @@ def check_cmap(cmap):
     stlearn_cmap = ["jana_40", "default"]
     cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
     error_msg = (
-            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
-            "one of these: " + str(cmap_available)
+        "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
+        "one of these: " + str(cmap_available)
     )
     if cmap is str:
         assert cmap in cmap_available, error_msg

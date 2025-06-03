@@ -197,13 +197,13 @@ def getCCIForm(adata):
                                                     related to CCI analysis.
     """
     elements = [
-        "Cell information (only discrete labels available, unless mixture already in " +
-        "anndata.uns)",
+        "Cell information (only discrete labels available, unless mixture already in "
+        + "anndata.uns)",
         "Minimum spots for LR to be considered",
-        "Spot mixture (only if the 'Cell Information' label selected available in " +
-        "anndata.uns)",
-        "Cell proportion cutoff (value above which cell is considered in spot " +
-        "if 'Spot mixture' selected)",
+        "Spot mixture (only if the 'Cell Information' label selected available in "
+        + "anndata.uns)",
+        "Cell proportion cutoff (value above which cell is considered in spot "
+        + "if 'Spot mixture' selected)",
         "Permutations (recommend atleast 1000)",
     ]
     element_fields = [
@@ -217,9 +217,7 @@ def getCCIForm(adata):
         fields = []
         mix = False
     else:
-        fields = [
-            key for key in adata.obs.keys() if adata.obs[key].values[0] is str
-        ]
+        fields = [key for key in adata.obs.keys() if adata.obs[key].values[0] is str]
         mix = fields[0] in adata.uns.keys()
     element_values = [fields, 20, mix, 0.2, 100]
     return createSuperForm(elements, element_fields, element_values)
@@ -323,6 +321,7 @@ def getDEAForm(list_labels, methods):
 
     element_values = [list_labels, methods]
     return createSuperForm(elements, element_fields, element_values)
+
 
 ######################## Junk Code #############################################
 # def getCCIForm(step_log):

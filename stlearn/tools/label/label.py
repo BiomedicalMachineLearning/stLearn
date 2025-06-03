@@ -11,8 +11,7 @@ import stlearn.tools.microenv.cci.r_helpers as rhs
 
 
 def run_label_transfer(
-        st_data, sc_data, sc_label_col, r_path, st_label_col=None,
-        n_highly_variable=2000
+    st_data, sc_data, sc_label_col, r_path, st_label_col=None, n_highly_variable=2000
 ):
     """Runs Seurat label transfer."""
     st_label_col = sc_label_col if st_label_col is None else st_label_col
@@ -96,15 +95,15 @@ def get_counts(data):
     elif data.X is np.ndarray and np.all(np.mod(data.X[0, :], 1) == 0):
         counts = data.to_df().transpose()
     elif (
-            data.X is not np.ndarray
-            and hasattr(data, "raw")
-            and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
+        data.X is not np.ndarray
+        and hasattr(data, "raw")
+        and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
     ):
         counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     elif (
-            data.X is np.ndarray
-            and hasattr(data, "raw")
-            and np.all(np.mod(data.raw.X[0, :], 1) == 0)
+        data.X is np.ndarray
+        and hasattr(data, "raw")
+        and np.all(np.mod(data.raw.X[0, :], 1) == 0)
     ):
         counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     else:
@@ -117,15 +116,15 @@ def get_counts(data):
 
 
 def run_rctd(
-        st_data,
-        sc_data,
-        sc_label_col,
-        r_path,
-        st_label_col=None,
-        n_highly_variable=5000,
-        min_cells=10,
-        doublet_mode="full",
-        n_cores=1,
+    st_data,
+    sc_data,
+    sc_label_col,
+    r_path,
+    st_label_col=None,
+    n_highly_variable=5000,
+    min_cells=10,
+    doublet_mode="full",
+    n_cores=1,
 ):
     """Runs RCTD for deconvolution."""
     st_label_col = sc_label_col if st_label_col is None else st_label_col
@@ -202,23 +201,23 @@ def run_rctd(
     st_data_orig.obs[st_label_col] = labels
     st_data_orig.obs[st_label_col] = st_data_orig.obs[st_label_col].astype("category")
     st_data_orig.uns[st_label_col] = rctd_proportions.loc[
-                                     st_data_orig.obs_names.values, :
-                                     ]
+        st_data_orig.obs_names.values, :
+    ]
 
     print(f"Spot labels added to st_data.obs[{st_label_col}].")
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
 
 
 def run_singleR(
-        st_data,
-        sc_data,
-        sc_label_col,
-        r_path,
-        st_label_col=None,
-        n_highly_variable=5000,
-        n_centers=3,
-        de_n=200,
-        de_method="t",
+    st_data,
+    sc_data,
+    sc_label_col,
+    r_path,
+    st_label_col=None,
+    n_highly_variable=5000,
+    n_centers=3,
+    de_n=200,
+    de_method="t",
 ):
     """Runs SingleR spot annotation."""
     st_label_col = sc_label_col if st_label_col is None else st_label_col

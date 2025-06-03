@@ -9,13 +9,13 @@ from .utils import lambda_dist, resistance_distance
 
 
 def weight_optimizing_global(
-        adata,
-        use_label=None,
-        list_clusters=None,
-        step=0.01,
-        k=10,
-        use_rep="X_pca",
-        n_dims=40,
+    adata,
+    use_label=None,
+    list_clusters=None,
+    step=0.01,
+    k=10,
+    use_rep="X_pca",
+    n_dims=40,
 ):
     # Screening PTS graph
     print("Screening PTS global graph...")
@@ -23,9 +23,9 @@ def weight_optimizing_global(
     j = 0
 
     with tqdm(
-            total=int(1 / step + 1),
-            desc="Screening",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        total=int(1 / step + 1),
+        desc="Screening",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(0, int(1 / step + 1)):
             Gs.append(
@@ -59,9 +59,9 @@ def weight_optimizing_global(
         ].unique()
     )
     with tqdm(
-            total=int(1 / step - 1),
-            desc="Calculating",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        total=int(1 / step - 1),
+        desc="Calculating",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(1, int(1 / step)):
             w += step
@@ -100,9 +100,9 @@ def weight_optimizing_local(adata, use_label=None, cluster=None, step=0.01):
     Gs = []
     j = 0
     with tqdm(
-            total=int(1 / step + 1),
-            desc="Screening",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        total=int(1 / step + 1),
+        desc="Screening",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(0, int(1 / step + 1)):
             Gs.append(
@@ -128,9 +128,9 @@ def weight_optimizing_local(adata, use_label=None, cluster=None, step=0.01):
     w = 0
 
     with tqdm(
-            total=int(1 / step - 1),
-            desc="Calculating",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        total=int(1 / step - 1),
+        desc="Calculating",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(1, int(1 / step)):
             w += step

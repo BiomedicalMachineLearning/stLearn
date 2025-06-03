@@ -91,9 +91,7 @@ def tiling(
                 tile.save(out_tile, "PNG")
 
             if verbose:
-                print(
-                    f"generate tile at location ({str(imagecol)}, {str(imagerow)})"
-                )
+                print(f"generate tile at location ({str(imagecol)}, {str(imagerow)})")
 
             pbar.update(1)
 

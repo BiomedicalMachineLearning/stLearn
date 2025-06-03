@@ -1,4 +1,3 @@
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -7,21 +6,21 @@ from anndata import AnnData
 
 
 def pseudotime(
-        adata: AnnData,
-        use_label: str = None,
-        eps: float = 20,
-        n_neighbors: int = 25,
-        use_rep: str = "X_pca",
-        threshold: float = 0.01,
-        radius: int = 50,
-        method: str = "mean",
-        threshold_spots: int = 5,
-        use_sme: bool = False,
-        reverse: bool = False,
-        pseudotime_key: str = "dpt_pseudotime",
-        max_nodes: int = 4,
-        run_knn: bool = False,
-        copy: bool = False,
+    adata: AnnData,
+    use_label: str = None,
+    eps: float = 20,
+    n_neighbors: int = 25,
+    use_rep: str = "X_pca",
+    threshold: float = 0.01,
+    radius: int = 50,
+    method: str = "mean",
+    threshold_spots: int = 5,
+    use_sme: bool = False,
+    reverse: bool = False,
+    pseudotime_key: str = "dpt_pseudotime",
+    max_nodes: int = 4,
+    run_knn: bool = False,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Perform pseudotime analysis.
@@ -113,8 +112,8 @@ def pseudotime(
             "sub_cluster_labels"
         ].unique():
             if (
-                    len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                    > threshold_spots
+                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                > threshold_spots
             ):
                 meaningful_sub.append(i)
 
@@ -243,6 +242,8 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
 
     adata.uns["available_paths"] = all_paths
     print(
-        "All available trajectory paths are stored in adata.uns['available_paths'] " +
-        "with length < " + str(max_nodes) + " nodes"
+        "All available trajectory paths are stored in adata.uns['available_paths'] "
+        + "with length < "
+        + str(max_nodes)
+        + " nodes"
     )

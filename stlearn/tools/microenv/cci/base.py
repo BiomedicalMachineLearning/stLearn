@@ -10,12 +10,12 @@ from .het import create_grids
 
 
 def lr(
-        adata: AnnData,
-        use_lr: str = "cci_lr",
-        distance: float = None,
-        verbose: bool = True,
-        neighbours: list = None,
-        fast: bool = True,
+    adata: AnnData,
+    use_lr: str = "cci_lr",
+    distance: float = None,
+    verbose: bool = True,
+    neighbours: list = None,
+    fast: bool = True,
 ) -> AnnData:
     """Calculate the proportion of known ligand-receptor co-expression among the
     neighbouring spots or within spots
@@ -92,24 +92,23 @@ def calc_distance(adata: AnnData, distance: float):
         scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
         library_id = list(adata.uns["spatial"].keys())[0]
         distance = (
-                scalefactors["spot_diameter_fullres"]
-                * scalefactors[
-                    "tissue_" + adata.uns["spatial"][library_id][
-                        "use_quality"] + "_scalef"
-                    ]
-                * 2
+            scalefactors["spot_diameter_fullres"]
+            * scalefactors[
+                "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
+            ]
+            * 2
         )
     return distance
 
 
 def get_lrs_scores(
-        adata: AnnData,
-        lrs: np.array,
-        neighbours: np.array,
-        het_vals: np.array,
-        min_expr: float,
-        filter_pairs: bool = True,
-        spot_indices: np.array = None,
+    adata: AnnData,
+    lrs: np.array,
+    neighbours: np.array,
+    het_vals: np.array,
+    min_expr: float,
+    filter_pairs: bool = True,
+    spot_indices: np.array = None,
 ):
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
@@ -145,7 +144,7 @@ def get_lrs_scores(
     if filter_pairs:
         lrs = np.array(
             [
-                "_".join(spot_lr1s.columns.values[i: i + 2])
+                "_".join(spot_lr1s.columns.values[i : i + 2])
                 for i in range(0, spot_lr1s.shape[1], 2)
             ]
         )
@@ -162,10 +161,10 @@ def get_lrs_scores(
 
 
 def get_spot_lrs(
-        adata: AnnData,
-        lr_pairs: list,
-        lr_order: bool,
-        filter_pairs: bool = True,
+    adata: AnnData,
+    lr_pairs: list,
+    lr_order: bool,
+    filter_pairs: bool = True,
 ):
     """
     Parameters
@@ -204,10 +203,10 @@ def get_spot_lrs(
 
 
 def calc_neighbours(
-        adata: AnnData,
-        distance: float = None,
-        index: bool = True,
-        verbose: bool = True,
+    adata: AnnData,
+    distance: float = None,
+    index: bool = True,
+    verbose: bool = True,
 ) -> List:
     """Calculate the proportion of known ligand-receptor co-expression among the
     neighbouring spots or within spots
@@ -273,11 +272,11 @@ def calc_neighbours(
 
 @njit
 def lr_core(
-        spot_lr1: np.ndarray,
-        spot_lr2: np.ndarray,
-        neighbours: List,
-        min_expr: float,
-        spot_indices: np.array,
+    spot_lr1: np.ndarray,
+    spot_lr2: np.ndarray,
+    neighbours: List,
+    min_expr: float,
+    spot_indices: np.array,
 ) -> np.ndarray:
     """Calculate the lr scores for each spot.
     Parameters
@@ -307,17 +306,17 @@ def lr_core(
         nb_lr2[i, :] = nb_expr_mean
 
     scores = (
-            spot_lr1[spot_indices, :] * (nb_lr2 > min_expr)
-            + (spot_lr1[spot_indices, :] > min_expr) * nb_lr2
+        spot_lr1[spot_indices, :] * (nb_lr2 > min_expr)
+        + (spot_lr1[spot_indices, :] > min_expr) * nb_lr2
     )
     spot_lr = scores.sum(axis=1)
     return spot_lr / 2
 
 
 def lr_pandas(
-        spot_lr1: np.ndarray,
-        spot_lr2: np.ndarray,
-        neighbours: list,
+    spot_lr1: np.ndarray,
+    spot_lr2: np.ndarray,
+    neighbours: list,
 ) -> np.ndarray:
     """Calculate the lr scores for each spot.
     Parameters
@@ -363,12 +362,12 @@ def lr_pandas(
 
 @njit(parallel=True)
 def get_scores(
-        spot_lr1s: np.ndarray,
-        spot_lr2s: np.ndarray,
-        neighbours: List,
-        het_vals: np.array,
-        min_expr: float,
-        spot_indices: np.array,
+    spot_lr1s: np.ndarray,
+    spot_lr2s: np.ndarray,
+    neighbours: List,
+    het_vals: np.array,
+    min_expr: float,
+    spot_indices: np.array,
 ) -> np.array:
     """Calculates the scores.
     Parameters
@@ -391,7 +390,7 @@ def get_scores(
     spot_scores = np.zeros((len(spot_indices), spot_lr1s.shape[1] // 2), np.float64)
     for i in prange(0, spot_lr1s.shape[1] // 2):
         i_ = i * 2  # equivalent to range(0, spot_lr1s.shape[1], 2)
-        spot_lr1, spot_lr2 = spot_lr1s[:, i_: (i_ + 2)], spot_lr2s[:, i_: (i_ + 2)]
+        spot_lr1, spot_lr2 = spot_lr1s[:, i_ : (i_ + 2)], spot_lr2s[:, i_ : (i_ + 2)]
         lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr, spot_indices)
         # The merge scores #
         lr_scores = np.multiply(het_vals[spot_indices], lr_scores)
@@ -400,12 +399,12 @@ def get_scores(
 
 
 def lr_grid(
-        adata: AnnData,
-        num_row: int = 10,
-        num_col: int = 10,
-        use_lr: str = "cci_lr_grid",
-        radius: int = 1,
-        verbose: bool = True,
+    adata: AnnData,
+    num_row: int = 10,
+    num_col: int = 10,
+    use_lr: str = "cci_lr_grid",
+    radius: int = 1,
+    verbose: bool = True,
 ) -> AnnData:
     """Calculate the proportion of known ligand-receptor co-expression among the
     neighbouring grids or within each grid
@@ -451,7 +450,7 @@ def lr_grid(
             & (coor["imagecol"] < grid[0] + width)
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
-            ]
+        ]
         df_grid.loc[n] = df.loc[spots.index].sum()
 
     # expand the LR pairs list by swapping ligand-receptor positions

@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from anndata import AnnData
@@ -7,11 +6,11 @@ from sklearn.cluster import DBSCAN
 
 
 def localization(
-        adata: AnnData,
-        use_label: str = "louvain",
-        eps: int = 20,
-        min_samples: int = 0,
-        copy: bool = False,
+    adata: AnnData,
+    use_label: str = "louvain",
+    eps: int = 20,
+    min_samples: int = 0,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Perform local cluster by using DBSCAN.

@@ -1,4 +1,5 @@
 """Helper utilities and decorators."""
+
 from flask import flash
 
 

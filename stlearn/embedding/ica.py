@@ -1,4 +1,3 @@
-
 from anndata import AnnData
 from scipy.sparse import issparse
 from sklearn.decomposition import FastICA
@@ -62,8 +61,8 @@ def run_ica(
     adata.uns["ica"] = {"params": {"n_factors": n_factors, "fun": fun, "tol": tol}}
 
     print(
-        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in " +
-        "adata.uns['ica']"
+        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in "
+        + "adata.uns['ica']"
     )
 
     return adata if copy else None

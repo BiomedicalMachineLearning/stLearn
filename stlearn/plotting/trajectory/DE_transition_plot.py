@@ -5,12 +5,12 @@ from anndata import AnnData
 
 
 def DE_transition_plot(
-        adata: AnnData,
-        top_genes: int = 10,
-        font_size: int = 6,
-        name: str = None,
-        dpi: int = 150,
-        output: str = None,
+    adata: AnnData,
+    top_genes: int = 10,
+    font_size: int = 6,
+    name: str = None,
+    dpi: int = 150,
+    output: str = None,
 ) -> AnnData | None:
     """\
     Differential expression between transition markers.

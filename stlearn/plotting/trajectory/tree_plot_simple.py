@@ -9,22 +9,22 @@ from stlearn.utils import _read_graph
 
 
 def tree_plot_simple(
-        adata: AnnData,
-        library_id: str = None,
-        figsize: float | int = (10, 4),
-        data_alpha: float = 1.0,
-        use_label: str = "louvain",
-        spot_size: float | int = 50,
-        fontsize: int = 6,
-        piesize: float = 0.15,
-        zoom: float = 0.1,
-        name: str = None,
-        output: str = None,
-        dpi: int = 180,
-        show_all: bool = False,
-        show_plot: bool = True,
-        ncols: int = 4,
-        copy: bool = False,
+    adata: AnnData,
+    library_id: str = None,
+    figsize: float | int = (10, 4),
+    data_alpha: float = 1.0,
+    use_label: str = "louvain",
+    spot_size: float | int = 50,
+    fontsize: int = 6,
+    piesize: float = 0.15,
+    zoom: float = 0.1,
+    name: str = None,
+    output: str = None,
+    dpi: int = 180,
+    show_all: bool = False,
+    show_plot: bool = True,
+    ncols: int = 4,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Hierarchical tree plot represent for the global spatial trajectory inference.
@@ -144,8 +144,7 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
             root = random.choice(list(G.nodes))
 
     def _hierarchy_pos(
-            G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None,
-            parent=None
+        G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None, parent=None
     ):
         """
         see hierarchy_pos docstring for most arguments

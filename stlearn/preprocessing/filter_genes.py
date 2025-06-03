@@ -1,16 +1,15 @@
-
 import numpy as np
 import scanpy
 from anndata import AnnData
 
 
 def filter_genes(
-        adata: AnnData,
-        min_counts: int | None = None,
-        min_cells: int | None = None,
-        max_counts: int | None = None,
-        max_cells: int | None = None,
-        inplace: bool = True,
+    adata: AnnData,
+    min_counts: int | None = None,
+    min_cells: int | None = None,
+    max_counts: int | None = None,
+    max_cells: int | None = None,
+    inplace: bool = True,
 ) -> AnnData | None | tuple[np.ndarray, np.ndarray]:
     """\
     Wrap function scanpy.pp.filter_genes

@@ -1,4 +1,3 @@
-
 import numpy as np
 import scanpy
 from anndata import AnnData
@@ -6,11 +5,11 @@ from scipy.sparse import spmatrix
 
 
 def log1p(
-        adata: AnnData | np.ndarray | spmatrix,
-        copy: bool = False,
-        chunked: bool = False,
-        chunk_size: int | None = None,
-        base: float | None = None,
+    adata: AnnData | np.ndarray | spmatrix,
+    copy: bool = False,
+    chunked: bool = False,
+    chunk_size: int | None = None,
+    base: float | None = None,
 ) -> AnnData | None:
     """\
     Wrap function of scanpy.pp.log1p
@@ -45,10 +44,10 @@ def log1p(
 
 
 def scale(
-        adata: AnnData | np.ndarray | spmatrix,
-        zero_center: bool = True,
-        max_value: float | None = None,
-        copy: bool = False,
+    adata: AnnData | np.ndarray | spmatrix,
+    zero_center: bool = True,
+    max_value: float | None = None,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Wrap function of scanpy.pp.scale

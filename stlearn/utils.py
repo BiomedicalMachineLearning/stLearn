@@ -20,9 +20,7 @@ class _AxesSubplot(Axes, axes.SubplotBase):
     """Intersection between Axes and SubplotBase: Has methods of both"""
 
 
-def _check_spot_size(
-    spatial_data: Mapping | None, spot_size: float | None
-) -> float:
+def _check_spot_size(spatial_data: Mapping | None, spot_size: float | None) -> float:
     """
     Resolve spot_size value.
     This is a required argument for spatial plots.

@@ -19,21 +19,21 @@ from ..tools.microenv.cci.het import get_edges
 
 
 def lr_scatter(
-        data,
-        feature,
-        highlight_lrs=None,
-        show_text=True,
-        n_top=50,
-        color="gold",
-        alpha=0.5,
-        lr_text_fp=None,
-        axis_text_fp=None,
-        ax=None,
-        show=True,
-        max_text=100,
-        highlight_color="red",
-        figsize: tuple = None,
-        show_all: bool = False,
+    data,
+    feature,
+    highlight_lrs=None,
+    show_text=True,
+    n_top=50,
+    color="gold",
+    alpha=0.5,
+    lr_text_fp=None,
+    axis_text_fp=None,
+    ax=None,
+    show=True,
+    max_text=100,
+    highlight_color="red",
+    figsize: tuple = None,
+    show_all: bool = False,
 ):
     """General plotting of the LR features."""
     highlight = highlight_lrs is not None
@@ -108,28 +108,28 @@ def lr_scatter(
 
 
 def rank_scatter(
-        items,
-        y,
-        y_label: str = "",
-        x_label: str = "",
-        highlight_items=None,
-        show_text=True,
-        color="gold",
-        alpha=0.5,
-        lr_text_fp=None,
-        axis_text_fp=None,
-        ax=None,
-        show=True,
-        highlight_color="red",
-        rot: float = 90,
-        point_sizes: np.array = None,
-        pad=0.2,
-        figsize=None,
-        width_ratio=7.5 / 50,
-        height=4,
-        point_size_name="Sizes",
-        point_size_exp=2,
-        show_all: bool = False,
+    items,
+    y,
+    y_label: str = "",
+    x_label: str = "",
+    highlight_items=None,
+    show_text=True,
+    color="gold",
+    alpha=0.5,
+    lr_text_fp=None,
+    axis_text_fp=None,
+    ax=None,
+    show=True,
+    highlight_color="red",
+    rot: float = 90,
+    point_sizes: np.array = None,
+    pad=0.2,
+    figsize=None,
+    width_ratio=7.5 / 50,
+    height=4,
+    point_size_name="Sizes",
+    point_size_exp=2,
+    show_all: bool = False,
 ):
     """General plotting function for showing ranked list of items."""
     ranks = np.array(list(range(len(items))))
@@ -154,7 +154,7 @@ def rank_scatter(
         y,
         alpha=alpha,
         c=color,
-        s=None if point_sizes is None else point_sizes ** point_size_exp,
+        s=None if point_sizes is None else point_sizes**point_size_exp,
         edgecolors="none",
     )
     y_min, y_max = ax.get_ylim()
@@ -167,12 +167,12 @@ def rank_scatter(
         starts = [label.find("{") for label in labels]
         ends = [label.find("}") + 1 for label in labels]
         sizes = [
-            float(label[(starts[i] + 1): (ends[i] - 1)])
+            float(label[(starts[i] + 1) : (ends[i] - 1)])
             for i, label in enumerate(labels)
         ]
         counts = [int(size ** (1 / point_size_exp)) for size in sizes]
         labels2 = [
-            label.replace(label[(starts[i]): (ends[i])], "{" + str(counts[i]) + "}")
+            label.replace(label[(starts[i]) : (ends[i])], "{" + str(counts[i]) + "}")
             for i, label in enumerate(labels)
         ]
         ax.legend(
@@ -220,19 +220,19 @@ def rank_scatter(
 
 
 def add_arrows(
-        adata: AnnData,
-        l_expr: np.array,
-        r_expr: np.array,
-        min_expr: float,
-        sig_bool: np.array,
-        fig,
-        ax: Axes,
-        use_label: str,
-        int_df: pd.DataFrame,
-        head_width=4,
-        width=0.001,
-        arrow_cmap=None,
-        arrow_vmax=None,
+    adata: AnnData,
+    l_expr: np.array,
+    r_expr: np.array,
+    min_expr: float,
+    sig_bool: np.array,
+    fig,
+    ax: Axes,
+    use_label: str,
+    int_df: pd.DataFrame,
+    head_width=4,
+    width=0.001,
+    arrow_cmap=None,
+    arrow_vmax=None,
 ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
@@ -368,15 +368,15 @@ def add_arrows(
 
 
 def add_arrows_by_edges(
-        ax,
-        adata,
-        edges,
-        scale_factor,
-        head_width,
-        width,
-        forward=True,
-        edge_colors=None,
-        axc=None,
+    ax,
+    adata,
+    edges,
+    scale_factor,
+    head_width,
+    width,
+    forward=True,
+    edge_colors=None,
+    axc=None,
 ):
     """Adds the arrows using an edge list."""
     for i, edge in enumerate(edges):
@@ -499,11 +499,11 @@ def polar2xy(r, theta):
 
 
 def hex2rgb(c):
-    return tuple(int(c[i: i + 2], 16) / 256.0 for i in (1, 3, 5))
+    return tuple(int(c[i : i + 2], 16) / 256.0 for i in (1, 3, 5))
 
 
 def IdeogramArc(
-        start=0, end=60, radius=1.0, width=0.2, ax=None, color=(1, 0, 0), curve_steps=1
+    start=0, end=60, radius=1.0, width=0.2, ax=None, color=(1, 0, 0), curve_steps=1
 ):
     # start, end should be in [0, 360)
     if start > end:
@@ -543,22 +543,22 @@ def IdeogramArc(
         for i in range(1, curve_steps + 1)
     ]
     verts_inner = (
-            verts_inner_start
-            + verts_inner_curve
-            + [polar2xy(inner, start), polar2xy(radius, start)]
+        verts_inner_start
+        + verts_inner_curve
+        + [polar2xy(inner, start), polar2xy(radius, start)]
     )
 
     verts = verts_upper + verts_inner
 
     codes = (
-            [Path.MOVETO]
-            + [Path.CURVE4] * curve_steps * 2
-            + [Path.CURVE4, Path.LINETO]
-            + [Path.CURVE4] * curve_steps * 2
-            + [
-                Path.CURVE4,
-                Path.CLOSEPOLY,
-            ]
+        [Path.MOVETO]
+        + [Path.CURVE4] * curve_steps * 2
+        + [Path.CURVE4, Path.LINETO]
+        + [Path.CURVE4] * curve_steps * 2
+        + [
+            Path.CURVE4,
+            Path.CLOSEPOLY,
+        ]
     )
 
     if ax is None:
@@ -572,14 +572,14 @@ def IdeogramArc(
 
 
 def ChordArc(
-        start1=0,
-        end1=60,
-        start2=180,
-        end2=240,
-        radius=1.0,
-        chordwidth=0.7,
-        ax=None,
-        color=(1, 0, 0),
+    start1=0,
+    end1=60,
+    start2=180,
+    end2=240,
+    radius=1.0,
+    chordwidth=0.7,
+    ax=None,
+    color=(1, 0, 0),
 ):
     # start, end should be in [0, 360)
     if start1 > end1:

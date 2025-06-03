@@ -1,4 +1,3 @@
-
 import networkx as nx
 import numpy as np
 from anndata import AnnData
@@ -8,15 +7,15 @@ from stlearn.utils import _read_graph
 
 
 def global_level(
-        adata: AnnData,
-        use_label: str = "louvain",
-        use_rep: str = "X_pca",
-        n_dims: int = 40,
-        list_clusters: list = [],
-        return_graph: bool = False,
-        w: float = None,
-        verbose: bool = True,
-        copy: bool = False,
+    adata: AnnData,
+    use_label: str = "louvain",
+    use_rep: str = "X_pca",
+    n_dims: int = 40,
+    list_clusters: list = [],
+    return_graph: bool = False,
+    w: float = None,
+    verbose: bool = True,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Perform global sptial trajectory inference.
@@ -114,8 +113,8 @@ def global_level(
     H_sub = H.edge_subgraph(edge_list)
     if not nx.is_connected(H_sub.to_undirected()):
         raise ValueError(
-            "The chosen clusters are not available to construct the spatial " +
-            "trajectory! Please choose other path."
+            "The chosen clusters are not available to construct the spatial "
+            + "trajectory! Please choose other path."
         )
     H_sub = nx.DiGraph(H_sub)
     prepare_root = []
@@ -267,6 +266,7 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
     scale_sdm = results / np.max(results)
 
     return scale_sdm
+
 
 # def _density_normalize(other: Union[np.ndarray, spmatrix]
 #     ) -> Union[np.ndarray, spmatrix]:

@@ -14,14 +14,14 @@ from stlearn.pl import het_plot
 
 
 def get_hotspots(
-        adata: AnnData,
-        lr_scores: np.ndarray,
-        lrs: np.array,
-        eps: float,
-        quantile=0.05,
-        verbose=True,
-        plot_diagnostics: bool = False,
-        show_plot: bool = False,
+    adata: AnnData,
+    lr_scores: np.ndarray,
+    lrs: np.array,
+    eps: float,
+    quantile=0.05,
+    verbose=True,
+    plot_diagnostics: bool = False,
+    show_plot: bool = False,
 ):
     """Determines the hotspots for the inputted scores by progressively setting
     more stringent cutoffs & cluster in space, chooses point which maximises number
@@ -120,23 +120,23 @@ def get_hotspots(
     if verbose:
         print("\tSummary values of lrs in adata.uns['lr_summary'].")
         print(
-            "\tMatrix of lr scores in same order as the summary in " +
-            "adata.obsm['lr_scores']."
+            "\tMatrix of lr scores in same order as the summary in "
+            + "adata.obsm['lr_scores']."
         )
         print("\tMatrix of the hotspot scores in adata.obsm['lr_hot_scores'].")
         print("\tMatrix of the mean LR cluster scores in adata.obsm['cluster_scores'].")
 
 
 def hotspot_core(
-        lr_scores,
-        lrs,
-        coors,
-        eps,
-        quantile,
-        plot_diagnostics=False,
-        adata=None,
-        verbose=True,
-        max_score=False,
+    lr_scores,
+    lrs,
+    coors,
+    eps,
+    quantile,
+    plot_diagnostics=False,
+    adata=None,
+    verbose=True,
+    max_score=False,
 ):
     """Made code for getting the hotspot information."""
     score_copy = lr_scores.copy()
@@ -159,10 +159,10 @@ def hotspot_core(
 
     # Determining the cutoffs for hotspots #
     with tqdm(
-            total=len(lrs),
-            desc="Removing background lr scores...",
-            bar_format="{l_bar}{bar}",
-            disable=verbose is False,
+        total=len(lrs),
+        desc="Removing background lr scores...",
+        bar_format="{l_bar}{bar}",
+        disable=verbose is False,
     ) as pbar:
         for i, lr_ in enumerate(lrs):
             lr_score_ = score_copy[i, :]
@@ -221,17 +221,17 @@ def non_zero_mean(vals):
 
 
 def add_diagnostic_plots(
-        adata,
-        i,
-        lr_,
-        quant_lrs,
-        lr_quantiles,
-        lr_scores,
-        lr_hot_scores,
-        axes,
-        cutoffs,
-        n_clusters,
-        best_cutoff,
+    adata,
+    i,
+    lr_,
+    quant_lrs,
+    lr_quantiles,
+    lr_scores,
+    lr_hot_scores,
+    axes,
+    cutoffs,
+    n_clusters,
+    best_cutoff,
 ):
     """Adds diagnostic plots for the quantile LR pair to a figure to illustrate \
         how the cutoff is functioning.

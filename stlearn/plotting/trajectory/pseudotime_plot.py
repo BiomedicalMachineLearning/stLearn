@@ -1,4 +1,3 @@
-
 import matplotlib
 import networkx as nx
 import numpy as np
@@ -9,31 +8,31 @@ from stlearn.utils import _read_graph
 
 
 def pseudotime_plot(
-        adata: AnnData,
-        library_id: str = None,
-        use_label: str = "louvain",
-        pseudotime_key: str = "pseudotime_key",
-        list_clusters: str | list = None,
-        cell_alpha: float = 1.0,
-        image_alpha: float = 1.0,
-        edge_alpha: float = 0.8,
-        node_alpha: float = 1.0,
-        spot_size: float | int = 6.5,
-        node_size: float = 5,
-        show_color_bar: bool = True,
-        show_axis: bool = False,
-        show_graph: bool = True,
-        show_trajectories: bool = False,
-        reverse: bool = False,
-        show_node: bool = True,
-        show_plot: bool = True,
-        cropped: bool = True,
-        margin: int = 100,
-        dpi: int = 150,
-        output: str = None,
-        name: str = None,
-        copy: bool = False,
-        ax=None,
+    adata: AnnData,
+    library_id: str = None,
+    use_label: str = "louvain",
+    pseudotime_key: str = "pseudotime_key",
+    list_clusters: str | list = None,
+    cell_alpha: float = 1.0,
+    image_alpha: float = 1.0,
+    edge_alpha: float = 0.8,
+    node_alpha: float = 1.0,
+    spot_size: float | int = 6.5,
+    node_size: float = 5,
+    show_color_bar: bool = True,
+    show_axis: bool = False,
+    show_graph: bool = True,
+    show_trajectories: bool = False,
+    reverse: bool = False,
+    show_node: bool = True,
+    show_plot: bool = True,
+    cropped: bool = True,
+    margin: int = 100,
+    dpi: int = 150,
+    output: str = None,
+    name: str = None,
+    copy: bool = False,
+    ax=None,
 ) -> AnnData | None:
     """\
     Global trajectory inference plot (Only DPT).

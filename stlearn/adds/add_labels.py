@@ -5,12 +5,12 @@ from natsort import natsorted
 
 
 def labels(
-        adata: AnnData,
-        label_filepath: str = None,
-        index_col: int = 0,
-        use_label: str = None,
-        sep: str = "\t",
-        copy: bool = False,
+    adata: AnnData,
+    label_filepath: str = None,
+    index_col: int = 0,
+    use_label: str = None,
+    sep: str = "\t",
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Add label transfer results into AnnData object

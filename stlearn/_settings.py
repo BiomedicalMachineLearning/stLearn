@@ -62,32 +62,32 @@ def _type_check(var: Any, varname: str, types: type | tuple[type, ...]):
     raise TypeError(f"{varname} must be of type {possible_types_str}")
 
 
-class stLearnConfig: # noqa N801
+class stLearnConfig:  # noqa N801
     """\
     Config manager for scanpy.
     """
 
     def __init__(
-            self,
-            *,
-            verbosity: str = "warning",
-            plot_suffix: str = "",
-            file_format_data: str = "h5ad",
-            file_format_figs: str = "pdf",
-            autosave: bool = False,
-            autoshow: bool = True,
-            writedir: str | Path = "./write/",
-            cachedir: str | Path = "./cache/",
-            datasetdir: str | Path = "./data/",
-            figdir: str | Path = "./figures/",
-            cache_compression: str | None = "lzf",
-            max_memory=15,
-            n_jobs=1,
-            logfile: str | Path | None = None,
-            categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
-            _frameon: bool = True,
-            _vector_friendly: bool = False,
-            _low_resolution_warning: bool = True,
+        self,
+        *,
+        verbosity: str = "warning",
+        plot_suffix: str = "",
+        file_format_data: str = "h5ad",
+        file_format_figs: str = "pdf",
+        autosave: bool = False,
+        autoshow: bool = True,
+        writedir: str | Path = "./write/",
+        cachedir: str | Path = "./cache/",
+        datasetdir: str | Path = "./data/",
+        figdir: str | Path = "./figures/",
+        cache_compression: str | None = "lzf",
+        max_memory=15,
+        n_jobs=1,
+        logfile: str | Path | None = None,
+        categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
+        _frameon: bool = True,
+        _vector_friendly: bool = False,
+        _low_resolution_warning: bool = True,
     ):
         # logging
         self._root_logger = _RootLogger(logging.INFO)  # level will be replaced
@@ -399,16 +399,16 @@ class stLearnConfig: # noqa N801
     ]
 
     def set_figure_params(
-            self,
-            dpi: int = 80,
-            dpi_save: int = 150,
-            frameon: bool = True,
-            vector_friendly: bool = True,
-            fontsize: int = 14,
-            color_map: str | None = None,
-            format: _Format = "pdf",
-            transparent: bool = False,
-            ipython_format: str = "png2x",
+        self,
+        dpi: int = 80,
+        dpi_save: int = 150,
+        frameon: bool = True,
+        vector_friendly: bool = True,
+        fontsize: int = 14,
+        color_map: str | None = None,
+        format: _Format = "pdf",
+        transparent: bool = False,
+        ipython_format: str = "png2x",
     ):
         """\
         Set resolution/size, styling and format of figures.

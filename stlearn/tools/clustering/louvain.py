@@ -20,18 +20,18 @@ import scanpy
 
 
 def louvain(
-        adata: AnnData,
-        resolution: float | None = None,
-        random_state: int | RandomState | None = 0,
-        restrict_to: tuple[str, Sequence[str]] | None = None,
-        key_added: str = "louvain",
-        adjacency: spmatrix | None = None,
-        flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag", # noqa: F821
-        directed: bool = True,
-        use_weights: bool = False,
-        partition_type: type[MutableVertexPartition] | None = None,
-        partition_kwargs: Mapping[str, Any] = MappingProxyType({}),
-        copy: bool = False,
+    adata: AnnData,
+    resolution: float | None = None,
+    random_state: int | RandomState | None = 0,
+    restrict_to: tuple[str, Sequence[str]] | None = None,
+    key_added: str = "louvain",
+    adjacency: spmatrix | None = None,
+    flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag",  # noqa: F821
+    directed: bool = True,
+    use_weights: bool = False,
+    partition_type: type[MutableVertexPartition] | None = None,
+    partition_kwargs: Mapping[str, Any] = MappingProxyType({}),
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Wrap function scanpy.tl.louvain

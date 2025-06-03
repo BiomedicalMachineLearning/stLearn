@@ -18,11 +18,11 @@ from ._weighting_matrix import (
 
 
 def SME_impute0(
-        adata: AnnData,
-        use_data: str = "raw",
-        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-        platform: _PLATFORM = "Visium",
-        copy: bool = False,
+    adata: AnnData,
+    use_data: str = "raw",
+    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+    platform: _PLATFORM = "Visium",
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     using spatial location (S), tissue morphological feature (M) and gene
@@ -87,13 +87,13 @@ _COPY = Literal["pseudo_spot_adata", "combined_adata"]
 
 
 def pseudo_spot(
-        adata: AnnData,
-        tile_path: Path | str = Path("/tmp/tiles"),
-        use_data: str = "raw",
-        crop_size: int = "auto",
-        platform: _PLATFORM = "Visium",
-        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-        copy: _COPY = "pseudo_spot_adata",
+    adata: AnnData,
+    tile_path: Path | str = Path("/tmp/tiles"),
+    use_data: str = "raw",
+    crop_size: int = "auto",
+    platform: _PLATFORM = "Visium",
+    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+    copy: _COPY = "pseudo_spot_adata",
 ) -> AnnData | None:
     """\
     using spatial location (S), tissue morphological feature (M) and gene
@@ -249,10 +249,10 @@ def pseudo_spot(
     reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
 
     obs_df.loc[:, "imagerow"] = (
-            obs_df.loc[:, "array_row"] * reg_row.coef_ + reg_row.intercept_
+        obs_df.loc[:, "array_row"] * reg_row.coef_ + reg_row.intercept_
     )
     obs_df.loc[:, "imagecol"] = (
-            obs_df.loc[:, "array_col"] * reg_col.coef_ + reg_col.intercept_
+        obs_df.loc[:, "array_col"] * reg_col.coef_ + reg_col.intercept_
     )
 
     impute_coor = obs_df[["imagecol", "imagerow"]]
@@ -260,7 +260,7 @@ def pseudo_spot(
 
     point_tree = scipy.spatial.cKDTree(coor)
     n_neighbour = []
-    unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+    unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
     for i in range(len(impute_coor)):
         current_neighbour = point_tree.query_ball_point(
             impute_coor.values[i], round(unit)
@@ -319,9 +319,9 @@ def pseudo_spot(
 
 
 def _merge(
-        adata1: AnnData,
-        adata2: AnnData,
-        copy: bool = True,
+    adata1: AnnData,
+    adata2: AnnData,
+    copy: bool = True,
 ) -> AnnData | None:
     merged_df = adata1.to_df().append(adata2.to_df())
     merged_df_obs = adata1.obs.append(adata2.obs)

@@ -8,14 +8,14 @@ from stlearn._compat import Literal
 
 
 def normalize_total(
-        adata: AnnData,
-        target_sum: float | None = None,
-        exclude_highly_expressed: bool = False,
-        max_fraction: float = 0.05,
-        key_added: str | None = None,
-        layers: Literal["all"] | Iterable[str] = None,
-        layer_norm: str | None = None,
-        inplace: bool = True,
+    adata: AnnData,
+    target_sum: float | None = None,
+    exclude_highly_expressed: bool = False,
+    max_fraction: float = 0.05,
+    key_added: str | None = None,
+    layers: Literal["all"] | Iterable[str] = None,
+    layer_norm: str | None = None,
+    inplace: bool = True,
 ) -> dict[str, np.ndarray] | None:
     """\
     Wrap function from scanpy.pp.log1p

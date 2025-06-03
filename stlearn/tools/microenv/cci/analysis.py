@@ -686,8 +686,8 @@ def run_cci(
     lr_n_cci_sig = np.zeros(lr_summary.shape[0])
     with tqdm(
         total=len(best_lrs),
-        desc="Counting celltype-celltype interactions per LR and permuting " +
-             f"{n_perms} times.",
+        desc="Counting celltype-celltype interactions per LR and permuting "
+        + f"{n_perms} times.",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
         disable=verbose is False,
     ) as pbar:

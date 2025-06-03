@@ -3,11 +3,11 @@ from anndata import AnnData
 
 
 def lr(
-        adata: AnnData,
-        db_filepath: str = None,
-        sep: str = "\t",
-        source: str = "connectomedb",
-        copy: bool = False,
+    adata: AnnData,
+    db_filepath: str = None,
+    sep: str = "\t",
+    source: str = "connectomedb",
+    copy: bool = False,
 ) -> AnnData | None:
     """Add significant Ligand-Receptor pairs into AnnData object
 
@@ -44,7 +44,7 @@ def lr(
     elif source == "connectomedb":
         ctdb = pd.read_csv(db_filepath, sep=sep, quotechar='"', encoding="latin1")
         adata.uns["lr"] = (
-                ctdb["Ligand gene symbol"] + "_" + ctdb["Receptor gene symbol"]
+            ctdb["Ligand gene symbol"] + "_" + ctdb["Receptor gene symbol"]
         ).values.tolist()
         print("connectomedb results added to adata.uns['ctdb']")
         print("Added ligand receptor pairs to adata.uns['lr'].")

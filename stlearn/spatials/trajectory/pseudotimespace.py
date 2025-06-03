@@ -1,4 +1,3 @@
-
 from anndata import AnnData
 
 from .global_level import global_level
@@ -7,14 +6,14 @@ from .weight_optimization import weight_optimizing_global, weight_optimizing_loc
 
 
 def pseudotimespace_global(
-        adata: AnnData,
-        use_label: str = "louvain",
-        use_rep: str = "X_pca",
-        n_dims: int = 40,
-        list_clusters=None,
-        model: str = "spatial",
-        step=0.01,
-        k=10,
+    adata: AnnData,
+    use_label: str = "louvain",
+    use_rep: str = "X_pca",
+    n_dims: int = 40,
+    list_clusters=None,
+    model: str = "spatial",
+    step=0.01,
+    k=10,
 ) -> AnnData | None:
     """\
     Perform pseudo-time-space analysis with global level.
@@ -56,8 +55,8 @@ def pseudotimespace_global(
         w = 1
     else:
         raise ValueError(
-            "Please choose the right model! Available models: 'mixed', 'spatial' " +
-            "and 'gene_expression' "
+            "Please choose the right model! Available models: 'mixed', 'spatial' "
+            + "and 'gene_expression' "
         )
 
     global_level(
@@ -71,10 +70,10 @@ def pseudotimespace_global(
 
 
 def pseudotimespace_local(
-        adata: AnnData,
-        use_label: str = "louvain",
-        cluster=None,
-        w: float = None,
+    adata: AnnData,
+    use_label: str = "louvain",
+    cluster=None,
+    w: float = None,
 ) -> AnnData | None:
     """\
     Perform pseudo-time-space analysis with local level.

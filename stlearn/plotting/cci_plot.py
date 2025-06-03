@@ -3,7 +3,7 @@ import math
 import sys
 from typing import (
     Optional,  # Special
-    )
+)
 
 import matplotlib
 import matplotlib.patches as patches
@@ -42,14 +42,14 @@ importlib.reload(cci_hs)
 
 
 def lr_diagnostics(
-        adata,
-        highlight_lrs: list = None,
-        n_top: int = None,
-        color0: str = "turquoise",
-        color1: str = "plum",
-        figsize: tuple = (10, 4),
-        lr_text_fp: dict = None,
-        show: bool = True,
+    adata,
+    highlight_lrs: list = None,
+    n_top: int = None,
+    color0: str = "turquoise",
+    color1: str = "plum",
+    figsize: tuple = (10, 4),
+    lr_text_fp: dict = None,
+    show: bool = True,
 ):
     """Diagnostic plot looking at relationship between technical features of lrs and
     lr rank. Two plots generated: left is the average of the median for nonzero
@@ -107,17 +107,17 @@ def lr_diagnostics(
 
 
 def lr_summary(
-        adata,
-        n_top: int = 50,
-        highlight_lrs: list = None,
-        y: str = "n_spots_sig",
-        color: str = "gold",
-        figsize: tuple = None,
-        highlight_color: str = "red",
-        max_text: int = 50,
-        lr_text_fp: dict = None,
-        ax: Axes = None,
-        show: bool = True,
+    adata,
+    n_top: int = 50,
+    highlight_lrs: list = None,
+    y: str = "n_spots_sig",
+    color: str = "gold",
+    figsize: tuple = None,
+    highlight_color: str = "red",
+    max_text: int = 50,
+    lr_text_fp: dict = None,
+    ax: Axes = None,
+    show: bool = True,
 ):
     """Plotting the top LRs ranked by number of significant spots.
 
@@ -175,17 +175,17 @@ def lr_summary(
 
 
 def lr_n_spots(
-        adata,
-        n_top: int = 100,
-        font_dict: dict = None,
-        xtick_dict: dict = None,
-        bar_width: float = 1,
-        max_text: int = 50,
-        non_sig_color: str = "dodgerblue",
-        sig_color: str = "springgreen",
-        figsize: tuple = (6, 4),
-        show_title: bool = True,
-        show: bool = True,
+    adata,
+    n_top: int = 100,
+    font_dict: dict = None,
+    xtick_dict: dict = None,
+    bar_width: float = 1,
+    max_text: int = 50,
+    non_sig_color: str = "dodgerblue",
+    sig_color: str = "springgreen",
+    figsize: tuple = (6, 4),
+    show_title: bool = True,
+    show: bool = True,
 ):
     """Bar plot showing for each LR no. of sig versus non-sig spots.
 
@@ -257,15 +257,15 @@ def lr_n_spots(
 
 
 def lr_go(
-        adata,
-        n_top: int = 20,
-        highlight_go: list = None,
-        figsize=(6, 4),
-        rot: float = 50,
-        lr_text_fp: dict = None,
-        highlight_color: str = "yellow",
-        max_text: int = 50,
-        show: bool = True,
+    adata,
+    n_top: int = 20,
+    highlight_go: list = None,
+    figsize=(6, 4),
+    rot: float = 50,
+    lr_text_fp: dict = None,
+    highlight_color: str = "yellow",
+    max_text: int = 50,
+    show: bool = True,
 ):
     """Plots the results from the LR GO analysis.
 
@@ -321,13 +321,13 @@ def lr_go(
 
 
 def cci_check(
-        adata: AnnData,
-        use_label: str,
-        figsize=(16, 10),
-        cell_label_size=20,
-        axis_text_size=18,
-        tick_size=14,
-        show=True,
+    adata: AnnData,
+    use_label: str,
+    figsize=(16, 10),
+    cell_label_size=20,
+    axis_text_size=18,
+    tick_size=14,
+    show=True,
 ):
     """Checks relationship between no. of significant CCI-LR interactions and cell
     type frequency.
@@ -422,32 +422,32 @@ def cci_check(
 
 # Functions for visualisation the LR results per spot.
 def lr_result_plot(
-        adata: AnnData,
-        use_lr: Optional["str"] = None,
-        use_result: Optional["str"] = "lr_sig_scores",
-        # plotting param
-        title: Optional["str"] = None,
-        figsize: tuple[float, float] | None = None,
-        cmap: str | None = "Spectral_r",
-        ax: matplotlib.axes.Axes | None = None,
-        fig: matplotlib.figure.Figure | None = None,
-        show_plot: bool | None = True,
-        show_axis: bool | None = False,
-        show_image: bool | None = True,
-        show_color_bar: bool | None = True,
-        zoom_coord: float | None = None,
-        crop: bool | None = True,
-        margin: float | None = 100,
-        size: float | None = 7,
-        image_alpha: float | None = 1.0,
-        cell_alpha: float | None = 1.0,
-        use_raw: bool | None = False,
-        fname: str | None = None,
-        dpi: int | None = 120,
-        contour: bool = False,
-        step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+    adata: AnnData,
+    use_lr: Optional["str"] = None,
+    use_result: Optional["str"] = "lr_sig_scores",
+    # plotting param
+    title: Optional["str"] = None,
+    figsize: tuple[float, float] | None = None,
+    cmap: str | None = "Spectral_r",
+    ax: matplotlib.axes.Axes | None = None,
+    fig: matplotlib.figure.Figure | None = None,
+    show_plot: bool | None = True,
+    show_axis: bool | None = False,
+    show_image: bool | None = True,
+    show_color_bar: bool | None = True,
+    zoom_coord: float | None = None,
+    crop: bool | None = True,
+    margin: float | None = 100,
+    size: float | None = 7,
+    image_alpha: float | None = 1.0,
+    cell_alpha: float | None = 1.0,
+    use_raw: bool | None = False,
+    fname: str | None = None,
+    dpi: int | None = 120,
+    contour: bool = False,
+    step_size: int | None = None,
+    vmin: float = None,
+    vmax: float = None,
 ):
     """Plots the per spot statistics for given LR.
 
@@ -538,35 +538,35 @@ def lr_result_plot(
 
 # @_docs_params(het_plot=doc_lr_plot)
 def lr_plot(
-        adata: AnnData,
-        lr: str,
-        min_expr: float = 0,
-        sig_spots=True,
-        use_label: str = None,
-        outer_mode: str = "continuous",
-        l_cmap=None,
-        r_cmap=None,
-        lr_cmap=None,
-        inner_cmap=None,
-        inner_size_prop: float = 0.25,
-        middle_size_prop: float = 0.5,
-        outer_size_prop: float = 1,
-        pt_scale: int = 100,
-        title="",
-        show_image: bool = True,
-        show_arrows: bool = False,
-        fig: Figure = None,
-        ax: Axes = None,
-        arrow_head_width: float = 4,
-        arrow_width: float = 0.001,
-        arrow_cmap: str = None,
-        arrow_vmax: float = None,
-        sig_cci: bool = False,
-        lr_colors: dict = None,
-        figsize: tuple = (6.4, 4.8),
-        use_mix: bool = None,
-        # plotting params
-        **kwargs,
+    adata: AnnData,
+    lr: str,
+    min_expr: float = 0,
+    sig_spots=True,
+    use_label: str = None,
+    outer_mode: str = "continuous",
+    l_cmap=None,
+    r_cmap=None,
+    lr_cmap=None,
+    inner_cmap=None,
+    inner_size_prop: float = 0.25,
+    middle_size_prop: float = 0.5,
+    outer_size_prop: float = 1,
+    pt_scale: int = 100,
+    title="",
+    show_image: bool = True,
+    show_arrows: bool = False,
+    fig: Figure = None,
+    ax: Axes = None,
+    arrow_head_width: float = 4,
+    arrow_width: float = 0.001,
+    arrow_cmap: str = None,
+    arrow_vmax: float = None,
+    sig_cci: bool = False,
+    lr_colors: dict = None,
+    figsize: tuple = (6.4, 4.8),
+    use_mix: bool = None,
+    # plotting params
+    **kwargs,
 ) -> AnnData | None:
     """Creates different kinds of spatial visualisations for the LR analysis results.
         To see combinations of parameters refer to stLearn CCI tutorial.
@@ -672,10 +672,10 @@ def lr_plot(
 
     # Making sure have run_cci first with respective labelling #
     if (
-            show_arrows
-            and sig_cci
-            and use_label
-            and f"per_lr_cci_{use_label}" not in adata.uns
+        show_arrows
+        and sig_cci
+        and use_label
+        and f"per_lr_cci_{use_label}" not in adata.uns
     ):
         raise Exception(
             "Cannot subset arrow interactions to significant ccis "
@@ -701,19 +701,16 @@ def lr_plot(
             "to adata.uns matching the use_mix ({use_mix}) key."
         )
     elif (
-            use_label is not None
-            and use_label in lr_use_labels
-            and ran_sig
-            and not lr_sig
+        use_label is not None and use_label in lr_use_labels and ran_sig and not lr_sig
     ):
         raise Exception(
             "Since use_label refers to lr stats & ran permutation testing, "
             "LR needs to be significant to view stats."
         )
     elif (
-            use_label is not None
-            and use_label not in adata.obs.keys()
-            and use_label not in lr_use_labels
+        use_label is not None
+        and use_label not in adata.obs.keys()
+        and use_label not in lr_use_labels
     ):
         raise Exception(
             f"use_label must be in adata.obs or " f"one of lr stats: {lr_use_labels}."
@@ -905,34 +902,34 @@ def lr_plot(
 #### from old data structure when only test individual LRs.
 @_docs_params(spatial_base_plot=doc_spatial_base_plot, het_plot=doc_het_plot)
 def het_plot(
-        adata: AnnData,
-        # plotting param
-        title: Optional["str"] = None,
-        figsize: tuple[float, float] | None = None,
-        cmap: str | None = "Spectral_r",
-        use_label: str | None = None,
-        list_clusters: list | None = None,
-        ax: matplotlib.axes.Axes | None = None,
-        fig: matplotlib.figure.Figure | None = None,
-        show_plot: bool | None = True,
-        show_axis: bool | None = False,
-        show_image: bool | None = True,
-        show_color_bar: bool | None = True,
-        zoom_coord: float | None = None,
-        crop: bool | None = True,
-        margin: bool | None = 100,
-        size: float | None = 7,
-        image_alpha: float | None = 1.0,
-        cell_alpha: float | None = 1.0,
-        use_raw: bool | None = False,
-        fname: str | None = None,
-        dpi: int | None = 120,
-        # cci_rank param
-        use_het: str | None = "het",
-        contour: bool = False,
-        step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+    adata: AnnData,
+    # plotting param
+    title: Optional["str"] = None,
+    figsize: tuple[float, float] | None = None,
+    cmap: str | None = "Spectral_r",
+    use_label: str | None = None,
+    list_clusters: list | None = None,
+    ax: matplotlib.axes.Axes | None = None,
+    fig: matplotlib.figure.Figure | None = None,
+    show_plot: bool | None = True,
+    show_axis: bool | None = False,
+    show_image: bool | None = True,
+    show_color_bar: bool | None = True,
+    zoom_coord: float | None = None,
+    crop: bool | None = True,
+    margin: bool | None = 100,
+    size: float | None = 7,
+    image_alpha: float | None = 1.0,
+    cell_alpha: float | None = 1.0,
+    use_raw: bool | None = False,
+    fname: str | None = None,
+    dpi: int | None = 120,
+    # cci_rank param
+    use_het: str | None = "het",
+    contour: bool = False,
+    step_size: int | None = None,
+    vmin: float = None,
+    vmax: float = None,
 ) -> AnnData | None:
     """\
     Allows the visualization of significant cell-cell interaction
@@ -989,22 +986,22 @@ def het_plot(
 
 
 def ccinet_plot(
-        adata: AnnData,
-        use_label: str,
-        lr: str = None,
-        pos: dict = None,
-        return_pos: bool = False,
-        cmap: str = "default",
-        font_size: int = 12,
-        node_size_exp: int = 1,
-        node_size_scaler: int = 1,
-        min_counts: int = 0,
-        sig_interactions: bool = True,
-        fig: matplotlib.figure.Figure = None,
-        ax: matplotlib.axes.Axes = None,
-        pad=0.25,
-        title: str = None,
-        figsize: tuple = (10, 10),
+    adata: AnnData,
+    use_label: str,
+    lr: str = None,
+    pos: dict = None,
+    return_pos: bool = False,
+    cmap: str = "default",
+    font_size: int = 12,
+    node_size_exp: int = 1,
+    node_size_scaler: int = 1,
+    min_counts: int = 0,
+    sig_interactions: bool = True,
+    fig: matplotlib.figure.Figure = None,
+    ax: matplotlib.axes.Axes = None,
+    pad=0.25,
+    title: str = None,
+    figsize: tuple = (10, 10),
 ):
     """Circular celltype-celltype interaction network based on LR-CCI analysis.
     The size of the nodes drawn for each cell type indicates the total no. of
@@ -1086,10 +1083,9 @@ def ccinet_plot(
     node_sizes = np.array(
         [
             (
-                    ((sum(int_matrix[i, :] + int_matrix[:, i]) - int_matrix[
-                        i, i]) / total)
-                    * 10000
-                    * node_size_scaler
+                ((sum(int_matrix[i, :] + int_matrix[:, i]) - int_matrix[i, i]) / total)
+                * 10000
+                * node_size_scaler
             )
             ** (node_size_exp)
             for i in node_indices
@@ -1103,8 +1099,8 @@ def ccinet_plot(
         trans_i = np.where(all_set == edge[0][0])[0][0]
         receive_i = np.where(all_set == edge[0][1])[0][0]
         e_total = (
-                sum(list(int_matrix[trans_i, :]) + list(int_matrix[:, receive_i]))
-                - int_matrix[trans_i, receive_i]
+            sum(list(int_matrix[trans_i, :]) + list(int_matrix[:, receive_i]))
+            - int_matrix[trans_i, receive_i]
         )  # so don't double count
         e_totals.append(e_total)
     edge_weights = [edge[1]["weight"] / e_totals[i] for i, edge in enumerate(edges)]
@@ -1171,15 +1167,15 @@ def ccinet_plot(
 
 
 def cci_map(
-        adata: AnnData,
-        use_label: str,
-        lr: str = None,
-        ax: matplotlib.figure.Axes = None,
-        show: bool = False,
-        figsize: tuple = None,
-        cmap: str = "Spectral_r",
-        sig_interactions: bool = True,
-        title=None,
+    adata: AnnData,
+    use_label: str,
+    lr: str = None,
+    ax: matplotlib.figure.Axes = None,
+    show: bool = False,
+    figsize: tuple = None,
+    cmap: str = "Spectral_r",
+    sig_interactions: bool = True,
+    title=None,
 ):
     """Heatmap visualising sender->receivers of cell type interactions.
 
@@ -1250,18 +1246,18 @@ def cci_map(
 
 
 def lr_cci_map(
-        adata: AnnData,
-        use_label: str,
-        lrs: list or np.array = None,
-        n_top_lrs: int = 5,
-        n_top_ccis: int = 15,
-        min_total: int = 0,
-        ax: matplotlib.figure.Axes = None,
-        figsize: tuple = (6.48, 4.8),
-        show: bool = False,
-        cmap: str = "Spectral_r",
-        square_scaler: int = 700,
-        sig_interactions: bool = True,
+    adata: AnnData,
+    use_label: str,
+    lrs: list or np.array = None,
+    n_top_lrs: int = 5,
+    n_top_ccis: int = 15,
+    min_total: int = 0,
+    ax: matplotlib.figure.Axes = None,
+    figsize: tuple = (6.48, 4.8),
+    show: bool = False,
+    cmap: str = "Spectral_r",
+    square_scaler: int = 700,
+    sig_interactions: bool = True,
 ):
     """Heatmap of interaction counts.
         Rows are lrs and columns are celltype->celltype interactions.
@@ -1368,18 +1364,18 @@ def lr_cci_map(
 
 
 def lr_chord_plot(
-        adata: AnnData,
-        use_label: str,
-        lr: str = None,
-        min_ints: int = 2,
-        n_top_ccis: int = 10,
-        cmap: str = "default",
-        sig_interactions: bool = True,
-        label_size: int = 10,
-        label_rotation: float = 0,
-        title: str = None,
-        figsize: tuple = (8, 8),
-        show: bool = True,
+    adata: AnnData,
+    use_label: str,
+    lr: str = None,
+    min_ints: int = 2,
+    n_top_ccis: int = 10,
+    cmap: str = "default",
+    sig_interactions: bool = True,
+    label_size: int = 10,
+    label_rotation: float = 0,
+    title: str = None,
+    figsize: tuple = (8, 8),
+    show: bool = True,
 ):
     """Chord diagram of interactions between cell types.
         Note that interaction is measured as the total no. of edges connecting
@@ -1487,7 +1483,7 @@ def lr_chord_plot(
         rotation = nodePos[i][2]
         # Prevent text going upside down at certain rotations
         if (rotation < 90 and rotation > 18 and label_rotation != 0) or (
-                rotation < 120 and rotation > 90
+            rotation < 120 and rotation > 90
         ):
             label_rotation_ = -label_rotation
         else:
@@ -1503,13 +1499,13 @@ def lr_chord_plot(
 
 
 def grid_plot(
-        adata,
-        use_label: str = None,
-        n_row: int = 10,
-        n_col: int = 10,
-        size: int = 1,
-        figsize=(4.5, 4.5),
-        show: bool = False,
+    adata,
+    use_label: str = None,
+    n_row: int = 10,
+    n_col: int = 10,
+    size: int = 1,
+    figsize=(4.5, 4.5),
+    show: bool = False,
 ):
     """Plots grid over the top of spatial data to show how cells will be grouped if
     gridded.
@@ -1586,6 +1582,7 @@ def spatialcci_plot_interactive(adata: AnnData):
     bokeh_object = BokehSpatialCciPlot(adata)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
+
 
 # def het_plot_interactive(adata: AnnData):
 #     bokeh_object = BokehCciPlot(adata)

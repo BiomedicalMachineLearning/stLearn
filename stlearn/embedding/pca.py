@@ -1,4 +1,3 @@
-
 import numpy as np
 import scanpy
 from anndata import AnnData
@@ -99,6 +98,6 @@ def run_pca(
     )
 
     print(
-        "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and " +
-        "adata.varm['PCs']"
+        "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and "
+        + "adata.varm['PCs']"
     )

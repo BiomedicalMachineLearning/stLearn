@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from anndata import AnnData
@@ -13,11 +12,11 @@ from ._weighting_matrix import (
 
 
 def SME_normalize(
-        adata: AnnData,
-        use_data: str = "raw",
-        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-        platform: _PLATFORM = "Visium",
-        copy: bool = False,
+    adata: AnnData,
+    use_data: str = "raw",
+    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+    platform: _PLATFORM = "Visium",
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     using spatial location (S), tissue morphological feature (M) and gene

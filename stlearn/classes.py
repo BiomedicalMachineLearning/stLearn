@@ -4,7 +4,6 @@ Author: Duy Pham
 Date: 20 Feb 2021
 """
 
-
 import numpy as np
 from anndata import AnnData
 

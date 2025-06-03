@@ -19,20 +19,19 @@ from .perm_utils import get_lr_bg, get_lr_features
 
 # Newest method #
 def perform_spot_testing(
-        adata: AnnData,
-        lr_scores: np.ndarray,
-        lrs: np.array,
-        n_pairs: int,
-        neighbours: List,
-        het_vals: np.array,
-        min_expr: float,
-        adj_method: str = "fdr_bh",
-        pval_adj_cutoff: float = 0.05,
-        verbose: bool = True,
-        save_bg=False,
-        neg_binom=False,
-        quantiles=(
-                0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1),
+    adata: AnnData,
+    lr_scores: np.ndarray,
+    lrs: np.array,
+    n_pairs: int,
+    neighbours: List,
+    het_vals: np.array,
+    min_expr: float,
+    adj_method: str = "fdr_bh",
+    pval_adj_cutoff: float = 0.05,
+    verbose: bool = True,
+    save_bg=False,
+    neg_binom=False,
+    quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1),
 ):
     """Calls significant spots by creating random gene pairs with similar
     expression to given LR pair; only generate background for spots
@@ -91,10 +90,10 @@ def perform_spot_testing(
         adata.uns["lr_spot_indices"] = {}
 
     with tqdm(
-            total=lr_scores.shape[1],
-            desc="Generating backgrounds & testing each LR pair...",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-            disable=verbose is False,
+        total=lr_scores.shape[1],
+        desc="Generating backgrounds & testing each LR pair...",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        disable=verbose is False,
     ) as pbar:
 
         gene_bg_genes = {}  # Keep track of genes which can be used to gen. rand-pairs.
@@ -143,8 +142,8 @@ def perform_spot_testing(
                 # First multiple to get minimum value to be one before rounding #
                 bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
                 bg_1 = np.round(bg_1)
-                lr_j_scores_1 = bg_1[0: len(lr_j_scores)]
-                bg_1 = bg_1[len(lr_j_scores): len(bg_1)]
+                lr_j_scores_1 = bg_1[0 : len(lr_j_scores)]
+                bg_1 = bg_1[len(lr_j_scores) : len(bg_1)]
 
                 # Getting the pvalue from negative binomial approach
                 round_pvals, _, _, _ = get_stats(
@@ -213,18 +212,18 @@ def perform_spot_testing(
 
 # Version 2, no longer in use, see above for newest method #
 def perform_perm_testing(
-        adata: AnnData,
-        lr_scores: np.ndarray,
-        n_pairs: int,
-        lrs: np.array,
-        lr_mid_dist: int,
-        verbose: float,
-        neighbours: List,
-        het_vals: np.array,
-        min_expr: float,
-        neg_binom: bool,
-        adj_method: str,
-        pval_adj_cutoff: float,
+    adata: AnnData,
+    lr_scores: np.ndarray,
+    n_pairs: int,
+    lrs: np.array,
+    lr_mid_dist: int,
+    verbose: float,
+    neighbours: List,
+    het_vals: np.array,
+    min_expr: float,
+    neg_binom: bool,
+    adj_method: str,
+    pval_adj_cutoff: float,
 ):
     """Performs the grouped permutation testing when taking the stats approach."""
     if n_pairs != 0:  # Perform permutation testing
@@ -263,9 +262,9 @@ def perform_perm_testing(
         n_, n_sigs = np.array([0] * len(lrs)), np.array([0] * len(lrs))
         per_lr_results = {}
         with tqdm(
-                total=len(lr_group_set),
-                desc="Generating background distributions for the LR pair groups..",
-                bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+            total=len(lr_group_set),
+            desc="Generating background distributions for the LR pair groups..",
+            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
         ) as pbar:
             for group in lr_group_set:
                 # Determining common mid-point for each group #
@@ -335,25 +334,25 @@ def perform_perm_testing(
             "Summary of significant spots for each lr pair in adata.uns['lr_summary']."
         )
         print(
-            "Spot enrichment statistics of LR interactions in " +
-            "adata.uns['per_lr_results']"
+            "Spot enrichment statistics of LR interactions in "
+            + "adata.uns['per_lr_results']"
         )
 
 
 # No longer in use #
 def permutation(
-        adata: AnnData,
-        n_pairs: int = 200,
-        distance: int = None,
-        use_lr: str = "cci_lr",
-        use_het: str = None,
-        neg_binom: bool = False,
-        adj_method: str = "fdr",
-        neighbours: list = None,
-        run_fast: bool = True,
-        bg_pairs: list = None,
-        background: np.array = None,
-        **kwargs,
+    adata: AnnData,
+    n_pairs: int = 200,
+    distance: int = None,
+    use_lr: str = "cci_lr",
+    use_het: str = None,
+    neg_binom: bool = False,
+    adj_method: str = "fdr",
+    neighbours: list = None,
+    run_fast: bool = True,
+    bg_pairs: list = None,
+    background: np.array = None,
+    **kwargs,
 ) -> AnnData:
     """Permutation test for merged result
     Parameters
@@ -476,13 +475,13 @@ def permutation(
 
 
 def get_stats(
-        scores: np.array,
-        background: np.array,
-        total_bg: int,
-        neg_binom: bool = False,
-        adj_method: str = "fdr_bh",
-        pval_adj_cutoff: float = 0.01,
-        return_negbinom_params: bool = False,
+    scores: np.array,
+    background: np.array,
+    total_bg: int,
+    neg_binom: bool = False,
+    adj_method: str = "fdr_bh",
+    pval_adj_cutoff: float = 0.01,
+    return_negbinom_params: bool = False,
 ):
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
@@ -514,7 +513,7 @@ def get_stats(
         mu = np.exp(res.params[0])
         alpha = res.params[1]
         Q = 0
-        size = 1.0 / alpha * mu ** Q
+        size = 1.0 / alpha * mu**Q
         prob = size / (size + mu)
 
         if return_negbinom_params:  # For testing purposes #
@@ -575,11 +574,11 @@ def get_valid_genes(adata: AnnData, n_pairs: int) -> np.array:
 
 
 def get_rand_pairs(
-        adata: AnnData,
-        genes: np.array,
-        n_pairs: int,
-        lrs: list = None,
-        im: int = None,
+    adata: AnnData,
+    genes: np.array,
+    n_pairs: int,
+    lrs: list = None,
+    im: int = None,
 ):
     """Gets equivalent random gene pairs for the inputted lr pair.
     Parameters
@@ -610,7 +609,7 @@ def get_rand_pairs(
         .drop(lr_genes)[: n_pairs * 2]
         .index.tolist()
     )
-    selected = selected[0: n_pairs * 2]
+    selected = selected[0 : n_pairs * 2]
     adata.uns["selected"] = selected
     # form gene pairs from selected randomly
     random.shuffle(selected)
@@ -626,7 +625,7 @@ def get_ordered(adata, genes):
 
 
 def get_median_index(ligand, receptor, means_ordered, genes_ordered):
-    """ Retrieves the index of the gene with a mean expression between the two genes
+    """Retrieves the index of the gene with a mean expression between the two genes
         in the lr pair.
     Parameters
     ----------

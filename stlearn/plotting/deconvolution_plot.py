@@ -1,4 +1,3 @@
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,30 +5,30 @@ from anndata import AnnData
 
 
 def deconvolution_plot(
-        adata: AnnData,
-        library_id: str = None,
-        use_label: str = "louvain",
-        cluster: [int, str] = None,
-        celltype: str = None,
-        celltype_threshold: float = 0,
-        data_alpha: float = 1.0,
-        threshold: float = 0.0,
-        cmap: str = "tab20",
-        colors: list = None,  # The colors to use for each label...
-        tissue_alpha: float = 1.0,
-        title: str = None,
-        spot_size: float | int = 10,
-        show_axis: bool = False,
-        show_legend: bool = True,
-        show_donut: bool = True,
-        cropped: bool = True,
-        margin: int = 100,
-        name: str = None,
-        dpi: int = 150,
-        output: str = None,
-        copy: bool = False,
-        figsize: tuple = (6.4, 4.8),
-        show=True,
+    adata: AnnData,
+    library_id: str = None,
+    use_label: str = "louvain",
+    cluster: [int, str] = None,
+    celltype: str = None,
+    celltype_threshold: float = 0,
+    data_alpha: float = 1.0,
+    threshold: float = 0.0,
+    cmap: str = "tab20",
+    colors: list = None,  # The colors to use for each label...
+    tissue_alpha: float = 1.0,
+    title: str = None,
+    spot_size: float | int = 10,
+    show_axis: bool = False,
+    show_legend: bool = True,
+    show_donut: bool = True,
+    cropped: bool = True,
+    margin: int = 100,
+    name: str = None,
+    dpi: int = 150,
+    output: str = None,
+    copy: bool = False,
+    figsize: tuple = (6.4, 4.8),
+    show=True,
 ) -> AnnData | None:
     """\
     Clustering plot for sptial transcriptomics data. Also, it has a function to

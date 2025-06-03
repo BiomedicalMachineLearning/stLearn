@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 
 import numpy as np
@@ -50,9 +49,9 @@ from stlearn.utils import _read_graph
 
 class BokehGenePlot(Spatial):
     def __init__(
-            self,
-            # plotting param
-            adata: AnnData,
+        self,
+        # plotting param
+        adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -322,9 +321,9 @@ class BokehGenePlot(Spatial):
 
 class BokehClusterPlot(Spatial):
     def __init__(
-            self,
-            # plotting param
-            adata: AnnData,
+        self,
+        # plotting param
+        adata: AnnData,
     ):
         super().__init__(adata)
 
@@ -471,8 +470,8 @@ class BokehClusterPlot(Spatial):
 
         if "rank_genes_groups" in self.adata[0].uns:
             if (
-                    self.use_label.value
-                    == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+                self.use_label.value
+                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
             ):
                 self.layout = column(row(self.inputs, self.make_fig()), self.add_dea())
             else:
@@ -519,8 +518,8 @@ class BokehClusterPlot(Spatial):
 
         if "rank_genes_groups" in self.adata[0].uns:
             if (
-                    self.use_label.value
-                    == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+                self.use_label.value
+                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
             ):
                 self.layout.children[0].children[1] = self.make_fig()
                 self.layout.children[1] = self.add_dea()
@@ -764,9 +763,9 @@ class BokehClusterPlot(Spatial):
 
 class BokehLRPlot(Spatial):
     def __init__(
-            self,
-            # plotting param
-            adata: AnnData,
+        self,
+        # plotting param
+        adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -942,9 +941,9 @@ class BokehLRPlot(Spatial):
 
 class BokehSpatialCciPlot(Spatial):
     def __init__(
-            self,
-            # plotting param
-            adata: AnnData,
+        self,
+        # plotting param
+        adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -1213,6 +1212,7 @@ class BokehSpatialCciPlot(Spatial):
     def update_list(self, attrname, old, name):
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
+
         selected = self.annot_select.value.strip("raw_")
         cluster_plot(self.adata[0], use_label=selected, show_plot=False)
         self.list_cluster.labels = list(self.adata[0].obs[selected].cat.categories)
@@ -1223,9 +1223,9 @@ class BokehSpatialCciPlot(Spatial):
 
 class Annotate(Spatial):
     def __init__(
-            self,
-            # plotting param
-            adata: AnnData,
+        self,
+        # plotting param
+        adata: AnnData,
     ):
         super().__init__(adata)
         # Open image, and make sure it's RGB*A*

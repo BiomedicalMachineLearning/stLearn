@@ -4,7 +4,7 @@ Plotting of continuous features stored in adata.obs.
 
 from typing import (
     Optional,  # Special
-    )
+)
 
 import matplotlib
 from anndata import AnnData
@@ -14,34 +14,34 @@ from stlearn.plotting.classes import FeaturePlot
 
 # @_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def feat_plot(
-        adata: AnnData,
-        feature: str = None,
-        threshold: float | None = None,
-        contour: bool = False,
-        step_size: int | None = None,
-        title: Optional["str"] = None,
-        figsize: tuple[float, float] | None = None,
-        cmap: str | None = "Spectral_r",
-        use_label: str | None = None,
-        list_clusters: list | None = None,
-        ax: matplotlib.axes.Axes | None = None,
-        fig: matplotlib.figure.Figure | None = None,
-        show_plot: bool | None = True,
-        show_axis: bool | None = False,
-        show_image: bool | None = True,
-        show_color_bar: bool | None = True,
-        color_bar_label: str | None = "",
-        zoom_coord: float | None = None,
-        crop: bool | None = True,
-        margin: bool | None = 100,
-        size: float | None = 7,
-        image_alpha: float | None = 1.0,
-        cell_alpha: float | None = 0.7,
-        use_raw: bool | None = False,
-        fname: str | None = None,
-        dpi: int | None = 120,
-        vmin: float | None = None,
-        vmax: float | None = None,
+    adata: AnnData,
+    feature: str = None,
+    threshold: float | None = None,
+    contour: bool = False,
+    step_size: int | None = None,
+    title: Optional["str"] = None,
+    figsize: tuple[float, float] | None = None,
+    cmap: str | None = "Spectral_r",
+    use_label: str | None = None,
+    list_clusters: list | None = None,
+    ax: matplotlib.axes.Axes | None = None,
+    fig: matplotlib.figure.Figure | None = None,
+    show_plot: bool | None = True,
+    show_axis: bool | None = False,
+    show_image: bool | None = True,
+    show_color_bar: bool | None = True,
+    color_bar_label: str | None = "",
+    zoom_coord: float | None = None,
+    crop: bool | None = True,
+    margin: bool | None = 100,
+    size: float | None = 7,
+    image_alpha: float | None = 1.0,
+    cell_alpha: float | None = 0.7,
+    use_raw: bool | None = False,
+    fname: str | None = None,
+    dpi: int | None = 120,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ) -> AnnData | None:
     """\
     Allows the visualization of a continuous features stored in adata.obs

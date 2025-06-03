@@ -1,16 +1,15 @@
-
 import numpy as np
 import scipy.spatial as spatial
 from anndata import AnnData
 
 
 def disk(
-        adata: AnnData,
-        use_data: str = "X_umap",
-        radius: float = 10.0,
-        rates: int = 1,
-        method: str = "mean",
-        copy: bool = False,
+    adata: AnnData,
+    use_data: str = "X_umap",
+    radius: float = 10.0,
+    rates: int = 1,
+    method: str = "mean",
+    copy: bool = False,
 ) -> AnnData | None:
     coor = adata.obs[["imagecol", "imagerow"]]
     count_embed = adata.obsm[use_data]
@@ -46,8 +45,8 @@ def disk(
     adata.obsm[new_embed] = np.array(lag_coor)
 
     print(
-        'Disk smoothing function is applied! The new data are stored in ' +
-        'adata.obsm["X_diffmap_disk"]'
+        "Disk smoothing function is applied! The new data are stored in "
+        + 'adata.obsm["X_diffmap_disk"]'
     )
 
     return adata if copy else None

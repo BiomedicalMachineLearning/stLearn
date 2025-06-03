@@ -5,12 +5,12 @@ from anndata import AnnData
 
 
 def transition_markers_plot(
-        adata: AnnData,
-        top_genes: int = 10,
-        trajectory: str = None,
-        dpi: int = 150,
-        output: str = None,
-        name: str = None,
+    adata: AnnData,
+    top_genes: int = 10,
+    trajectory: str = None,
+    dpi: int = 150,
+    output: str = None,
+    name: str = None,
 ) -> AnnData | None:
     """\
     Plot transition marker.

@@ -38,16 +38,16 @@ _Metric = _MetricSparseCapable | _MetricScipySpatial
 
 
 def neighbors(
-        adata: AnnData,
-        n_neighbors: int = 15,
-        n_pcs: int | None = None,
-        use_rep: str | None = None,
-        knn: bool = True,
-        random_state: int | RandomState | None = 0,
-        method: _Method | None = "umap",
-        metric: _Metric | _MetricFn = "euclidean",
-        metric_kwds: Mapping[str, Any] = MappingProxyType({}),
-        copy: bool = False,
+    adata: AnnData,
+    n_neighbors: int = 15,
+    n_pcs: int | None = None,
+    use_rep: str | None = None,
+    knn: bool = True,
+    random_state: int | RandomState | None = 0,
+    method: _Method | None = "umap",
+    metric: _Metric | _MetricFn = "euclidean",
+    metric_kwds: Mapping[str, Any] = MappingProxyType({}),
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Compute a neighborhood graph of observations [McInnes18]_.

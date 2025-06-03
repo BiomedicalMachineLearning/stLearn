@@ -10,12 +10,12 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def detect_transition_markers_clades(
-        adata,
-        clade,
-        cutoff_spearman=0.4,
-        cutoff_pvalue=0.05,
-        screening_genes=None,
-        use_raw_count=False,
+    adata,
+    clade,
+    cutoff_spearman=0.4,
+    cutoff_pvalue=0.05,
+    screening_genes=None,
+    use_raw_count=False,
 ):
     """\
     Transition markers detection of a clade.
@@ -69,7 +69,7 @@ def detect_transition_markers_clades(
     )
     negative = spearman_result[
         spearman_result["score"] <= cutoff_spearman * (-1)
-        ].sort_values("score")
+    ].sort_values("score")
 
     result = pd.concat([positive, negative])
 
@@ -81,12 +81,12 @@ def detect_transition_markers_clades(
 
 
 def detect_transition_markers_branches(
-        adata,
-        branch,
-        cutoff_spearman=0.4,
-        cutoff_pvalue=0.05,
-        screening_genes=None,
-        use_raw_count=False,
+    adata,
+    branch,
+    cutoff_spearman=0.4,
+    cutoff_pvalue=0.05,
+    screening_genes=None,
+    use_raw_count=False,
 ):
     """\
     Transition markers detection of a branch.
@@ -126,7 +126,7 @@ def detect_transition_markers_branches(
     )
     negative = spearman_result[
         spearman_result["score"] <= cutoff_spearman * (-1)
-        ].sort_values("score")
+    ].sort_values("score")
 
     result = pd.concat([positive, negative])
 

@@ -88,7 +88,7 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 
     $ black stlearn tests
     $ flake8 stlearn tests
-    $ mypy stlearn
+    $ mypy stlearn tests
     $ pytest
 
 Or run everything with tox::

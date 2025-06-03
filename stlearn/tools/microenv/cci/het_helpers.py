@@ -9,13 +9,13 @@ from numba.typed import List
 
 @njit
 def edge_core(
-        cell_data: np.ndarray,
-        cell_type_index: int,
-        neighbourhood_bcs: List,
-        neighbourhood_indices: List,
-        spot_indices: np.array = None,
-        neigh_bool: np.array = None,
-        cutoff: float = 0.2,
+    cell_data: np.ndarray,
+    cell_type_index: int,
+    neighbourhood_bcs: List,
+    neighbourhood_indices: List,
+    spot_indices: np.array = None,
+    neigh_bool: np.array = None,
+    cutoff: float = 0.2,
 ) -> np.array:
     """Gets the edges which connect inputted spots to neighbours of a given cell type.
 
@@ -128,12 +128,12 @@ def init_edge_list(neighbourhood_bcs):
 
 @njit
 def get_between_spot_edge_array(
-        edge_list: List,
-        neighbourhood_bcs: List,
-        neighbourhood_indices: List,
-        neigh_bool: np.array,
-        cell_data: np.array,
-        cutoff: float = 0,
+    edge_list: List,
+    neighbourhood_bcs: List,
+    neighbourhood_indices: List,
+    neigh_bool: np.array,
+    cell_data: np.array,
+    cutoff: float = 0,
 ):
     """ Populates edge_list with edges linking spots with a valid neighbour \
         of a given cell type. Validity of neighbour determined by neigh_bool, \
@@ -184,7 +184,7 @@ def add_unique_edges(edge_list, edge_starts, edge_ends):
                 edge_startj, edge_endj = edge_starts[j], edge_ends[j]
                 # Direction doesn't matter #
                 if (edge_start == edge_startj and edge_end == edge_endj) or (
-                        edge_end == edge_startj and edge_start == edge_endj
+                    edge_end == edge_startj and edge_start == edge_endj
                 ):
                     edge_added[j] = True
 
@@ -261,12 +261,12 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
 
 # @njit
 def get_neighbourhoods_FAST(
-        spot_bcs: np.array,
-        spot_neigh_bcs: np.ndarray,
-        n_spots: int,
-        str_dtype: str,
-        neigh_indices: np.array,
-        neigh_bcs: np.array,
+    spot_bcs: np.array,
+    spot_neigh_bcs: np.ndarray,
+    n_spots: int,
+    str_dtype: str,
+    neigh_indices: np.array,
+    neigh_bcs: np.array,
 ):
     """Gets the neighbourhood information, njit compiled."""
 
@@ -347,12 +347,12 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
 
 
 def get_neighbourhoods_FAST(
-        spot_bcs: np.array,
-        spot_neigh_bcs: np.ndarray,
-        n_spots: int,
-        str_dtype: str,
-        neigh_indices: np.array,
-        neigh_bcs: np.array,
+    spot_bcs: np.array,
+    spot_neigh_bcs: np.ndarray,
+    n_spots: int,
+    str_dtype: str,
+    neigh_indices: np.array,
+    neigh_bcs: np.array,
 ):
     """Gets the neighbourhood information, njit compiled."""
 

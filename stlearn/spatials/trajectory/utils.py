@@ -61,7 +61,7 @@ def lambda_dist(A1, A2, k=None, p=2, kind="laplacian"):
 
 
 def resistance_distance(
-        A1, A2, p=2, renormalized=False, attributed=False, check_connected=True, beta=1
+    A1, A2, p=2, renormalized=False, attributed=False, check_connected=True, beta=1
 ):
     """Compare two graphs using resistance distance (possibly renormalized).
     Parameters
@@ -316,6 +316,7 @@ class UndefinedException(Exception):
 # Resistance matrix. Renormalized version, as well as conductance and commute matrices.
 # """
 
+
 def resistance_matrix(A, check_connected=True):
     """Return the resistance matrix of G.
     Parameters
@@ -513,8 +514,8 @@ def conductance_matrix(A):
 
 # CytoTrace wrapper
 def _mat_mat_corr_sparse(
-        X: csr_matrix,
-        Y: np.ndarray,
+    X: csr_matrix,
+    Y: np.ndarray,
 ) -> np.ndarray:
     """\
     This function is borrow from cellrank
@@ -522,8 +523,7 @@ def _mat_mat_corr_sparse(
     n = X.shape[1]
 
     X_bar = np.reshape(np.array(X.mean(axis=1)), (-1, 1))
-    X_std = np.reshape(np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar ** 2)),
-                       (-1, 1))
+    X_std = np.reshape(np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar**2)), (-1, 1))
 
     y_bar = np.reshape(np.mean(Y, axis=0), (1, -1))
     y_std = np.reshape(np.std(Y, axis=0), (1, -1))
@@ -536,12 +536,12 @@ def _mat_mat_corr_sparse(
 
 
 def _correlation_test_helper(
-        X: np.ndarray | spmatrix,
-        Y: np.ndarray,
-        n_perms: int | None = None,
-        seed: int | None = None,
-        confidence_level: float = 0.95,
-        **kwargs,
+    X: np.ndarray | spmatrix,
+    Y: np.ndarray,
+    n_perms: int | None = None,
+    seed: int | None = None,
+    confidence_level: float = 0.95,
+    **kwargs,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     This function is borrow from cellrank.
@@ -569,7 +569,7 @@ def _correlation_test_helper(
     """
 
     def perm_test_extractor(
-            res: Sequence[tuple[np.ndarray, np.ndarray]],
+        res: Sequence[tuple[np.ndarray, np.ndarray]],
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         pvals, corr_bs = zip(*res)
         pvals = np.sum(pvals, axis=0) / float(n_perms)
@@ -583,8 +583,8 @@ def _correlation_test_helper(
 
     if not (0 <= confidence_level <= 1):
         raise ValueError(
-            "Expected `confidence_level` to be in interval `[0, 1]`, " +
-            f"found `{confidence_level}`."
+            "Expected `confidence_level` to be in interval `[0, 1]`, "
+            + f"found `{confidence_level}`."
         )
 
     n = X.shape[1]  # genes x cells

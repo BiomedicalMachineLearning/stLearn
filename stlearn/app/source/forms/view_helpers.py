@@ -1,7 +1,6 @@
 """Helper functions for views.py."""
 
 
-
 def getVal(form, element):
     return getattr(form, element).data
 

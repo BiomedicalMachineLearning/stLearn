@@ -1,17 +1,16 @@
-
 import numpy as np
 from anndata import AnnData
 from scipy.spatial.distance import cdist
 
 
 def local_level(
-        adata: AnnData,
-        use_label: str = "louvain",
-        cluster: int = 9,
-        w: float = 0.5,
-        return_matrix: bool = False,
-        verbose: bool = True,
-        copy: bool = False,
+    adata: AnnData,
+    use_label: str = "louvain",
+    cluster: int = 9,
+    w: float = 0.5,
+    return_matrix: bool = False,
+    verbose: bool = True,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Perform local sptial trajectory inference (required run pseudotime first).
@@ -49,8 +48,8 @@ def local_level(
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     for i in list_cluster:
         if (
-                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                > adata.uns["threshold_spots"]
+            len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+            > adata.uns["threshold_spots"]
         ):
             dpt.append(
                 cluster_data.obs[cluster_data.obs["sub_cluster_labels"] == i][

@@ -1,24 +1,23 @@
-
 import matplotlib
 from anndata import AnnData
 from matplotlib import pyplot as plt
 
 
 def plot_mask(
-        adata: AnnData,
-        library_id: str = None,
-        show_spot: bool = True,
-        spot_alpha: float = 1.0,
-        cmap: str = "vega_20_scanpy",
-        tissue_alpha: float = 1.0,
-        mask_alpha: float = 0.5,
-        spot_size: float | int = 6.5,
-        show_legend: bool = True,
-        name: str = "mask_plot",
-        dpi: int = 150,
-        output: str = None,
-        show_axis: bool = False,
-        show_plot: bool = True,
+    adata: AnnData,
+    library_id: str = None,
+    show_spot: bool = True,
+    spot_alpha: float = 1.0,
+    cmap: str = "vega_20_scanpy",
+    tissue_alpha: float = 1.0,
+    mask_alpha: float = 0.5,
+    spot_size: float | int = 6.5,
+    show_legend: bool = True,
+    name: str = "mask_plot",
+    dpi: int = 150,
+    output: str = None,
+    show_axis: bool = False,
+    show_plot: bool = True,
 ) -> AnnData | None:
     """\
     mask plot for sptial transcriptomics data.
