@@ -1,21 +1,68 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 *.pyc
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+data/samples
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit tests / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Jupyter Notebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
-build/
-dist/
-*.egg-info
 /*.ipynb
+
+# Data files
 /*.csv
-output/
+
+# MacOS caching
 .DS_Store
 */.DS_Store
+
+# PyCharm etc
 .idea/
+
+# Sphinx documentation
 docs/_build
+
+# Distribution/package/temporary files
 data/
 tiling/
-.pytest_cache
 figures/
 *.h5ad
-inferCNV/
-stlearn/tools/microenv/cci/junk_code.py
-stlearn/tools/microenv/cci/.Rhistory
