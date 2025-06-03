@@ -185,7 +185,7 @@ def Read10X(
     else:
         scale = adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-            ]
+        ]
         image_coor = adata.obsm["spatial"] * scale
 
     adata.obs["imagecol"] = image_coor[:, 0]
@@ -318,7 +318,7 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
 
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
@@ -401,7 +401,7 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -487,7 +487,7 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -578,7 +578,7 @@ def ReadXenium(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-            ] = scale
+        ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres
@@ -658,7 +658,7 @@ def create_stlearn(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-            ] = scale
+        ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres
