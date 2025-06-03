@@ -372,7 +372,7 @@ def ReadMERFISH(
     adata_merfish = counts[coordinates.index, :]
     adata_merfish.obsm["spatial"] = coordinates.to_numpy()
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata_merfish.obsm["spatial"])
         scale = 2000 / max_coor
 
@@ -429,11 +429,13 @@ def ReadSeqFish(
     spatial_file
         Path to spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     field
         Set field of view for SeqFish data
     spot_diameter_fullres
@@ -457,7 +459,7 @@ def ReadSeqFish(
 
     adata = AnnData(count)
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(spatial[["X", "Y"]])
         scale = 2000 / max_coor
 
@@ -517,11 +519,13 @@ def ReadXenium(
     image_path
         Path to image. Only need when loading full resolution image.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
@@ -540,7 +544,7 @@ def ReadXenium(
 
     adata.obsm["spatial"] = spatial.values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata.obsm["spatial"])
         scale = 2000 / max_coor
 
@@ -550,7 +554,7 @@ def ReadXenium(
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
-    if image_path != None:
+    if image_path is not None:
         stlearn.add.image(
             adata,
             library_id=library_id,
@@ -606,11 +610,13 @@ def create_stlearn(
     spatial
         Pandas Dataframe of spatial location of cells/spots.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
@@ -623,14 +629,14 @@ def create_stlearn(
 
     adata.obsm["spatial"] = spatial.values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata.obsm["spatial"])
         scale = 2000 / max_coor
 
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
-    if image_path != None:
+    if image_path is not None:
         stlearn.add.image(
             adata,
             library_id=library_id,

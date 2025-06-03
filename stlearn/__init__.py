@@ -27,3 +27,22 @@ from .wrapper.convert_scanpy import convert_scanpy
 from .wrapper.concatenate_spatial_adata import concatenate_spatial_adata
 
 # from . import cli
+__all__ = [
+    "add",
+    "pp",
+    "em",
+    "tl",
+    "pl",
+    "spatial",
+    "datasets",
+    "ReadSlideSeq",
+    "Read10X",
+    "ReadOldST",
+    "ReadMERFISH",
+    "ReadSeqFish",
+    "ReadXenium",
+    "create_stlearn",
+    "settings",
+    "convert_scanpy",
+    "concatenate_spatial_adata",
+]
