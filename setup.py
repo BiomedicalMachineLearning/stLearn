@@ -20,16 +20,17 @@ test_requirements = []
 
 setup(
     author="Genomics and Machine Learning lab",
-    author_email="duy.pham@uq.edu.au",
-    python_requires=">=3.7",
+    author_email="andrew.newman@uq.edu.au",
+    python_requires=">=3.10",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     description="A downstream analysis toolkit for Spatial Transcriptomic data",
     entry_points={
@@ -49,6 +50,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/BiomedicalMachineLearning/stLearn",
-    version="0.4.11",
+    version="0.4.2",
     zip_safe=False,
 )

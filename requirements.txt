@@ -1,10 +1,12 @@
-bokeh>= 2.4.2
-click>=8.0.4
-leidenalg
-louvain
-numba<=0.57.1
-numpy>=1.18,<1.22
-Pillow>=9.0.1
-scanpy>=1.8.2
-scikit-image>=0.19.2
-tensorflow
+bokeh==3.7.3
+click==8.2.1
+leidenalg==0.10.2
+louvain==0.8.2
+numba==0.55.2
+numpy==1.22.4
+pillow==11.2.1
+scanpy==1.9.8
+scikit-image==0.22.0
+tensorflow==2.13.1
+imageio==2.37.0
+scipy==1.11.4

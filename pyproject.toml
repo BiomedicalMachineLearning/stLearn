@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stlearn"
+version = "0.4.2"
+authors = [
+    {name = "Genomics and Machine Learning lab", email = "andrew.newman@uq.edu.au"},
+]
+description = "A downstream analysis toolkit for Spatial Transcriptomic data"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "BSD license"}
+requires-python = ">=3.10"
+keywords = ["stlearn"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dynamic = ["dependencies"]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "mypy",
+    "pytest",
+    "tox",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://github.com/BiomedicalMachineLearning/stLearn"
+Repository = "https://github.com/BiomedicalMachineLearning/stLearn"
+
+[project.scripts]
+stlearn = "stlearn.app.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["stlearn", "stlearn.*"]
+
+[tool.setuptools.package-data]
+"*" = ["*"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
