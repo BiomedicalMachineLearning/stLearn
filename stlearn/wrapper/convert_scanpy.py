@@ -1,8 +1,5 @@
-from typing import Optional, Union
+from typing import Optional
 from anndata import AnnData
-from matplotlib import pyplot as plt
-from pathlib import Path
-import os
 
 
 def convert_scanpy(

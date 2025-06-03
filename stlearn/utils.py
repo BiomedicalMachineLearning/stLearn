@@ -1,18 +1,15 @@
 import numpy as np
-import pandas as pd
-import io
-from PIL import Image
-import matplotlib
 from anndata import AnnData
 import networkx as nx
 
 from typing import Optional, Union, Mapping  # Special
-from typing import Sequence, Iterable  # ABCs
 from typing import Tuple  # Classes
 
 from textwrap import dedent
 
 from enum import Enum
+from matplotlib import axes
+from matplotlib.axes import Axes
 
 
 class Empty(Enum):
@@ -20,10 +17,6 @@ class Empty(Enum):
 
 
 _empty = Empty.token
-
-from matplotlib import rcParams, ticker, gridspec, axes
-from matplotlib.axes import Axes
-from abc import ABC
 
 
 class _AxesSubplot(Axes, axes.SubplotBase):
@@ -110,7 +103,6 @@ def _check_img(
 def _check_coords(
     obsm: Optional[Mapping], scale_factor: Optional[float]
 ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-
     image_coor = obsm["spatial"] * scale_factor
     imagecol = image_coor[:, 0]
     imagerow = image_coor[:, 1]
@@ -119,7 +111,6 @@ def _check_coords(
 
 
 def _read_graph(adata: AnnData, graph_type: Optional[str]):
-
     if graph_type == "PTS_graph":
         graph = nx.from_scipy_sparse_array(
             adata.uns[graph_type]["graph"], create_using=nx.DiGraph

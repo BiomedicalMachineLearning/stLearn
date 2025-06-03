@@ -1,9 +1,8 @@
 """Top-level package for stLearn."""
 
 __author__ = """Genomics and Machine Learning lab"""
-__email__ = "duy.pham@uq.edu.au"
-__version__ = "0.4.11"
-
+__email__ = "andrew.newman@uq.edu.au"
+__version__ = "0.4.2"
 
 from . import add
 from . import pp
