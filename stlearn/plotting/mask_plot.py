@@ -1,26 +1,25 @@
-import matplotlib
-from matplotlib import pyplot as plt
 
-from typing import Optional, Union
+import matplotlib
 from anndata import AnnData
+from matplotlib import pyplot as plt
 
 
 def plot_mask(
-    adata: AnnData,
-    library_id: str = None,
-    show_spot: bool = True,
-    spot_alpha: float = 1.0,
-    cmap: str = "vega_20_scanpy",
-    tissue_alpha: float = 1.0,
-    mask_alpha: float = 0.5,
-    spot_size: Union[float, int] = 6.5,
-    show_legend: bool = True,
-    name: str = "mask_plot",
-    dpi: int = 150,
-    output: str = None,
-    show_axis: bool = False,
-    show_plot: bool = True,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        library_id: str = None,
+        show_spot: bool = True,
+        spot_alpha: float = 1.0,
+        cmap: str = "vega_20_scanpy",
+        tissue_alpha: float = 1.0,
+        mask_alpha: float = 0.5,
+        spot_size: float | int = 6.5,
+        show_legend: bool = True,
+        name: str = "mask_plot",
+        dpi: int = 150,
+        output: str = None,
+        show_axis: bool = False,
+        show_plot: bool = True,
+) -> AnnData | None:
     """\
     mask plot for sptial transcriptomics data.
 
@@ -59,6 +58,7 @@ def plot_mask(
     Nothing
     """
     from scanpy.plotting import palettes
+
     from stlearn.plotting import palettes_st
 
     if cmap == "vega_10_scanpy":
@@ -171,5 +171,5 @@ def plot_mask(
     if output is not None:
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
-    if show_plot == True:
+    if show_plot:
         plt.show()

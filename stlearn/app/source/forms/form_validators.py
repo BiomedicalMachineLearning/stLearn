@@ -3,7 +3,7 @@
 from wtforms.validators import ValidationError
 
 
-class CheckNumberRange(object):
+class CheckNumberRange:
     def __init__(self, lower, upper, hint=""):
         self.lower = lower
         self.upper = upper

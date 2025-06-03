@@ -1,19 +1,17 @@
-from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
-from anndata import AnnData
+
 import numpy as np
-from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
-from scipy import sparse
-from stlearn import logging as logg
 import scanpy
+from anndata import AnnData
+from scipy.sparse import spmatrix
 
 
 def log1p(
-    adata: Union[AnnData, np.ndarray, spmatrix],
-    copy: bool = False,
-    chunked: bool = False,
-    chunk_size: Optional[int] = None,
-    base: Optional[float] = None,
-) -> Optional[AnnData]:
+        adata: AnnData | np.ndarray | spmatrix,
+        copy: bool = False,
+        chunked: bool = False,
+        chunk_size: int | None = None,
+        base: float | None = None,
+) -> AnnData | None:
     """\
     Wrap function of scanpy.pp.log1p
     Copyright (c) 2017 F. Alexander Wolf, P. Angerer, Theis Lab
@@ -47,11 +45,11 @@ def log1p(
 
 
 def scale(
-    adata: Union[AnnData, np.ndarray, spmatrix],
-    zero_center: bool = True,
-    max_value: Optional[float] = None,
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData | np.ndarray | spmatrix,
+        zero_center: bool = True,
+        max_value: float | None = None,
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Wrap function of scanpy.pp.scale
 

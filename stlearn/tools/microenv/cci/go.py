@@ -1,6 +1,7 @@
 """Wrapper for performing the LR GO analysis."""
 
 import os
+
 import stlearn.tools.microenv.cci.r_helpers as rhs
 
 
@@ -20,7 +21,7 @@ def run_GO(genes, bg_genes, species, r_path, p_cutoff=0.01, q_cutoff=0.5, onts="
 
     # Running the function on the genes #
     genes_r = rhs.ro.StrVector(genes)
-    if type(bg_genes) != type(None):
+    if bg_genes is not None:
         bg_genes_r = rhs.ro.StrVector(bg_genes)
     else:
         bg_genes_r = rhs.ro.r["as.null"]()

@@ -1,58 +1,57 @@
-from anndata import AnnData
-from typing import Optional, Union
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-from scipy.spatial.distance import cdist
 import scanpy
+from anndata import AnnData
 
 
 def pseudotime(
-    adata: AnnData,
-    use_label: str = None,
-    eps: float = 20,
-    n_neighbors: int = 25,
-    use_rep: str = "X_pca",
-    threshold: float = 0.01,
-    radius: int = 50,
-    method: str = "mean",
-    threshold_spots: int = 5,
-    use_sme: bool = False,
-    reverse: bool = False,
-    pseudotime_key: str = "dpt_pseudotime",
-    max_nodes: int = 4,
-    run_knn: bool = False,
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        use_label: str = None,
+        eps: float = 20,
+        n_neighbors: int = 25,
+        use_rep: str = "X_pca",
+        threshold: float = 0.01,
+        radius: int = 50,
+        method: str = "mean",
+        threshold_spots: int = 5,
+        use_sme: bool = False,
+        reverse: bool = False,
+        pseudotime_key: str = "dpt_pseudotime",
+        max_nodes: int = 4,
+        run_knn: bool = False,
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Perform pseudotime analysis.
 
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    use_label
+    use_label:
         Use label result of cluster method.
-    eps
+    eps:
         The maximum distance between two samples for one to be considered as
         in the neighborhood of the other. This is not a maximum bound on the
         distances of points within a cluster. This is the most important DBSCAN
         parameter to choose appropriately for your data set and distance function.
-    threshold
+    threshold:
         Threshold to find the significant connection for PAGA graph.
-    radius
+    radius:
         radius to adjust data for diffusion map
-    method
+    method:
         method to adjust the data.
-    use_sme
+    use_sme:
         Use adjusted feature by SME normalization or not
-    reverse
+    reverse:
         Reverse the pseudotime score
-    pseudotime_key
+    pseudotime_key:
         Key to store pseudotime
-    max_nodes
+    max_nodes:
         Maximum number of node in available paths
-    copy
+    copy:
         Return a copy instead of writing to adata.
     Returns
     -------
@@ -68,7 +67,7 @@ def pseudotime(
     except:
         pass
 
-    assert use_label != None, "Please choose the right `use_label`!"
+    assert use_label is not None, "Please choose the right `use_label`!"
 
     # Localize
     from stlearn.spatials.clustering import localization
@@ -114,8 +113,8 @@ def pseudotime(
             "sub_cluster_labels"
         ].unique():
             if (
-                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                > threshold_spots
+                    len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                    > threshold_spots
             ):
                 meaningful_sub.append(i)
 
@@ -190,9 +189,7 @@ def pseudotime(
     return adata if copy else None
 
 
-######## utils ########
-
-
+# Utils
 def replace_with_dict(ar, dic):
     # Extract out keys and values
     k = np.array(list(dic.keys()), dtype=object)
@@ -212,7 +209,6 @@ def selection_sort(x):
 
 
 def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key):
-
     # Read original PAGA graph
     G = nx.from_numpy_array(adata.uns["paga"]["connectivities"].toarray())
     edge_weights = nx.get_edge_attributes(G, "weight")
@@ -247,7 +243,6 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
 
     adata.uns["available_paths"] = all_paths
     print(
-        "All available trajectory paths are stored in adata.uns['available_paths'] with length < "
-        + str(max_nodes)
-        + " nodes"
+        "All available trajectory paths are stored in adata.uns['available_paths'] " +
+        "with length < " + str(max_nodes) + " nodes"
     )

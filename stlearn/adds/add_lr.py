@@ -1,26 +1,28 @@
-from typing import Optional, Union
-from anndata import AnnData
-from pathlib import Path
-import os
 import pandas as pd
+from anndata import AnnData
 
 
 def lr(
-    adata: AnnData,
-    db_filepath: str = None,
-    sep: str = "\t",
-    source: str = "connectomedb",
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        db_filepath: str = None,
+        sep: str = "\t",
+        source: str = "connectomedb",
+        copy: bool = False,
+) -> AnnData | None:
     """Add significant Ligand-Receptor pairs into AnnData object
 
     Parameters
     ----------
-    adata: AnnData          The data object to add L-R info into
-    db_filepath: str      The path to the CPDB results file
-    sep: str                Separator of the CPDB results file
-    source: str             Source of LR database (default: connectomedb, can also support 'cellphonedb')
-    copy: bool              Copy flag indicating copy or direct edit
+    adata: AnnData
+        The data object to add L-R info into
+    db_filepath: str
+        The path to the CPDB results file
+    sep: str
+        Separator of the CPDB results file
+    source: str
+        Source of LR database (default: connectomedb, can also support 'cellphonedb')
+    copy: bool
+        Copy flag indicating copy or direct edit
 
     Returns
     -------
@@ -42,7 +44,7 @@ def lr(
     elif source == "connectomedb":
         ctdb = pd.read_csv(db_filepath, sep=sep, quotechar='"', encoding="latin1")
         adata.uns["lr"] = (
-            ctdb["Ligand gene symbol"] + "_" + ctdb["Receptor gene symbol"]
+                ctdb["Ligand gene symbol"] + "_" + ctdb["Receptor gene symbol"]
         ).values.tolist()
         print("connectomedb results added to adata.uns['ctdb']")
         print("Added ligand receptor pairs to adata.uns['lr'].")

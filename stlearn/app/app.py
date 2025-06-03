@@ -1,53 +1,44 @@
-import os, sys, subprocess
+import os
+import subprocess
+import sys
+from threading import Thread
 
 sys.path.append(os.path.dirname(__file__))
 
 try:
-    import flask
+    import flask  # noqa: F401
 except ImportError:
     subprocess.call(
         "pip install -r " + os.path.dirname(__file__) + "//requirements.txt", shell=True
     )
 
-from flask import (
-    Flask,
-    render_template,
-    request,
-    flash,
-    url_for,
-    redirect,
-    session,
-    send_file,
-)
-from bokeh.embed import components
-from bokeh.plotting import figure
-from bokeh.resources import INLINE
-from werkzeug.utils import secure_filename
+import asyncio
 import tempfile
-import traceback
 
-import tempfile
-import shutil
-
-import stlearn
-import scanpy
 import numpy
 import numpy as np
-
-import asyncio
-from bokeh.server.server import BaseServer
-from bokeh.server.tornado import BokehTornado
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+import scanpy
 from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
-from bokeh.server.server import Server
 from bokeh.embed import server_document
-
-from bokeh.layouts import column, row
+from bokeh.layouts import row
+from bokeh.server.server import Server
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 
 # Functions related to processing the forms.
 from source.forms import views  # for changing data in response to input
+from tornado.ioloop import IOLoop
+from werkzeug.utils import secure_filename
+
+import stlearn
 
 # Global variables.
 
@@ -496,7 +487,5 @@ def bk_worker():
     server.start()
     server.io_loop.start()
 
-
-from threading import Thread
 
 Thread(target=bk_worker).start()

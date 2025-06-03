@@ -1,9 +1,10 @@
-from typing import Optional
+
 import numpy as np
-from anndata import AnnData
-from ..._compat import Literal
 import scipy.spatial as spatial
+from anndata import AnnData
 from tqdm import tqdm
+
+from ..._compat import Literal
 
 _SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
 
@@ -16,7 +17,7 @@ def adjust(
     method="mean",
     copy: bool = False,
     similarity_matrix: _SIMILARITY_MATRIX = "cosine",
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     SME normalisation: Using spot location information and tissue morphological
     features to correct spot gene expression

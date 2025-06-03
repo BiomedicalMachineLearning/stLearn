@@ -1,12 +1,11 @@
+from collections.abc import Mapping, Sequence
 from types import MappingProxyType
-from typing import Optional, Tuple, Sequence, Type, Mapping, Any, Union
+from typing import Any
 
-import numpy as np
-import pandas as pd
 from anndata import AnnData
-from natsort import natsorted
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
+
 from stlearn._compat import Literal
 
 try:
@@ -21,19 +20,19 @@ import scanpy
 
 
 def louvain(
-    adata: AnnData,
-    resolution: Optional[float] = None,
-    random_state: Optional[Union[int, RandomState]] = 0,
-    restrict_to: Optional[Tuple[str, Sequence[str]]] = None,
-    key_added: str = "louvain",
-    adjacency: Optional[spmatrix] = None,
-    flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag",
-    directed: bool = True,
-    use_weights: bool = False,
-    partition_type: Optional[Type[MutableVertexPartition]] = None,
-    partition_kwargs: Mapping[str, Any] = MappingProxyType({}),
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        resolution: float | None = None,
+        random_state: int | RandomState | None = 0,
+        restrict_to: tuple[str, Sequence[str]] | None = None,
+        key_added: str = "louvain",
+        adjacency: spmatrix | None = None,
+        flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag", # noqa: F821
+        directed: bool = True,
+        use_weights: bool = False,
+        partition_type: type[MutableVertexPartition] | None = None,
+        partition_kwargs: Mapping[str, Any] = MappingProxyType({}),
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Wrap function scanpy.tl.louvain
     Cluster cells into subgroups [Blondel08]_ [Levine15]_ [Traag17]_.

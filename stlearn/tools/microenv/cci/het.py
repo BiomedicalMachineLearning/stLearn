@@ -1,16 +1,15 @@
 import numpy as np
 import pandas as pd
-from anndata import AnnData
 import scipy.spatial as spatial
-
+from anndata import AnnData
+from numba import jit, njit, prange
 from numba.typed import List
-from numba import njit, jit, prange
 
 from stlearn.tools.microenv.cci.het_helpers import (
+    add_unique_edges,
     edge_core,
     get_between_spot_edge_array,
     get_data_for_counting,
-    add_unique_edges,
     get_neighbourhoods,
     init_edge_list,
 )
@@ -26,20 +25,28 @@ def count(
     """Count the cell type densities
     Parameters
     ----------
-    adata: AnnData          The data object including the cell types to count
-    use_label:         The cell type results to use in counting
-    use_het:                The stoarge place for result
-    distance: int           Distance to determine the neighbours (default is the nearest neighbour), distance=0 means within spot
+    adata: AnnData
+        The data object including the cell types to count
+    use_label:
+        The cell type results to use in counting
+    use_het:
+        The storage place for result
+    distance: int
+        Distance to determine the neighbours (default is the nearest neighbour),
+        distance=0 means within spot
 
     Returns
     -------
-    adata: AnnData          With the counts of specified clusters in nearby spots stored as adata.uns['het']
+    adata: AnnData
+        With the counts of specified clusters in nearby spots stored as
+        adata.uns['het']
     """
 
     library_id = list(adata.uns["spatial"].keys())[0]
     # between spot
     if distance != 0:
-        # automatically calculate distance if not given, won't overwrite distance=0 which is within-spot
+        # automatically calculate distance if not given, won't overwrite distance=0
+        # which is within-spot
         if not distance:
             # calculate default neighbour distance
             scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
@@ -92,10 +99,15 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.a
 
     Parameters
     ----------
-    adata: AnnData
-    L_bool: np.array<bool>  len(L_bool)==len(adata), True if ligand expressed in that spot.
-    R_bool: np.array<bool>  len(R_bool)==len(adata), True if receptor expressed in that spot.
-    sig_bool np.array<bool>:   len(sig_bool)==len(adata), True if spot has significant LR interactions.
+    adata : AnnData
+        Annotated data object containing spatial transcriptomics data.
+    L_bool : np.ndarray of bool, shape (n_spots,)
+        Boolean array indicating spots where the ligand is expressed.
+    R_bool : np.ndarray of bool, shape (n_spots,)
+        Boolean array indicating spots where the receptor is expressed.
+    sig_bool : np.ndarray of bool, shape (n_spots,)
+        Boolean array indicating spots with significant ligand-receptor interactions.
+
     Returns
     -------
     edge_list_unique:   list<list<str>> Either a list of tuples (directed), or
@@ -266,7 +278,8 @@ def get_interaction_matrix(
     # 1) sig spot with ligand, only neighbours with receptor relevant
     # 2) sig spot with receptor, only neighbours with ligand relevant
     # NOTE, A<->B is double counted, but on different side of matrix.
-    # (if bidirectional interaction between two spots, counts as two seperate interactions).
+    # (if bidirectional interaction between two spots, counts as two seperate
+    # interactions).
     LR_edges = get_interactions(
         cell_data,
         neighbourhood_bcs,
@@ -446,13 +459,15 @@ def count_grid(
     adata: AnnData          The data object including the cell types to count
     num_row: int            Number of grids on height
     num_col: int            Number of grids on width
-    use_label:         The cell type results to use in counting
-    use_het:                The stoarge place for result
-    radius: int             Distance to determine the neighbour grids (default: 1=nearest), radius=0 means within grid
+    use_label:              The cell type results to use in counting
+    use_het:                The storage place for result
+    radius: int             Distance to determine the neighbour grids
+                            (default: 1=nearest), radius=0 means within grid
 
     Returns
     -------
-    adata: AnnData          With the counts of specified clusters in each grid of the tissue stored as adata.uns['het']
+    adata (AnnData):        With the counts of specified clusters in each grid of the
+                            tissue stored as adata.uns['het']
     """
 
     coor = adata.obs[["imagerow", "imagecol"]]

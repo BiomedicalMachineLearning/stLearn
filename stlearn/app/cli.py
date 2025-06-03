@@ -1,7 +1,9 @@
-import click
-from .. import __version__
-
+import errno
 import os
+
+import click
+
+from .. import __version__
 
 
 @click.group(

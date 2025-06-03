@@ -1,35 +1,40 @@
-from typing import Optional, Union
-from anndata import AnnData
+
 import pandas as pd
+from anndata import AnnData
 
 
 def stack_3d_plot(
-    adata: AnnData,
-    slides,
-    cmap="viridis",
-    slide_col="sample_id",
-    use_label=None,
-    gene_symbol=None,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        slides,
+        height,
+        width,
+        cmap="viridis",
+        slide_col="sample_id",
+        use_label=None,
+        gene_symbol=None,
+) -> AnnData | None:
     """\
-    Clustering plot for sptial transcriptomics data. Also it has a function to display trajectory inference.
+    Clustering plot for spatial transcriptomics data. Also, it has a function to
+    display trajectory inference.
 
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    slides
+    slides:
         A list of slide id
-    cmap
+    width:
+        Width of the plot
+    height:
+        Height of the plot
+    cmap:
         Color map
-    use_label
+    slide_col:
+        Obs column to use for coloring.
+    use_label:
         Choose label to plot (priotize)
     gene_symbol
         Choose gene symbol to plot
-    width
-        Witdh of the plot
-    height
-        Height of the plot
     Returns
     -------
     Nothing
@@ -40,19 +45,19 @@ def stack_3d_plot(
         raise ModuleNotFoundError("Please install plotly by `pip install plotly`")
 
     assert (
-        slide_col in adata.obs.columns
+            slide_col in adata.obs.columns
     ), "Please provide the right column for slide_id!"
 
     list_df = []
     for i, slide in enumerate(slides):
-        tmp = data.obs[data.obs[slide_col] == slide][["imagecol", "imagerow"]]
+        tmp = adata.obs[adata.obs[slide_col] == slide][["imagecol", "imagerow"]]
         tmp["sample_id"] = slide
         tmp["z-dimension"] = i
         list_df.append(tmp)
 
     df = pd.concat(list_df)
 
-    if use_label != None:
+    if use_label is not None:
         assert use_label in adata.obs.columns, "Please use the right `use_label`"
         df[use_label] = adata[df.index].obs[use_label].values
 

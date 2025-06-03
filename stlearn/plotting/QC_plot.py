@@ -1,7 +1,7 @@
-from matplotlib import pyplot as plt
+
 import numpy as np
-from typing import Optional, Union
 from anndata import AnnData
+from matplotlib import pyplot as plt
 
 
 def QC_plot(
@@ -19,7 +19,7 @@ def QC_plot(
     margin: int = 100,
     dpi: int = 150,
     output: str = None,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
         QC plot for sptial transcriptomics data.
 

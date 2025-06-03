@@ -1,6 +1,5 @@
 """Helper functions for views.py."""
 
-import numpy
 
 
 def getVal(form, element):

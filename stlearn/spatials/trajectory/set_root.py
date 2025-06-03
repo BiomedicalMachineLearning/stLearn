@@ -1,6 +1,6 @@
-from anndata import AnnData
-from typing import Optional, Union
 import numpy as np
+from anndata import AnnData
+
 from stlearn.spatials.trajectory.utils import _correlation_test_helper
 
 
@@ -28,9 +28,9 @@ def set_root(adata: AnnData, use_label: str, cluster: str, use_raw: bool = False
     # Subset the data based on the chosen cluster
 
     tmp_adata = tmp_adata[
-        tmp_adata.obs[tmp_adata.obs[use_label] == str(cluster)].index, :
-    ]
-    if use_raw == True:
+                tmp_adata.obs[tmp_adata.obs[use_label] == str(cluster)].index, :
+                ]
+    if use_raw:
         tmp_adata = tmp_adata.raw.to_adata()
 
     # Borrow from Cellrank to calculate CytoTrace score

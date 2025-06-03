@@ -28,7 +28,7 @@ dynamic = ["dependencies"]
 [project.optional-dependencies]
 dev = [
     "black",
-    "flake8",
+    "ruff",
     "mypy",
     "pytest",
     "tox",
@@ -53,3 +53,16 @@ include = ["stlearn", "stlearn.*"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
+
+[tool.ruff]
+line-length=88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = ["E722", "F811", "N802", "N803", "N806", "N818", "N999", "UP031"]
+exclude = [".git", "__pycache__", "build", "dist"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

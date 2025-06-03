@@ -1,9 +1,5 @@
-from typing import Optional, Union
-import numpy as np
-from anndata import AnnData
-from numpy.random.mtrand import RandomState
-from scipy.sparse import issparse
 import scanpy
+from anndata import AnnData
 
 
 def run_diffmap(adata: AnnData, n_comps: int = 15, copy: bool = False):
@@ -41,7 +37,8 @@ def run_diffmap(adata: AnnData, n_comps: int = 15, copy: bool = False):
     scanpy.tl.diffmap(adata, n_comps=n_comps, copy=copy)
 
     print(
-        "Diffusion Map is done! Generated in adata.obsm['X_diffmap'] nad adata.uns['diffmap_evals']"
+        "Diffusion Map is done! Generated in adata.obsm['X_diffmap'] and " +
+        "adata.uns['diffmap_evals']"
     )
 
     return adata if copy else None

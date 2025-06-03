@@ -1,13 +1,12 @@
 import numpy as np
-import pandas as pd
 from anndata import AnnData
 
 
 def merge(
-    adata: AnnData,
-    use_lr: str = "cci_lr",
-    use_het: str = "cci_het",
-    verbose: bool = True,
+        adata: AnnData,
+        use_lr: str = "cci_lr",
+        use_het: str = "cci_het",
+        verbose: bool = True,
 ) -> AnnData:
     """Merge results from cell type heterogeneity and L-R cluster
     Parameters
@@ -25,7 +24,8 @@ def merge(
 
     if verbose:
         print(
-            "Results of spatial interaction analysis has been written to adata.uns['merged']"
+            "Results of spatial interaction analysis has been written to " +
+            "adata.uns['merged']"
         )
 
     return adata

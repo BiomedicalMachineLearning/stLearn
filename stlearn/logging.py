@@ -1,13 +1,11 @@
 """Logging and Profiling"""
 
 import logging
-from functools import update_wrapper, partial
-from logging import CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from functools import partial, update_wrapper
+from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
 
 import anndata.logging
-
 
 HINT = (INFO + DEBUG) // 2
 logging.addLevelName(HINT, "HINT")
@@ -24,9 +22,9 @@ class _RootLogger(logging.RootLogger):
         level: int,
         msg: str,
         *,
-        extra: Optional[dict] = None,
+        extra: dict | None = None,
         time: datetime = None,
-        deep: Optional[str] = None,
+        deep: str | None = None,
     ) -> datetime:
         from . import settings
 
@@ -180,8 +178,8 @@ def error(
     msg: str,
     *,
     time: datetime = None,
-    deep: Optional[str] = None,
-    extra: Optional[dict] = None,
+    deep: str | None = None,
+    extra: dict | None = None,
 ) -> datetime:
     """\
     Log message with specific level and return current time.

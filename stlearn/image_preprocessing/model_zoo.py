@@ -8,12 +8,12 @@ class Model:
     __name__ = "CNN base model"
 
     def __init__(self, base, batch_size=1):
-        from tensorflow.keras import backend as K
+        from tensorflow.keras import backend as keras
 
         self.base = base
         self.model, self.preprocess = self.load_model()
         self.batch_size = batch_size
-        self.data_format = K.image_data_format()
+        self.data_format = keras.image_data_format()
 
     def load_model(self):
         if self.base == "resnet50":
@@ -48,13 +48,13 @@ class Model:
                 include_top=False, weights="imagenet", pooling="avg"
             )
         else:
-            raise ValueError("{} is not a valid model".format(self.base))
+            raise ValueError(f"{self.base} is not a valid model")
         return cnn_base_model, preprocess_input
 
     def predict(self, x):
-        from tensorflow.keras import backend as K
+        from tensorflow.keras import backend as keras
 
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
-        x = self.preprocess(x.astype(K.floatx()))
+        x = self.preprocess(x.astype(keras.floatx()))
         return self.model.predict(x, batch_size=self.batch_size, verbose=False)

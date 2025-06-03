@@ -1,25 +1,24 @@
-from typing import Optional, Union
-from anndata import AnnData
-from .._compat import Literal
-from PIL import Image
+import os
 from pathlib import Path
+
+import numpy as np
+from anndata import AnnData
+from PIL import Image
 
 # Test progress bar
 from tqdm import tqdm
-import numpy as np
-import os
 
 
 def tiling(
     adata: AnnData,
-    out_path: Union[Path, str] = "./tiling",
-    library_id: Union[str, None] = None,
+    out_path: Path | str = "./tiling",
+    library_id: str | None = None,
     crop_size: int = 40,
     target_size: int = 299,
     img_fmt: str = "JPEG",
     verbose: bool = False,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Tiling H&E images to small tiles based on spot spatial location
 
@@ -93,9 +92,7 @@ def tiling(
 
             if verbose:
                 print(
-                    "generate tile at location ({}, {})".format(
-                        str(imagecol), str(imagerow)
-                    )
+                    f"generate tile at location ({str(imagecol)}, {str(imagerow)})"
                 )
 
             pbar.update(1)

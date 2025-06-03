@@ -1,6 +1,5 @@
 # Purpose of this script is to write the functions that help facilitate
 # subsetting of the data depending on the users input
-import numpy
 
 
 def printOut(text, fileName="stdout.txt", close=True, file=None):
@@ -8,7 +7,7 @@ def printOut(text, fileName="stdout.txt", close=True, file=None):
     If close is Fale, returns open file.
     """
 
-    if type(file) == type(None):
+    if file is None:
         file = open(fileName, "w")
 
     print(text, file=file)
@@ -21,7 +20,7 @@ def printOut(text, fileName="stdout.txt", close=True, file=None):
 
 def filterOptions(metaDataSets, options):
     """Returns options that overlap with keys in metaDataSets dictionary"""
-    if type(options) == type(None):
+    if options is None:
         options = list(metaDataSets.keys())
     else:
         options = [option for option in options if option in metaDataSets.keys()]

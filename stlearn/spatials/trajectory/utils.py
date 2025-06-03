@@ -1,9 +1,18 @@
+from collections.abc import Sequence
+
+import networkx as nx
+import numpy as np
 from numpy import linalg as la
+from scipy import linalg as spla
+from scipy import sparse as sps
+from scipy.sparse import csr_matrix, issparse, isspmatrix_csr, spmatrix
+from scipy.sparse import linalg as sparse_spla
+from scipy.stats import norm
 
 
 def lambda_dist(A1, A2, k=None, p=2, kind="laplacian"):
-    """The function is migrated from NetComp package. The lambda distance between graphs, which is defined as
-        d(G1,G2) = norm(L_1 - L_2)
+    """The function is migrated from NetComp package. The lambda distance between
+        graphs, which is defined as d(G1,G2) = norm(L_1 - L_2)
     where L_1 is a vector of the top k eigenvalues of the appropriate matrix
     associated with G1, and L2 is defined similarly.
     Parameters
@@ -52,7 +61,7 @@ def lambda_dist(A1, A2, k=None, p=2, kind="laplacian"):
 
 
 def resistance_distance(
-    A1, A2, p=2, renormalized=False, attributed=False, check_connected=True, beta=1
+        A1, A2, p=2, renormalized=False, attributed=False, check_connected=True, beta=1
 ):
     """Compare two graphs using resistance distance (possibly renormalized).
     Parameters
@@ -99,11 +108,11 @@ def resistance_distance(
         ]
     try:
         distance_vector = np.sum((R1 - R2) ** p, axis=1)
-    except ValueError:
-        raise InputError(
+    except ValueError as e:
+        raise ValueError(
             "Input matrices are different sizes. Please use "
             "renormalized resistance distance."
-        )
+        ) from e
     if attributed:
         return distance_vector ** (1 / p)
     else:
@@ -114,20 +123,7 @@ def resistance_distance(
 # Eigenstuff
 # **********
 # Functions for calculating eigenstuff of graphs.
-
-
-from scipy import sparse as sps
-import numpy as np
-from scipy.sparse import linalg as spla
-from numpy import linalg as la
-
-from scipy.sparse import issparse
-
-######################
-## Helper Functions ##
-######################
-
-
+# Helper Functions
 def _eigs(M, which="SR", k=None):
     """Helper function for getting eigenstuff.
     Parameters
@@ -155,7 +151,7 @@ def _eigs(M, which="SR", k=None):
         raise ValueError("which must be either 'LR' or 'SR'.")
     M = M.astype(float)
     if issparse(M) and k < n - 1:
-        evals, evecs = spla.eigs(M, k=k, which=which)
+        evals, evecs = sparse_spla.eigs(M, k=k, which=which)
     else:
         try:
             M = M.todense()
@@ -174,11 +170,7 @@ def _eigs(M, which="SR", k=None):
     return np.real(evals), np.real(evecs)
 
 
-#####################
-##  Get Eigenstuff ##
-#####################
-
-
+#  Get Eigenstuff
 def normalized_laplacian_eig(A, k=None):
     """Return the eigenstuff of the normalized Laplacian matrix of graph
     associated with adjacency matrix A.
@@ -213,9 +205,7 @@ def normalized_laplacian_eig(A, k=None):
     nx.normalized_laplacian_matrix
     """
     n, m = A.shape
-    ##
-    ## TODO: implement checks on the adjacency matrix
-    ##
+    # TODO: implement checks on the adjacency matrix
     degs = _flat(A.sum(axis=1))
     # the below will break if
     inv_root_degs = [d ** (-1 / 2) if d > _eps else 0 for d in degs]
@@ -234,18 +224,10 @@ def normalized_laplacian_eig(A, k=None):
 # Matrices associated with graphs. Also contains linear algebraic helper functions.
 # """
 
-
-from scipy import sparse as sps
-from scipy.sparse import issparse
-import numpy as np
-
 _eps = 10 ** (-10)  # a small parameter
 
-######################
-## Helper Functions ##
-######################
 
-
+# Helper Functions
 def _flat(D):
     """Flatten column or row matrices, as well as arrays."""
     if issparse(D):
@@ -274,11 +256,7 @@ def _pad(A, N):
         return A_pad
 
 
-########################
-## Matrices of Graphs ##
-########################
-
-
+# Matrices of Graphs
 def degree_matrix(A):
     """Diagonal degree matrix of graph with adjacency matrix A
     Parameters
@@ -337,16 +315,6 @@ class UndefinedException(Exception):
 # **********
 # Resistance matrix. Renormalized version, as well as conductance and commute matrices.
 # """
-
-import networkx as nx
-from numpy import linalg as la
-from scipy import linalg as spla
-import numpy as np
-from scipy.sparse import issparse
-
-# from netcomp.linalg.matrices import laplacian_matrix
-# from netcomp.exception import UndefinedException
-
 
 def resistance_matrix(A, check_connected=True):
     """Return the resistance matrix of G.
@@ -543,37 +511,10 @@ def conductance_matrix(A):
     return C
 
 
-########################
-## CytoTrace wrapper  ##
-########################
-
-from typing import (
-    Any,
-    Dict,
-    List,
-    Tuple,
-    Union,
-    TypeVar,
-    Hashable,
-    Iterable,
-    Optional,
-    Sequence,
-)
-import numpy as np
-import pandas as pd
-from pandas import Series
-from scipy.stats import norm
-from numpy.linalg import norm as d_norm
-from scipy.sparse import eye as speye
-from scipy.sparse import diags, issparse, spmatrix, csr_matrix, isspmatrix_csr
-from sklearn.cluster import KMeans
-from pandas.api.types import infer_dtype, is_categorical_dtype
-from scipy.sparse.linalg import norm as sparse_norm
-
-
+# CytoTrace wrapper
 def _mat_mat_corr_sparse(
-    X: csr_matrix,
-    Y: np.ndarray,
+        X: csr_matrix,
+        Y: np.ndarray,
 ) -> np.ndarray:
     """\
     This function is borrow from cellrank
@@ -581,7 +522,8 @@ def _mat_mat_corr_sparse(
     n = X.shape[1]
 
     X_bar = np.reshape(np.array(X.mean(axis=1)), (-1, 1))
-    X_std = np.reshape(np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar**2)), (-1, 1))
+    X_std = np.reshape(np.sqrt(np.array(X.power(2).mean(axis=1)) - (X_bar ** 2)),
+                       (-1, 1))
 
     y_bar = np.reshape(np.mean(Y, axis=0), (1, -1))
     y_std = np.reshape(np.std(Y, axis=0), (1, -1))
@@ -594,13 +536,13 @@ def _mat_mat_corr_sparse(
 
 
 def _correlation_test_helper(
-    X: Union[np.ndarray, spmatrix],
-    Y: np.ndarray,
-    n_perms: Optional[int] = None,
-    seed: Optional[int] = None,
-    confidence_level: float = 0.95,
-    **kwargs,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        X: np.ndarray | spmatrix,
+        Y: np.ndarray,
+        n_perms: int | None = None,
+        seed: int | None = None,
+        confidence_level: float = 0.95,
+        **kwargs,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     This function is borrow from cellrank.
     Compute the correlation between rows in matrix ``X`` columns of matrix ``Y``.
@@ -622,13 +564,13 @@ def _correlation_test_helper(
         Keyword arguments for :func:`cellrank.ul._parallelize.parallelize`.
     Returns
     -------
-        Correlations, p-values, corrected p-values, lower and upper bound of 95% confidence interval.
-        Each array if of shape ``(n_genes, n_lineages)``.
+        Correlations, p-values, corrected p-values, lower and upper bound of 95%
+        confidence interval. Each array if of shape ``(n_genes, n_lineages)``.
     """
 
     def perm_test_extractor(
-        res: Sequence[Tuple[np.ndarray, np.ndarray]],
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+            res: Sequence[tuple[np.ndarray, np.ndarray]],
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         pvals, corr_bs = zip(*res)
         pvals = np.sum(pvals, axis=0) / float(n_perms)
 
@@ -641,7 +583,8 @@ def _correlation_test_helper(
 
     if not (0 <= confidence_level <= 1):
         raise ValueError(
-            f"Expected `confidence_level` to be in interval `[0, 1]`, found `{confidence_level}`."
+            "Expected `confidence_level` to be in interval `[0, 1]`, " +
+            f"found `{confidence_level}`."
         )
 
     n = X.shape[1]  # genes x cells
@@ -653,7 +596,8 @@ def _correlation_test_helper(
 
     corr = _mat_mat_corr_sparse(X, Y) if issparse(X) else _mat_mat_corr_dense(X, Y)
 
-    # see: https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#Using_the_Fisher_transformation
+    # see:
+    # https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#Using_the_Fisher_transformation
     mean, se = np.arctanh(corr), 1.0 / np.sqrt(n - 3)
     z_score = (np.arctanh(corr) - np.arctanh(0)) * np.sqrt(n - 3)
 

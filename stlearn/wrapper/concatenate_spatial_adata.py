@@ -121,7 +121,7 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
     for min_id in range(0, len(use_adata_list), ncols):
         img_row = np.hstack(imgs[min_id : min_id + ncols])
         img_rows.append(img_row)
-    imgs_comb = np.vstack((i for i in img_rows))
+    imgs_comb = np.vstack(i for i in img_rows)
 
     adata_concat = use_adata_list[0].concatenate(use_adata_list[1:])
     adata_concat.uns["spatial"] = use_adata_list[0].uns["spatial"]

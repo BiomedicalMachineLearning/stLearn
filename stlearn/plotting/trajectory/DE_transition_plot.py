@@ -1,17 +1,17 @@
-import matplotlib.pyplot as plt
 from decimal import Decimal
-from typing import Optional, Union
+
+import matplotlib.pyplot as plt
 from anndata import AnnData
 
 
 def DE_transition_plot(
-    adata: AnnData,
-    top_genes: int = 10,
-    font_size: int = 6,
-    name: str = None,
-    dpi: int = 150,
-    output: str = None,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        top_genes: int = 10,
+        font_size: int = 6,
+        name: str = None,
+        dpi: int = 150,
+        output: str = None,
+) -> AnnData | None:
     """\
     Differential expression between transition markers.
 

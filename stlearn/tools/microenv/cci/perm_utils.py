@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import euclidean, canberra
-from sklearn.preprocessing import MinMaxScaler
-
 from numba import njit, prange
 from numba.typed import List
+from scipy.spatial.distance import canberra
+from sklearn.preprocessing import MinMaxScaler
 
 from .base import get_lrs_scores
 
@@ -13,7 +12,7 @@ def nonzero_quantile(expr, q, interpolation):
     """Calculating the non-zero quantiles."""
     nonzero_expr = expr[expr > 0]
     quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation)
-    if type(quants) != np.array and type(quants) != np.ndarray:
+    if quants is not np.array and quants is not np.ndarray:
         quants = np.array([quants])
     return quants
 
@@ -36,7 +35,9 @@ def get_lr_quants(
     """Gets the quantiles per gene in the LR pair, & then concatenates.
     Returns
     -------
-    lr_quants, l_quants, r_quants: np.ndarray   First is concatenation of two latter. Each row is a quantile value, each column is a LR pair.
+    lr_quants, l_quants, r_quants (np.ndarray): First is concatenation of two latter.
+                                                Each row is a quantile value, each
+                                                column is an LR pair.
     """
 
     quant_func = nonzero_quantile if method != "quantiles" else np.quantile
@@ -58,7 +59,9 @@ def get_lr_zeroprops(lr_expr: pd.DataFrame, l_indices: list, r_indices: list):
     """Gets the proportion of zeros per gene in the LR pair, & then concatenates.
     Returns
     -------
-    lr_props, l_props, r_props: np.ndarray   First is concatenation of two latter. Each row is a prop value, each column is a LR pair.
+    lr_props, l_props, r_props (np.ndarray):    First is concatenation of two latter.
+                                                Each row is a prop value, each column
+                                                is an LR pair.
     """
 
     # First getting the quantiles of gene expression #
@@ -76,7 +79,8 @@ def get_lr_bounds(lr_value: float, bin_bounds: np.array):
     """For the given lr_value, returns the bin where it belongs.
     Returns
     -------
-    lr_bin: tuple   Tuple of length 2, first is the lower bound of the bin, second is upper bound of the bin.
+    lr_bin (tuple):     Tuple of length 2, first is the lower bound of the bin, second
+                        is upper bound of the bin.
     """
     if np.any(bin_bounds == lr_value):  # If sits on a boundary
         lr_i = np.where(bin_bounds == lr_value)[0][0]
@@ -105,17 +109,17 @@ def get_similar_genes(
         by measuring distance between the gene expression quantiles.
     Parameters
     ----------
-    ref_quants: np.array     The pre-calculated quantiles.
-    ref_props: np.array      The query zero proportions.
-    n_genes: int            Number of equivalent genes to select.
+    ref_quants: np.array        The pre-calculated quantiles.
+    ref_props: np.array         The query zero proportions.
+    n_genes: int                Number of equivalent genes to select.
     candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
     candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
-    quantiles: tuple    The quantile to use
+    quantiles: tuple            The quantile to use
     Returns
     -------
     similar_genes: np.array Array of strings for gene names.
     """
-    if type(quantiles) == float:
+    if quantiles is float:
         quantiles = np.array([quantiles])
     else:
         quantiles = np.array(quantiles)
@@ -168,17 +172,21 @@ def get_similar_genes_Quantiles(
         by measuring distance between the gene expression quantiles.
     Parameters
     ----------
-    gene_expr: np.array     Expression of the gene of interest, or, if the same length as quantiles, then assumes is the pre-calculated quantiles.
-    n_genes: int            Number of equivalent genes to select.
-    candidate_quants: np.ndarray  Expression quantiles of gene candidates (quantiles*genes).
-    candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
-    quantiles: tuple    The quantile to use
+    gene_expr: np.array             Expression of the gene of interest, or, if the
+                                    same length as quantiles, then assumes is the
+                                    pre-calculated quantiles.
+    n_genes: int                    Number of equivalent genes to select.
+    candidate_quants: np.ndarray    Expression quantiles of gene candidates
+                                    (quantiles*genes).
+    candidate_genes: np.array       Same as candidate_expr.shape[1], indicating gene
+                                    names.
+    quantiles: tuple                The quantile to use
     Returns
     -------
     similar_genes: np.array Array of strings for gene names.
     """
 
-    if type(quantiles) == float:
+    if quantiles is float:
         quantiles = np.array([quantiles])
     else:
         quantiles = np.array(quantiles)
@@ -295,7 +303,7 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
     # Calculating the zero proportions, for grouping based on median/zeros #
     lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
 
-    ######## Getting lr features for later diagnostics #######
+    # Getting lr features for later diagnostics
     lr_meds, l_meds, r_meds = get_lr_quants(
         lr_expr, l_indices, r_indices, quantiles=np.array([0.5]), method=""
     )

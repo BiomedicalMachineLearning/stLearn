@@ -4,61 +4,60 @@ visualisation options in a general way so can be used with any
 SingleCellAnalysis dataset.
 """
 
-import sys
+import wtforms
 from flask_wtf import FlaskForm
 
 # from flask_wtf.file import FileField
-from wtforms import SelectMultipleField, SelectField
-import wtforms
+from wtforms import SelectField, SelectMultipleField
 
 
 def createSuperForm(elements, element_fields, element_values, validators=None):
     """ Creates a general form; goal is to create a fully programmable form \
-	that essentially governs all the options the user will select.
+    that essentially governs all the options the user will select.
 
-	Args:
-		elements (list<str>): Element names to be rendered on the page, in \
-							  order of how they will appear on the page.
+    Args:
+        elements (list<str>): Element names to be rendered on the page, in \
+                              order of how they will appear on the page.
 
-		element_fields (list<str>): The names of the fields to be rendered. \
-								Each field is in same order as 'elements'. \
-								Currently supported are: \
-								'Title', 'SelectMultipleField', 'SelectField', \
-								'StringField', 'Text', 'List'.
+        element_fields (list<str>): The names of the fields to be rendered. \
+                                Each field is in same order as 'elements'. \
+                                Currently supported are: \
+                                'Title', 'SelectMultipleField', 'SelectField', \
+                                'StringField', 'Text', 'List'.
 
-		element_values (list<object>): The information which will be put into \
-									the field. Changes depending on field: \
+        element_values (list<object>): The information which will be put into \
+                                    the field. Changes depending on field: \
 
-									'Title' and 'Text': 'object' is a string
-									containing the title which will be added as \
-									a heading when rendered on the page.
+                                    'Title' and 'Text': 'object' is a string
+                                    containing the title which will be added as \
+                                    a heading when rendered on the page.
 
-									'SelectMultipleField' and 'SelectField':
-									'object' is list of options to select from.
+                                    'SelectMultipleField' and 'SelectField':
+                                    'object' is list of options to select from.
 
-									'StringField':
-									The example values to display within the \
-									fields text area. The 'placeholder' option.
+                                    'StringField':
+                                    The example values to display within the \
+                                    fields text area. The 'placeholder' option.
 
-									'List':
-									A list of objects which will be attached \
-									to the form.
+                                    'List':
+                                    A list of objects which will be attached \
+                                    to the form.
 
-		validators (list<FunctionHandles>): A list of functions which take the \
-						form as input, used to construct the form validator. \
-						Form validator constructed by calling these \
-						sequentially with form 'self' as input.
+        validators (list<FunctionHandles>): A list of functions which take the \
+                        form as input, used to construct the form validator. \
+                        Form validator constructed by calling these \
+                        sequentially with form 'self' as input.
 
-	Args:
-		form (list<WTForm>): A WTForm which has attached as variable all the \
-		fields mentioned, so then when rendered as input to
-		'SuperDataDisplay.html' shows the form.
-	"""
+    Args:
+        form (list<WTForm>): A WTForm which has attached as variable all the \
+        fields mentioned, so then when rendered as input to
+        'SuperDataDisplay.html' shows the form.
+    """
 
     class SuperForm(FlaskForm):
         """A base form on which all of the fields will be added."""
 
-    if type(validators) == type(None):
+    if validators is None:
         validators = [None] * len(elements)
 
     # Add the information #
@@ -82,7 +81,7 @@ def createSuperForm(elements, element_fields, element_values, validators=None):
             # left.
             setattr(SuperForm, element + "_number", int(multiSelectLeft))
             # inverts, so if left, goes right for the next multiSelectField
-            multiSelectLeft = multiSelectLeft == False
+            multiSelectLeft = not multiSelectLeft
 
         else:
             multiSelectLeft = True  # Reset the MultiSelectField position
@@ -100,9 +99,9 @@ def createSuperForm(elements, element_fields, element_values, validators=None):
                 )
 
             # elif fieldName == 'FileField':
-            # 	setattr(SuperForm, element, FileField(validators=validators[i]))
-            # 	setattr(SuperForm, element + '_placeholder',  # Setting default
-            # 			element_values[i])
+            #     setattr(SuperForm, element, FileField(validators=validators[i]))
+            #     setattr(SuperForm, element + '_placeholder',  # Setting default
+            #             element_values[i])
 
             elif fieldName in [
                 "StringField",
@@ -198,10 +197,13 @@ def getCCIForm(adata):
                                                     related to CCI analysis.
     """
     elements = [
-        "Cell information (only discrete labels available, unless mixture already in anndata.uns)",
+        "Cell information (only discrete labels available, unless mixture already in " +
+        "anndata.uns)",
         "Minimum spots for LR to be considered",
-        "Spot mixture (only if the 'Cell Information' label selected available in anndata.uns)",
-        "Cell proportion cutoff (value above which cell is considered in spot if 'Spot mixture' selected)",
+        "Spot mixture (only if the 'Cell Information' label selected available in " +
+        "anndata.uns)",
+        "Cell proportion cutoff (value above which cell is considered in spot " +
+        "if 'Spot mixture' selected)",
         "Permutations (recommend atleast 1000)",
     ]
     element_fields = [
@@ -211,12 +213,12 @@ def getCCIForm(adata):
         "FloatField",
         "IntegerField",
     ]
-    if type(adata) == type(None):
+    if adata is None:
         fields = []
         mix = False
     else:
         fields = [
-            key for key in adata.obs.keys() if type(adata.obs[key].values[0]) == str
+            key for key in adata.obs.keys() if adata.obs[key].values[0] is str
         ]
         mix = fields[0] in adata.uns.keys()
     element_values = [fields, 20, mix, 0.2, 100]
@@ -279,7 +281,7 @@ def getPSTSForm(trajectory, clusts, options):
 
     Args:
             cluster_set (numpy.array<str>): The clusters which can be selected as
-                                                                            the root for psts analysis.
+            the root for psts analysis.
 
     Returns:
             FlaskForm: With attributes that allow input related to psts.
@@ -308,7 +310,7 @@ def getDEAForm(list_labels, methods):
 
     Args:
             cluster_set (numpy.array<str>): The clusters which can be selected as
-                                                                            the root for psts analysis.
+            the root for psts analysis.
 
     Returns:
             FlaskForm: With attributes that allow input related to psts.
@@ -322,43 +324,42 @@ def getDEAForm(list_labels, methods):
     element_values = [list_labels, methods]
     return createSuperForm(elements, element_fields, element_values)
 
-
 ######################## Junk Code #############################################
 # def getCCIForm(step_log):
-# 	""" Gets the CCI form generated from the superform above.
+#     """ Gets the CCI form generated from the superform above.
 #
-# 	Returns:
-# 		FlaskForm: With attributes that allow for inputs that are related to
-# 					CCI analysis.
-# 	"""
-# 	elements, element_fields, element_values = [], [], []
-# 	if type(step_log['cci_het']) == type(None):
-# 		# Analysis type form version #
-# 		analysis_elements = ['Cell Heterogeneity Information', # Title
-# 							 'cci_het',
-# 							 'Permutation Testing', # Title
-# 							 'cci_perm']
-# 		analysis_fields = ['Title', 'SelectField', 'Title', 'SelectField']
-# 		label_transfer_options = ['Upload Cell Label Transfer',
-# 								  'No Cell Label Transfer']
-# 		permutation_options = ['With permutation testing',
-# 							   'Without permutation testing']
-# 		analysis_values = ['', label_transfer_options, '', permutation_options]
-# 		elements += analysis_elements
-# 		element_fields += analysis_fields
-# 		element_values += analysis_values
+#     Returns:
+#         FlaskForm: With attributes that allow for inputs that are related to
+#                     CCI analysis.
+#     """
+#     elements, element_fields, element_values = [], [], []
+#     if type(step_log['cci_het']) == type(None):
+#         # Analysis type form version #
+#         analysis_elements = ['Cell Heterogeneity Information', # Title
+#                              'cci_het',
+#                              'Permutation Testing', # Title
+#                              'cci_perm']
+#         analysis_fields = ['Title', 'SelectField', 'Title', 'SelectField']
+#         label_transfer_options = ['Upload Cell Label Transfer',
+#                                   'No Cell Label Transfer']
+#         permutation_options = ['With permutation testing',
+#                                'Without permutation testing']
+#         analysis_values = ['', label_transfer_options, '', permutation_options]
+#         elements += analysis_elements
+#         element_fields += analysis_fields
+#         element_values += analysis_values
 #
-# 	else:
-# 		# Core elements regardless of CCI mode #
-# 		elements += ['Neighbourhood distance',
-# 					 'L-R pair input (e.g. L1_R1, L2_R2, ...)']
-# 		element_fields += ['IntegerField', 'StringField']
-# 		element_values += [5, '']
+#     else:
+#         # Core elements regardless of CCI mode #
+#         elements += ['Neighbourhood distance',
+#                      'L-R pair input (e.g. L1_R1, L2_R2, ...)']
+#         element_fields += ['IntegerField', 'StringField']
+#         element_values += [5, '']
 #
-# 		if step_log['cci_perm']:
-# 			# Including cell heterogeneity information #
-# 			elements += ['Permutations']
-# 			element_fields += ['IntegerField']
-# 			element_values += [200]
+#         if step_log['cci_perm']:
+#             # Including cell heterogeneity information #
+#             elements += ['Permutations']
+#             element_fields += ['IntegerField']
+#             element_values += [200]
 #
-# 	return createSuperForm(elements, element_fields, element_values, None)
+#     return createSuperForm(elements, element_fields, element_values, None)

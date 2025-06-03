@@ -1,15 +1,14 @@
-from typing import Optional, Union
-from anndata import AnnData
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import pandas as pd
+from anndata import AnnData
 
 
 def add_deconvolution(
     adata: AnnData,
-    annotation_path: Union[Path, str],
+    annotation_path: Path | str,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding label transfered from Seurat
 

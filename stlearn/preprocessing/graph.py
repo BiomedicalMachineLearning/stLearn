@@ -1,12 +1,13 @@
+from collections.abc import Callable, Mapping
 from types import MappingProxyType
-from typing import Union, Optional, Any, Mapping, Callable
+from typing import Any
 
 import numpy as np
-import scipy
+import scanpy
 from anndata import AnnData
 from numpy.random import RandomState
+
 from .._compat import Literal
-import scanpy
 
 _Method = Literal["umap", "gauss", "rapids"]
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
@@ -33,21 +34,21 @@ _MetricScipySpatial = Literal[
     "sqeuclidean",
     "yule",
 ]
-_Metric = Union[_MetricSparseCapable, _MetricScipySpatial]
+_Metric = _MetricSparseCapable | _MetricScipySpatial
 
 
 def neighbors(
-    adata: AnnData,
-    n_neighbors: int = 15,
-    n_pcs: Optional[int] = None,
-    use_rep: Optional[str] = None,
-    knn: bool = True,
-    random_state: Optional[Union[int, RandomState]] = 0,
-    method: Optional[_Method] = "umap",
-    metric: Union[_Metric, _MetricFn] = "euclidean",
-    metric_kwds: Mapping[str, Any] = MappingProxyType({}),
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        n_neighbors: int = 15,
+        n_pcs: int | None = None,
+        use_rep: str | None = None,
+        knn: bool = True,
+        random_state: int | RandomState | None = 0,
+        method: _Method | None = "umap",
+        metric: _Metric | _MetricFn = "euclidean",
+        metric_kwds: Mapping[str, Any] = MappingProxyType({}),
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Compute a neighborhood graph of observations [McInnes18]_.
     The neighbor search efficiency of this heavily relies on UMAP [McInnes18]_,

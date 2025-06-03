@@ -1,4 +1,4 @@
-from typing import Optional
+
 import histomicstk as htk
 import numpy as np
 import scipy as sp
@@ -17,7 +17,7 @@ def morph_watershed(
     library_id: str = None,
     verbose: bool = False,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Watershed method to segment nuclei and calculate morphological statistics
 
@@ -162,13 +162,6 @@ def _calculate_morph_stats(tile_path):
 
     # compute nuclei properties
     objProps = skimage.measure.regionprops(im_nuclei_seg_mask)
-
-    #     # Display results
-    #     plt.figure(figsize=(20, 10))
-    #     plt.imshow(skimage.color.label2rgb(im_nuclei_seg_mask, im_nuclei_stain, bg_label=0),
-    #            origin='upper')
-    #     plt.title('Nuclei segmentation mask overlay')
-    #     plt.savefig("./Nuclei_segmentation_tiles_bc_wh/{}.png".format(tile_path.split("/")[-1].split(".")[0]), dpi=300)
 
     n_nuclei = len(objProps)
 

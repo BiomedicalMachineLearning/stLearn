@@ -1,9 +1,10 @@
-from sklearn.metrics import pairwise_distances
-from typing import Optional, Union
-from anndata import AnnData
+
 import numpy as np
-from ..._compat import Literal
+from anndata import AnnData
+from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
+
+from ..._compat import Literal
 
 _PLATFORM = Literal["Visium", "Old_ST"]
 _WEIGHTING_MATRIX = Literal[
@@ -19,12 +20,13 @@ _WEIGHTING_MATRIX = Literal[
 
 def calculate_weight_matrix(
     adata: AnnData,
-    adata_imputed: Union[AnnData, None] = None,
+    adata_imputed: AnnData | None = None,
     pseudo_spots: bool = False,
     platform: _PLATFORM = "Visium",
-) -> Optional[AnnData]:
-    from sklearn.linear_model import LinearRegression
+) -> AnnData | None:
     import math
+
+    from sklearn.linear_model import LinearRegression
 
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
@@ -105,10 +107,10 @@ def calculate_weight_matrix(
 
 def impute_neighbour(
     adata: AnnData,
-    count_embed: Union[np.ndarray, None] = None,
+    count_embed: np.ndarray | None = None,
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     coor = adata.obs[["imagecol", "imagerow"]]
 
     weights_matrix = adata.uns[weights]

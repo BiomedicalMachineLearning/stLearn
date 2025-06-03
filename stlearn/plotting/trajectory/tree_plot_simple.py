@@ -1,38 +1,31 @@
-from matplotlib import pyplot as plt
-from PIL import Image
-import pandas as pd
-import matplotlib
-import numpy as np
-import networkx as nx
 import math
 import random
-from stlearn._compat import Literal
-from typing import Optional, Union
+
+import networkx as nx
 from anndata import AnnData
-import warnings
-import io
-from copy import deepcopy
+from matplotlib import pyplot as plt
+
 from stlearn.utils import _read_graph
 
 
 def tree_plot_simple(
-    adata: AnnData,
-    library_id: str = None,
-    figsize: Union[float, int] = (10, 4),
-    data_alpha: float = 1.0,
-    use_label: str = "louvain",
-    spot_size: Union[float, int] = 50,
-    fontsize: int = 6,
-    piesize: float = 0.15,
-    zoom: float = 0.1,
-    name: str = None,
-    output: str = None,
-    dpi: int = 180,
-    show_all: bool = False,
-    show_plot: bool = True,
-    ncols: int = 4,
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        library_id: str = None,
+        figsize: float | int = (10, 4),
+        data_alpha: float = 1.0,
+        use_label: str = "louvain",
+        spot_size: float | int = 50,
+        fontsize: int = 6,
+        piesize: float = 0.15,
+        zoom: float = 0.1,
+        name: str = None,
+        output: str = None,
+        dpi: int = 180,
+        show_all: bool = False,
+        show_plot: bool = True,
+        ncols: int = 4,
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Hierarchical tree plot represent for the global spatial trajectory inference.
 
@@ -108,7 +101,7 @@ def tree_plot_simple(
             output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0
         )
 
-    if show_plot == True:
+    if show_plot:
         plt.show()
 
 
@@ -120,23 +113,24 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
     If the graph is a tree this will return the positions to plot this in a
     hierarchical layout.
 
-    G: the graph (must be a tree)
-
-    root: the root node of current branch
-    - if the tree is directed and this is not given,
-      the root will be found and used
-    - if the tree is directed and this is given, then
-      the positions will be just for the descendants of this node.
-    - if the tree is undirected and not given,
-      then a random choice will be used.
-
-    width: horizontal space allocated for this branch - avoids overlap with other branches
-
-    vert_gap: gap between levels of hierarchy
-
-    vert_loc: vertical location of root
-
-    xcenter: horizontal location of root
+    G:
+        the graph (must be a tree)
+    root:
+        the root node of current branch
+        - if the tree is directed and this is not given,
+            the root will be found and used
+        - if the tree is directed and this is given, then
+            the positions will be just for the descendants of this node.
+        - if the tree is undirected and not given,
+            then a random choice will be used.
+    width:
+        horizontal space allocated for this branch - avoids overlap with other branches
+    vert_gap:
+        gap between levels of hierarchy
+    vert_loc:
+        vertical location of root
+    xcenter:
+        horizontal location of root
     """
     if not nx.is_tree(G):
         raise TypeError("cannot use hierarchy_pos on a graph that is not a tree")
@@ -150,7 +144,8 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
             root = random.choice(list(G.nodes))
 
     def _hierarchy_pos(
-        G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None, parent=None
+            G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None,
+            parent=None
     ):
         """
         see hierarchy_pos docstring for most arguments

@@ -1,17 +1,17 @@
-import matplotlib.pyplot as plt
 from decimal import Decimal
+
+import matplotlib.pyplot as plt
 from anndata import AnnData
-from typing import Optional, Union
 
 
 def transition_markers_plot(
-    adata: AnnData,
-    top_genes: int = 10,
-    trajectory: str = None,
-    dpi: int = 150,
-    output: str = None,
-    name: str = None,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        top_genes: int = 10,
+        trajectory: str = None,
+        dpi: int = 150,
+        output: str = None,
+        name: str = None,
+) -> AnnData | None:
     """\
     Plot transition marker.
 
@@ -34,7 +34,7 @@ def transition_markers_plot(
     Anndata
     """
 
-    if trajectory == None:
+    if trajectory is None:
         raise ValueError("Please input the trajectory name!")
     if trajectory not in adata.uns:
         raise ValueError("Please input the right trajectory name!")

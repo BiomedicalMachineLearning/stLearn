@@ -1,24 +1,20 @@
 """ This is more a general views focussed on defining functions which are \
-	called by other views for specify pages. This way different pages can be \
-	used to display different data, but in a consistent way.
+    called by other views for specify pages. This way different pages can be \
+    used to display different data, but in a consistent way.
 """
 
 import sys
-import numpy
-import numpy as np
-from flask import flash
-from source.forms import forms
-
-from source.forms.utils import flash_errors
-import source.forms.view_helpers as vhs
 import traceback
 
-from flask import render_template
-
+import numpy
+import numpy as np
 import scanpy as sc
-import stlearn as st
+import source.forms.view_helpers as vhs
+from flask import flash, render_template
+from source.forms import forms
+from source.forms.utils import flash_errors
 
-from scipy.spatial.distance import cosine
+import stlearn as st
 
 # Creating the forms using a class generator #
 PreprocessForm = forms.getPreprocessForm()
@@ -35,7 +31,7 @@ def run_preprocessing(request, adata, step_log):
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:
@@ -87,13 +83,12 @@ def run_lr(request, adata, step_log):
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:
         step_log["lr_params"] = vhs.getData(form)
         print(step_log["lr_params"], file=sys.stdout)
-        elements = numpy.array(list(step_log["lr_params"].keys()))
         # order: Species, Spot neighbourhood, min_spots, n_pairs, CPUs
         element_values = list(step_log["lr_params"].values())
         dist = element_values[1]
@@ -134,13 +129,12 @@ def run_cci(request, adata, step_log):
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:
         step_log["cci_params"] = vhs.getData(form)
         print(step_log["cci_params"], file=sys.stdout)
-        elements = numpy.array(list(step_log["cci_params"].keys()))
         # order: cell_type, min_spots, spot_mixtures, cell_prop_cutoff, sig_spots
         #           n_perms
         element_values = list(step_log["cci_params"].values())
@@ -188,14 +182,13 @@ def run_clustering(request, adata, step_log):
 
     step_log["cluster_params"] = vhs.getData(form)
     print(step_log["cluster_params"], file=sys.stdout)
-    elements = list(step_log["cluster_params"].keys())
     # order: pca_comps, SME bool, method, method_param
     element_values = list(step_log["cluster_params"].values())
 
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:
@@ -275,7 +268,6 @@ def run_psts(request, adata, step_log):
 
     step_log["psts_params"] = vhs.getData(form)
     print(step_log["psts_params"], file=sys.stdout)
-    elements = list(step_log["psts_params"].keys())
     # order: pca_comps, SME bool, method, method_param
     element_values = list(step_log["psts_params"].values())
 
@@ -289,7 +281,7 @@ def run_psts(request, adata, step_log):
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:
@@ -349,7 +341,6 @@ def run_psts(request, adata, step_log):
 
 
 def run_dea(request, adata, step_log):
-
     list_labels = []
 
     for col in adata.obs.columns:
@@ -366,13 +357,12 @@ def run_dea(request, adata, step_log):
 
     step_log["dea_params"] = vhs.getData(form)
     print(step_log["dea_params"], file=sys.stdout)
-    elements = list(step_log["dea_params"].keys())
     element_values = list(step_log["dea_params"].values())
 
     if not form.validate_on_submit():
         flash_errors(form)
 
-    elif type(adata) == type(None):
+    elif adata is None:
         flash("Need to load data first!")
 
     else:

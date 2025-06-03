@@ -1,11 +1,11 @@
-from typing import Optional
+
 from anndata import AnnData
 
 
 def convert_scanpy(
     adata: AnnData,
     use_quality: str = "hires",
-) -> Optional[AnnData]:
+) -> AnnData | None:
 
     adata.var_names_make_unique()
 

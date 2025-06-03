@@ -1,31 +1,33 @@
 """Reading and Writing"""
 
-from pathlib import Path
-from typing import Optional, Union
-from anndata import AnnData
-import numpy as np
-from PIL import Image
-import pandas as pd
-import stlearn
-from .._compat import Literal
-import scanpy
-import matplotlib.pyplot as plt
-from matplotlib.image import imread
 import json
 import logging as logg
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scanpy
+from anndata import AnnData
+from matplotlib.image import imread
+from PIL import Image
+
+import stlearn
+
+from .._compat import Literal
 
 _QUALITY = Literal["fulres", "hires", "lowres"]
 _background = ["black", "white"]
 
 
 def Read10X(
-    path: Union[str, Path],
-    genome: Optional[str] = None,
+    path: str | Path,
+    genome: str | None = None,
     count_file: str = "filtered_feature_bc_matrix.h5",
     library_id: str = None,
-    load_images: Optional[bool] = True,
+    load_images: bool | None = True,
     quality: _QUALITY = "hires",
-    image_path: Union[str, Path] = None,
+    image_path: str | Path = None,
 ) -> AnnData:
     """\
     Read Visium data from 10X (wrap read_visium from scanpy)
@@ -35,23 +37,26 @@ def Read10X(
     coordinates and scale factors.
     Based on the `Space Ranger output docs`_.
 
-    .. _Space Ranger output docs: https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
+    _Space Ranger output docs:
+    https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
 
     Parameters
     ----------
     path
-        Path to directory for visium datafiles.
+        The path to directory for Visium datafiles.
     genome
         Filter expression to genes within this genome.
     count_file
-        Which file in the passed directory to use as the count file. Typically would be one of:
-        'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
+        Which file in the directory to use as the count file. Typically, it would be one
+        of: 'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating multiple
+        adata objects.
     load_images
         Load image or not.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     image_path
         Path to image. Only need when loading full resolution image.
 
@@ -200,9 +205,9 @@ def Read10X(
 
 
 def ReadOldST(
-    count_matrix_file: Union[str, Path] = None,
-    spatial_file: Union[str, Path] = None,
-    image_file: Union[str, Path] = None,
+    count_matrix_file: str | Path = None,
+    spatial_file: str | Path = None,
+    image_file: str | Path = None,
     library_id: str = "OldST",
     scale: float = 1.0,
     quality: str = "hires",
@@ -216,15 +221,17 @@ def ReadOldST(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     image_file
         Path to the tissue image file
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
 
@@ -248,8 +255,8 @@ def ReadOldST(
 
 
 def ReadSlideSeq(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
     library_id: str = None,
     scale: float = None,
     quality: str = "hires",
@@ -264,17 +271,19 @@ def ReadSlideSeq(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating
+        multiple adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
 
     Returns
     -------
@@ -290,7 +299,7 @@ def ReadSlideSeq(
 
     adata.obs["index"] = meta["index"].values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(meta[["x", "y"]].values)
         scale = 2000 / max_coor
 
@@ -329,8 +338,8 @@ def ReadSlideSeq(
 
 
 def ReadMERFISH(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
     library_id: str = None,
     scale: float = None,
     quality: str = "hires",
@@ -345,17 +354,19 @@ def ReadMERFISH(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating
+        multiple adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
 
     Returns
     -------
@@ -410,8 +421,8 @@ def ReadMERFISH(
 
 
 def ReadSeqFish(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
     library_id: str = None,
     scale: float = 1.0,
     quality: str = "hires",
@@ -441,7 +452,7 @@ def ReadSeqFish(
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData
@@ -498,9 +509,9 @@ def ReadSeqFish(
 
 
 def ReadXenium(
-    feature_cell_matrix_file: Union[str, Path],
-    cell_summary_file: Union[str, Path],
-    image_path: Optional[Path] = None,
+    feature_cell_matrix_file: str | Path,
+    cell_summary_file: str | Path,
+    image_path: Path | None = None,
     library_id: str = None,
     scale: float = 1.0,
     quality: str = "hires",
@@ -529,7 +540,7 @@ def ReadXenium(
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData
@@ -594,7 +605,7 @@ def create_stlearn(
     count: pd.DataFrame,
     spatial: pd.DataFrame,
     library_id: str,
-    image_path: Optional[Path] = None,
+    image_path: Path | None = None,
     scale: float = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
@@ -620,7 +631,7 @@ def create_stlearn(
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData

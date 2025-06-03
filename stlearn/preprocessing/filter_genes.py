@@ -1,18 +1,17 @@
-from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
-from anndata import AnnData
+
 import numpy as np
-from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 import scanpy
+from anndata import AnnData
 
 
 def filter_genes(
-    adata: AnnData,
-    min_counts: Optional[int] = None,
-    min_cells: Optional[int] = None,
-    max_counts: Optional[int] = None,
-    max_cells: Optional[int] = None,
-    inplace: bool = True,
-) -> Union[AnnData, None, Tuple[np.ndarray, np.ndarray]]:
+        adata: AnnData,
+        min_counts: int | None = None,
+        min_cells: int | None = None,
+        max_counts: int | None = None,
+        max_cells: int | None = None,
+        inplace: bool = True,
+) -> AnnData | None | tuple[np.ndarray, np.ndarray]:
     """\
     Wrap function scanpy.pp.filter_genes
 

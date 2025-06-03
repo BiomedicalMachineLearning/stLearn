@@ -3,18 +3,19 @@ Functions for annotating spots as cell types.
 """
 
 import os
+
 import numpy as np
-import pandas as pd
 import scanpy as sc
 
 import stlearn.tools.microenv.cci.r_helpers as rhs
 
 
 def run_label_transfer(
-    st_data, sc_data, sc_label_col, r_path, st_label_col=None, n_highly_variable=2000
+        st_data, sc_data, sc_label_col, r_path, st_label_col=None,
+        n_highly_variable=2000
 ):
     """Runs Seurat label transfer."""
-    st_label_col = sc_label_col if type(st_label_col) == type(None) else st_label_col
+    st_label_col = sc_label_col if st_label_col is None else st_label_col
 
     # Setting up the R environment #
     rhs.rpy2_setup(r_path)
@@ -90,20 +91,20 @@ def run_label_transfer(
 def get_counts(data):
     """Gets count data from anndata if available."""
     # Standard layer has counts #
-    if type(data.X) != np.ndarray and np.all(np.mod(data.X[0, :].todense(), 1) == 0):
+    if data.X is not np.ndarray and np.all(np.mod(data.X[0, :].todense(), 1) == 0):
         counts = data.to_df().transpose()
-    elif type(data.X) == np.ndarray and np.all(np.mod(data.X[0, :], 1) == 0):
+    elif data.X is np.ndarray and np.all(np.mod(data.X[0, :], 1) == 0):
         counts = data.to_df().transpose()
     elif (
-        type(data.X) != np.ndarray
-        and hasattr(data, "raw")
-        and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
+            data.X is not np.ndarray
+            and hasattr(data, "raw")
+            and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
     ):
         counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     elif (
-        type(data.X) == np.ndarray
-        and hasattr(data, "raw")
-        and np.all(np.mod(data.raw.X[0, :], 1) == 0)
+            data.X is np.ndarray
+            and hasattr(data, "raw")
+            and np.all(np.mod(data.raw.X[0, :], 1) == 0)
     ):
         counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     else:
@@ -116,20 +117,20 @@ def get_counts(data):
 
 
 def run_rctd(
-    st_data,
-    sc_data,
-    sc_label_col,
-    r_path,
-    st_label_col=None,
-    n_highly_variable=5000,
-    min_cells=10,
-    doublet_mode="full",
-    n_cores=1,
+        st_data,
+        sc_data,
+        sc_label_col,
+        r_path,
+        st_label_col=None,
+        n_highly_variable=5000,
+        min_cells=10,
+        doublet_mode="full",
+        n_cores=1,
 ):
     """Runs RCTD for deconvolution."""
-    st_label_col = sc_label_col if type(st_label_col) == type(None) else st_label_col
+    st_label_col = sc_label_col if st_label_col is None else st_label_col
 
-    ########### Setting up the R environment #############
+    # Setting up the R environment
     rhs.rpy2_setup(r_path)
 
     # Adding the source R code #
@@ -160,7 +161,7 @@ def run_rctd(
         sc_data.var["highly_variable"].values, st_data.var["highly_variable"].values
     )
 
-    ###### Getting the count data (if available) ############
+    # Getting the count data (if available)
     st_counts = get_counts(st_data)
     sc_counts = get_counts(sc_data)
 
@@ -169,9 +170,9 @@ def run_rctd(
 
     st_coords = st_data.obs.loc[:, ["imagecol", "imagerow"]]
     sc_labels = sc_data.obs[sc_label_col].values.astype(str)
-    print(f"Finished extracting counts data.")
+    print("Finished extracting counts data.")
 
-    ####### Converting to R objects #########
+    # Converting to R objects
     sc_labels_r = rhs.ro.StrVector(sc_labels)
     with rhs.localconverter(rhs.ro.default_converter + rhs.pandas2ri.converter):
         st_coords_r = rhs.ro.conversion.py2rpy(st_coords)
@@ -179,7 +180,7 @@ def run_rctd(
         sc_counts_r = rhs.ro.conversion.py2rpy(sc_counts)
     print("Finished py->rpy conversion.")
 
-    ######## Running RCTD ##########
+    # Running RCTD
     print("Running RCTD...")
     rctd_proportions_r = rctd_r(
         st_counts_r,
@@ -201,27 +202,27 @@ def run_rctd(
     st_data_orig.obs[st_label_col] = labels
     st_data_orig.obs[st_label_col] = st_data_orig.obs[st_label_col].astype("category")
     st_data_orig.uns[st_label_col] = rctd_proportions.loc[
-        st_data_orig.obs_names.values, :
-    ]
+                                     st_data_orig.obs_names.values, :
+                                     ]
 
     print(f"Spot labels added to st_data.obs[{st_label_col}].")
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
 
 
 def run_singleR(
-    st_data,
-    sc_data,
-    sc_label_col,
-    r_path,
-    st_label_col=None,
-    n_highly_variable=5000,
-    n_centers=3,
-    de_n=200,
-    de_method="t",
+        st_data,
+        sc_data,
+        sc_label_col,
+        r_path,
+        st_label_col=None,
+        n_highly_variable=5000,
+        n_centers=3,
+        de_n=200,
+        de_method="t",
 ):
     """Runs SingleR spot annotation."""
-    st_label_col = sc_label_col if type(st_label_col) == type(None) else st_label_col
-    ########### Setting up the R environment #############
+    st_label_col = sc_label_col if st_label_col is None else st_label_col
+    # Setting up the R environment
     rhs.rpy2_setup(r_path)
 
     # Adding the source R code #
@@ -253,13 +254,13 @@ def run_singleR(
     )
     sc_data = sc_data[:, genes_bool]
     st_data = st_data[:, genes_bool]
-    print(f"Finished selecting & subsetting to hvgs.")
+    print("Finished selecting & subsetting to hvgs.")
 
     # Extracting the relevant information from anndatas #
     st_expr_df = st_data.to_df().transpose()
     sc_expr_df = sc_data.to_df().transpose()
     sc_labels = sc_data.obs[sc_label_col].values.astype(str)
-    print(f"Finished extracting data.")
+    print("Finished extracting data.")
 
     # R conversion of the data #
     sc_labels_r = rhs.ro.StrVector(sc_labels)

@@ -1,16 +1,16 @@
 import inspect
 import sys
-from contextlib import contextmanager
+from collections.abc import Iterable
+from contextlib import AbstractContextManager, contextmanager
 from enum import IntEnum
+from logging import getLevelName
 from pathlib import Path
 from time import time
-from logging import getLevelName
-from typing import Any, Union, Optional, Iterable, TextIO
-from typing import Tuple, List, ContextManager
+from typing import Any, TextIO
 
 from . import logging
-from .logging import _set_log_level, _set_log_file, _RootLogger
 from ._compat import Literal
+from .logging import _RootLogger, _set_log_file, _set_log_level
 
 # All the code here migrated from scanpy
 # It help to work with scanpy package
@@ -40,7 +40,7 @@ class Verbosity(IntEnum):
         return getLevelName(_VERBOSITY_TO_LOGLEVEL[self])
 
     @contextmanager
-    def override(self, verbosity: "Verbosity") -> ContextManager["Verbosity"]:
+    def override(self, verbosity: "Verbosity") -> AbstractContextManager["Verbosity"]:
         """\
         Temporarily override verbosity
         """
@@ -49,7 +49,7 @@ class Verbosity(IntEnum):
         settings.verbosity = self
 
 
-def _type_check(var: Any, varname: str, types: Union[type, Tuple[type, ...]]):
+def _type_check(var: Any, varname: str, types: type | tuple[type, ...]):
     if isinstance(var, types):
         return
     if isinstance(types, type):
@@ -62,32 +62,32 @@ def _type_check(var: Any, varname: str, types: Union[type, Tuple[type, ...]]):
     raise TypeError(f"{varname} must be of type {possible_types_str}")
 
 
-class stLearnConfig:
+class stLearnConfig: # noqa N801
     """\
     Config manager for scanpy.
     """
 
     def __init__(
-        self,
-        *,
-        verbosity: str = "warning",
-        plot_suffix: str = "",
-        file_format_data: str = "h5ad",
-        file_format_figs: str = "pdf",
-        autosave: bool = False,
-        autoshow: bool = True,
-        writedir: Union[str, Path] = "./write/",
-        cachedir: Union[str, Path] = "./cache/",
-        datasetdir: Union[str, Path] = "./data/",
-        figdir: Union[str, Path] = "./figures/",
-        cache_compression: Union[str, None] = "lzf",
-        max_memory=15,
-        n_jobs=1,
-        logfile: Union[str, Path, None] = None,
-        categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
-        _frameon: bool = True,
-        _vector_friendly: bool = False,
-        _low_resolution_warning: bool = True,
+            self,
+            *,
+            verbosity: str = "warning",
+            plot_suffix: str = "",
+            file_format_data: str = "h5ad",
+            file_format_figs: str = "pdf",
+            autosave: bool = False,
+            autoshow: bool = True,
+            writedir: str | Path = "./write/",
+            cachedir: str | Path = "./cache/",
+            datasetdir: str | Path = "./data/",
+            figdir: str | Path = "./figures/",
+            cache_compression: str | None = "lzf",
+            max_memory=15,
+            n_jobs=1,
+            logfile: str | Path | None = None,
+            categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
+            _frameon: bool = True,
+            _vector_friendly: bool = False,
+            _low_resolution_warning: bool = True,
     ):
         # logging
         self._root_logger = _RootLogger(logging.INFO)  # level will be replaced
@@ -139,7 +139,7 @@ class stLearnConfig:
         return self._verbosity
 
     @verbosity.setter
-    def verbosity(self, verbosity: Union[Verbosity, int, str]):
+    def verbosity(self, verbosity: Verbosity | int | str):
         verbosity_str_options = [
             v for v in _VERBOSITY_TO_LOGLEVEL if isinstance(v, str)
         ]
@@ -207,7 +207,8 @@ class stLearnConfig:
     @property
     def autosave(self) -> bool:
         """\
-        Automatically save figures in :attr:`~stlearn._settings.stLearnConfig.figdir` (default `False`).
+        Automatically save figures in :attr:`~stlearn._settings.stLearnConfig.figdir`
+        (default `False`).
 
         Do not show plots/figures interactively.
         """
@@ -240,7 +241,7 @@ class stLearnConfig:
         return self._writedir
 
     @writedir.setter
-    def writedir(self, writedir: Union[str, Path]):
+    def writedir(self, writedir: str | Path):
         _type_check(writedir, "writedir", (str, Path))
         self._writedir = Path(writedir)
 
@@ -252,7 +253,7 @@ class stLearnConfig:
         return self._cachedir
 
     @cachedir.setter
-    def cachedir(self, cachedir: Union[str, Path]):
+    def cachedir(self, cachedir: str | Path):
         _type_check(cachedir, "cachedir", (str, Path))
         self._cachedir = Path(cachedir)
 
@@ -264,7 +265,7 @@ class stLearnConfig:
         return self._datasetdir
 
     @datasetdir.setter
-    def datasetdir(self, datasetdir: Union[str, Path]):
+    def datasetdir(self, datasetdir: str | Path):
         _type_check(datasetdir, "datasetdir", (str, Path))
         self._datasetdir = Path(datasetdir).resolve()
 
@@ -276,12 +277,12 @@ class stLearnConfig:
         return self._figdir
 
     @figdir.setter
-    def figdir(self, figdir: Union[str, Path]):
+    def figdir(self, figdir: str | Path):
         _type_check(figdir, "figdir", (str, Path))
         self._figdir = Path(figdir)
 
     @property
-    def cache_compression(self) -> Optional[str]:
+    def cache_compression(self) -> str | None:
         """\
         Compression for `sc.read(..., cache=True)` (default `'lzf'`).
 
@@ -290,7 +291,7 @@ class stLearnConfig:
         return self._cache_compression
 
     @cache_compression.setter
-    def cache_compression(self, cache_compression: Optional[str]):
+    def cache_compression(self, cache_compression: str | None):
         if cache_compression not in {"lzf", "gzip", None}:
             raise ValueError(
                 f"`cache_compression` ({cache_compression}) "
@@ -299,7 +300,7 @@ class stLearnConfig:
         self._cache_compression = cache_compression
 
     @property
-    def max_memory(self) -> Union[int, float]:
+    def max_memory(self) -> int | float:
         """\
         Maximal memory usage in Gigabyte.
 
@@ -308,7 +309,7 @@ class stLearnConfig:
         return self._max_memory
 
     @max_memory.setter
-    def max_memory(self, max_memory: Union[int, float]):
+    def max_memory(self, max_memory: int | float):
         _type_check(max_memory, "max_memory", (int, float))
         self._max_memory = max_memory
 
@@ -325,14 +326,14 @@ class stLearnConfig:
         self._n_jobs = n_jobs
 
     @property
-    def logpath(self) -> Optional[Path]:
+    def logpath(self) -> Path | None:
         """\
         The file path `logfile` was set to.
         """
         return self._logpath
 
     @logpath.setter
-    def logpath(self, logpath: Union[str, Path, None]):
+    def logpath(self, logpath: str | Path | None):
         _type_check(logpath, "logfile", (str, Path))
         # set via “file object” branch of logfile.setter
         self.logfile = Path(logpath).open("a")
@@ -347,12 +348,13 @@ class stLearnConfig:
         The default `None` corresponds to :obj:`sys.stdout` in jupyter notebooks
         and to :obj:`sys.stderr` otherwise.
 
-        For backwards compatibility, setting it to `''` behaves like setting it to `None`.
+        For backwards compatibility, setting it to `''` behaves like setting it
+        to `None`.
         """
         return self._logfile
 
     @logfile.setter
-    def logfile(self, logfile: Union[str, Path, TextIO, None]):
+    def logfile(self, logfile: str | Path | TextIO | None):
         if not hasattr(logfile, "write") and logfile:
             self.logpath = logfile
         else:  # file object
@@ -363,7 +365,7 @@ class stLearnConfig:
             _set_log_file(self)
 
     @property
-    def categories_to_ignore(self) -> List[str]:
+    def categories_to_ignore(self) -> list[str]:
         """\
         Categories that are omitted in plotting etc.
         """
@@ -397,16 +399,16 @@ class stLearnConfig:
     ]
 
     def set_figure_params(
-        self,
-        dpi: int = 80,
-        dpi_save: int = 150,
-        frameon: bool = True,
-        vector_friendly: bool = True,
-        fontsize: int = 14,
-        color_map: Optional[str] = None,
-        format: _Format = "pdf",
-        transparent: bool = False,
-        ipython_format: str = "png2x",
+            self,
+            dpi: int = 80,
+            dpi_save: int = 150,
+            frameon: bool = True,
+            vector_friendly: bool = True,
+            fontsize: int = 14,
+            color_map: str | None = None,
+            format: _Format = "pdf",
+            transparent: bool = False,
+            ipython_format: str = "png2x",
     ):
         """\
         Set resolution/size, styling and format of figures.
@@ -414,18 +416,21 @@ class stLearnConfig:
         Parameters
         ----------
         dpi
-            Resolution of rendered figures – this influences the size of figures in notebooks.
+            Resolution of rendered figures – this influences the size of figures
+            in notebooks.
         dpi_save
             Resolution of saved figures. This should typically be higher to achieve
             publication quality.
         frameon
             Add frames and axes labels to scatter plots.
         vector_friendly
-            Plot scatter plots using `png` backend even when exporting as `pdf` or `svg`.
+            Plot scatter plots using `png` backend even when exporting as
+            `pdf` or `svg`.
         fontsize
             Set the fontsize for several `rcParams` entries. Ignored if `scanpy=False`.
         color_map
-            Convenience method for setting the default color map. Ignored if `scanpy=False`.
+            Convenience method for setting the default color map. Ignored if
+            `scanpy=False`.
         format
             This sets the default format for saving figures: `file_format_figs`.
         transparent

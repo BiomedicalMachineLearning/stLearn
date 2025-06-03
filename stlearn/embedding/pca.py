@@ -1,25 +1,24 @@
-import logging as logg
-from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
-from anndata import AnnData
+
 import numpy as np
-from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
-from numpy.random.mtrand import RandomState
 import scanpy
+from anndata import AnnData
+from numpy.random.mtrand import RandomState
+from scipy.sparse import spmatrix
 
 
 def run_pca(
-    data: Union[AnnData, np.ndarray, spmatrix],
+    data: AnnData | np.ndarray | spmatrix,
     n_comps: int = 50,
-    zero_center: Optional[bool] = True,
+    zero_center: bool | None = True,
     svd_solver: str = "auto",
-    random_state: Optional[Union[int, RandomState]] = 0,
+    random_state: int | RandomState | None = 0,
     return_info: bool = False,
-    use_highly_variable: Optional[bool] = None,
+    use_highly_variable: bool | None = None,
     dtype: str = "float32",
     copy: bool = False,
     chunked: bool = False,
-    chunk_size: Optional[int] = None,
-) -> Union[AnnData, np.ndarray, spmatrix]:
+    chunk_size: int | None = None,
+) -> AnnData | np.ndarray | spmatrix:
     """\
     Wrap function scanpy.pp.pca
     Principal component analysis [Pedregosa11]_.
@@ -100,5 +99,6 @@ def run_pca(
     )
 
     print(
-        "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and adata.varm['PCs']"
+        "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and " +
+        "adata.varm['PCs']"
     )

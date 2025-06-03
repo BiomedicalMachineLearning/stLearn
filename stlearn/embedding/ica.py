@@ -1,9 +1,7 @@
-import numpy as np
-import pandas as pd
-from typing import Optional
+
 from anndata import AnnData
-from sklearn.decomposition import FastICA
 from scipy.sparse import issparse
+from sklearn.decomposition import FastICA
 
 
 def run_ica(
@@ -13,7 +11,7 @@ def run_ica(
     tol: float = 0.0001,
     use_data: str = None,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     FastICA: a fast algorithm for Independent Component Analysis.
 
@@ -64,7 +62,8 @@ def run_ica(
     adata.uns["ica"] = {"params": {"n_factors": n_factors, "fun": fun, "tol": tol}}
 
     print(
-        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in adata.uns['ica']"
+        "ICA is done! Generated in adata.obsm['X_ica'] and parameters in " +
+        "adata.uns['ica']"
     )
 
     return adata if copy else None

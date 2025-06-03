@@ -1,37 +1,29 @@
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.patches import FancyArrowPatch
-from mpl_toolkits.mplot3d import proj3d
+
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
-import pandas as pd
-import matplotlib
-import numpy as np
-import networkx as nx
-from stlearn._compat import Literal
-from typing import Optional, Union
 from anndata import AnnData
-import warnings
+from matplotlib.patches import FancyArrowPatch
+from mpl_toolkits.mplot3d import proj3d
 
 
 def local_plot(
-    adata: AnnData,
-    use_label: str = "louvain",
-    use_cluster: int = None,
-    reverse: bool = False,
-    cluster: int = 0,
-    data_alpha: float = 1.0,
-    arrow_alpha: float = 1.0,
-    branch_alpha: float = 0.2,
-    spot_size: Union[float, int] = 1,
-    show_color_bar: bool = True,
-    show_axis: bool = False,
-    show_plot: bool = True,
-    name: str = None,
-    dpi: int = 150,
-    output: str = None,
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        use_label: str = "louvain",
+        use_cluster: int = None,
+        reverse: bool = False,
+        cluster: int = 0,
+        data_alpha: float = 1.0,
+        arrow_alpha: float = 1.0,
+        branch_alpha: float = 0.2,
+        spot_size: float | int = 1,
+        show_color_bar: bool = True,
+        show_axis: bool = False,
+        show_plot: bool = True,
+        name: str = None,
+        dpi: int = 150,
+        output: str = None,
+        copy: bool = False,
+) -> AnnData | None:
     """\
     Local spatial trajectory inference plot.
 
@@ -84,8 +76,8 @@ def local_plot(
     order = 0
     for i in ref_cluster.obs["sub_cluster_labels"].unique():
         if (
-            len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-            > adata.uns["threshold_spots"]
+                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                > adata.uns["threshold_spots"]
         ):
             classes_.append(i)
             centroid_dict = adata.uns["centroid_dict"]
@@ -113,9 +105,6 @@ def local_plot(
             x = np.linspace(centroids_[i][0], centroids_[i + j][0], 1000)
             z = np.linspace(centroids_[i][1], centroids_[i + j][1], 1000)
 
-            branch = ax.plot(
-                x, y, z, zorder=10, c="#333333", linewidth=1, alpha=branch_alpha
-            )
             if reverse:
                 dpt_distance = -dpt_distance
             if dpt_distance <= 0:

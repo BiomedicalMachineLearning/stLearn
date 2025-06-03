@@ -1,17 +1,16 @@
-from typing import Optional, Union
-from anndata import AnnData
-import pandas as pd
 from pathlib import Path
-import os
+
+import pandas as pd
+from anndata import AnnData
 
 
 def positions(
     adata: AnnData,
-    position_filepath: Union[Path, str] = None,
-    scale_filepath: Union[Path, str] = None,
+    position_filepath: Path | str = None,
+    scale_filepath: Path | str = None,
     quality: str = "low",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding spatial information into the Anndata object
 

@@ -1,20 +1,21 @@
-from scipy.stats import spearmanr
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
-import networkx as nx
+from scipy.stats import spearmanr
+
 from ...utils import _read_graph
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def detect_transition_markers_clades(
-    adata,
-    clade,
-    cutoff_spearman=0.4,
-    cutoff_pvalue=0.05,
-    screening_genes=None,
-    use_raw_count=False,
+        adata,
+        clade,
+        cutoff_spearman=0.4,
+        cutoff_pvalue=0.05,
+        screening_genes=None,
+        use_raw_count=False,
 ):
     """\
     Transition markers detection of a clade.
@@ -68,7 +69,7 @@ def detect_transition_markers_clades(
     )
     negative = spearman_result[
         spearman_result["score"] <= cutoff_spearman * (-1)
-    ].sort_values("score")
+        ].sort_values("score")
 
     result = pd.concat([positive, negative])
 
@@ -80,12 +81,12 @@ def detect_transition_markers_clades(
 
 
 def detect_transition_markers_branches(
-    adata,
-    branch,
-    cutoff_spearman=0.4,
-    cutoff_pvalue=0.05,
-    screening_genes=None,
-    use_raw_count=False,
+        adata,
+        branch,
+        cutoff_spearman=0.4,
+        cutoff_pvalue=0.05,
+        screening_genes=None,
+        use_raw_count=False,
 ):
     """\
     Transition markers detection of a branch.
@@ -125,7 +126,7 @@ def detect_transition_markers_branches(
     )
     negative = spearman_result[
         spearman_result["score"] <= cutoff_spearman * (-1)
-    ].sort_values("score")
+        ].sort_values("score")
 
     result = pd.concat([positive, negative])
 
@@ -152,7 +153,7 @@ def get_rank_cor(adata, screening_genes=None, use_raw_count=True):
         tmp = tmp.to_df()
     else:
         tmp = adata.to_df()
-    if screening_genes != None:
+    if screening_genes is not None:
         tmp = tmp[screening_genes]
     dpt = adata.obs["dpt_pseudotime"].values
     genes = []

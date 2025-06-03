@@ -1,18 +1,17 @@
-from typing import Optional, Union
-from anndata import AnnData
-import pandas as pd
-import numpy as np
-import stlearn
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from anndata import AnnData
 from natsort import natsorted
 
 
 def add_loupe_clusters(
     adata: AnnData,
-    loupe_path: Union[Path, str],
+    loupe_path: Path | str,
     key_add: str = "multiplex",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding label transfered from Seurat
 

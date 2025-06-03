@@ -1,16 +1,13 @@
-from typing import Optional, Union, List
+
 from anndata import AnnData
-from matplotlib import pyplot as plt
-from pathlib import Path
-import os
 
 
 def annotation(
     adata: AnnData,
-    label_list: List[str],
+    label_list: list[str],
     use_label: str = "louvain",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding annotation for cluster
 

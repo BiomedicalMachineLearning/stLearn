@@ -1,13 +1,10 @@
-import numpy as np
-from anndata import AnnData
-import networkx as nx
-
-from typing import Optional, Union, Mapping  # Special
-from typing import Tuple  # Classes
-
+from collections.abc import Mapping
+from enum import Enum
 from textwrap import dedent
 
-from enum import Enum
+import networkx as nx
+import numpy as np
+from anndata import AnnData
 from matplotlib import axes
 from matplotlib.axes import Axes
 
@@ -24,7 +21,7 @@ class _AxesSubplot(Axes, axes.SubplotBase):
 
 
 def _check_spot_size(
-    spatial_data: Optional[Mapping], spot_size: Optional[float]
+    spatial_data: Mapping | None, spot_size: float | None
 ) -> float:
     """
     Resolve spot_size value.
@@ -42,9 +39,9 @@ def _check_spot_size(
 
 
 def _check_scale_factor(
-    spatial_data: Optional[Mapping],
-    img_key: Optional[str],
-    scale_factor: Optional[float],
+    spatial_data: Mapping | None,
+    img_key: str | None,
+    scale_factor: float | None,
 ) -> float:
     """Resolve scale_factor, defaults to 1."""
     if scale_factor is not None:
@@ -56,8 +53,8 @@ def _check_scale_factor(
 
 
 def _check_spatial_data(
-    uns: Mapping, library_id: Union[Empty, None, str]
-) -> Tuple[Optional[str], Optional[Mapping]]:
+    uns: Mapping, library_id: Empty | None | str
+) -> tuple[str | None, Mapping | None]:
     """
     Given a mapping, try and extract a library id/ mapping with spatial data.
     Assumes this is `.uns` from how we parse visium data.
@@ -81,11 +78,11 @@ def _check_spatial_data(
 
 
 def _check_img(
-    spatial_data: Optional[Mapping],
-    img: Optional[np.ndarray],
-    img_key: Union[None, str, Empty],
+    spatial_data: Mapping | None,
+    img: np.ndarray | None,
+    img_key: None | str | Empty,
     bw: bool = False,
-) -> Tuple[Optional[np.ndarray], Optional[str]]:
+) -> tuple[np.ndarray | None, str | None]:
     """
     Resolve image for spatial plots.
     """
@@ -101,8 +98,8 @@ def _check_img(
 
 
 def _check_coords(
-    obsm: Optional[Mapping], scale_factor: Optional[float]
-) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    obsm: Mapping | None, scale_factor: float | None
+) -> tuple[np.ndarray | None, np.ndarray | None]:
     image_coor = obsm["spatial"] * scale_factor
     imagecol = image_coor[:, 0]
     imagerow = image_coor[:, 1]
@@ -110,7 +107,7 @@ def _check_coords(
     return [imagecol, imagerow]
 
 
-def _read_graph(adata: AnnData, graph_type: Optional[str]):
+def _read_graph(adata: AnnData, graph_type: str | None):
     if graph_type == "PTS_graph":
         graph = nx.from_scipy_sparse_array(
             adata.uns[graph_type]["graph"], create_using=nx.DiGraph

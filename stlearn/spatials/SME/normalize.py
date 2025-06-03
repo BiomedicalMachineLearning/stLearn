@@ -1,41 +1,43 @@
-from typing import Optional
-from anndata import AnnData
+
 import numpy as np
-from scipy.sparse import csr_matrix
 import pandas as pd
+from anndata import AnnData
+from scipy.sparse import csr_matrix
+
 from ._weighting_matrix import (
+    _PLATFORM,
+    _WEIGHTING_MATRIX,
     calculate_weight_matrix,
     impute_neighbour,
-    _WEIGHTING_MATRIX,
-    _PLATFORM,
 )
 
 
 def SME_normalize(
-    adata: AnnData,
-    use_data: str = "raw",
-    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-    platform: _PLATFORM = "Visium",
-    copy: bool = False,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        use_data: str = "raw",
+        weights: _WEIGHTING_MATRIX = "weights_matrix_all",
+        platform: _PLATFORM = "Visium",
+        copy: bool = False,
+) -> AnnData | None:
     """\
-    using spatial location (S), tissue morphological feature (M) and gene expression (E) information to normalize data.
+    using spatial location (S), tissue morphological feature (M) and gene
+    expression (E) information to normalize data.
 
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    use_data
+    use_data:
         Input data, can be `raw` counts or log transformed data
-    weights
+    weights:
         Weighting matrix for imputation.
-        if `weights_matrix_all`, matrix combined all information from spatial location (S),
-        tissue morphological feature (M) and gene expression (E)
-        if `weights_matrix_pd_md`, matrix combined information from spatial location (S),
-        tissue morphological feature (M)
-    platform
+        if `weights_matrix_all`, matrix combined all information from spatial
+        location (S), tissue morphological feature (M) and gene expression (E)
+        if `weights_matrix_pd_md`, matrix combined information from spatial
+        location (S), tissue morphological feature (M)
+    platform:
         `Visium` or `Old_ST`
-    copy
+    copy:
         Return a copy instead of writing to adata.
     Returns
     -------

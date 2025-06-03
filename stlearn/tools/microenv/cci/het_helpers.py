@@ -3,21 +3,19 @@ Helper functions for het.py; primarily counting help.
 """
 
 import numpy as np
-import numba
-from numba import types
+from numba import njit
 from numba.typed import List
-from numba import njit, jit
 
 
 @njit
 def edge_core(
-    cell_data: np.ndarray,
-    cell_type_index: int,
-    neighbourhood_bcs: List,
-    neighbourhood_indices: List,
-    spot_indices: np.array = None,
-    neigh_bool: np.array = None,
-    cutoff: float = 0.2,
+        cell_data: np.ndarray,
+        cell_type_index: int,
+        neighbourhood_bcs: List,
+        neighbourhood_indices: List,
+        spot_indices: np.array = None,
+        neigh_bool: np.array = None,
+        cutoff: float = 0.2,
 ) -> np.array:
     """Gets the edges which connect inputted spots to neighbours of a given cell type.
 
@@ -32,7 +30,7 @@ def edge_core(
         cell_type_index: int            Column of cell_data that contains the \
                                         cell type of interest.
 
-        neighbourhood_bcs: List         List of lists, inner list for each \
+        neighbourhood_bcs (List):       List of lists, inner list for each \
                                         spot. First element of inner list is \
                                         spot barcode, second element is array \
                                         of neighbourhood spot barcodes.
@@ -77,7 +75,7 @@ def edge_core(
     elif len(spot_indices) == 0:
         return edge_list[1:]
 
-    ### Within-spot mode
+    # Within-spot mode
     # within-spot, will have only itself as a neighbour in this mode
     within_mode = edge_list[0][0] == edge_list[0][1]
     if within_mode:
@@ -86,7 +84,7 @@ def edge_core(
             if neigh_bool[i] and cell_data[i] > cutoff:
                 edge_list.append((neighbourhood_bcs[i][0], neighbourhood_bcs[i][1][0]))
 
-    ### Between-spot mode
+    # Between-spot mode
     else:
         # Subsetting the neighbourhoods to relevant spots #
         neighbourhood_bcs_sub = List()
@@ -130,12 +128,12 @@ def init_edge_list(neighbourhood_bcs):
 
 @njit
 def get_between_spot_edge_array(
-    edge_list: List,
-    neighbourhood_bcs: List,
-    neighbourhood_indices: List,
-    neigh_bool: np.array,
-    cell_data: np.array,
-    cutoff: float = 0,
+        edge_list: List,
+        neighbourhood_bcs: List,
+        neighbourhood_indices: List,
+        neigh_bool: np.array,
+        cell_data: np.array,
+        cutoff: float = 0,
 ):
     """ Populates edge_list with edges linking spots with a valid neighbour \
         of a given cell type. Validity of neighbour determined by neigh_bool, \
@@ -186,7 +184,7 @@ def add_unique_edges(edge_list, edge_starts, edge_ends):
                 edge_startj, edge_endj = edge_starts[j], edge_ends[j]
                 # Direction doesn't matter #
                 if (edge_start == edge_startj and edge_end == edge_endj) or (
-                    edge_end == edge_startj and edge_start == edge_endj
+                        edge_end == edge_startj and edge_start == edge_endj
                 ):
                     edge_added[j] = True
 
@@ -263,12 +261,12 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
 
 # @njit
 def get_neighbourhoods_FAST(
-    spot_bcs: np.array,
-    spot_neigh_bcs: np.ndarray,
-    n_spots: int,
-    str_dtype: str,
-    neigh_indices: np.array,
-    neigh_bcs: np.array,
+        spot_bcs: np.array,
+        spot_neigh_bcs: np.ndarray,
+        n_spots: int,
+        str_dtype: str,
+        neigh_indices: np.array,
+        neigh_bcs: np.array,
 ):
     """Gets the neighbourhood information, njit compiled."""
 
@@ -277,12 +275,12 @@ def get_neighbourhoods_FAST(
     # neighbourhood_bcs = List((numba.int64, numba.int64[:]))
     # neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
 
-    ### Numba version
+    # Numba version
     # neighbours = List([neigh_indices])[1:]
     # neighbourhood_bcs = List()
     # neighbourhood_indices = List([(0, neigh_indices)])[1:]
 
-    #### Trying normal lists
+    # Trying normal lists
     neighbours, neighbourhood_bcs, neighbourhood_indices = [], [], []
 
     for i in range(spot_neigh_bcs.shape[0]):
@@ -297,12 +295,10 @@ def get_neighbourhoods_FAST(
         # neigh_bcs_array = np.empty(len(neigh_bcs_sub), dtype=str_dtype)
         # neigh_indices = np.zeros((len(neigh_bcs_sub)), dtype=np.int64)
         neigh_bcs_array, neigh_indices = [], []
-        neigh_bcs_sub = List()
         for j, neigh_bc in enumerate(neigh_bcs):
 
             bc_indices = np.where(spot_bcs == neigh_bc)[0]
             if len(bc_indices) > 0:
-
                 neigh_bcs_array.append(neigh_bc)
                 neigh_indices.append(bc_indices[0])
 
@@ -351,12 +347,12 @@ def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
 
 
 def get_neighbourhoods_FAST(
-    spot_bcs: np.array,
-    spot_neigh_bcs: np.ndarray,
-    n_spots: int,
-    str_dtype: str,
-    neigh_indices: np.array,
-    neigh_bcs: np.array,
+        spot_bcs: np.array,
+        spot_neigh_bcs: np.ndarray,
+        n_spots: int,
+        str_dtype: str,
+        neigh_indices: np.array,
+        neigh_bcs: np.array,
 ):
     """Gets the neighbourhood information, njit compiled."""
 
@@ -368,7 +364,6 @@ def get_neighbourhoods_FAST(
         neigh_bcs = neigh_bcs[neigh_bcs != ""]
 
         neigh_bcs_array, neigh_indices = [], []
-        neigh_bcs_sub = List()
         for j, neigh_bc in enumerate(neigh_bcs):
 
             bc_indices = np.where(spot_bcs == neigh_bc)[0]
@@ -391,7 +386,7 @@ def get_neighbourhoods(adata):
 
     # Old stlearn version where didn't store neighbourhood barcodes, not good
     #   for anndata subsetting!!
-    if not "spot_neigh_bcs" in adata.obsm:
+    if "spot_neigh_bcs" not in adata.obsm:
         # Determining the neighbour spots used for significance testing #
         neighbours = List()
         for i in range(adata.obsm["spot_neighbours"].shape[0]):

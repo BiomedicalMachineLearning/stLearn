@@ -1,63 +1,58 @@
-from __future__ import division
+
+from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
-from PIL import Image
-from stlearn.tools.microenv.cci.het import get_edges
-
-from bokeh.plotting import (
-    figure,
-    show,
-    ColumnDataSource,
-    curdoc,
-)
-from bokeh.models import (
-    BoxSelectTool,
-    LassoSelectTool,
-    CustomJS,
-    Div,
-    Paragraph,
-    LinearColorMapper,
-    Slider,
-    Select,
-    AutocompleteInput,
-    ColorBar,
-    TextInput,
-    BasicTicker,
-    HoverTool,
-    ZoomOutTool,
-    CheckboxGroup,
-    Arrow,
-    VeeHead,
-    Button,
-    Dropdown,
-    Div,
-)
-
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
+import scanpy as sc
 from anndata import AnnData
-from bokeh.palettes import (
-    Spectral11,
-    Viridis256,
-    Reds256,
-    Blues256,
-    Magma256,
-    Category20,
-)
-from bokeh.layouts import column, row, grid
-from collections import OrderedDict
 from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
+from bokeh.layouts import column, row
+from bokeh.models import (
+    Arrow,
+    AutocompleteInput,
+    BasicTicker,
+    BoxSelectTool,
+    Button,
+    CheckboxGroup,
+    ColorBar,
+    CustomJS,
+    Div,
+    HoverTool,
+    LassoSelectTool,
+    LinearColorMapper,
+    Paragraph,
+    Select,
+    Slider,
+    TextInput,
+    VeeHead,
+    ZoomOutTool,
+)
+from bokeh.models.widgets import DataTable, TableColumn
+from bokeh.palettes import (
+    Blues256,
+    Category20,
+    Magma256,
+    Reds256,
+    Spectral11,
+    Viridis256,
+)
+from bokeh.plotting import (
+    ColumnDataSource,
+    figure,
+)
+from PIL import Image
+
 from stlearn.classes import Spatial
-from typing import Optional
+from stlearn.tools.microenv.cci.het import get_edges
 from stlearn.utils import _read_graph
-import scanpy as sc
 
 
 class BokehGenePlot(Spatial):
     def __init__(
-        self,
-        # plotting param
-        adata: AnnData,
+            self,
+            # plotting param
+            adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -327,9 +322,9 @@ class BokehGenePlot(Spatial):
 
 class BokehClusterPlot(Spatial):
     def __init__(
-        self,
-        # plotting param
-        adata: AnnData,
+            self,
+            # plotting param
+            adata: AnnData,
     ):
         super().__init__(adata)
 
@@ -476,8 +471,8 @@ class BokehClusterPlot(Spatial):
 
         if "rank_genes_groups" in self.adata[0].uns:
             if (
-                self.use_label.value
-                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+                    self.use_label.value
+                    == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
             ):
                 self.layout = column(row(self.inputs, self.make_fig()), self.add_dea())
             else:
@@ -513,13 +508,6 @@ class BokehClusterPlot(Spatial):
         from stlearn.plotting.cluster_plot import cluster_plot
 
         cluster_plot(self.adata[0], use_label=self.use_label.value, show_plot=False)
-
-        # self.list_cluster = CheckboxGroup(
-        #     labels=list(self.adata[0].obs[self.use_label.value].cat.categories),
-        #     active=list(
-        #         np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
-        #     ),
-        # )
         self.list_cluster.labels = list(
             self.adata[0].obs[self.use_label.value].cat.categories
         )
@@ -531,8 +519,8 @@ class BokehClusterPlot(Spatial):
 
         if "rank_genes_groups" in self.adata[0].uns:
             if (
-                self.use_label.value
-                == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
+                    self.use_label.value
+                    == self.adata[0].uns["rank_genes_groups"]["params"]["groupby"]
             ):
                 self.layout.children[0].children[1] = self.make_fig()
                 self.layout.children[1] = self.add_dea()
@@ -776,9 +764,9 @@ class BokehClusterPlot(Spatial):
 
 class BokehLRPlot(Spatial):
     def __init__(
-        self,
-        # plotting param
-        adata: AnnData,
+            self,
+            # plotting param
+            adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -853,7 +841,6 @@ class BokehLRPlot(Spatial):
         # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
 
         def modify_fig(doc):
-
             doc.add_root(row(self.layout, width=800))
 
             self.data_alpha.on_change("value", self.update_data)
@@ -955,9 +942,9 @@ class BokehLRPlot(Spatial):
 
 class BokehSpatialCciPlot(Spatial):
     def __init__(
-        self,
-        # plotting param
-        adata: AnnData,
+            self,
+            # plotting param
+            adata: AnnData,
     ):
         super().__init__(
             adata,
@@ -1045,7 +1032,6 @@ class BokehSpatialCciPlot(Spatial):
         # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
 
         def modify_fig(doc):
-
             doc.add_root(row(self.layout, width=800))
 
             self.data_alpha.on_change("value", self.update_data)
@@ -1165,10 +1151,10 @@ class BokehSpatialCciPlot(Spatial):
         selected = self.annot_select.value
 
         # Extracting the data #
-        l, r = lr.split("_")
+        ligand, receptor = lr.split("_")
         lr_index = np.where(adata.uns["lr_summary"].index.values == lr)[0][0]
-        L_bool = adata[:, l].X.toarray()[:, 0] > 0
-        R_bool = adata[:, r].X.toarray()[:, 0] > 0
+        L_bool = adata[:, ligand].X.toarray()[:, 0] > 0
+        R_bool = adata[:, receptor].X.toarray()[:, 0] > 0
         sig_bool = adata.obsm["lr_sig_scores"][:, lr_index] > 0
         int_df = adata.uns[f"per_lr_cci_{selected}"][lr]
 
@@ -1225,19 +1211,10 @@ class BokehSpatialCciPlot(Spatial):
             )
 
     def update_list(self, attrname, old, name):
-
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
-
         selected = self.annot_select.value.strip("raw_")
         cluster_plot(self.adata[0], use_label=selected, show_plot=False)
-
-        # self.list_cluster = CheckboxGroup(
-        #     labels=list(self.adata[0].obs[self.use_label.value].cat.categories),
-        #     active=list(
-        #         np.array(range(0, len(self.adata[0].obs[self.use_label.value].unique())))
-        #     ),
-        # )
         self.list_cluster.labels = list(self.adata[0].obs[selected].cat.categories)
         self.list_cluster.active = list(
             np.array(range(0, len(self.adata[0].obs[selected].unique())))
@@ -1246,9 +1223,9 @@ class BokehSpatialCciPlot(Spatial):
 
 class Annotate(Spatial):
     def __init__(
-        self,
-        # plotting param
-        adata: AnnData,
+            self,
+            # plotting param
+            adata: AnnData,
     ):
         super().__init__(adata)
         # Open image, and make sure it's RGB*A*
@@ -1392,7 +1369,9 @@ class Annotate(Spatial):
 
                 var new_data =  source_data_2.data;
 
-                new_data = addRowToAccumulator(new_data,inds,color_index.data.index[0].toString(),color_index.data.index[0])
+                ci = color_index.data.index[0];
+                cs = ci.toString();
+                new_data = addRowToAccumulator(new_data,inds,cs,ci)
 
                 source_data_2.data = new_data
 

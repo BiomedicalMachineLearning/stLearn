@@ -1,40 +1,39 @@
-from typing import Optional, Union
-from anndata import AnnData
-import matplotlib.pyplot as plt
-from matplotlib import cm
+
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
-import stlearn.plotting.utils as utils
+from anndata import AnnData
 
 
 def deconvolution_plot(
-    adata: AnnData,
-    library_id: str = None,
-    use_label: str = "louvain",
-    cluster: [int, str] = None,
-    celltype: str = None,
-    celltype_threshold: float = 0,
-    data_alpha: float = 1.0,
-    threshold: float = 0.0,
-    cmap: str = "tab20",
-    colors: list = None,  # The colors to use for each label...
-    tissue_alpha: float = 1.0,
-    title: str = None,
-    spot_size: Union[float, int] = 10,
-    show_axis: bool = False,
-    show_legend: bool = True,
-    show_donut: bool = True,
-    cropped: bool = True,
-    margin: int = 100,
-    name: str = None,
-    dpi: int = 150,
-    output: str = None,
-    copy: bool = False,
-    figsize: tuple = (6.4, 4.8),
-    show=True,
-) -> Optional[AnnData]:
+        adata: AnnData,
+        library_id: str = None,
+        use_label: str = "louvain",
+        cluster: [int, str] = None,
+        celltype: str = None,
+        celltype_threshold: float = 0,
+        data_alpha: float = 1.0,
+        threshold: float = 0.0,
+        cmap: str = "tab20",
+        colors: list = None,  # The colors to use for each label...
+        tissue_alpha: float = 1.0,
+        title: str = None,
+        spot_size: float | int = 10,
+        show_axis: bool = False,
+        show_legend: bool = True,
+        show_donut: bool = True,
+        cropped: bool = True,
+        margin: int = 100,
+        name: str = None,
+        dpi: int = 150,
+        output: str = None,
+        copy: bool = False,
+        figsize: tuple = (6.4, 4.8),
+        show=True,
+) -> AnnData | None:
     """\
-    Clustering plot for sptial transcriptomics data. Also it has a function to display trajectory inference.
+    Clustering plot for sptial transcriptomics data. Also, it has a function to
+    display trajectory inference.
 
     Parameters
     ----------
@@ -61,7 +60,8 @@ def deconvolution_plot(
     show_donut
         Whether to show the donut plot or not.
     show_trajectory
-        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+        Show the spatial trajectory or not. It requires
+        stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
         Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
     name
@@ -102,7 +102,7 @@ def deconvolution_plot(
 
     label_filter_ = label_filter[base.index]
 
-    if type(colors) == type(None):
+    if colors is None:
         color_vals = list(range(0, len(label_filter_), 1))
         my_norm = mpl.colors.Normalize(0, len(label_filter_))
         my_cmap = mpl.cm.get_cmap(cmap, len(color_vals))
@@ -143,7 +143,7 @@ def deconvolution_plot(
             textprops={"fontsize": 5},
         )
 
-    if show_legend == True:
+    if show_legend:
         ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
         cb = mpl.colorbar.ColorbarBase(
             ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals

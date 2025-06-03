@@ -1,7 +1,8 @@
 import os
+
+import numpy as np
 import scanpy as sc
 from PIL import Image
-import numpy as np
 
 
 def read_test_data():

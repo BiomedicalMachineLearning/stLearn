@@ -1,10 +1,7 @@
-import numpy as np
-import pandas as pd
-from typing import Optional
 
 from anndata import AnnData
-from sklearn.decomposition import FactorAnalysis
 from scipy.sparse import issparse
+from sklearn.decomposition import FactorAnalysis
 
 
 def run_fa(
@@ -17,7 +14,7 @@ def run_fa(
     random_state: int = 2108,
     use_data: str = None,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Factor Analysis (FA)
     A simple linear generative model with Gaussian latent variables.
