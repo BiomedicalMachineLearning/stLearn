@@ -163,7 +163,7 @@ def Read10X(
         adata.obsm["spatial"] = (
             adata.obs[["pxl_row_in_fullres", "pxl_col_in_fullres"]]
             .to_numpy()
-            .astype(int)
+            .astype(float)
         )
         adata.obs.drop(
             columns=["barcode", "pxl_row_in_fullres", "pxl_col_in_fullres"],
