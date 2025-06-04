@@ -1173,10 +1173,10 @@ def ccinet_plot(
 def cci_map(
     adata: AnnData,
     use_label: str,
-    lr: str | None = None,
-    ax: plt_axis.Axes | None = None,
+    lr_or_none: str | None = None,
+    ax_or_none: plt_axis.Axes | None = None,
     show: bool = False,
-    figsize: tuple | None = None,
+    figsize_or_none: tuple | None = None,
     cmap: str = "Spectral_r",
     sig_interactions: bool = True,
     title=None,
@@ -1190,14 +1190,14 @@ def cci_map(
     use_label: str
         Indicates the cell type labels or deconvolution results used for
         cell-cell interaction counting by LR pairs.
-    lr: str
+    lr_or_none: str
         The LR pair to visualise the sender->receiver interactions for.
         If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
-    ax: Axes
+    ax_or_none: Axes
         Axes on which to plot the heatmap, if None then generates own.
     show: bool
         Whether to show the plot or not; if not, then returns ax.
-    figsize: tuple
+    figsize_or_none: tuple
         (width, height), specifies the dimensions of the figure. Only relevant
         if ax=None.
     cmap: str
@@ -1215,9 +1215,10 @@ def cci_map(
     """
 
     # Either plotting overall interactions, or just for a particular LR #
-    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
+    int_df, title = get_int_df(adata, lr_or_none, use_label, sig_interactions, title)
 
-    if figsize is None:  # Adjust size depending on no. cell types
+    figsize: tuple = figsize_or_none
+    if figsize_or_none is None:  # Adjust size depending on no. cell types
         add = np.array([int_df.shape[0] * 0.1, int_df.shape[0] * 0.05])
         figsize = tuple(np.array([6.4, 4.8]) + add)
 
@@ -1230,23 +1231,23 @@ def cci_map(
     # Reformat the interaction df #
     flat_df = create_flat_df(int_df)
 
-    new_ax: plt_axis.Axes = _box_map(
+    ax: plt_axis.Axes = _box_map(
         flat_df["x"],
         flat_df["y"],
         flat_df["value"].astype(int),
-        ax=ax,
+        ax=ax_or_none,
         figsize=figsize,
         cmap=cmap,
     )
 
-    new_ax.set_ylabel("Sender")
-    new_ax.set_xlabel("Receiver")
+    ax.set_ylabel("Sender")
+    ax.set_xlabel("Receiver")
     plt.pyplot.suptitle(title)
 
     if show:
         plt.pyplot.show()
     else:
-        return new_ax
+        return ax
 
 
 def lr_cci_map(
@@ -1256,7 +1257,7 @@ def lr_cci_map(
     n_top_lrs: int = 5,
     n_top_ccis: int = 15,
     min_total: int = 0,
-    ax: plt_axis.Axes | None = None,
+    ax_or_none: plt_axis.Axes | None = None,
     figsize: tuple = (6.48, 4.8),
     show: bool = False,
     cmap: str = "Spectral_r",
@@ -1282,7 +1283,7 @@ def lr_cci_map(
         Indicates maximum no. of CCIs to show.
     min_total: int
         Minimum no. of totals interaction celltypes must have to be shown.
-    ax: Axes
+    ax_or_none: Axes
         Axes on which to draw the heatmap, is generated internally if None.
     figsize: tuple
         (width, height), only relevant if ax=None.
@@ -1348,23 +1349,23 @@ def lr_cci_map(
     if flat_df.shape[0] == 0 or flat_df.shape[1] == 0:
         raise Exception(f"No interactions greater than min: {min_total}")
 
-    new_ax: plt_axis.Axes = _box_map(
+    ax: plt_axis.Axes = _box_map(
         flat_df["x"],
         flat_df["y"],
         flat_df["value"].astype(int),
-        ax=ax,
+        ax=ax_or_none,
         cmap=cmap,
         figsize=figsize,
         square_scaler=square_scaler,
     )
 
-    new_ax.set_ylabel("LR-pair")
-    new_ax.set_xlabel("Cell-cell interaction")
+    ax.set_ylabel("LR-pair")
+    ax.set_xlabel("Cell-cell interaction")
 
     if show:
         plt.pyplot.show()
     else:
-        return new_ax
+        return ax
 
 
 def lr_chord_plot(
