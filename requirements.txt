@@ -2,11 +2,11 @@ bokeh==3.7.3
 click==8.2.1
 leidenalg==0.10.2
 louvain==0.8.2
-numba==0.55.2
-numpy==1.22.4
+numba==0.56.4
+numpy==1.23.5
 pillow==11.2.1
-scanpy==1.9.8
+scanpy==1.10.4
 scikit-image==0.22.0
-tensorflow==2.13.1
+tensorflow==2.14.1
 imageio==2.37.0
 scipy==1.11.4

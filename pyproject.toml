@@ -29,7 +29,7 @@ dynamic = ["dependencies"]
 dev = [
     "black>=23.0",
     "ruff>=0.1.0",
-    "mypy>=1.10",
+    "mypy>=1.16",
     "pytest>=7.0",
     "tox>=4.0",
 ]
