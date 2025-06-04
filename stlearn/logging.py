@@ -177,7 +177,7 @@ def _copy_docs_and_signature(fn):
 def error(
     msg: str,
     *,
-    time: datetime = None,
+    time: datetime | None = None,
     deep: str | None = None,
     extra: dict | None = None,
 ) -> datetime:

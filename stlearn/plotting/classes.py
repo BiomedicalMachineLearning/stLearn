@@ -256,8 +256,8 @@ class GenePlot(SpatialBasePlot):
         method: str = "CumSum",
         contour: bool = False,
         step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -455,7 +455,7 @@ class FeaturePlot(SpatialBasePlot):
         color_bar_label: str | None = "",
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 7,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,
@@ -467,8 +467,8 @@ class FeaturePlot(SpatialBasePlot):
         threshold: float | None = None,
         contour: bool = False,
         step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -618,7 +618,7 @@ class ClusterPlot(SpatialBasePlot):
         show_color_bar: bool | None = True,
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 5,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,
@@ -970,7 +970,7 @@ class SubClusterPlot(SpatialBasePlot):
         show_color_bar: bool | None = True,
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 5,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,

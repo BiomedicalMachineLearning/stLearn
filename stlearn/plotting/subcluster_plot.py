@@ -26,7 +26,7 @@ def subcluster_plot(
     show_image: bool | None = True,
     show_color_bar: bool | None = True,
     crop: bool | None = True,
-    margin: bool | None = 100,
+    margin: float | None = 100,
     size: float | None = 5,
     image_alpha: float | None = 1.0,
     cell_alpha: float | None = 1.0,

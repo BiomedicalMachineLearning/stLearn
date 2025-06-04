@@ -27,11 +27,11 @@ dynamic = ["dependencies"]
 
 [project.optional-dependencies]
 dev = [
-    "black",
-    "ruff",
-    "mypy",
-    "pytest",
-    "tox",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.10",
+    "pytest>=7.0",
+    "tox>=4.0",
 ]
 test = [
     "pytest",

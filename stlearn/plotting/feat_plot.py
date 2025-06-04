@@ -33,7 +33,7 @@ def feat_plot(
     color_bar_label: str | None = "",
     zoom_coord: float | None = None,
     crop: bool | None = True,
-    margin: bool | None = 100,
+    margin: float | None = 100,
     size: float | None = 7,
     image_alpha: float | None = 1.0,
     cell_alpha: float | None = 0.7,

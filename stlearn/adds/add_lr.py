@@ -4,7 +4,7 @@ from anndata import AnnData
 
 def lr(
     adata: AnnData,
-    db_filepath: str = None,
+    db_filepath: str,
     sep: str = "\t",
     source: str = "connectomedb",
     copy: bool = False,
