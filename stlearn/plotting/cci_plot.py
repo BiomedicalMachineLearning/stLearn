@@ -45,12 +45,12 @@ importlib.reload(cci_hs)
 
 def lr_diagnostics(
     adata,
-    highlight_lrs: list = None,
-    n_top: int = None,
+    highlight_lrs: list | None = None,
+    n_top: int | None = None,
     color0: str = "turquoise",
     color1: str = "plum",
     figsize: tuple = (10, 4),
-    lr_text_fp: dict = None,
+    lr_text_fp: dict | None = None,
     show: bool = True,
 ):
     """Diagnostic plot looking at relationship between technical features of lrs and
@@ -111,14 +111,14 @@ def lr_diagnostics(
 def lr_summary(
     adata,
     n_top: int = 50,
-    highlight_lrs: list = None,
+    highlight_lrs: list | None = None,
     y: str = "n_spots_sig",
     color: str = "gold",
-    figsize: tuple = None,
+    figsize: tuple | None = None,
     highlight_color: str = "red",
     max_text: int = 50,
-    lr_text_fp: dict = None,
-    ax: plt_axis.Axes = None,
+    lr_text_fp: dict | None = None,
+    ax: plt_axis.Axes | None = None,
     show: bool = True,
 ):
     """Plotting the top LRs ranked by number of significant spots.
@@ -179,8 +179,8 @@ def lr_summary(
 def lr_n_spots(
     adata,
     n_top: int = 100,
-    font_dict: dict = None,
-    xtick_dict: dict = None,
+    font_dict: dict | None = None,
+    xtick_dict: dict | None = None,
     bar_width: float = 1,
     max_text: int = 50,
     non_sig_color: str = "dodgerblue",
@@ -261,10 +261,10 @@ def lr_n_spots(
 def lr_go(
     adata,
     n_top: int = 20,
-    highlight_go: list = None,
+    highlight_go: list | None = None,
     figsize=(6, 4),
     rot: float = 50,
-    lr_text_fp: dict = None,
+    lr_text_fp: dict | None = None,
     highlight_color: str = "yellow",
     max_text: int = 50,
     show: bool = True,
@@ -361,12 +361,11 @@ def cci_check(
     xs = np.array(list(range(len(label_set))))
     int_dfs = adata.uns[f"per_lr_cci_{use_label}"]
 
-    # Counting!!! #
-    cell_counts = []  # Cell type frequencies
-    cell_sigs = []  # Cell type significant interactions
+    cell_counts: np.ndarray = np.zeros(len(label_set), dtype=int)
+    cell_sigs: np.ndarray = np.zeros(len(label_set), dtype=int)
     for j, label in enumerate(label_set):
         counts = sum(labels == label)
-        cell_counts.append(counts)
+        cell_counts[j] = counts
 
         int_count = 0
         for lr in int_dfs:
@@ -378,11 +377,9 @@ def cci_check(
             # prevent double counts
             int_count -= int_bool[label_index, label_index]
 
-        cell_sigs.append(int_count)
+        cell_sigs[j] = int_count
 
-    cell_counts = np.array(cell_counts)
-    cell_sigs = np.array(cell_sigs)
-    order = np.argsort(cell_counts)
+    order: np.ndarray = np.argsort(cell_counts)
     cell_counts = cell_counts[order]
     cell_sigs = cell_sigs[order]
     colors = np.array(colors)[order]
@@ -448,8 +445,8 @@ def lr_result_plot(
     dpi: int | None = 120,
     contour: bool = False,
     step_size: int | None = None,
-    vmin: float = None,
-    vmax: float = None,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ):
     """Plots the per spot statistics for given LR.
 
@@ -544,7 +541,7 @@ def lr_plot(
     lr: str,
     min_expr: float = 0,
     sig_spots=True,
-    use_label: str = None,
+    use_label: str | None = None,
     outer_mode: str = "continuous",
     l_cmap=None,
     r_cmap=None,
@@ -557,19 +554,19 @@ def lr_plot(
     title="",
     show_image: bool = True,
     show_arrows: bool = False,
-    fig: plt_figure.Figure = None,
-    ax: plt_axis.Axes = None,
+    fig_or_none: plt_figure.Figure | None = None,
+    ax_or_none: plt_axis.Axes | None = None,
     arrow_head_width: float = 4,
     arrow_width: float = 0.001,
-    arrow_cmap: str = None,
-    arrow_vmax: float = None,
+    arrow_cmap: str | None = None,
+    arrow_vmax: float | None = None,
     sig_cci: bool = False,
-    lr_colors: dict = None,
+    lr_colors: dict | None = None,
     figsize: tuple = (6.4, 4.8),
-    use_mix: bool = None,
+    use_mix: bool | None = None,
     # plotting params
     **kwargs,
-) -> AnnData | None:
+) -> None:
     """Creates different kinds of spatial visualisations for the LR analysis results.
         To see combinations of parameters refer to stLearn CCI tutorial.
 
@@ -621,9 +618,9 @@ def lr_plot(
         Whether to show the background image.
     show_arrows: bool
         Whether to plot arrows indicating interactions between spots.
-    fig: Figure
+    fig_or_none: Figure
         Figure to draw on.
-    ax: Axes
+    ax_or_none: Axes
         Axes to draw on.
     arrow_head_width: float
         Width of arrow head; only if show_arrows is true.
@@ -735,8 +732,8 @@ def lr_plot(
         adata_full = adata
 
     # Dealing with the axis #
-    if fig is None or ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
+    if fig_or_none is None or ax_or_none is None:
+        fig, ax = plt.pyplot.subplots(figsize=figsize)
 
     expr = adata.to_df()
     l_expr = expr.loc[:, ligand].values
@@ -885,18 +882,6 @@ def lr_plot(
             arrow_cmap,
             arrow_vmax,
         )
-
-    # Cropping #
-    # if crop:
-    #     x0, x1 = ax.get_xlim()
-    #     y0, y1 = ax.get_ylim()
-    #     x_margin, y_margin = (x1-x0)*margin_ratio, (y1-y0)*margin_ratio
-    #     print(x_margin, y_margin)
-    #     print(x0, x1, y0, y1)
-    #     ax.set_xlim(x0 - x_margin, x1 + x_margin)
-    #     ax.set_ylim(y0 - y_margin, y1 + y_margin)
-    #     #ax.set_ylim(ax.get_ylim()[::-1])
-
     fig.suptitle(title)
 
 
@@ -919,7 +904,7 @@ def het_plot(
     show_color_bar: bool | None = True,
     zoom_coord: float | None = None,
     crop: bool | None = True,
-    margin: bool | None = 100,
+    margin: float | None = 100,
     size: float | None = 7,
     image_alpha: float | None = 1.0,
     cell_alpha: float | None = 1.0,
@@ -930,9 +915,9 @@ def het_plot(
     use_het: str | None = "het",
     contour: bool = False,
     step_size: int | None = None,
-    vmin: float = None,
-    vmax: float = None,
-) -> AnnData | None:
+    vmin: float | None = None,
+    vmax: float | None = None,
+) -> None:
     """\
     Allows the visualization of significant cell-cell interaction
     as the values of dot points or contour in the Spatial
@@ -1217,10 +1202,12 @@ def cci_map(
     # Either plotting overall interactions, or just for a particular LR #
     int_df, title = get_int_df(adata, lr_or_none, use_label, sig_interactions, title)
 
-    figsize: tuple = figsize_or_none
+    figsize: tuple
     if figsize_or_none is None:  # Adjust size depending on no. cell types
         add = np.array([int_df.shape[0] * 0.1, int_df.shape[0] * 0.05])
         figsize = tuple(np.array([6.4, 4.8]) + add)
+    else:
+        figsize = figsize_or_none
 
     # Rank by total interactions #
     int_vals = int_df.values

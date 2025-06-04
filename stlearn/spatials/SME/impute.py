@@ -90,7 +90,7 @@ def pseudo_spot(
     adata: AnnData,
     tile_path: Path | str = Path("/tmp/tiles"),
     use_data: str = "raw",
-    crop_size: int = "auto",
+    crop_size: str | int = "auto",
     platform: _PLATFORM = "Visium",
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     copy: _COPY = "pseudo_spot_adata",
@@ -279,10 +279,14 @@ def pseudo_spot(
     pseudo_spot_adata = AnnData(impute_df, obs=obs_df)
     pseudo_spot_adata.uns["spatial"] = adata.uns["spatial"]
 
+    actual_crop_size: int
     if crop_size == "auto":
-        crop_size = round(unit / 2)
-
-    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=crop_size)
+        actual_crop_size = round(unit / 2)
+    elif isinstance(crop_size, int):
+        actual_crop_size = crop_size
+    else:
+        raise ValueError(f"crop_size must be 'auto' or an integer, got {crop_size}")
+    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=actual_crop_size)
 
     stlearn.pp.extract_feature(pseudo_spot_adata)
 

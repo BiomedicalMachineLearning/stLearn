@@ -16,18 +16,18 @@ import stlearn
 
 from .._compat import Literal
 
-_QUALITY = Literal["fulres", "hires", "lowres"]
-_background = ["black", "white"]
+_Quality = Literal["fulres", "hires", "lowres"]
+_Background = Literal["black", "white"]
 
 
 def Read10X(
     path: str | Path,
     genome: str | None = None,
     count_file: str = "filtered_feature_bc_matrix.h5",
-    library_id: str = None,
-    load_images: bool | None = True,
-    quality: _QUALITY = "hires",
-    image_path: str | Path = None,
+    library_id: str | None = None,
+    load_images: bool = True,
+    quality: _Quality = "hires",
+    image_path: str | Path | None = None,
 ) -> AnnData:
     """\
     Read Visium data from 10X (wrap read_visium from scanpy)
@@ -96,9 +96,9 @@ def Read10X(
 
     with File(path / count_file, mode="r") as f:
         attrs = dict(f.attrs)
+
     if library_id is None:
         library_id = str(attrs.pop("library_ids")[0], "utf-8")
-
     adata.uns["spatial"][library_id] = dict()
 
     tissue_positions_file = (
@@ -170,32 +170,33 @@ def Read10X(
             inplace=True,
         )
 
-        # put image path in uns
-        if image_path is not None:
-            # get an absolute path
-            image_path = str(Path(image_path).resolve())
-            adata.uns["spatial"][library_id]["metadata"]["source_image_path"] = str(
-                image_path
-            )
+        if quality == "fulres":
+            # put image path in uns
+            if image_path is not None:
+                # get an absolute path
+                image_path = str(Path(image_path).resolve())
+                adata.uns["spatial"][library_id]["metadata"]["source_image_path"] = str(
+                    image_path
+                )
+            else:
+                raise ValueError(
+                    "Trying to load fulres but no image_path set."
+                )
+
+            image_coor = adata.obsm["spatial"]
+            img = plt.imread(image_path, None)
+            adata.uns["spatial"][library_id]["images"]["fulres"] = img
+        else:
+            scale = adata.uns["spatial"][library_id]["scalefactors"][
+                "tissue_" + quality + "_scalef"
+            ]
+            image_coor = adata.obsm["spatial"] * scale
+
+        adata.obs["imagecol"] = image_coor[:, 0]
+        adata.obs["imagerow"] = image_coor[:, 1]
+        adata.uns["spatial"][library_id]["use_quality"] = quality
 
     adata.var_names_make_unique()
-
-    if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
-
-    if quality == "fulres":
-        image_coor = adata.obsm["spatial"]
-        img = plt.imread(image_path, 0)
-        adata.uns["spatial"][library_id]["images"]["fulres"] = img
-    else:
-        scale = adata.uns["spatial"][library_id]["scalefactors"][
-            "tissue_" + quality + "_scalef"
-        ]
-        image_coor = adata.obsm["spatial"] * scale
-
-    adata.obs["imagecol"] = image_coor[:, 0]
-    adata.obs["imagerow"] = image_coor[:, 1]
-    adata.uns["spatial"][library_id]["use_quality"] = quality
 
     adata.obs["array_row"] = adata.obs["array_row"].astype(int)
     adata.obs["array_col"] = adata.obs["array_col"].astype(int)
@@ -205,9 +206,9 @@ def Read10X(
 
 
 def ReadOldST(
-    count_matrix_file: str | Path = None,
-    spatial_file: str | Path = None,
-    image_file: str | Path = None,
+    count_matrix_file: str | Path | None = None,
+    spatial_file: str | Path | None = None,
+    image_file: str | Path | None = None,
     library_id: str = "OldST",
     scale: float = 1.0,
     quality: str = "hires",
@@ -257,11 +258,11 @@ def ReadOldST(
 def ReadSlideSeq(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
-    library_id: str = None,
-    scale: float = None,
+    library_id: str| None  = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Slide-seq data
@@ -340,11 +341,11 @@ def ReadSlideSeq(
 def ReadMERFISH(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
-    library_id: str = None,
-    scale: float = None,
+    library_id: str | None = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read MERFISH data
@@ -423,12 +424,12 @@ def ReadMERFISH(
 def ReadSeqFish(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
-    library_id: str = None,
+    library_id: str | None = None,
     scale: float = 1.0,
     quality: str = "hires",
     field: int = 0,
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read SeqFish data
@@ -512,11 +513,11 @@ def ReadXenium(
     feature_cell_matrix_file: str | Path,
     cell_summary_file: str | Path,
     image_path: Path | None = None,
-    library_id: str = None,
+    library_id: str | None = None,
     scale: float = 1.0,
     quality: str = "hires",
     spot_diameter_fullres: float = 15,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Xenium data
@@ -606,10 +607,10 @@ def create_stlearn(
     spatial: pd.DataFrame,
     library_id: str,
     image_path: Path | None = None,
-    scale: float = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ):
     """\
     Create AnnData object for stLearn

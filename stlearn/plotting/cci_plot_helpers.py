@@ -32,7 +32,7 @@ def lr_scatter(
     show=True,
     max_text=100,
     highlight_color="red",
-    figsize: tuple = None,
+    figsize: tuple | None = None,
     show_all: bool = False,
 ):
     """General plotting of the LR features."""
@@ -227,8 +227,8 @@ def add_arrows(
     sig_bool: np.array,
     fig,
     ax: Axes,
-    use_label: str,
-    int_df: pd.DataFrame,
+    use_label: str | None,
+    int_df: pd.DataFrame | None,
     head_width=4,
     width=0.001,
     arrow_cmap=None,

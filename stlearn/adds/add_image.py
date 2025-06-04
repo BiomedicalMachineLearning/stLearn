@@ -10,7 +10,7 @@ Image.MAX_IMAGE_PIXELS = None
 
 def image(
     adata: AnnData,
-    imgpath: Path | str,
+    imgpath: Path | str | None,
     library_id: str,
     quality: str = "hires",
     scale: float = 1.0,

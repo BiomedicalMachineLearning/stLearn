@@ -42,7 +42,7 @@ class SpatialBasePlot(Spatial):
         color_bar_label: str | None = "",
         zoom_coord: float | None = None,
         crop: bool | None = True,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 7,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 0.7,
@@ -243,7 +243,7 @@ class GenePlot(SpatialBasePlot):
         color_bar_label: str | None = "",
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 7,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,
@@ -1124,7 +1124,7 @@ class CciPlot(GenePlot):
         show_color_bar: bool | None = True,
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 7,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,
@@ -1135,8 +1135,8 @@ class CciPlot(GenePlot):
         use_het: str | None = "het",
         contour: bool = False,
         step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -1194,7 +1194,7 @@ class LrResultPlot(GenePlot):
         show_color_bar: bool | None = True,
         crop: bool | None = True,
         zoom_coord: float | None = None,
-        margin: bool | None = 100,
+        margin: float | None = 100,
         size: float | None = 7,
         image_alpha: float | None = 1.0,
         cell_alpha: float | None = 1.0,
@@ -1204,8 +1204,8 @@ class LrResultPlot(GenePlot):
         # cci_rank param
         contour: bool = False,
         step_size: int | None = None,
-        vmin: float = None,
-        vmax: float = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         # Making sure cci_rank has been run first #

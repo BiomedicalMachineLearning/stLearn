@@ -6,7 +6,7 @@ from anndata import AnnData
 
 def parsing(
     adata: AnnData,
-    coordinates_file: Path | str,
+    coordinates_file: Path | str | None,
     copy: bool = True,
 ) -> AnnData | None:
     """\
