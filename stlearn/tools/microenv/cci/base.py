@@ -71,7 +71,7 @@ def lr(
     # return adata
 
 
-def calc_distance(adata: AnnData, distance: float):
+def calc_distance(adata: AnnData, distance: float | None):
     """Automatically calculate distance if not given, won't overwrite \
         distance=0 which is within-spot.
     Parameters
@@ -95,7 +95,7 @@ def calc_distance(adata: AnnData, distance: float):
             scalefactors["spot_diameter_fullres"]
             * scalefactors[
                 "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
-            ]
+                ]
             * 2
         )
     return distance
@@ -103,34 +103,34 @@ def calc_distance(adata: AnnData, distance: float):
 
 def get_lrs_scores(
     adata: AnnData,
-    lrs: np.array,
-    neighbours: np.array,
-    het_vals: np.array,
+    lrs: np.ndarray,
+    neighbours: np.ndarray,
+    het_vals: np.ndarray,
     min_expr: float,
     filter_pairs: bool = True,
-    spot_indices: np.array = None,
+    spot_indices: np.ndarray | None = None,
 ):
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
     ----------
     adata: AnnData
         See run() doc-string.
-    lrs: np.array
+    lrs: np.ndarray
         See run() doc-string.
-    neighbours: np.array
+    neighbours: np.ndarray
         Array of arrays with indices specifying neighbours of each spot.
-    het_vals: np.array
+    het_vals: np.ndarray
         Cell heterogeneity counts per spot.
     min_expr: float
         Minimum gene expression of either L or R for spot to be considered to
         have reasonable score.
     filter_pairs: bool
         Whether to filter to valid pairs or not.
-    spot_indices: np.array
+    spot_indices: np.ndarray
         Array of integers speci
     Returns
     -------
-    lrs: np.array   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    lrs: np.ndarray   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
     if spot_indices is None:
         spot_indices = np.array(list(range(len(adata))), dtype=np.int32)
@@ -141,28 +141,24 @@ def get_lrs_scores(
     spot_lr2s = get_spot_lrs(
         adata, lr_pairs=lrs, lr_order=False, filter_pairs=filter_pairs
     )
-    if filter_pairs:
-        lrs = np.array(
-            [
-                "_".join(spot_lr1s.columns.values[i : i + 2])
-                for i in range(0, spot_lr1s.shape[1], 2)
-            ]
-        )
-
     # Calculating the lr_scores across spots for the inputted lrs #
     lr_scores = get_scores(
         spot_lr1s.values, spot_lr2s.values, neighbours, het_vals, min_expr, spot_indices
     )
 
-    if filter_pairs:
-        return lr_scores, lrs
-    else:
-        return lr_scores
+    new_lrs = np.array(
+        [
+            "_".join(spot_lr1s.columns.values[i: i + 2])
+            for i in range(0, spot_lr1s.shape[1], 2)
+        ]
+    )
+
+    return lr_scores, new_lrs
 
 
 def get_spot_lrs(
     adata: AnnData,
-    lr_pairs: list,
+    lr_pairs: np.ndarray,
     lr_order: bool,
     filter_pairs: bool = True,
 ):
@@ -171,8 +167,8 @@ def get_spot_lrs(
     ----------
     adata (AnnData):
         The adata object to scan
-    lr_pairs (list):
-        List of the lr pairs (e.g. ['L1_R1', 'L2_R2',...]
+    lr_pairs (np.ndarray):
+        np.ndarray of the lr pairs (e.g. ['L1_R1', 'L2_R2',...]
     lr_order (bool):
         Forward version of the spot lr pairs (L1_R1), False indicates reverse (R1_L1)
     filter_pairs (bool):
@@ -204,7 +200,7 @@ def get_spot_lrs(
 
 def calc_neighbours(
     adata: AnnData,
-    distance: float = None,
+    distance: float | None = None,
     index: bool = True,
     verbose: bool = True,
 ) -> List:
@@ -365,10 +361,10 @@ def get_scores(
     spot_lr1s: np.ndarray,
     spot_lr2s: np.ndarray,
     neighbours: List,
-    het_vals: np.array,
+    het_vals: np.ndarray,
     min_expr: float,
-    spot_indices: np.array,
-) -> np.array:
+    spot_indices: np.ndarray,
+) -> np.ndarray:
     """Calculates the scores.
     Parameters
     ----------
@@ -390,7 +386,7 @@ def get_scores(
     spot_scores = np.zeros((len(spot_indices), spot_lr1s.shape[1] // 2), np.float64)
     for i in prange(0, spot_lr1s.shape[1] // 2):
         i_ = i * 2  # equivalent to range(0, spot_lr1s.shape[1], 2)
-        spot_lr1, spot_lr2 = spot_lr1s[:, i_ : (i_ + 2)], spot_lr2s[:, i_ : (i_ + 2)]
+        spot_lr1, spot_lr2 = spot_lr1s[:, i_: (i_ + 2)], spot_lr2s[:, i_: (i_ + 2)]
         lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr, spot_indices)
         # The merge scores #
         lr_scores = np.multiply(het_vals[spot_indices], lr_scores)
@@ -450,7 +446,7 @@ def lr_grid(
             & (coor["imagecol"] < grid[0] + width)
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
-        ]
+            ]
         df_grid.loc[n] = df.loc[spots.index].sum()
 
     # expand the LR pairs list by swapping ligand-receptor positions

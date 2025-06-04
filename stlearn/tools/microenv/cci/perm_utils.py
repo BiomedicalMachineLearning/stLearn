@@ -372,7 +372,7 @@ def get_lr_bg(
     rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
     spot_indices = np.where(lr_score > 0)[0]
 
-    background = get_lrs_scores(
+    background, _ = get_lrs_scores(
         adata,
         rand_pairs,
         neighbours,

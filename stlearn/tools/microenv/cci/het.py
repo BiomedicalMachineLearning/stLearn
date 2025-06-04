@@ -17,10 +17,10 @@ from stlearn.tools.microenv.cci.het_helpers import (
 
 def count(
     adata: AnnData,
-    use_label: str = None,
+    use_label: str | None = None,
     use_het: str = "cci_het",
     verbose: bool = True,
-    distance: float = None,
+    distance: float | None = None,
 ) -> AnnData:
     """Count the cell type densities
     Parameters

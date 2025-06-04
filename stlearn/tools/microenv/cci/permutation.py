@@ -273,7 +273,7 @@ def perform_perm_testing(
 
                 # Calculating the background #
                 rand_pairs = get_rand_pairs(adata, genes, n_pairs, lrs=lrs, im=group_im)
-                background = get_lrs_scores(
+                background, _ = get_lrs_scores(
                     adata,
                     rand_pairs,
                     neighbours,

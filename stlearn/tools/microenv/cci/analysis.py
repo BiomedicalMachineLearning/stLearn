@@ -25,7 +25,7 @@ from .permutation import perform_spot_testing
 
 
 # Functions related to Ligand-Receptor interactions
-def load_lrs(names: str | list | None = None, species: str = "human") -> np.array:
+def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndarray:
     """Loads inputted LR database, & concatenates into consistent database set of
     pairs without duplicates. If None loads 'connectomeDB2020_lit'.
 
@@ -53,12 +53,12 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.arra
     for db in dbs:
         lrs = [f"{db.values[i,0]}_{db.values[i,1]}" for i in range(db.shape[0])]
         lrs_full.extend(lrs)
-    lrs_full = np.unique(lrs_full)
+    lrs_full_arr = np.unique(np.array(lrs_full))
     # If dealing with mouse, need to reformat #
     if species == "mouse":
         genes1 = [lr_.split("_")[0] for lr_ in lrs_full]
         genes2 = [lr_.split("_")[1] for lr_ in lrs_full]
-        lrs_full = np.array(
+        lrs_full_arr = np.array(
             [
                 genes1[i][0]
                 + genes1[i][1:].lower()
@@ -69,14 +69,14 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.arra
             ]
         )
 
-    return lrs_full
+    return lrs_full_arr
 
 
 def grid(
     adata,
     n_row: int = 10,
     n_col: int = 10,
-    use_label: str = None,
+    use_label: str | None = None,
     n_cpus: int = 1,
     verbose: bool = True,
 ):
@@ -165,7 +165,7 @@ def grid(
     grid_data.obsm["spatial"] = grid_coords
     grid_data.uns["spatial"] = adata.uns["spatial"]
 
-    if use_label is not None:
+    if use_label is not None and cell_info is not None and cell_set is not None:
         grid_data.uns[use_label] = pd.DataFrame(
             cell_info, index=grid_data.obs_names.values.astype(str), columns=cell_set
         )
@@ -192,12 +192,12 @@ def grid(
 
 def run(
     adata: AnnData,
-    lrs: np.array,
+    lrs: np.ndarray,
     min_spots: int = 10,
-    distance: int = None,
+    distance: int | None = None,
     n_pairs: int = 1000,
-    n_cpus: int = None,
-    use_label: str = None,
+    n_cpus: int | None = None,
+    use_label: str | None = None,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
     min_expr: float = 0,
@@ -211,7 +211,7 @@ def run(
     -----------
     adata: AnnData
         The data object.
-    lrs: np.array
+    lrs: np.ndarray
         The LR pairs to score/test for enrichment (in format 'L1_R1').
     min_spots: int
         Minimum number of spots with an LR score for an LR to be considered for
@@ -261,7 +261,7 @@ def run(
             referring to the LRs listed in adata.uns['lr_summary']. 'lr_scores'
             is the raw scores, while 'lr_sig_scores' is the same except only for
             significant scores; non-significant scores are set to zero.
-        adata.obsm['het']
+        adata.obsm['cci_het']
             Only if use_label specified; contains the counts of the cell types found
             per spot.
     """
@@ -317,7 +317,7 @@ def run(
             print("Calculating cell heterogeneity...")
 
         # Calculating cell heterogeneity #
-        count(adata, distance=distance, use_label=use_label, use_het=use_label)
+        count(adata, distance=distance, use_label=use_label)
 
     het_vals = (
         np.array([1] * len(adata))
@@ -328,13 +328,13 @@ def run(
     """ 1. Filter any LRs without stored expression.
     """
     # Calculating the lr_scores across spots for the inputted lrs #
-    lr_scores, lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, min_expr)
+    lr_scores, new_lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, min_expr)
     lr_bool = (lr_scores > 0).sum(axis=0) > min_spots
-    lrs = lrs[lr_bool]
+    new_lrs = new_lrs[lr_bool]
     lr_scores = lr_scores[:, lr_bool]
     if verbose:
-        print("Altogether " + str(len(lrs)) + " valid L-R pairs")
-    if len(lrs) == 0:
+        print("Altogether " + str(len(new_lrs)) + " valid L-R pairs")
+    if len(new_lrs) == 0:
         print("Exiting due to lack of valid LR pairs.")
         return
 
@@ -343,7 +343,7 @@ def run(
     perform_spot_testing(
         adata,
         lr_scores,
-        lrs,
+        new_lrs,
         n_pairs,
         neighbours,
         het_vals,
@@ -442,7 +442,7 @@ def run_lr_go(
     adata: AnnData,
     r_path: str,
     n_top: int = 100,
-    bg_genes: np.array = None,
+    bg_genes: np.ndarray | None = None,
     min_sig_spots: int = 1,
     species: str = "human",
     p_cutoff: float = 0.01,
@@ -497,7 +497,8 @@ def run_lr_go(
     # Determining the background genes if not inputted
     if bg_genes is None:
         all_lrs = load_lrs("connectomeDB2020_put")
-        bg_genes = np.unique([lr_.split("_") for lr_ in all_lrs])
+        all_genes = [lr_.split("_") for lr_ in all_lrs]
+        bg_genes = np.unique(all_genes)
 
     # Running the GO analysis
     go_results = run_GO(
