@@ -87,7 +87,7 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 5. When you're done making changes, check that your changes pass linters and tests::
 
     $ black stlearn tests
-    $ flake8 stlearn tests
+    $ ruff check stlearn tests
     $ mypy stlearn tests
     $ pytest
 

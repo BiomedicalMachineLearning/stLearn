@@ -2,22 +2,21 @@ import importlib
 import math
 import sys
 from typing import (
-    Optional, Any,  # Special
+    Any,
+    Optional,  # Special
 )
 
 import matplotlib
+import matplotlib as plt
+import matplotlib.axes as plt_axis
+import matplotlib.figure as plt_figure
 import matplotlib.patches as patches
 import networkx as nx
 import numpy as np
 import pandas as pd
-import matplotlib as plt
-import matplotlib.axes as plt_axis
-import matplotlib.figure as plt_figure
 from anndata import AnnData
 from bokeh.io import output_notebook
 from bokeh.plotting import show
-from numpy.typing import NDArray
-
 from scipy.stats import gaussian_kde
 
 import stlearn.plotting.cci_plot_helpers as cci_hs
@@ -1240,7 +1239,7 @@ def cci_map(
 def lr_cci_map(
     adata: AnnData,
     use_label: str,
-    lrs: Optional[list | np.ndarray] = None,
+    lrs: list | np.ndarray | None = None,
     n_top_lrs: int = 5,
     n_top_ccis: int = 15,
     min_total: int = 0,
@@ -1262,8 +1261,8 @@ def lr_cci_map(
         Indicates the cell type labels or deconvolution results used for
         the cell-cell interaction counting by LR pairs.
     lrs: list-like
-        LR pairs to show in the heatmap, if None then top 5 lrs with the highest no. of interactions used from
-        adata.uns['lr_summary'].
+        LR pairs to show in the heatmap, if None then top 5 lrs with the highest
+        no. of interactions used from adata.uns['lr_summary'].
     n_top_lrs: int
         Indicates how many top lrs to show; is ignored if lrs is not None.
     n_top_ccis: int
