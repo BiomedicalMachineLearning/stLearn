@@ -6,7 +6,7 @@ from enum import IntEnum
 from logging import getLevelName
 from pathlib import Path
 from time import time
-from typing import Any, TextIO
+from typing import Any, TextIO, Iterator
 
 from . import logging
 from ._compat import Literal
@@ -15,7 +15,7 @@ from .logging import _RootLogger, _set_log_file, _set_log_level
 # All the code here migrated from scanpy
 # It help to work with scanpy package
 
-_VERBOSITY_TO_LOGLEVEL = {
+_VERBOSITY_TO_LOGLEVEL: dict[str | int, str] = {
     "error": "ERROR",
     "warning": "WARNING",
     "info": "INFO",
@@ -40,7 +40,7 @@ class Verbosity(IntEnum):
         return getLevelName(_VERBOSITY_TO_LOGLEVEL[self])
 
     @contextmanager
-    def override(self, verbosity: "Verbosity") -> AbstractContextManager["Verbosity"]:
+    def override(self, verbosity: "Verbosity") -> Iterator["Verbosity"]:
         """\
         Temporarily override verbosity
         """
@@ -66,6 +66,9 @@ class stLearnConfig:  # noqa N801
     """\
     Config manager for scanpy.
     """
+    _logpath: Path | None
+    _logfile: TextIO
+    _verbosity: Verbosity
 
     def __init__(
         self,
@@ -144,9 +147,9 @@ class stLearnConfig:  # noqa N801
             v for v in _VERBOSITY_TO_LOGLEVEL if isinstance(v, str)
         ]
         if isinstance(verbosity, Verbosity):
-            self._verbosity = verbosity
+            new_verbosity = verbosity
         elif isinstance(verbosity, int):
-            self._verbosity = Verbosity(verbosity)
+            new_verbosity = Verbosity(verbosity)
         elif isinstance(verbosity, str):
             verbosity = verbosity.lower()
             if verbosity not in verbosity_str_options:
@@ -155,10 +158,9 @@ class stLearnConfig:  # noqa N801
                     f"Accepted string values are: {verbosity_str_options}"
                 )
             else:
-                self._verbosity = Verbosity(verbosity_str_options.index(verbosity))
-        else:
-            _type_check(verbosity, "verbosity", (str, int))
-        _set_log_level(self, _VERBOSITY_TO_LOGLEVEL[self._verbosity])
+                new_verbosity = Verbosity(verbosity_str_options.index(verbosity))
+        self._verbosity = new_verbosity
+        _set_log_level(self, self._verbosity)
 
     @property
     def plot_suffix(self) -> str:
@@ -334,10 +336,13 @@ class stLearnConfig:  # noqa N801
 
     @logpath.setter
     def logpath(self, logpath: str | Path | None):
-        _type_check(logpath, "logfile", (str, Path))
-        # set via “file object” branch of logfile.setter
-        self.logfile = Path(logpath).open("a")
-        self._logpath = Path(logpath)
+        if logpath is None:
+            self._logpath = None
+        else:
+            _type_check(logpath, "logpath", (str, Path))
+            # set via “file object” branch of logfile.setter
+            self.logfile = Path(logpath).open("a")
+            self._logpath = Path(logpath)
 
     @property
     def logfile(self) -> TextIO:
@@ -355,14 +360,17 @@ class stLearnConfig:  # noqa N801
 
     @logfile.setter
     def logfile(self, logfile: str | Path | TextIO | None):
-        if not hasattr(logfile, "write") and logfile:
-            self.logpath = logfile
-        else:  # file object
-            if not logfile:  # None or ''
-                logfile = sys.stdout if self._is_run_from_ipython() else sys.stderr
+        if logfile is None or logfile == "":
+            self._logfile = sys.stdout if self._is_run_from_ipython() else sys.stderr
+            self._logpath = None
+        elif isinstance(logfile, (str, Path)):
+            path = Path(logfile)
+            self._logfile = path.open("a")
+            self._logpath = path
+        elif isinstance(logfile, TextIO):
             self._logfile = logfile
             self._logpath = None
-            _set_log_file(self)
+        _set_log_file(self)
 
     @property
     def categories_to_ignore(self) -> list[str]:
@@ -443,9 +451,7 @@ class stLearnConfig:  # noqa N801
         try:
             import IPython
 
-            if isinstance(ipython_format, str):
-                ipython_format = [ipython_format]
-            IPython.display.set_matplotlib_formats(*ipython_format)
+            IPython.display.set_matplotlib_formats(*[ipython_format])
         except Exception:
             pass
         from matplotlib import rcParams

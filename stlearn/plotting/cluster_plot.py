@@ -112,6 +112,8 @@ def cluster_plot(
         trajectory_arrowsize=trajectory_arrowsize,
     )
 
+    return adata
+
 
 def cluster_plot_interactive(
     adata: AnnData,

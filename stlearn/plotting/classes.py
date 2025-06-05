@@ -251,7 +251,7 @@ class GenePlot(SpatialBasePlot):
         fname: str | None = None,
         dpi: int | None = 120,
         # gene plot param
-        gene_symbols: str | list = None,
+        gene_symbols: str | list | None = None,
         threshold: float | None = None,
         method: str = "CumSum",
         contour: bool = False,

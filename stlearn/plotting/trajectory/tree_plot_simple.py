@@ -1,5 +1,6 @@
 import math
 import random
+from typing import Tuple
 
 import networkx as nx
 from anndata import AnnData
@@ -10,16 +11,16 @@ from stlearn.utils import _read_graph
 
 def tree_plot_simple(
     adata: AnnData,
-    library_id: str = None,
-    figsize: float | int = (10, 4),
+    library_id: str | None = None,
+    figsize: Tuple[float, float] = (10, 4),
     data_alpha: float = 1.0,
     use_label: str = "louvain",
     spot_size: float | int = 50,
     fontsize: int = 6,
     piesize: float = 0.15,
     zoom: float = 0.1,
-    name: str = None,
-    output: str = None,
+    name: str | None = None,
+    output: str | None = None,
     dpi: int = 180,
     show_all: bool = False,
     show_plot: bool = True,
@@ -103,6 +104,8 @@ def tree_plot_simple(
 
     if show_plot:
         plt.show()
+
+    return adata
 
 
 def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5):
