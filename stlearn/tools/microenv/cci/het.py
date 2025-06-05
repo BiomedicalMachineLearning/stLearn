@@ -448,7 +448,7 @@ def count_grid(
     adata: AnnData,
     num_row: int = 30,
     num_col: int = 30,
-    use_label: str = None,
+    use_label: str | None = None,
     use_het: str = "cci_het_grid",
     radius: int = 1,
     verbose: bool = True,
