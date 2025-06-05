@@ -6,7 +6,7 @@ from natsort import natsorted
 
 def labels(
     adata: AnnData,
-    label_filepath: str = None,
+    label_filepath: str,
     index_col: int = 0,
     use_label: str = None,
     sep: str = "\t",
