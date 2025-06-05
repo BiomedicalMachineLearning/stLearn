@@ -77,9 +77,9 @@ def add_mask(
 
 def apply_mask(
     adata: AnnData,
-    masks: list | None = "all",
+    masks: list | str = "all",
     select: str = "black",
-    cmap: str = "default",
+    cmap_name: str = "default",
     copy: bool = False,
 ) -> AnnData | None:
     """\
@@ -108,17 +108,17 @@ def apply_mask(
 
     from stlearn.plotting import palettes_st
 
-    if cmap == "vega_10_scanpy":
+    if cmap_name == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
-    elif cmap == "vega_20_scanpy":
+    elif cmap_name == "vega_20_scanpy":
         cmap = palettes.vega_20_scanpy
-    elif cmap == "default_102":
+    elif cmap_name == "default_102":
         cmap = palettes.default_102
-    elif cmap == "default_28":
+    elif cmap_name == "default_28":
         cmap = palettes.default_28
-    elif cmap == "jana_40":
+    elif cmap_name == "jana_40":
         cmap = palettes_st.jana_40
-    elif cmap == "default":
+    elif cmap_name == "default":
         cmap = palettes_st.default
     else:
         raise ValueError(

@@ -27,6 +27,7 @@ def calculate_weight_matrix(
 
     from sklearn.linear_model import LinearRegression
 
+    rate: float
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
@@ -102,11 +103,12 @@ def calculate_weight_matrix(
             adata.uns["gene_expression_correlation"]
             * adata.uns["morphological_distance"]
         )
+    return adata
 
 
 def impute_neighbour(
     adata: AnnData,
-    count_embed: np.ndarray | None = None,
+    count_embed: np.ndarray,
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     copy: bool = False,
 ) -> AnnData | None:

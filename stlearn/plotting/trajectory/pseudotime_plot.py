@@ -9,10 +9,10 @@ from stlearn.utils import _read_graph
 
 def pseudotime_plot(
     adata: AnnData,
-    library_id: str = None,
+    library_id: str | None = None,
     use_label: str = "louvain",
     pseudotime_key: str = "pseudotime_key",
-    list_clusters: str | list = None,
+    list_clusters: str | list | None = None,
     cell_alpha: float = 1.0,
     image_alpha: float = 1.0,
     edge_alpha: float = 0.8,
@@ -29,8 +29,8 @@ def pseudotime_plot(
     cropped: bool = True,
     margin: int = 100,
     dpi: int = 150,
-    output: str = None,
-    name: str = None,
+    output: str | None = None,
+    name: str | None = None,
     copy: bool = False,
     ax=None,
 ) -> AnnData | None:
@@ -74,7 +74,9 @@ def pseudotime_plot(
     dpi
         DPI of the output figure.
     output
-        Save the figure as file or not.
+        The output folder of the plot.
+    name
+        The filename of the plot.
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -263,10 +265,12 @@ def pseudotime_plot(
         a.set_ylim(a.get_ylim()[::-1])
         # plt.gca().invert_yaxis()
 
-    if output is not None:
+    if output is not None and name is not None:
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
     if show_plot:
         plt.show()
+
+    return adata
 
 
 # get name of cluster by subcluster

@@ -1,3 +1,4 @@
+import networkx
 import networkx as nx
 import numpy as np
 from anndata import AnnData
@@ -8,15 +9,15 @@ from stlearn.utils import _read_graph
 
 def global_level(
     adata: AnnData,
+    list_clusters: list[str],
+    w: float,
     use_label: str = "louvain",
     use_rep: str = "X_pca",
     n_dims: int = 40,
-    list_clusters: list = [],
     return_graph: bool = False,
-    w: float = None,
     verbose: bool = True,
     copy: bool = False,
-) -> AnnData | None:
+) -> networkx.Graph | None:
     """\
     Perform global sptial trajectory inference.
 
@@ -26,12 +27,12 @@ def global_level(
         Annotated data matrix.
     list_clusters
         Setup a list of cluster to perform pseudo-space-time
+    w
+        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     use_label
         Use label result of cluster method.
     return_graph
         Return PTS graph
-    w
-        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -110,7 +111,7 @@ def global_level(
     centroid_dict = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
 
-    H_sub = H.edge_subgraph(edge_list)
+    H_sub: networkx.Graph = H.edge_subgraph(edge_list)
     if not nx.is_connected(H_sub.to_undirected()):
         raise ValueError(
             "The chosen clusters are not available to construct the spatial "
@@ -176,6 +177,8 @@ def global_level(
 
     if return_graph:
         return H_sub
+    else:
+        return None
 
 
 # Global level PTS

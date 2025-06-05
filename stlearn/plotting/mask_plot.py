@@ -5,17 +5,17 @@ from matplotlib import pyplot as plt
 
 def plot_mask(
     adata: AnnData,
-    library_id: str = None,
+    library_id: str | None = None,
     show_spot: bool = True,
     spot_alpha: float = 1.0,
-    cmap: str = "vega_20_scanpy",
+    cmap_name: str = "vega_20_scanpy",
     tissue_alpha: float = 1.0,
     mask_alpha: float = 0.5,
     spot_size: float | int = 6.5,
     show_legend: bool = True,
     name: str = "mask_plot",
     dpi: int = 150,
-    output: str = None,
+    output: str | None = None,
     show_axis: bool = False,
     show_plot: bool = True,
 ) -> AnnData | None:
@@ -60,17 +60,17 @@ def plot_mask(
 
     from stlearn.plotting import palettes_st
 
-    if cmap == "vega_10_scanpy":
+    if cmap_name == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
-    elif cmap == "vega_20_scanpy":
+    elif cmap_name == "vega_20_scanpy":
         cmap = palettes.vega_20_scanpy
-    elif cmap == "default_102":
+    elif cmap_name == "default_102":
         cmap = palettes.default_102
-    elif cmap == "default_28":
+    elif cmap_name == "default_28":
         cmap = palettes.default_28
-    elif cmap == "jana_40":
+    elif cmap_name == "jana_40":
         cmap = palettes_st.jana_40
-    elif cmap == "default":
+    elif cmap_name == "default":
         cmap = palettes_st.default
     else:
         raise ValueError(
@@ -172,3 +172,5 @@ def plot_mask(
 
     if show_plot:
         plt.show()
+
+    return adata

@@ -26,13 +26,13 @@ class Spatial:
         adata: AnnData,
         basis: str = "spatial",
         img: np.ndarray | None = None,
-        img_key: str | None | Empty = _empty,
-        library_id: str | None = _empty,
-        crop_coord: bool | None = True,
-        bw: bool | None = False,
+        img_key: str | Empty = _empty,
+        library_id: str | None = None,
+        crop_coord: bool = True,
+        bw: bool = False,
         scale_factor: float | None = None,
         spot_size: float | None = None,
-        use_raw: bool | None = False,
+        use_raw: bool = False,
         **kwargs,
     ):
 

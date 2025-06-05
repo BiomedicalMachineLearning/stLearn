@@ -7,7 +7,7 @@ from anndata import AnnData
 
 def pseudotime(
     adata: AnnData,
-    use_label: str = None,
+    use_label: str | None = None,
     eps: float = 20,
     n_neighbors: int = 25,
     use_rep: str = "X_pca",

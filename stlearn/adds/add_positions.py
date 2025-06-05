@@ -6,8 +6,8 @@ from anndata import AnnData
 
 def positions(
     adata: AnnData,
-    position_filepath: Path | str = None,
-    scale_filepath: Path | str = None,
+    position_filepath: Path | str,
+    scale_filepath: Path | str,
     quality: str = "low",
     copy: bool = False,
 ) -> AnnData | None:

@@ -5,19 +5,9 @@ from typing import Any
 from anndata import AnnData
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
-
-from stlearn._compat import Literal
-
-try:
-    from louvain.VertexPartition import MutableVertexPartition
-except ImportError:
-
-    class MutableVertexPartition:
-        pass
-
-    MutableVertexPartition.__module__ = "louvain.VertexPartition"
 import scanpy
-
+from stlearn._compat import Literal
+from louvain.VertexPartition import MutableVertexPartition
 
 def louvain(
     adata: AnnData,
@@ -106,3 +96,5 @@ def louvain(
     print(
         "Louvain cluster is done! The labels are stored in adata.obs['%s']" % key_added
     )
+
+    return adata

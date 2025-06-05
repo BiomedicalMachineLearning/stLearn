@@ -7,8 +7,8 @@ from mpl_toolkits.mplot3d import proj3d
 
 def local_plot(
     adata: AnnData,
+    use_cluster: int,
     use_label: str = "louvain",
-    use_cluster: int = None,
     reverse: bool = False,
     cluster: int = 0,
     data_alpha: float = 1.0,
@@ -18,9 +18,9 @@ def local_plot(
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_plot: bool = True,
-    name: str = None,
+    name: str | None = None,
     dpi: int = 150,
-    output: str = None,
+    output: str | None = None,
     copy: bool = False,
 ) -> AnnData | None:
     """\
@@ -184,6 +184,8 @@ def local_plot(
             print("The file name is not defined!")
             name = use_label
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
+
+    return adata
 
 
 def calculate_y(m):

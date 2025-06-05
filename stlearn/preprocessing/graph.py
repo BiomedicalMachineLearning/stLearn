@@ -113,3 +113,5 @@ def neighbors(
     )
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")
+
+    return adata

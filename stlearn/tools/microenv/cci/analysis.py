@@ -194,7 +194,7 @@ def run(
     adata: AnnData,
     lrs: np.ndarray,
     min_spots: int = 10,
-    distance: int | None = None,
+    distance: float | None = None,
     n_pairs: int = 1000,
     n_cpus: int | None = None,
     use_label: str | None = None,

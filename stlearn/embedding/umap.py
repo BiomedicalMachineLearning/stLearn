@@ -74,3 +74,5 @@ def run_umap(
     )
 
     print("UMAP is done! Generated in adata.obsm['X_umap'] nad adata.uns['umap']")
+
+    return adata

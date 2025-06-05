@@ -13,7 +13,7 @@ def normalize_total(
     exclude_highly_expressed: bool = False,
     max_fraction: float = 0.05,
     key_added: str | None = None,
-    layers: Literal["all"] | Iterable[str] = None,
+    layers: Literal["all"] | Iterable[str] | None = None,
     layer_norm: str | None = None,
     inplace: bool = True,
 ) -> dict[str, np.ndarray] | None:
@@ -71,7 +71,7 @@ def normalize_total(
     `adata.X` and `adata.layers`, depending on `inplace`.
     """
 
-    scanpy.pp.normalize_total(
+    t = scanpy.pp.normalize_total(
         adata,
         target_sum=target_sum,
         exclude_highly_expressed=exclude_highly_expressed,
@@ -83,3 +83,5 @@ def normalize_total(
     )
 
     print("Normalization step is finished in adata.X")
+
+    return t

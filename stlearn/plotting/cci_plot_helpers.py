@@ -1,4 +1,5 @@
 """Helper functions for cci_plot.py."""
+from typing import List, Tuple, Optional
 
 import matplotlib
 import matplotlib.cm as cm
@@ -221,18 +222,18 @@ def rank_scatter(
 
 def add_arrows(
     adata: AnnData,
-    l_expr: np.array,
-    r_expr: np.array,
+    l_expr: np.ndarray,
+    r_expr: np.ndarray,
     min_expr: float,
-    sig_bool: np.array,
+    sig_bool: np.ndarray,
     fig,
     ax: Axes,
     use_label: str | None,
     int_df: pd.DataFrame | None,
-    head_width=4,
-    width=0.001,
-    arrow_cmap=None,
-    arrow_vmax=None,
+    head_width: float = 4,
+    width: float = 0.001,
+    arrow_cmap: str | None =None,
+    arrow_vmax: float | None =None,
 ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
@@ -273,7 +274,7 @@ def add_arrows(
         interact_bool = int_df.values > 0
 
         # Subsetting to only significant CCI #
-        edges_sub = [[], []]  # forward, reverse
+        edges_sub: List[List[Tuple[str, str]]] = [[], []]  # forward, reverse
         # ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
         # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
@@ -299,7 +300,7 @@ def add_arrows(
 
     # If cmap specified, colour arrows by average LR expression on edge #
     if arrow_cmap is not None:
-        edges_means = [[], []]
+        edges_means: List[List[float]] = [[], []]
         all_means = []
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
@@ -320,7 +321,7 @@ def add_arrows(
         scalar_map = cm.ScalarMappable(norm=c_norm, cmap=cmap)
 
         # Determining the edge colors #
-        edges_colors = [[], []]
+        edges_colors: List[List[Tuple[float, float, float, float]]] = [[], []]
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
                 color_val = scalar_map.to_rgba(edges_means[i][j])
@@ -336,7 +337,7 @@ def add_arrows(
         axc = fig.add_axes(cax)
 
     else:
-        edges_colors = [None, None]
+        edges_colors = [[], []]
 
     # Now performing the plotting #
     # The arrows #
@@ -378,6 +379,8 @@ def add_arrows_by_edges(
     edge_colors=None,
     axc=None,
 ):
+    if edge_colors is None:
+        edge_colors = []
     """Adds the arrows using an edge list."""
     for i, edge in enumerate(edges):
         # cols = ["imagecol", "imagerow"]
@@ -394,7 +397,7 @@ def add_arrows_by_edges(
         x1, y1 = adata.obsm["spatial"][edge0_index, :] * scale_factor
         x2, y2 = adata.obsm["spatial"][edge1_index, :] * scale_factor
         dx, dy = (x2 - x1) * 0.75, (y2 - y1) * 0.75
-        arrow_color = "k" if edge_colors is None else edge_colors[i]
+        arrow_color = "k" if len(edge_colors) == 0 else edge_colors[i]
 
         ax.arrow(
             x1,

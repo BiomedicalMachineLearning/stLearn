@@ -8,9 +8,9 @@ def DE_transition_plot(
     adata: AnnData,
     top_genes: int = 10,
     font_size: int = 6,
-    name: str = None,
+    name: str | None = None,
     dpi: int = 150,
-    output: str = None,
+    output: str | None = None,
 ) -> AnnData | None:
     """\
     Differential expression between transition markers.
@@ -239,3 +239,5 @@ def DE_transition_plot(
     if output is not None:
         if name is not None:
             plt.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
+
+    return adata

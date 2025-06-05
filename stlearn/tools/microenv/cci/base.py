@@ -12,9 +12,9 @@ from .het import create_grids
 def lr(
     adata: AnnData,
     use_lr: str = "cci_lr",
-    distance: float = None,
+    distance: float | None = None,
     verbose: bool = True,
-    neighbours: list = None,
+    neighbours: list | None = None,
     fast: bool = True,
 ) -> AnnData:
     """Calculate the proportion of known ligand-receptor co-expression among the
@@ -27,7 +27,7 @@ def lr(
         object to keep the result (default: adata.uns['cci_lr'])
     distance: float
         Distance to determine the neighbours (default: closest), distance=0 means
-        within spot
+        within spot. If distance is None gets it from adata.uns["spatial"]
     neighbours: list
         List of the neighbours for each spot, if None then computed. Useful for
         speeding up function.
@@ -71,7 +71,7 @@ def lr(
     # return adata
 
 
-def calc_distance(adata: AnnData, distance: float | None):
+def calc_distance(adata: AnnData, distance: float | None) -> float:
     """Automatically calculate distance if not given, won't overwrite \
         distance=0 which is within-spot.
     Parameters
@@ -85,7 +85,7 @@ def calc_distance(adata: AnnData, distance: float | None):
     Returns
     -------
     distance: float
-        The automatically calcualted distance (or inputted distance)
+        The automatically calculate distance (or inputted distance)
     """
     if not distance and distance != 0:
         # for arranged-spots
