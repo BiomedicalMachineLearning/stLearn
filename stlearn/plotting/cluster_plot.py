@@ -1,5 +1,5 @@
 from typing import (
-    Optional,  # Special
+    Optional, Tuple,  # Special
 )
 
 import matplotlib
@@ -19,39 +19,39 @@ def cluster_plot(
     # plotting param
     title: Optional["str"] = None,
     figsize: tuple[float, float] | None = None,
-    cmap: str | None = "default",
+    cmap: str = "default",
     use_label: str | None = None,
     list_clusters: list | None = None,
     ax: matplotlib.axes.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
-    show_plot: bool | None = True,
-    show_axis: bool | None = False,
-    show_image: bool | None = True,
-    show_color_bar: bool | None = True,
-    zoom_coord: float | None = None,
-    crop: bool | None = True,
-    margin: float | None = 100,
-    size: float | None = 5,
-    image_alpha: float | None = 1.0,
-    cell_alpha: float | None = 1.0,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    zoom_coord: Tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 5,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 1.0,
     fname: str | None = None,
-    dpi: int | None = 120,
+    dpi: int = 120,
     # cluster plot param
-    show_subcluster: bool | None = False,
-    show_cluster_labels: bool | None = False,
-    show_trajectories: bool | None = False,
-    reverse: bool | None = False,
-    show_node: bool | None = False,
-    threshold_spots: int | None = 5,
-    text_box_size: float | None = 5,
-    color_bar_size: float | None = 10,
+    show_subcluster: bool = False,
+    show_cluster_labels: bool = False,
+    show_trajectories: bool = False,
+    reverse: bool = False,
+    show_node: bool = False,
+    threshold_spots: int = 5,
+    text_box_size: float = 5,
+    color_bar_size: float= 10,
     bbox_to_anchor: tuple[float, float] | None = (1, 1),
     # trajectory
-    trajectory_node_size: int | None = 10,
-    trajectory_alpha: float | None = 1.0,
-    trajectory_width: float | None = 2.5,
-    trajectory_edge_color: str | None = "#f4efd3",
-    trajectory_arrowsize: int | None = 17,
+    trajectory_node_size: int = 10,
+    trajectory_alpha: float = 1.0,
+    trajectory_width: float = 2.5,
+    trajectory_edge_color: str = "#f4efd3",
+    trajectory_arrowsize: int = 17,
 ) -> AnnData | None:
     """\
     Allows the visualization of a cluster results as the discretes values

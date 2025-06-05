@@ -68,12 +68,14 @@ def pseudotimespace_global(
         n_dims=n_dims,
     )
 
+    return adata
+
 
 def pseudotimespace_local(
     adata: AnnData,
     use_label: str = "louvain",
     cluster=None,
-    w: float = None,
+    w: float | None = None,
 ) -> AnnData | None:
     """\
     Perform pseudo-time-space analysis with local level.
@@ -99,3 +101,5 @@ def pseudotimespace_local(
         w = weight_optimizing_local(adata, use_label=use_label, cluster=cluster)
 
     local_level(adata, use_label=use_label, cluster=cluster, w=w)
+
+    return adata

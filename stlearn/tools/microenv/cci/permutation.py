@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -95,9 +96,9 @@ def perform_spot_testing(
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
         disable=verbose is False,
     ) as pbar:
-
-        gene_bg_genes = {}  # Keep track of genes which can be used to gen. rand-pairs.
-        spot_lr_indices = [
+        # Keep track of genes which can be used to gen. rand-pairs.
+        gene_bg_genes: dict[str, np.ndarray] = {}
+        spot_lr_indices: List[List[Any]] = [
             [] for i in range(lr_scores.shape[0])
         ]  # tracks the lrs tested in a given spot for MHT !!!!
         for lr_j in range(lr_scores.shape[1]):
@@ -215,11 +216,11 @@ def perform_perm_testing(
     adata: AnnData,
     lr_scores: np.ndarray,
     n_pairs: int,
-    lrs: np.array,
+    lrs: np.ndarray,
     lr_mid_dist: int,
     verbose: float,
     neighbours: List,
-    het_vals: np.array,
+    het_vals: np.ndarray,
     min_expr: float,
     neg_binom: bool,
     adj_method: str,
@@ -343,14 +344,14 @@ def perform_perm_testing(
 def permutation(
     adata: AnnData,
     n_pairs: int = 200,
-    distance: int = None,
+    distance: int = 30,
     use_lr: str = "cci_lr",
-    use_het: str = None,
+    use_het: str | None = None,
     neg_binom: bool = False,
     adj_method: str = "fdr",
-    neighbours: list = None,
+    neighbours: list | None = None,
     run_fast: bool = True,
-    bg_pairs: list = None,
+    bg_pairs: list | None = None,
     background: np.array = None,
     **kwargs,
 ) -> AnnData:
@@ -448,7 +449,7 @@ def permutation(
 
     # Negative Binomial fit
     pvals, pvals_adj, log10_pvals, lr_sign = get_stats(
-        scores, background, neg_binom, adj_method
+        scores, background, neg_binom, adj_method=adj_method
     )
 
     if use_het is not None:
@@ -577,8 +578,8 @@ def get_rand_pairs(
     adata: AnnData,
     genes: np.array,
     n_pairs: int,
-    lrs: list = None,
-    im: int = None,
+    lrs: list,
+    im: int | None = None,
 ):
     """Gets equivalent random gene pairs for the inputted lr pair.
     Parameters

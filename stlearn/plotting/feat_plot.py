@@ -3,7 +3,7 @@ Plotting of continuous features stored in adata.obs.
 """
 
 from typing import (
-    Optional,  # Special
+    Optional, Tuple,  # Special
 )
 
 import matplotlib
@@ -15,31 +15,31 @@ from stlearn.plotting.classes import FeaturePlot
 # @_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def feat_plot(
     adata: AnnData,
-    feature: str = None,
+    feature: str | None = None,
     threshold: float | None = None,
     contour: bool = False,
     step_size: int | None = None,
     title: Optional["str"] = None,
     figsize: tuple[float, float] | None = None,
-    cmap: str | None = "Spectral_r",
+    cmap: str = "Spectral_r",
     use_label: str | None = None,
     list_clusters: list | None = None,
     ax: matplotlib.axes.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
-    show_plot: bool | None = True,
-    show_axis: bool | None = False,
-    show_image: bool | None = True,
-    show_color_bar: bool | None = True,
-    color_bar_label: str | None = "",
-    zoom_coord: float | None = None,
-    crop: bool | None = True,
-    margin: float | None = 100,
-    size: float | None = 7,
-    image_alpha: float | None = 1.0,
-    cell_alpha: float | None = 0.7,
-    use_raw: bool | None = False,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    color_bar_label: str = "",
+    zoom_coord: Tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 7,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 0.7,
+    use_raw: bool = False,
     fname: str | None = None,
-    dpi: int | None = 120,
+    dpi: int = 120,
     vmin: float | None = None,
     vmax: float | None = None,
 ) -> AnnData | None:
@@ -90,3 +90,5 @@ def feat_plot(
         vmin=vmin,
         vmax=vmax,
     )
+
+    return adata

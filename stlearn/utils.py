@@ -96,13 +96,20 @@ def _check_img(
 
 
 def _check_coords(
-    obsm: Mapping | None, scale_factor: float | None
-) -> tuple[np.ndarray | None, np.ndarray | None]:
+        obsm: Mapping | None, scale_factor: float | None
+) -> tuple[np.ndarray, np.ndarray]:
+    if obsm is None:
+        raise ValueError("obsm cannot be None")
+    if scale_factor is None:
+        raise ValueError("scale_factor cannot be None")
+    if "spatial" not in obsm:
+        raise ValueError("'spatial' key not found in obsm")
+
     image_coor = obsm["spatial"] * scale_factor
     imagecol = image_coor[:, 0]
     imagerow = image_coor[:, 1]
 
-    return [imagecol, imagerow]
+    return (imagecol, imagerow)
 
 
 def _read_graph(adata: AnnData, graph_type: str | None):

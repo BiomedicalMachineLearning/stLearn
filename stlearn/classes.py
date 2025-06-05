@@ -19,6 +19,8 @@ from .utils import (
 
 
 class Spatial:
+    img: np.ndarray | None
+
     def __init__(
         self,
         adata: AnnData,

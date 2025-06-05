@@ -226,7 +226,7 @@ def get_similar_genesFAST(
     ref_quants: np.array,
     n_genes: int,
     candidate_quants: np.ndarray,
-    candidate_genes: np.array,
+    candidate_genes: np.ndarray,
 ):
     """Fast version of the above with parallelisation."""
 

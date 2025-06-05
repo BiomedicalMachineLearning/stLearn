@@ -3,7 +3,7 @@ import math
 import sys
 from typing import (
     Any,
-    Optional,  # Special
+    Optional, Tuple,  # Special
 )
 
 import matplotlib
@@ -424,24 +424,24 @@ def lr_result_plot(
     use_lr: Optional["str"] = None,
     use_result: Optional["str"] = "lr_sig_scores",
     # plotting param
-    title: Optional["str"] = None,
+    title: str | None = None,
     figsize: tuple[float, float] | None = None,
-    cmap: str | None = "Spectral_r",
+    cmap: str = "Spectral_r",
     ax: plt_axis.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
-    show_plot: bool | None = True,
-    show_axis: bool | None = False,
-    show_image: bool | None = True,
-    show_color_bar: bool | None = True,
-    zoom_coord: float | None = None,
-    crop: bool | None = True,
-    margin: float | None = 100,
-    size: float | None = 7,
-    image_alpha: float | None = 1.0,
-    cell_alpha: float | None = 1.0,
-    use_raw: bool | None = False,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    zoom_coord: Tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 7,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 1.0,
+    use_raw: bool = False,
     fname: str | None = None,
-    dpi: int | None = 120,
+    dpi: int = 120,
     contour: bool = False,
     step_size: int | None = None,
     vmin: float | None = None,
@@ -474,6 +474,8 @@ def lr_result_plot(
         Whether to show axis or not.
     show_image: bool
         Whether to plot the image.
+    zoom_coord: Tuple[float, float, float, float]
+        Bounding box of plot.
     show_color_bar: bool
         Whether to show the color bar.
     crop: bool
@@ -890,28 +892,28 @@ def lr_plot(
 def het_plot(
     adata: AnnData,
     # plotting param
-    title: Optional["str"] = None,
+    title: str | None = None,
     figsize: tuple[float, float] | None = None,
-    cmap: str | None = "Spectral_r",
+    cmap: str = "Spectral_r",
     use_label: str | None = None,
     list_clusters: list | None = None,
     ax: plt_axis.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
-    show_plot: bool | None = True,
-    show_axis: bool | None = False,
-    show_image: bool | None = True,
-    show_color_bar: bool | None = True,
-    zoom_coord: float | None = None,
-    crop: bool | None = True,
-    margin: float | None = 100,
-    size: float | None = 7,
-    image_alpha: float | None = 1.0,
-    cell_alpha: float | None = 1.0,
-    use_raw: bool | None = False,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    zoom_coord: Tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 7,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 1.0,
+    use_raw: bool = False,
     fname: str | None = None,
-    dpi: int | None = 120,
+    dpi: int = 120,
     # cci_rank param
-    use_het: str | None = "het",
+    use_het: str = "het",
     contour: bool = False,
     step_size: int | None = None,
     vmin: float | None = None,

@@ -57,7 +57,10 @@ class BokehGenePlot(Spatial):
             adata,
         )
         # Open image, and make sure it's RGB*A*
-        image = (self.img * 255).astype(np.uint8)
+        if self.img is None:
+            raise ValueError("self.img must be a numpy array")
+        else:
+            image = (self.img * 255).astype(np.uint8)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -328,7 +331,10 @@ class BokehClusterPlot(Spatial):
         super().__init__(adata)
 
         # Open image, and make sure it's RGB*A*
-        image = (self.img * 255).astype(np.uint8)
+        if self.img is None:
+            raise ValueError("self.img must be a numpy array")
+        else:
+            image = (self.img * 255).astype(np.uint8)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -771,7 +777,11 @@ class BokehLRPlot(Spatial):
             adata,
         )
         # Open image, and make sure it's RGB*A*
-        image = (self.img * 255).astype(np.uint8)
+        if self.img is None:
+            raise ValueError("self.img must be a numpy array")
+        else:
+            image = (self.img * 255).astype(np.uint8)
+
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -949,7 +959,10 @@ class BokehSpatialCciPlot(Spatial):
             adata,
         )
         # Open image, and make sure it's RGB*A*
-        image = (self.img * 255).astype(np.uint8)
+        if self.img is None:
+            raise ValueError("self.img must be a numpy array")
+        else:
+            image = (self.img * 255).astype(np.uint8)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -1229,7 +1242,10 @@ class Annotate(Spatial):
     ):
         super().__init__(adata)
         # Open image, and make sure it's RGB*A*
-        image = (self.img * 255).astype(np.uint8)
+        if self.img is None:
+            raise ValueError("self.img must be a numpy array")
+        else:
+            image = (self.img * 255).astype(np.uint8)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
