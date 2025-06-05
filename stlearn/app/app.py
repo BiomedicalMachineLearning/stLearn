@@ -6,7 +6,7 @@ from threading import Thread
 sys.path.append(os.path.dirname(__file__))
 
 try:
-    import flask  # noqa: F401
+    import flask
 except ImportError:
     subprocess.call(
         "pip install -r " + os.path.dirname(__file__) + "//requirements.txt", shell=True
@@ -34,7 +34,7 @@ from flask import (
 )
 
 # Functions related to processing the forms.
-from source.forms import views  # for changing data in response to input
+from stlearn.app.source.forms import views  # for changing data in response to input
 from tornado.ioloop import IOLoop
 from werkzeug.utils import secure_filename
 
@@ -482,7 +482,7 @@ def bk_worker():
             "/bokeh_annotate_plot": bkapp4,
         },
         io_loop=IOLoop(),
-        allow_websocket_origin=["127.0.0.1:5000", "localhost:5000"],
+        allow_websocket_origin=["127.0.0.1:3000", "localhost:3000"],
     )
     server.start()
     server.io_loop.start()

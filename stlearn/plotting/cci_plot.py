@@ -1574,6 +1574,7 @@ def spatialcci_plot_interactive(adata: AnnData):
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
 
+
 # def het_plot_interactive(adata: AnnData):
 #     bokeh_object = BokehCciPlot(adata)
 #     output_notebook()

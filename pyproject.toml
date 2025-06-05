@@ -37,6 +37,20 @@ test = [
     "pytest",
     "pytest-cov",
 ]
+webapp = [
+    "flask>=2.0.0",
+    "flask-wtf>=1.0.0",
+    "wtforms>=3.0.0",
+    "markupsafe>2.1.0",
+]
+jupyter = [
+    "jupyter>=1.0.0",
+    "jupyterlab>=3.0.0",
+    "ipywidgets>=7.6.0",
+    "plotly>=5.0.0",
+    "bokeh>=2.4.0",
+    "rpy2>=3.4.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/BiomedicalMachineLearning/stLearn"

@@ -95,7 +95,7 @@ def calc_distance(adata: AnnData, distance: float | None):
             scalefactors["spot_diameter_fullres"]
             * scalefactors[
                 "tissue_" + adata.uns["spatial"][library_id]["use_quality"] + "_scalef"
-                ]
+            ]
             * 2
         )
     return distance
@@ -148,7 +148,7 @@ def get_lrs_scores(
 
     new_lrs = np.array(
         [
-            "_".join(spot_lr1s.columns.values[i: i + 2])
+            "_".join(spot_lr1s.columns.values[i : i + 2])
             for i in range(0, spot_lr1s.shape[1], 2)
         ]
     )
@@ -386,7 +386,7 @@ def get_scores(
     spot_scores = np.zeros((len(spot_indices), spot_lr1s.shape[1] // 2), np.float64)
     for i in prange(0, spot_lr1s.shape[1] // 2):
         i_ = i * 2  # equivalent to range(0, spot_lr1s.shape[1], 2)
-        spot_lr1, spot_lr2 = spot_lr1s[:, i_: (i_ + 2)], spot_lr2s[:, i_: (i_ + 2)]
+        spot_lr1, spot_lr2 = spot_lr1s[:, i_ : (i_ + 2)], spot_lr2s[:, i_ : (i_ + 2)]
         lr_scores = lr_core(spot_lr1, spot_lr2, neighbours, min_expr, spot_indices)
         # The merge scores #
         lr_scores = np.multiply(het_vals[spot_indices], lr_scores)
@@ -446,7 +446,7 @@ def lr_grid(
             & (coor["imagecol"] < grid[0] + width)
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
-            ]
+        ]
         df_grid.loc[n] = df.loc[spots.index].sum()
 
     # expand the LR pairs list by swapping ligand-receptor positions

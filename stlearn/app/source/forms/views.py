@@ -9,10 +9,10 @@ import traceback
 import numpy
 import numpy as np
 import scanpy as sc
-import source.forms.view_helpers as vhs
 from flask import flash, render_template
-from source.forms import forms
-from source.forms.utils import flash_errors
+import stlearn.app.source.forms.view_helpers as vhs
+from stlearn.app.source.forms import forms
+from stlearn.app.source.forms.utils import flash_errors
 
 import stlearn as st
 

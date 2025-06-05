@@ -179,9 +179,7 @@ def Read10X(
                     image_path
                 )
             else:
-                raise ValueError(
-                    "Trying to load fulres but no image_path set."
-                )
+                raise ValueError("Trying to load fulres but no image_path set.")
 
             image_coor = adata.obsm["spatial"]
             img = plt.imread(image_path, None)
@@ -258,7 +256,7 @@ def ReadOldST(
 def ReadSlideSeq(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
-    library_id: str| None  = None,
+    library_id: str | None = None,
     scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
