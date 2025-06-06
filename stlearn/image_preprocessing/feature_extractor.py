@@ -1,3 +1,5 @@
+from typing import Literal
+
 import numpy as np
 import pandas as pd
 from anndata import AnnData
@@ -6,7 +8,6 @@ from PIL import Image
 # Test progress bar
 from tqdm import tqdm
 
-from .._compat import Literal
 from .model_zoo import Model, encode
 
 _CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]

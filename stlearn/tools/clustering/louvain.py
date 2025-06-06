@@ -1,12 +1,11 @@
 from collections.abc import Mapping, Sequence
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Literal
 
 from anndata import AnnData
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
 import scanpy
-from stlearn._compat import Literal
 from louvain.VertexPartition import MutableVertexPartition
 
 def louvain(

@@ -4,7 +4,7 @@ import json
 import logging as logg
 from os import PathLike
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,8 +15,6 @@ from matplotlib.image import imread
 from PIL import Image
 
 import stlearn
-
-from .._compat import Literal
 
 _Quality = Literal["fulres", "hires", "lowres"]
 _Background = Literal["black", "white"]

@@ -1,9 +1,9 @@
+from typing import Literal
+
 import numpy as np
 from anndata import AnnData
 from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
-
-from ..._compat import Literal
 
 _PLATFORM = Literal["Visium", "Old_ST"]
 _WEIGHTING_MATRIX = Literal[

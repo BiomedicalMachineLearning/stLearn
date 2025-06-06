@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -8,7 +9,6 @@ from scipy.sparse import csr_matrix
 
 import stlearn
 
-from ..._compat import Literal
 from ._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,

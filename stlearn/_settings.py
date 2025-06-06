@@ -6,10 +6,9 @@ from enum import IntEnum
 from logging import getLevelName
 from pathlib import Path
 from time import time
-from typing import Any, TextIO, Iterator
+from typing import Any, TextIO, Iterator, Literal
 
 from . import logging
-from ._compat import Literal
 from .logging import _RootLogger, _set_log_file, _set_log_level
 
 # All the code here migrated from scanpy

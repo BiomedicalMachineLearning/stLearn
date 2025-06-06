@@ -1,11 +1,9 @@
 from collections.abc import Iterable
+from typing import Literal
 
 import numpy as np
 import scanpy
 from anndata import AnnData
-
-from stlearn._compat import Literal
-
 
 def normalize_total(
     adata: AnnData,

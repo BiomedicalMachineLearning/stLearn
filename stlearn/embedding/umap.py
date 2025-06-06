@@ -1,9 +1,9 @@
+from typing import Literal
+
 import numpy as np
 import scanpy
 from anndata import AnnData
 from numpy.random.mtrand import RandomState
-
-from .._compat import Literal
 
 _InitPos = Literal["paga", "spectral", "random"]
 

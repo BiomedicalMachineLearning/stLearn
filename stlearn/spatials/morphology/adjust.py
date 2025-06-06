@@ -1,9 +1,9 @@
+from typing import Literal
+
 import numpy as np
 import scipy.spatial as spatial
 from anndata import AnnData
 from tqdm import tqdm
-
-from ..._compat import Literal
 
 _SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
 

@@ -1,13 +1,11 @@
 from collections.abc import Callable, Mapping
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import scanpy
 from anndata import AnnData
 from numpy.random import RandomState
-
-from .._compat import Literal
 
 _Method = Literal["umap", "gauss", "rapids"]
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
