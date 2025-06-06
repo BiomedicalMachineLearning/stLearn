@@ -30,7 +30,8 @@ def local_level(
         Return PTS matrix for local level
     Returns
     -------
-    np.ndarray: the STDM (spatio-temporal distance matrix) - weighted combination of spatial and temporal distances.
+    np.ndarray: the STDM (spatio-temporal distance matrix) - weighted combination of
+    spatial and temporal distances.
 
     adata["nonabs_dpt_distance_matrix"]: np.ndarray
         Pseudotime distance (difference between values) matrix

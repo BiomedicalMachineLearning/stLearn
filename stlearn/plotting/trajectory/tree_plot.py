@@ -1,6 +1,5 @@
 import math
 import random
-from typing import Tuple
 
 import networkx as nx
 from anndata import AnnData
@@ -12,7 +11,7 @@ from stlearn.utils import _read_graph
 def tree_plot(
     adata: AnnData,
     library_id: str | None = None,
-    figsize: Tuple[float, float] = (10, 4),
+    figsize: tuple[float, float] = (10, 4),
     data_alpha: float = 1.0,
     use_label: str = "louvain",
     spot_size: float | int = 50,

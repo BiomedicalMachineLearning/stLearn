@@ -105,6 +105,7 @@ def apply_mask(
         Array format of image, saving by Pillow package.
     """
     from scanpy.plotting import palettes
+
     from stlearn.plotting import palettes_st
 
     adata = adata.copy() if copy else adata

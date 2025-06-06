@@ -88,7 +88,8 @@ def _check_img(
     Parameters
     ----------
     img : np.ndarray | None
-        If given an image will not look for another image and not check to see if it was in spatial_data.
+        If given an image will not look for another image and not check to see if it
+        was in spatial_data.
     img_key : None | str | Empty
         If None - don't find an image. Empty - find best image, or specify with str.
 
@@ -108,7 +109,8 @@ def _check_img(
         new_img_key: str | None = None
         new_img: np.ndarray | None = None
 
-        # Return the img if not None and convert the key to Empty -> None if Empty otherwise keep.
+        # Return the img if not None and convert the key to Empty -> None if Empty
+        # otherwise keep.
         if img is not None:
             new_img = img
             new_img_key = img_key if img_key is not _empty else None

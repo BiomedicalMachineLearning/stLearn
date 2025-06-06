@@ -1,16 +1,8 @@
 import os
-import subprocess
 import sys
 from threading import Thread
 
 sys.path.append(os.path.dirname(__file__))
-
-try:
-    import flask
-except ImportError:
-    subprocess.call(
-        "pip install -r " + os.path.dirname(__file__) + "//requirements.txt", shell=True
-    )
 
 import asyncio
 import tempfile
@@ -32,13 +24,13 @@ from flask import (
     send_file,
     url_for,
 )
-
-# Functions related to processing the forms.
-from stlearn.app.source.forms import views  # for changing data in response to input
 from tornado.ioloop import IOLoop
 from werkzeug.utils import secure_filename
 
 import stlearn
+
+# Functions related to processing the forms.
+from stlearn.app.source.forms import views  # for changing data in response to input
 
 # Global variables.
 

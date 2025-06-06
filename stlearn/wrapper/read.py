@@ -2,9 +2,10 @@
 
 import json
 import logging as logg
+from collections.abc import Iterator
 from os import PathLike
 from pathlib import Path
-from typing import Iterator, Literal
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
@@ -416,7 +416,7 @@ def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
     grids, neighbours = [], []
     # generate grids from top to bottom and left to right
     for n in range(num_row * num_col):
-        neighbour: Iterable[float]
+        neighbour: Iterable[float] = []
         x = min_x + n // num_row * width  # left side
         y = min_y + n % num_row * height  # upper side
         grids.append([x, y])

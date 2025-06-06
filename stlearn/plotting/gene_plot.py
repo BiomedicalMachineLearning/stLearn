@@ -1,7 +1,3 @@
-from typing import (  # Special
-    Optional,
-    Tuple,  # Classes
-)
 
 import matplotlib
 from anndata import AnnData
@@ -23,7 +19,7 @@ def gene_plot(
     contour: bool = False,
     step_size: int | None = None,
     title: str | None = None,
-    figsize: Tuple[float, float] | None = None,
+    figsize: tuple[float, float] | None = None,
     cmap: str = "Spectral_r",
     use_label: str | None = None,
     list_clusters: list | None = None,
@@ -34,7 +30,7 @@ def gene_plot(
     show_image: bool = True,
     show_color_bar: bool = True,
     color_bar_label: str = "",
-    zoom_coord: Tuple[float, float, float, float] | None = None,
+    zoom_coord: tuple[float, float, float, float] | None = None,
     crop: bool = True,
     margin: float = 100,
     size: float = 7,

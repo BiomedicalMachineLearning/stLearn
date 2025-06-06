@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 
 import networkx as nx
 import numpy as np
@@ -575,7 +574,6 @@ def _correlation_test_helper(
         )
 
     n = X.shape[1]  # genes x cells
-    ql = 1 - confidence_level - (1 - confidence_level) / 2.0
     qh = confidence_level + (1 - confidence_level) / 2.0
 
     if issparse(X) and not isspmatrix_csr(X):

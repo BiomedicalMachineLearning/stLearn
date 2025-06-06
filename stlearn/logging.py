@@ -1,10 +1,11 @@
 """Logging and Profiling"""
 
 import logging
+from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from functools import partial, update_wrapper
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
-from typing import Dict, Any, Optional, overload, Mapping, Union
+from typing import Any, overload
 
 import anndata.logging
 
@@ -13,12 +14,13 @@ logging.addLevelName(HINT, "HINT")
 
 
 class CustomLogRecord(logging.LogRecord):
-    """Custom root logger that maintains compatibility with standard logging interface."""
+    """Custom root logger that maintains compatibility with standard logging
+    interface."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.time_passed: Optional[timedelta] = None
-        self.deep: Optional[str] = None
+        self.time_passed: timedelta | None = None
+        self.deep: str | None = None
 
 
 class _RootLogger(logging.RootLogger):
@@ -39,7 +41,7 @@ class _RootLogger(logging.RootLogger):
         from . import settings
 
         now = datetime.now(timezone.utc)
-        time_passed: Optional[timedelta] = None if time is None else now - time
+        time_passed: timedelta | None = None if time is None else now - time
         extra = {
             **(extra or {}),
             "deep": deep if settings.verbosity.level < level else None,
@@ -50,8 +52,9 @@ class _RootLogger(logging.RootLogger):
 
     def _handle_enhanced_logging(
         self, level: int, msg, *args, **kwargs
-    ) -> Optional[datetime]:
-        """Handle logging with enhanced features (timing, deep info) or fall back to standard logging."""
+    ) -> datetime | None:
+        """Handle logging with enhanced features (timing, deep info) or fall back to
+        standard logging."""
         if "time" in kwargs or "deep" in kwargs or "extra" in kwargs:
             # Extract enhanced arguments
             time_arg = kwargs.pop("time", None)
@@ -75,9 +78,9 @@ class _RootLogger(logging.RootLogger):
         self,
         msg,
         *,
-        time: Optional[datetime] = None,
-        deep: Optional[str] = None,
-        extra: Optional[Dict[str, Any]] = None,
+        time: datetime | None = None,
+        deep: str | None = None,
+        extra: dict[str, Any] | None = None,
     ) -> datetime:
         return self.log_with_timing(HINT, msg, time=time, deep=deep, extra=extra)
 
@@ -86,16 +89,16 @@ class _RootLogger(logging.RootLogger):
         self,
         msg: object,
         *args: object,
-        exc_info: Union[bool, tuple, BaseException, None] = None,
+        exc_info: bool | tuple | BaseException | None = None,
         stack_info: bool = False,
         stacklevel: int = 1,
-        extra: Optional[Mapping[str, object]] = None,
+        extra: Mapping[str, object] | None = None,
     ) -> None: ...
 
     @overload
     def debug(self, msg, *args, **kwargs): ...
 
-    def debug(self, msg, *args, **kwargs) -> Optional[datetime]:
+    def debug(self, msg, *args, **kwargs) -> datetime | None:
         return self._handle_enhanced_logging(DEBUG, msg, *args, **kwargs)
 
     @overload
@@ -103,16 +106,16 @@ class _RootLogger(logging.RootLogger):
         self,
         msg: object,
         *args: object,
-        exc_info: Union[bool, tuple, BaseException, None] = None,
+        exc_info: bool | tuple | BaseException | None = None,
         stack_info: bool = False,
         stacklevel: int = 1,
-        extra: Optional[Mapping[str, object]] = None,
+        extra: Mapping[str, object] | None = None,
     ) -> None: ...
 
     @overload
     def info(self, msg, *args, **kwargs): ...
 
-    def info(self, msg, *args, **kwargs) -> Optional[datetime]:
+    def info(self, msg, *args, **kwargs) -> datetime | None:
         return self._handle_enhanced_logging(INFO, msg, *args, **kwargs)
 
     @overload
@@ -120,16 +123,16 @@ class _RootLogger(logging.RootLogger):
         self,
         msg: object,
         *args: object,
-        exc_info: Union[bool, tuple, BaseException, None] = None,
+        exc_info: bool | tuple | BaseException | None = None,
         stack_info: bool = False,
         stacklevel: int = 1,
-        extra: Optional[Mapping[str, object]] = None,
+        extra: Mapping[str, object] | None = None,
     ) -> None: ...
 
     @overload
     def warning(self, msg, *args, **kwargs): ...
 
-    def warning(self, msg, *args, **kwargs) -> Optional[datetime]:
+    def warning(self, msg, *args, **kwargs) -> datetime | None:
         return self._handle_enhanced_logging(WARNING, msg, *args, **kwargs)
 
     @overload
@@ -137,16 +140,16 @@ class _RootLogger(logging.RootLogger):
         self,
         msg: object,
         *args: object,
-        exc_info: Union[bool, tuple, BaseException, None] = None,
+        exc_info: bool | tuple | BaseException | None = None,
         stack_info: bool = False,
         stacklevel: int = 1,
-        extra: Optional[Mapping[str, object]] = None,
+        extra: Mapping[str, object] | None = None,
     ) -> None: ...
 
     @overload
     def error(self, msg, *args, **kwargs): ...
 
-    def error(self, msg, *args, **kwargs) -> Optional[datetime]:
+    def error(self, msg, *args, **kwargs) -> datetime | None:
         return self._handle_enhanced_logging(ERROR, msg, *args, **kwargs)
 
     @overload
@@ -154,16 +157,16 @@ class _RootLogger(logging.RootLogger):
         self,
         msg: object,
         *args: object,
-        exc_info: Union[bool, tuple, BaseException, None] = None,
+        exc_info: bool | tuple | BaseException | None = None,
         stack_info: bool = False,
         stacklevel: int = 1,
-        extra: Optional[Mapping[str, object]] = None,
+        extra: Mapping[str, object] | None = None,
     ) -> None: ...
 
     @overload
     def critical(self, msg, *args, **kwargs): ...
 
-    def critical(self, msg, *args, **kwargs) -> Optional[datetime]:
+    def critical(self, msg, *args, **kwargs) -> datetime | None:
         return self._handle_enhanced_logging(CRITICAL, msg, *args, **kwargs)
 
 
@@ -290,9 +293,9 @@ def _copy_docs_and_signature(fn):
 def error(
     msg: str,
     *,
-    time: Optional[datetime] = None,
-    deep: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    time: datetime | None = None,
+    deep: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> datetime:
     """\
     Log message with specific level and return current time.
@@ -322,9 +325,9 @@ def error(
 def warning(
     msg: str,
     *,
-    time: Optional[datetime] = None,
-    deep: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    time: datetime | None = None,
+    deep: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> datetime:
     from ._settings import settings
 
@@ -336,9 +339,9 @@ def warning(
 def info(
     msg: str,
     *,
-    time: Optional[datetime] = None,
-    deep: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    time: datetime | None = None,
+    deep: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> datetime:
     from ._settings import settings
 
@@ -350,9 +353,9 @@ def info(
 def hint(
     msg: str,
     *,
-    time: Optional[datetime] = None,
-    deep: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    time: datetime | None = None,
+    deep: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> datetime:
     from ._settings import settings
 
@@ -363,9 +366,9 @@ def hint(
 def debug(
     msg: str,
     *,
-    time: Optional[datetime] = None,
-    deep: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    time: datetime | None = None,
+    deep: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> datetime:
     from ._settings import settings
 

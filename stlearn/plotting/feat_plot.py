@@ -3,8 +3,7 @@ Plotting of continuous features stored in adata.obs.
 """
 
 from typing import (
-    Optional,
-    Tuple,  # Special
+    Optional,  # Special
 )
 
 import matplotlib
@@ -32,7 +31,7 @@ def feat_plot(
     show_image: bool = True,
     show_color_bar: bool = True,
     color_bar_label: str = "",
-    zoom_coord: Tuple[float, float, float, float] | None = None,
+    zoom_coord: tuple[float, float, float, float] | None = None,
     crop: bool = True,
     margin: float = 100,
     size: float = 7,

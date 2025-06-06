@@ -3,8 +3,7 @@ import math
 import sys
 from typing import (
     Any,
-    Optional,
-    Tuple,  # Special
+    Optional,  # Special
 )
 
 import matplotlib
@@ -434,7 +433,7 @@ def lr_result_plot(
     show_axis: bool = False,
     show_image: bool = True,
     show_color_bar: bool = True,
-    zoom_coord: Tuple[float, float, float, float] | None = None,
+    zoom_coord: tuple[float, float, float, float] | None = None,
     crop: bool = True,
     margin: float = 100,
     size: float = 7,
@@ -904,7 +903,7 @@ def het_plot(
     show_axis: bool = False,
     show_image: bool = True,
     show_color_bar: bool = True,
-    zoom_coord: Tuple[float, float, float, float] | None = None,
+    zoom_coord: tuple[float, float, float, float] | None = None,
     crop: bool = True,
     margin: float = 100,
     size: float = 7,

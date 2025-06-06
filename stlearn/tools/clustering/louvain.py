@@ -2,11 +2,11 @@ from collections.abc import Mapping, Sequence
 from types import MappingProxyType
 from typing import Any, Literal
 
+import scanpy
 from anndata import AnnData
+from louvain.VertexPartition import MutableVertexPartition
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
-import scanpy
-from louvain.VertexPartition import MutableVertexPartition
 
 
 def louvain(

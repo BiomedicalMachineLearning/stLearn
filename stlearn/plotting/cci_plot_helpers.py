@@ -1,6 +1,5 @@
 """Helper functions for cci_plot.py."""
 
-from typing import List, Tuple, Optional
 
 import matplotlib
 import matplotlib.cm as cm
@@ -275,7 +274,7 @@ def add_arrows(
         interact_bool = int_df.values > 0
 
         # Subsetting to only significant CCI #
-        edges_sub: List[List[Tuple[str, str]]] = [[], []]  # forward, reverse
+        edges_sub: list[list[tuple[str, str]]] = [[], []]  # forward, reverse
         # ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
         # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
@@ -301,7 +300,7 @@ def add_arrows(
 
     # If cmap specified, colour arrows by average LR expression on edge #
     if arrow_cmap is not None:
-        edges_means: List[List[float]] = [[], []]
+        edges_means: list[list[float]] = [[], []]
         all_means = []
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
@@ -322,7 +321,7 @@ def add_arrows(
         scalar_map = cm.ScalarMappable(norm=c_norm, cmap=cmap)
 
         # Determining the edge colors #
-        edges_colors: List[List[Tuple[float, float, float, float]]] = [[], []]
+        edges_colors: list[list[tuple[float, float, float, float]]] = [[], []]
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
                 color_val = scalar_map.to_rgba(edges_means[i][j])

@@ -1,4 +1,5 @@
 import errno
+
 import click
 
 from .. import __version__

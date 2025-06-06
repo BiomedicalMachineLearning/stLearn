@@ -1,5 +1,4 @@
 from os import PathLike
-from pathlib import Path
 
 import numpy as np
 from anndata import AnnData

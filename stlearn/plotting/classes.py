@@ -7,8 +7,7 @@ Date: 20 Feb 2021
 import numbers
 import warnings
 from typing import (  # Special
-    Optional,
-    Tuple,  # Classes
+    Optional,  # Classes
 )
 
 import matplotlib
@@ -19,9 +18,9 @@ import pandas as pd
 from anndata import AnnData
 from scipy.interpolate import griddata
 
-from .utils import centroidpython, check_sublist, get_cluster, get_cmap, get_node
 from ..classes import Spatial
 from ..utils import Axes, _AxesSubplot, _read_graph
+from .utils import centroidpython, check_sublist, get_cluster, get_cmap, get_node
 
 
 class SpatialBasePlot(Spatial):
@@ -41,7 +40,7 @@ class SpatialBasePlot(Spatial):
         show_image: bool = True,
         show_color_bar: bool = True,
         color_bar_label: str = "",
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         crop: bool = True,
         margin: float = 100,
         size: float = 7,
@@ -183,7 +182,7 @@ class SpatialBasePlot(Spatial):
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
     def _zoom_image(
-        self, main_ax: _AxesSubplot, zoom_coord: Tuple[float, float, float, float]
+        self, main_ax: _AxesSubplot, zoom_coord: tuple[float, float, float, float]
     ):
 
         main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
@@ -233,7 +232,7 @@ class GenePlot(SpatialBasePlot):
         adata: AnnData,
         # plotting param
         title: str | None = None,
-        figsize: Tuple[float, float] | None = None,
+        figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
         use_label: str | None = None,
         list_clusters: list | None = None,
@@ -245,7 +244,7 @@ class GenePlot(SpatialBasePlot):
         show_color_bar: bool = True,
         color_bar_label: str = "",
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 7,
         image_alpha: float = 1.0,
@@ -458,7 +457,7 @@ class FeaturePlot(SpatialBasePlot):
         show_color_bar: bool = True,
         color_bar_label: str = "",
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 7,
         image_alpha: float = 1.0,
@@ -621,7 +620,7 @@ class ClusterPlot(SpatialBasePlot):
         show_image: bool = True,
         show_color_bar: bool = True,
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 5,
         image_alpha: float = 1.0,
@@ -973,7 +972,7 @@ class SubClusterPlot(SpatialBasePlot):
         show_image: bool = True,
         show_color_bar: bool = True,
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 5,
         image_alpha: float = 1.0,
@@ -1127,7 +1126,7 @@ class CciPlot(GenePlot):
         show_image: bool = True,
         show_color_bar: bool = True,
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 7,
         image_alpha: float = 1.0,
@@ -1197,7 +1196,7 @@ class LrResultPlot(GenePlot):
         show_image: bool = True,
         show_color_bar: bool = True,
         crop: bool = True,
-        zoom_coord: Tuple[float, float, float, float] | None = None,
+        zoom_coord: tuple[float, float, float, float] | None = None,
         margin: float = 100,
         size: float = 7,
         image_alpha: float = 1.0,

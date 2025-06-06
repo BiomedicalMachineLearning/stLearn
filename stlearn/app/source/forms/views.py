@@ -10,11 +10,11 @@ import numpy
 import numpy as np
 import scanpy as sc
 from flask import flash, render_template
+
+import stlearn as st
 import stlearn.app.source.forms.view_helpers as vhs
 from stlearn.app.source.forms import forms
 from stlearn.app.source.forms.utils import flash_errors
-
-import stlearn as st
 
 # Creating the forms using a class generator #
 PreprocessForm = forms.getPreprocessForm()

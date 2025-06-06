@@ -1,12 +1,12 @@
 import inspect
 import sys
-from collections.abc import Iterable
-from contextlib import AbstractContextManager, contextmanager
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from enum import IntEnum
 from logging import getLevelName
 from pathlib import Path
 from time import time
-from typing import Any, TextIO, Iterator, Literal
+from typing import Any, Literal, TextIO
 
 from . import logging
 from .logging import _RootLogger, _set_log_file, _set_log_level
@@ -363,7 +363,7 @@ class stLearnConfig:  # noqa N801
         if logfile is None or logfile == "":
             self._logfile = sys.stdout if self._is_run_from_ipython() else sys.stderr
             self._logpath = None
-        elif isinstance(logfile, (str, Path)):
+        elif isinstance(logfile, (str | Path)):
             path = Path(logfile)
             self._logfile = path.open("a")
             self._logpath = path
