@@ -32,6 +32,8 @@ def add_mask(
     **mask_image** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
+    adata = adata.copy() if copy else adata
+
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
@@ -58,8 +60,6 @@ def add_mask(
 
             adata.uns["mask_image"][library_id][key][quality] = img
             print("Added tissue mask to the object!")
-
-            return adata if copy else None
         except:
             raise ValueError(
                 f"""\
@@ -105,8 +105,9 @@ def apply_mask(
         Array format of image, saving by Pillow package.
     """
     from scanpy.plotting import palettes
-
     from stlearn.plotting import palettes_st
+
+    adata = adata.copy() if copy else adata
 
     if cmap_name == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
@@ -126,7 +127,6 @@ def apply_mask(
         )
 
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
-
     cmap_ = plt.cm.get_cmap(cmaps)
 
     try:

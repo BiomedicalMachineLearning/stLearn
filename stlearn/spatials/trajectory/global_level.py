@@ -16,7 +16,6 @@ def global_level(
     n_dims: int = 40,
     return_graph: bool = False,
     verbose: bool = True,
-    copy: bool = False,
 ) -> networkx.Graph | None:
     """\
     Perform global sptial trajectory inference.
@@ -33,11 +32,12 @@ def global_level(
         Use label result of cluster method.
     return_graph
         Return PTS graph
-    copy
-        Return a copy instead of writing to adata.
     Returns
     -------
-    Anndata
+    networkx.Graph:
+
+    adata.uns["PTS_graph"]["graph"]:
+    adata.uns["PTS_graph"]["node_dict"]:
     """
 
     assert w <= 1, "w should be in range 0 to 1"

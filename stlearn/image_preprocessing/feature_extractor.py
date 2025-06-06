@@ -45,6 +45,9 @@ def extract_feature(
     **X_morphology** : `adata.obsm` field
         Dimension reduced latent morphological features.
     """
+
+    adata = adata.copy() if copy else adata
+
     feature_dfs = []
     model = Model(cnn_base)
 

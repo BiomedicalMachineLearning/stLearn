@@ -13,7 +13,7 @@ def kmeans(
     n_init: int = 10,
     max_iter: int = 300,
     tol: float = 0.0001,
-    random_state: str = None,
+    random_state: int | np.random.RandomState = None,
     copy_x: bool = True,
     algorithm: str = "auto",
     key_added: str = "kmeans",

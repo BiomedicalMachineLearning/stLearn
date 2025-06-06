@@ -6,21 +6,21 @@ from anndata import AnnData
 
 def check_trajectory(
     adata: AnnData,
-    library_id: str = None,
+    trajectory: list[int],
+    library_id: str | None = None,
     use_label: str = "louvain",
     basis: str = "umap",
     pseudotime_key: str = "dpt_pseudotime",
-    trajectory: list = None,
     figsize=(10, 4),
     size_umap: int = 50,
-    size_spatial: int = 1.5,
+    size_spatial: float = 1.5,
     img_key: str = "hires",
-) -> AnnData | None:
+) -> None:
     trajectory = np.array(trajectory).astype(int)
     assert (
         trajectory in adata.uns["available_paths"].values()
     ), "Please choose the right path!"
-    trajectory = trajectory.astype(str)
+    trajectory_str = [str(node) for node in trajectory]
     assert (
         pseudotime_key in adata.obs.columns
     ), "Please run the pseudotime or choose the right one!"
@@ -39,7 +39,7 @@ def check_trajectory(
 
     ax1 = sc.pl.umap(adata, size=size_umap, show=False, ax=ax1)
     sc.pl.umap(
-        adata[adata.obs[use_label].isin(trajectory)],
+        adata[adata.obs[use_label].isin(trajectory_str)],
         size=size_umap,
         color=pseudotime_key,
         ax=ax1,
@@ -55,7 +55,7 @@ def check_trajectory(
         ax=ax2,
     )
     sc.pl.spatial(
-        adata[adata.obs[use_label].isin(trajectory)],
+        adata[adata.obs[use_label].isin(trajectory_str)],
         size=size_spatial,
         ax=ax2,
         color=pseudotime_key,

@@ -45,6 +45,7 @@ def image(
     **tissue_img** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
+    adata = adata.copy() if copy else adata
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
@@ -69,8 +70,6 @@ def image(
                 adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
 
             print("Added tissue image to the object!")
-
-            return adata if copy else None
         except:
             raise ValueError(
                 f"""\

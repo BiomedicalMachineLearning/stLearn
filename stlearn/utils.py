@@ -25,15 +25,17 @@ def _check_spot_size(spatial_data: Mapping | None, spot_size: float | None) -> f
     Resolve spot_size value.
     This is a required argument for spatial plots.
     """
-    if spatial_data is None and spot_size is None:
+    if spot_size is not None:
+        return spot_size
+
+    if spatial_data is None:
         raise ValueError(
             "When .uns['spatial'][library_id] does not exist, spot_size must be "
             "provided directly."
         )
-    elif spot_size is None:
-        return spatial_data["scalefactors"]["spot_diameter_fullres"]
-    else:
-        return spot_size
+
+    return spatial_data["scalefactors"]["spot_diameter_fullres"]
+
 
 
 def _check_scale_factor(
@@ -52,7 +54,7 @@ def _check_scale_factor(
 
 def _check_spatial_data(
     uns: Mapping, library_id: Empty | None | str
-) -> tuple[str | None, Mapping | None]:
+) -> tuple[str | Empty | None, Mapping | None]:
     """
     Given a mapping, try and extract a library id/ mapping with spatial data.
     Assumes this is `.uns` from how we parse visium data.
@@ -83,16 +85,51 @@ def _check_img(
 ) -> tuple[np.ndarray | None, str | None]:
     """
     Resolve image for spatial plots.
+
+    Parameters
+    ----------
+    img : np.ndarray | None
+        If given an image will not look for another image and not check to see if it was in spatial_data.
+    img_key : None | str | Empty
+        If None - don't find an image. Empty - find best image, or specify with str.
+
+    Returns
+    -------
+    tuple[np.ndarray | None, str | None]
+        The image found or nothing, str of the key of image found or None if none found.
+
+
     """
-    if img is None and spatial_data is not None and img_key is _empty:
-        img_key = next(
-            (k for k in ["hires", "lowres", "fulres"] if k in spatial_data["images"]),
-        )  # Throws StopIteration Error if keys not present
-    if img is None and spatial_data is not None and img_key is not None:
-        img = spatial_data["images"][img_key]
-    if bw:
-        img = np.dot(img[..., :3], [0.2989, 0.5870, 0.1140])
-    return img, img_key
+
+    # Return [None, None] if there's no anndata mapping or img
+    if spatial_data is None and img is None:
+        return None, None
+    else:
+        # Find image and key
+        new_img_key: str | None = None
+        new_img: np.ndarray | None = None
+
+        # Return the img if not None and convert the key to Empty -> None if Empty otherwise keep.
+        if img is not None:
+            new_img = img
+            new_img_key = img_key if img_key is not _empty else None
+        # Find key if empty or use key.
+        elif spatial_data is not None:
+            if img_key is _empty:
+                # Looks for image - or None if not found.
+                new_img_key = next(
+                    (k for k in ["hires", "lowres", "fulres"] if k in spatial_data["images"]), None
+                )
+            else:
+                new_img_key = img_key
+
+            if new_img_key is not None:
+                new_img = spatial_data["images"][new_img_key]
+
+        if new_img is not None and bw:
+            new_img = np.dot(new_img[..., :3], [0.2989, 0.5870, 0.1140])
+
+        return new_img, new_img_key
 
 
 def _check_coords(

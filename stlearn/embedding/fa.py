@@ -11,7 +11,7 @@ def run_fa(
     svd_method: str = "randomized",
     iterated_power: int = 3,
     random_state: int = 2108,
-    use_data: str = None,
+    use_data: str | None = None,
     copy: bool = False,
 ) -> AnnData | None:
     """\
@@ -68,6 +68,8 @@ def run_fa(
     `X_fa` : :class:`numpy.ndarray` (`adata.obsm`)
         Factor analysis representation of data.
     """
+
+    adata = adata.copy() if copy else adata
 
     if use_data is None:
         if issparse(adata.X):

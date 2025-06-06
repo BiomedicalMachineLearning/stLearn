@@ -26,9 +26,10 @@ def annotation(
     **[cluster method name]_anno** : `adata.obs` field
         The annotation of cluster results.
     """
-
     if label_list is None:
         raise ValueError("Please give the label list!")
+
+    adata = adata.copy() if copy else adata
 
     if len(label_list) != len(adata.obs[use_label].unique()):
         raise ValueError("Please give the correct number of label list!")

@@ -46,6 +46,8 @@ def adjust(
     **[use_data]_morphology** : `adata.obsm` field
         Add SME normalised gene expression matrix
     """
+    adata = adata.copy() if copy else adata
+
     if "X_morphology" not in adata.obsm:
         raise ValueError("Please run the function stlearn.pp.extract_feature")
     coor = adata.obs[["imagecol", "imagerow"]]

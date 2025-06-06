@@ -27,7 +27,11 @@ def add_deconvolution(
         The annotation of cluster results.
 
     """
+    adata = adata.copy() if copy else adata
+
     label = pd.read_csv(annotation_path, index_col=0)
     label = label[adata.obs_names]
 
     adata.obsm["deconvolution"] = label[adata.obs.index].T
+
+    return adata

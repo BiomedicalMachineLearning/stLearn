@@ -2,7 +2,9 @@
 
 import json
 import logging as logg
+from os import PathLike
 from pathlib import Path
+from typing import Iterator
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -204,8 +206,8 @@ def Read10X(
 
 
 def ReadOldST(
-    count_matrix_file: str | Path | None = None,
-    spatial_file: str | Path | None = None,
+    count_matrix_file: PathLike[str] | str | Iterator[str],
+    spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
     image_file: str | Path | None = None,
     library_id: str = "OldST",
     scale: float = 1.0,

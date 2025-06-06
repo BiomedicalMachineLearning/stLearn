@@ -29,6 +29,7 @@ def lr(
     adata: AnnData          The data object that L-R added into
 
     """
+    adata = adata.copy() if copy else adata
 
     if source == "cellphonedb":
         cpdb = pd.read_csv(db_filepath, sep=sep)

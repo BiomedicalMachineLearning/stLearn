@@ -34,9 +34,13 @@ def add_loupe_clusters(
         The annotation of cluster results.
 
     """
+    adata = adata.copy() if copy else adata
+
     label = pd.read_csv(loupe_path)
 
     adata.obs[key_add] = pd.Categorical(
         values=np.array(label[key_add]).astype("U"),
         categories=natsorted(label[key_add].unique().astype("U")),
     )
+
+    return adata if copy else None

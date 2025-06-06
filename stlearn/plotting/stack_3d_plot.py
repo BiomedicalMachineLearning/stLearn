@@ -11,7 +11,7 @@ def stack_3d_plot(
     slide_col="sample_id",
     use_label=None,
     gene_symbol=None,
-) -> AnnData | None:
+) -> None:
     """\
     Clustering plot for spatial transcriptomics data. Also, it has a function to
     display trajectory inference.

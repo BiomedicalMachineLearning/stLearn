@@ -42,6 +42,8 @@ def SME_normalize(
     -------
     Anndata
     """
+    adata = adata.copy() if copy else adata
+
     if use_data == "raw":
         if isinstance(adata.X, csr_matrix):
             count_embed = adata.X.toarray()

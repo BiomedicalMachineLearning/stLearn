@@ -45,6 +45,8 @@ def tiling(
         Saved path for each spot image tiles
     """
 
+    adata = adata.copy() if copy else adata
+
     if library_id is None:
         library_id = list(adata.uns["spatial"].keys())[0]
 

@@ -56,7 +56,7 @@ def run_umap(
 
     """
 
-    scanpy.tl.umap(
+    adata = scanpy.tl.umap(
         adata,
         min_dist=min_dist,
         spread=spread,

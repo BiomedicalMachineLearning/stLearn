@@ -26,7 +26,7 @@ class Spatial:
         adata: AnnData,
         basis: str = "spatial",
         img: np.ndarray | None = None,
-        img_key: str | Empty = _empty,
+        img_key: str | None | Empty = _empty,
         library_id: str | None = None,
         crop_coord: bool = True,
         bw: bool = False,

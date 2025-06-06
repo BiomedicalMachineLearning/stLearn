@@ -10,8 +10,7 @@ def local_level(
     w: float = 0.5,
     return_matrix: bool = False,
     verbose: bool = True,
-    copy: bool = False,
-) -> AnnData | None:
+) -> np.ndarray | None:
     """\
     Perform local sptial trajectory inference (required run pseudotime first).
 
@@ -29,11 +28,15 @@ def local_level(
         Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     return_matrix
         Return PTS matrix for local level
-    copy
-        Return a copy instead of writing to adata.
     Returns
     -------
-    Anndata
+    np.ndarray: the STDM (spatio-temporal distance matrix) - weighted combination of spatial and temporal distances.
+
+    adata["nonabs_dpt_distance_matrix"]: np.ndarray
+        Pseudotime distance (difference between values) matrix
+
+    adata["nonabs_dpt_distance_matrix"]: np.ndarray
+        STDM
     """
     if verbose:
         print("Start construct trajectory for subcluster " + str(cluster))
@@ -77,5 +80,5 @@ def local_level(
 
     if return_matrix:
         return stdm
-
-    return adata if copy else None
+    else:
+        return None

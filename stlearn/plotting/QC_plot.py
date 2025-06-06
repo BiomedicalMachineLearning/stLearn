@@ -5,8 +5,8 @@ from matplotlib import pyplot as plt
 
 def QC_plot(
     adata: AnnData,
-    library_id: str = None,
-    name: str = None,
+    name: str,
+    library_id: str | None = None,
     data_alpha: float = 0.8,
     tissue_alpha: float = 1.0,
     cmap: str = "Spectral_r",
@@ -17,8 +17,8 @@ def QC_plot(
     cropped: bool = True,
     margin: int = 100,
     dpi: int = 150,
-    output: str = None,
-) -> AnnData | None:
+    output: str | None = None,
+) -> None:
     """\
         QC plot for sptial transcriptomics data.
 

@@ -8,7 +8,7 @@ def labels(
     adata: AnnData,
     label_filepath: str,
     index_col: int = 0,
-    use_label: str = None,
+    use_label: str | None = None,
     sep: str = "\t",
     copy: bool = False,
 ) -> AnnData | None:
@@ -35,6 +35,8 @@ def labels(
         The data object that L-R added into
 
     """
+    adata = adata.copy() if copy else adata
+
     labels = pd.read_csv(label_filepath, index_col=index_col, sep=sep)
     uns_key = "label_transfer" if use_label is None else use_label
     adata.uns[uns_key] = labels.drop(["predicted.id", "prediction.score.max"], axis=1)

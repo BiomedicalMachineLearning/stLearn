@@ -11,6 +11,9 @@ def disk(
     method: str = "mean",
     copy: bool = False,
 ) -> AnnData | None:
+
+    adata = adata.copy() if copy else adata
+
     coor = adata.obs[["imagecol", "imagerow"]]
     count_embed = adata.obsm[use_data]
     point_tree = spatial.cKDTree(coor)

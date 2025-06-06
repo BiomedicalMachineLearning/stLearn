@@ -33,6 +33,8 @@ def positions(
         Spatial information of the tissue image.
     """
 
+    adata = adata.copy() if copy else adata
+
     tissue_positions = pd.read_csv(position_filepath, header=None)
     tissue_positions.columns = [
         "barcode",

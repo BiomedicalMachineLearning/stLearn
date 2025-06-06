@@ -36,6 +36,8 @@ def localization(
     Anndata
     """
 
+    adata = adata.copy() if copy else adata
+
     if "sub_cluster_labels" in adata.obs.columns:
         adata.obs = adata.obs.drop("sub_cluster_labels", axis=1)
 

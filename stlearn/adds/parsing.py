@@ -1,3 +1,4 @@
+from os import PathLike
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +7,7 @@ from anndata import AnnData
 
 def parsing(
     adata: AnnData,
-    coordinates_file: Path | str | None,
+    coordinates_file: int | str | bytes | PathLike[str] | PathLike[bytes],
     copy: bool = True,
 ) -> AnnData | None:
     """\
@@ -48,6 +49,8 @@ def parsing(
                         "the coordinates file only contains 4 columns\n"
                     )
 
+    adata = adata.copy() if copy else adata
+
     counts_table = adata.to_df()
     new_index_values = list()
 
@@ -76,7 +79,6 @@ def parsing(
 
     adata.obs["imagecol"] = imgcol
     adata.obs["imagerow"] = imgrow
-
     adata.obsm["spatial"] = np.c_[[imgcol, imgrow]].reshape(-1, 2)
 
     return adata if copy else None

@@ -48,6 +48,8 @@ def SME_impute0(
     -------
     Anndata
     """
+    adata = adata.copy() if copy else adata
+
     if use_data == "raw":
         if isinstance(adata.X, csr_matrix):
             count_embed = adata.X.toarray()
@@ -131,6 +133,8 @@ def pseudo_spot(
     import math
 
     from sklearn.linear_model import LinearRegression
+
+    adata = adata.copy() if copy else adata
 
     if platform == "Visium":
         img_row = adata.obs["imagerow"]

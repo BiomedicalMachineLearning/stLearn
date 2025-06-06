@@ -34,11 +34,11 @@ def run_diffmap(adata: AnnData, n_comps: int = 15, copy: bool = False):
         Eigenvalues of transition matrix.
     """
 
-    scanpy.tl.diffmap(adata, n_comps=n_comps, copy=copy)
+    adata = scanpy.tl.diffmap(adata, n_comps=n_comps, copy=copy)
 
     print(
         "Diffusion Map is done! Generated in adata.obsm['X_diffmap'] and "
         + "adata.uns['diffmap_evals']"
     )
 
-    return adata if copy else None
+    return adata

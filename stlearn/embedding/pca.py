@@ -17,7 +17,7 @@ def run_pca(
     copy: bool = False,
     chunked: bool = False,
     chunk_size: int | None = None,
-) -> AnnData | np.ndarray | spmatrix:
+) -> AnnData | None:
     """\
     Wrap function scanpy.pp.pca
     Principal component analysis [Pedregosa11]_.
@@ -83,7 +83,7 @@ def run_pca(
              covariance matrix.
     """
 
-    scanpy.pp.pca(
+    adata = scanpy.pp.pca(
         data,
         n_comps=n_comps,
         zero_center=zero_center,
@@ -101,3 +101,5 @@ def run_pca(
         "PCA is done! Generated in adata.obsm['X_pca'], adata.uns['pca'] and "
         + "adata.varm['PCs']"
     )
+
+    return adata

@@ -568,19 +568,6 @@ def _correlation_test_helper(
         confidence interval. Each array if of shape ``(n_genes, n_lineages)``.
     """
 
-    def perm_test_extractor(
-        res: Sequence[tuple[np.ndarray, np.ndarray]],
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        pvals, corr_bs = zip(*res)
-        pvals = np.sum(pvals, axis=0) / float(n_perms)
-
-        corr_bs = np.concatenate(corr_bs, axis=0)
-        corr_ci_low, corr_ci_high = np.quantile(corr_bs, q=ql, axis=0), np.quantile(
-            corr_bs, q=qh, axis=0
-        )
-
-        return pvals, corr_ci_low, corr_ci_high
-
     if not (0 <= confidence_level <= 1):
         raise ValueError(
             "Expected `confidence_level` to be in interval `[0, 1]`, "

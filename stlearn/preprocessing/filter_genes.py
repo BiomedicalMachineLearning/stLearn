@@ -22,7 +22,7 @@ def filter_genes(
     `max_counts`, `max_cells` per call.
     Parameters
     ----------
-    data
+    adata
         An annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
         to cells and columns to genes.
     min_counts
@@ -47,7 +47,7 @@ def filter_genes(
         `n_counts` or `n_cells` per gene.
     """
 
-    scanpy.pp.filter_genes(
+    return scanpy.pp.filter_genes(
         adata,
         min_counts=min_counts,
         min_cells=min_cells,
