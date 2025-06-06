@@ -154,7 +154,6 @@ def folder_uploader():
         uploaded = []
         i = 0
         for file in files:
-
             filename = secure_filename(file.filename)
 
             if allow_files[0] in filename:
@@ -226,7 +225,6 @@ def folder_uploader():
 @app.route("/file_uploader", methods=["GET", "POST"])
 def file_uploader():
     if request.method == "POST":
-
         global adata, step_log
 
         # Clean uploads folder before upload a new data

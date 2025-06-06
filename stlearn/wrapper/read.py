@@ -121,8 +121,7 @@ def Read10X(
             if not f.exists():
                 if any(x in str(f) for x in ["hires_image", "lowres_image"]):
                     logg.warning(
-                        f"You seem to be missing an image file.\n"
-                        f"Could not find '{f}'."
+                        f"You seem to be missing an image file.\nCould not find '{f}'."
                     )
                 else:
                     raise OSError(f"Could not find '{f}'")
@@ -329,9 +328,9 @@ def ReadSlideSeq(
         "tissue_" + quality + "_scalef"
     ] = scale
 
-    adata.uns["spatial"][library_id]["scalefactors"][
-        "spot_diameter_fullres"
-    ] = spot_diameter_fullres
+    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
+        spot_diameter_fullres
+    )
     adata.obsm["spatial"] = meta[["x", "y"]].values
 
     return adata
@@ -501,9 +500,9 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
-    adata.uns["spatial"][library_id]["scalefactors"][
-        "spot_diameter_fullres"
-    ] = spot_diameter_fullres
+    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
+        spot_diameter_fullres
+    )
 
     return adata
 
@@ -594,9 +593,9 @@ def ReadXenium(
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
         ] = scale
-        adata.uns["spatial"][library_id]["scalefactors"][
-            "spot_diameter_fullres"
-        ] = spot_diameter_fullres
+        adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
+            spot_diameter_fullres
+        )
 
     return adata
 
@@ -676,8 +675,8 @@ def create_stlearn(
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
         ] = scale
-        adata.uns["spatial"][library_id]["scalefactors"][
-            "spot_diameter_fullres"
-        ] = spot_diameter_fullres
+        adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
+            spot_diameter_fullres
+        )
 
     return adata

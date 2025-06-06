@@ -126,7 +126,6 @@ def impute_neighbour(
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(len(coor)):
-
             main_weights = weights_matrix[i]
 
             if weights == "physical_distance":

@@ -43,9 +43,9 @@ def stack_3d_plot(
     except ModuleNotFoundError:
         raise ModuleNotFoundError("Please install plotly by `pip install plotly`")
 
-    assert (
-        slide_col in adata.obs.columns
-    ), "Please provide the right column for slide_id!"
+    assert slide_col in adata.obs.columns, (
+        "Please provide the right column for slide_id!"
+    )
 
     list_df = []
     for i, slide in enumerate(slides):

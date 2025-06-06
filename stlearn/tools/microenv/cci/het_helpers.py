@@ -245,7 +245,6 @@ def get_neighbourhoods_FAST(
 
         neigh_bcs_array, neigh_indices = [], []
         for j, neigh_bc in enumerate(neigh_bcs):
-
             bc_indices = np.where(spot_bcs == neigh_bc)[0]
             if len(bc_indices) > 0:
                 neigh_bcs_array.append(neigh_bc)
@@ -285,7 +284,6 @@ def get_neighbourhoods(adata):
             neighbourhood_indices.append((spot_i, neighbours[spot_i]))
             neighbourhood_bcs.append((spot_bcs[spot_i], spot_bcs[neighbours[spot_i]]))
     else:  # Newer version
-
         spot_bcs = adata.obs_names.values.astype(str)
         spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values.astype(str)
 

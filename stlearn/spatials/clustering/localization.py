@@ -44,7 +44,6 @@ def localization(
     pd.set_option("mode.chained_assignment", None)
     subclusters_list = []
     for i in adata.obs[use_label].unique():
-
         tmp = adata.obs[adata.obs[use_label] == i]
 
         clustering = DBSCAN(eps=eps, min_samples=1, algorithm="kd_tree").fit(

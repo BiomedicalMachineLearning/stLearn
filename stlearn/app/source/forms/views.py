@@ -367,7 +367,6 @@ def run_dea(request, adata, step_log):
 
     else:
         try:
-
             sc.tl.rank_genes_groups(adata, element_values[0], method=element_values[1])
 
             step_log["dea"][0] = True

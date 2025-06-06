@@ -5,7 +5,6 @@ def convert_scanpy(
     adata: AnnData,
     use_quality: str = "hires",
 ) -> AnnData | None:
-
     adata.var_names_make_unique()
 
     library_id = list(adata.uns["spatial"].keys())[0]

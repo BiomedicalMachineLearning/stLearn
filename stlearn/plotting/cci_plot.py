@@ -667,7 +667,7 @@ def lr_plot(
 
     elif sig_spots and not lr_sig:
         raise Exception(
-            "LR has no significant spots, to visualise anyhow set" "sig_spots=False"
+            "LR has no significant spots, to visualise anyhow setsig_spots=False"
         )
 
     # Making sure have run_cci first with respective labelling #
@@ -713,7 +713,7 @@ def lr_plot(
         and use_label not in lr_use_labels
     ):
         raise Exception(
-            f"use_label must be in adata.obs or " f"one of lr stats: {lr_use_labels}."
+            f"use_label must be in adata.obs or one of lr stats: {lr_use_labels}."
         )
 
     out_options = ["binary", "continuous", None]

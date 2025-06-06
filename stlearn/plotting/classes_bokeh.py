@@ -136,7 +136,6 @@ class BokehGenePlot(Spatial):
         # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
 
         def modify_fig(doc):
-
             doc.add_root(row(self.layout, width=800))
 
             self.data_alpha.on_change("value", self.update_data)
@@ -153,7 +152,6 @@ class BokehGenePlot(Spatial):
         self.app = Application(handler)
 
     def make_fig(self):
-
         fig = figure(
             title=self.gene_select.value,
             x_range=(0, self.dim),
@@ -269,7 +267,6 @@ class BokehGenePlot(Spatial):
         return p
 
     def update_data(self, attrname, old, new):
-
         if len(self.menu) != 0:
             self.layout.children[0].children[1] = self.make_fig()
             self.layout.children[1] = self.add_violin()
@@ -277,7 +274,6 @@ class BokehGenePlot(Spatial):
             self.layout.children[1] = self.make_fig()
 
     def _get_gene_expression(self, gene_symbols):
-
         if gene_symbols[0] not in self.adata[0].var_names:
             raise ValueError(
                 gene_symbols[0] + " is not exist in the data, please try another gene"
@@ -508,7 +504,6 @@ class BokehClusterPlot(Spatial):
         self.app = Application(handler)
 
     def update_list(self, attrname, old, name):
-
         # Initialize the color
         from stlearn.plotting.cluster_plot import cluster_plot
 
@@ -521,7 +516,6 @@ class BokehClusterPlot(Spatial):
         )
 
     def update_data(self, attrname, old, new):
-
         if "rank_genes_groups" in self.adata[0].uns:
             if (
                 self.use_label.value
@@ -862,7 +856,6 @@ class BokehLRPlot(Spatial):
         self.app = Application(handler)
 
     def make_fig(self):
-
         fig = figure(
             title=self.lr_select.value,  # self.het_select.value,
             x_range=(0, self.dim - 150),
@@ -929,7 +922,6 @@ class BokehLRPlot(Spatial):
         self.layout.children[1] = self.make_fig()
 
     def _get_het(self, het):
-
         if het not in self.adata[0].obsm:
             raise ValueError(het + " is not exist in the data, please try another het")
 
@@ -1058,7 +1050,6 @@ class BokehSpatialCciPlot(Spatial):
         self.app = Application(handler)
 
     def make_fig(self):
-
         fig = figure(
             title="Spatial CCI plot",
             x_range=(0, self.dim - 150),

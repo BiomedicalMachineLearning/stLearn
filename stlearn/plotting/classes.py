@@ -71,14 +71,12 @@ class SpatialBasePlot(Spatial):
             assert use_label is not None, "Please specify `use_label` parameter!"
 
         if use_label is not None:
-
-            assert (
-                use_label in self.adata[0].obs.columns
-            ), "Please choose the right label in `adata.obs.columns`!"
+            assert use_label in self.adata[0].obs.columns, (
+                "Please choose the right label in `adata.obs.columns`!"
+            )
             self.use_label = use_label
 
             if self.list_clusters is None:
-
                 self.list_clusters = np.array(
                     self.adata[0].obs[use_label].cat.categories
                 )
@@ -166,7 +164,6 @@ class SpatialBasePlot(Spatial):
         )
 
     def _plot_colorbar(self, plot_ax: Axes, color_bar_label: str = ""):
-
         cb = plt.colorbar(
             plot_ax, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
         )
@@ -176,7 +173,6 @@ class SpatialBasePlot(Spatial):
         main_ax.axis("off")
 
     def _crop_image(self, main_ax: _AxesSubplot, margin: float):
-
         main_ax.set_xlim(self.imagecol.min() - margin, self.imagecol.max() + margin)
         main_ax.set_ylim(self.imagerow.min() - margin, self.imagerow.max() + margin)
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
@@ -184,7 +180,6 @@ class SpatialBasePlot(Spatial):
     def _zoom_image(
         self, main_ax: _AxesSubplot, zoom_coord: tuple[float, float, float, float]
     ):
-
         main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
         main_ax.set_ylim(zoom_coord[3], zoom_coord[2])
 
@@ -211,7 +206,6 @@ class SpatialBasePlot(Spatial):
         return index_query
 
     def _save_output(self):
-
         self.fig.savefig(
             fname=self.fname, bbox_inches="tight", pad_inches=0, dpi=self.dpi
         )
@@ -324,13 +318,11 @@ class GenePlot(SpatialBasePlot):
             self._save_output()
 
     def _get_gene_expression(self):
-
         # Gene plot option
         if len(self.gene_symbols) == 0:
             raise ValueError("Genes should be provided, please input genes")
 
         elif len(self.gene_symbols) == 1:
-
             if self.gene_symbols[0] not in self.query_adata.var_names:
                 raise ValueError(
                     self.gene_symbols[0]
@@ -341,7 +333,6 @@ class GenePlot(SpatialBasePlot):
 
             return colors
         else:
-
             for gene in self.gene_symbols:
                 if gene not in self.query_adata.var.index:
                     self.gene_symbols.remove(gene)
@@ -371,7 +362,6 @@ class GenePlot(SpatialBasePlot):
             return colors
 
     def _plot_genes(self, gene_values: pd.Series):
-
         if self.vmin is None and self.vmax is None:
             vmin = min(gene_values)
             vmax = max(gene_values)
@@ -396,7 +386,6 @@ class GenePlot(SpatialBasePlot):
         return plot
 
     def _plot_contour(self, gene_values: pd.Series):
-
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -523,7 +512,6 @@ class FeaturePlot(SpatialBasePlot):
             self._save_output()
 
     def _get_feature_values(self):
-
         if self.feature not in self.query_adata.obs:
             raise ValueError(
                 self.feature + " is not in data.obs, please try another feature"
@@ -541,7 +529,6 @@ class FeaturePlot(SpatialBasePlot):
         return colors
 
     def _plot_feature(self, feature_values: pd.Series):
-
         if self.vmin is None and self.vmax is None:
             vmin = min(feature_values)
             vmax = max(feature_values)
@@ -566,7 +553,6 @@ class FeaturePlot(SpatialBasePlot):
         return plot
 
     def _plot_contour(self, feature_values: pd.Series):
-
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -715,7 +701,6 @@ class ClusterPlot(SpatialBasePlot):
         # Plot scatter plot based on pixel of spots
 
         for i, cluster in enumerate(self.query_adata.obs.groupby(self.use_label)):
-
             # Plot scatter plot based on pixel of spots
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
@@ -761,9 +746,7 @@ class ClusterPlot(SpatialBasePlot):
             handle.set_sizes([20.0])
 
     def _add_cluster_labels(self):
-
         for i, label in enumerate(self.list_clusters):
-
             label_index = list(
                 self.query_adata.obs[
                     self.query_adata.obs[self.use_label] == str(label)
@@ -802,7 +785,6 @@ class ClusterPlot(SpatialBasePlot):
             )
 
     def _add_sub_clusters(self):
-
         if "sub_cluster_labels" not in self.query_adata.obs.columns:
             raise ValueError("Please run stlearn.spatial.cluster.localization")
 
@@ -926,7 +908,6 @@ class ClusterPlot(SpatialBasePlot):
 
         if self.show_node:
             for x, y in centroid_dict.items():
-
                 if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
                     self.ax.text(
                         y[0],
@@ -1221,9 +1202,7 @@ class LrResultPlot(GenePlot):
         if use_lr is None:
             use_lr = adata.uns["lr_summary"].index.values[0]
         elif use_lr not in adata.uns["lr_summary"].index:
-            raise Exception(
-                f"use_lr must be one of:\n" f'{adata.uns["lr_summary"].index}'
-            )
+            raise Exception(f"use_lr must be one of:\n{adata.uns['lr_summary'].index}")
         else:
             use_lr = str(use_lr)
 

@@ -356,7 +356,6 @@ def get_interactions(
 
     # Now retrieving the interaction edges #
     for i in range(all_set.shape[0]):
-
         # Determining which spots have cell type A #
         A_bool_2 = cell_data[:, i] > cell_prop_cutoff
         A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)

@@ -51,7 +51,7 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndar
     dbs = [pd.read_csv(f"{path}/databases/{name}.txt", sep="\t") for name in names]
     lrs_full = []
     for db in dbs:
-        lrs = [f"{db.values[i,0]}_{db.values[i,1]}" for i in range(db.shape[0])]
+        lrs = [f"{db.values[i, 0]}_{db.values[i, 1]}" for i in range(db.shape[0])]
         lrs_full.extend(lrs)
     lrs_full_arr = np.unique(np.array(lrs_full))
     # If dealing with mouse, need to reformat #
@@ -112,9 +112,10 @@ def grid(
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
     cell_bcs = adata.obs_names.values.astype(str)
-    xs, ys = adata.obs["imagecol"].values.astype(int), adata.obs[
-        "imagerow"
-    ].values.astype(int)
+    xs, ys = (
+        adata.obs["imagecol"].values.astype(int),
+        adata.obs["imagerow"].values.astype(int),
+    )
 
     grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
     grid_counts, xedges, yedges = (
@@ -484,7 +485,7 @@ def run_lr_go(
     # Making sure inputted correct species
     all_species = ["human", "mouse"]
     if species not in all_species:
-        raise Exception(f"Got {species} for species, must be one of " f"{all_species}")
+        raise Exception(f"Got {species} for species, must be one of {all_species}")
 
     # Getting the genes from the top LR pairs
     if "lr_summary" not in adata.uns:
@@ -604,7 +605,7 @@ def run_cci(
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
     if not ran_lr and not ran_sig:
         raise Exception(
-            "No LR results testing results found, " "please run st.tl.cci.run first"
+            "No LR results testing results found, please run st.tl.cci.run first"
         )
 
     # Ensuring compatibility with current way of adding label_transfer to object
@@ -616,8 +617,7 @@ def run_cci(
     # Getting the cell/tissue types that we are actually testing #
     if obs_key not in adata.obs:
         raise Exception(
-            f"Missing {obs_key} from adata.obs, need this even if "
-            f"using mixture mode."
+            f"Missing {obs_key} from adata.obs, need this even if using mixture mode."
         )
     tissue_types = adata.obs[obs_key].values.astype(str)
     all_set = np.unique(tissue_types)

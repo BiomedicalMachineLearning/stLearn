@@ -47,8 +47,7 @@ def perform_spot_testing(
     n_genes = round(np.sqrt(n_pairs) * 2)
     if len(genes) < n_genes:
         print(
-            "Exiting since need atleast "
-            f"{n_genes} genes to generate {n_pairs} pairs."
+            f"Exiting since need atleast {n_genes} genes to generate {n_pairs} pairs."
         )
         return
 

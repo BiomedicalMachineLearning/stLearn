@@ -1,6 +1,5 @@
 """Helper functions for cci_plot.py."""
 
-
 import matplotlib
 import matplotlib.cm as cm
 import matplotlib.colors as plt_colors
@@ -48,7 +47,7 @@ def lr_scatter(
     lr_features = data.uns["lrfeatures"]
     lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
     if feature not in lr_df.columns:
-        raise Exception(f"Inputted {feature}; must be one of " f"{list(lr_df.columns)}")
+        raise Exception(f"Inputted {feature}; must be one of {list(lr_df.columns)}")
 
     rot = 90 if feature != "n_spots_sig" else 70
 
@@ -426,7 +425,6 @@ def get_int_df(adata, lr, use_label, sig_interactions, title):
         )[labels_ordered].loc[labels_ordered]
         title = "Cell-Cell LR Interactions" if no_title else title
     else:
-
         labels_ordered = adata.obs[use_label].cat.categories
         int_df = (
             adata.uns[f"per_lr_cci_{use_label}"][lr]

@@ -35,7 +35,6 @@ class Spatial:
         use_raw: bool = False,
         **kwargs,
     ):
-
         self.adata = (adata,)
         self.library_id, self.spatial_data = _check_spatial_data(adata.uns, library_id)
         self.img, self.img_key = _check_img(self.spatial_data, img, img_key, bw=bw)

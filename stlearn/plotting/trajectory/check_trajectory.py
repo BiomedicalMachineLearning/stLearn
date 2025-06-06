@@ -17,16 +17,16 @@ def check_trajectory(
     img_key: str = "hires",
 ) -> None:
     trajectory = np.array(trajectory).astype(int)
-    assert (
-        trajectory in adata.uns["available_paths"].values()
-    ), "Please choose the right path!"
+    assert trajectory in adata.uns["available_paths"].values(), (
+        "Please choose the right path!"
+    )
     trajectory_str = [str(node) for node in trajectory]
-    assert (
-        pseudotime_key in adata.obs.columns
-    ), "Please run the pseudotime or choose the right one!"
-    assert (
-        use_label in adata.obs.columns
-    ), "Please run the cluster or choose the right label!"
+    assert pseudotime_key in adata.obs.columns, (
+        "Please run the pseudotime or choose the right one!"
+    )
+    assert use_label in adata.obs.columns, (
+        "Please run the cluster or choose the right label!"
+    )
     assert basis in adata.obsm, (
         "Please run the " + basis + "before you check the trajectory!"
     )

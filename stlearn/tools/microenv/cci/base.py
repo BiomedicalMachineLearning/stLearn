@@ -181,7 +181,7 @@ def get_spot_lrs(
         l1, ... rn, ln
     """
     df = adata.to_df()
-    pairs_rev = [f'{pair.split("_")[1]}_{pair.split("_")[0]}' for pair in lr_pairs]
+    pairs_rev = [f"{pair.split('_')[1]}_{pair.split('_')[0]}" for pair in lr_pairs]
     pairs_wRev = []
     for i in range(len(lr_pairs)):
         pairs_wRev.extend([lr_pairs[i], pairs_rev[i]])

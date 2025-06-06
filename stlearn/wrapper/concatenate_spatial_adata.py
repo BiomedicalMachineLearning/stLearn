@@ -15,7 +15,6 @@ def transform_spatial(coordinates, original, resized):
 
 
 def correct_size(adata, fixed_size):
-
     image = adata.uns["spatial"][list(adata.uns["spatial"].keys())[0]]["images"][
         "hires"
     ]

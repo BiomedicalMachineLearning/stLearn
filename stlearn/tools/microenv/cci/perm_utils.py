@@ -355,7 +355,10 @@ def get_lr_bg(
     l_, r_ = lr_.split("_")
     if l_ not in gene_bg_genes:
         l_genes = get_similar_genesFAST(
-            l_quant, n_genes, candidate_quants, genes  # group_l_props,
+            l_quant,
+            n_genes,
+            candidate_quants,
+            genes,  # group_l_props,
         )
         gene_bg_genes[l_] = l_genes
     else:
@@ -363,7 +366,10 @@ def get_lr_bg(
 
     if r_ not in gene_bg_genes:
         r_genes = get_similar_genesFAST(
-            r_quant, n_genes, candidate_quants, genes  # group_r_props,
+            r_quant,
+            n_genes,
+            candidate_quants,
+            genes,  # group_r_props,
         )
         gene_bg_genes[r_] = r_genes
     else:

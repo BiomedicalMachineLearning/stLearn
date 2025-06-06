@@ -10,7 +10,6 @@ class CheckNumberRange:
         self.hint = hint
 
     def __call__(self, form, field):
-
         if field.data is not None:
             if not (self.lower <= float(field.data) <= self.upper):
                 if self.hint:

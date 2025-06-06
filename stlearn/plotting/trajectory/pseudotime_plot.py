@@ -153,7 +153,6 @@ def pseudotime_plot(
         )
 
         for x, y in centroid_dict.items():
-
             if x in get_node(list_clusters, adata.uns["split_node"]):
                 a.text(
                     y[0],
@@ -173,7 +172,6 @@ def pseudotime_plot(
                 )
 
     if show_trajectories:
-
         used_colors = adata.uns[use_label + "_colors"]
         cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
 
@@ -218,7 +216,6 @@ def pseudotime_plot(
 
         if show_node:
             for x, y in centroid_dict.items():
-
                 if x in get_node(list_clusters, adata.uns["split_node"]):
                     a.text(
                         y[0],

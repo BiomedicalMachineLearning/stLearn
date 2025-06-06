@@ -2,7 +2,6 @@
 
 """Tests for `stlearn` package."""
 
-
 import unittest
 
 import scanpy as sc

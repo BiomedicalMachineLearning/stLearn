@@ -1,4 +1,3 @@
-
 import networkx as nx
 import numpy as np
 from numpy import linalg as la
@@ -359,7 +358,7 @@ def resistance_matrix(A, check_connected=True):
             G = nx.from_numpy_array(A)
         if not nx.is_connected(G):
             raise UndefinedException(
-                "Graph is not connected. " "Resistance matrix is undefined."
+                "Graph is not connected. Resistance matrix is undefined."
             )
     L = laplacian_matrix(A)
     try:

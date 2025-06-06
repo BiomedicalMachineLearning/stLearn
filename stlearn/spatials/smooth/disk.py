@@ -11,7 +11,6 @@ def disk(
     method: str = "mean",
     copy: bool = False,
 ) -> AnnData | None:
-
     adata = adata.copy() if copy else adata
 
     coor = adata.obs[["imagecol", "imagerow"]]

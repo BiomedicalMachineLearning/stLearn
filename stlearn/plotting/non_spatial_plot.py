@@ -45,7 +45,6 @@ def non_spatial_plot(
         scanpy.pl.draw_graph(adata, color="dpt_pseudotime")
 
     else:
-
         scanpy.pl.draw_graph(adata)
         # adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
