@@ -49,10 +49,8 @@ def add_mask(
             img = plt.imread(imgpath, 0)
             assert (
                 img.shape == adata.uns["spatial"][library_id]["images"][quality].shape
-            ), (
-                "\
+            ), "\
             size of mask image does not match size of H&E images"
-            )
             if "mask_image" not in adata.uns:
                 adata.uns["mask_image"] = {}
             if library_id not in adata.uns["mask_image"]:

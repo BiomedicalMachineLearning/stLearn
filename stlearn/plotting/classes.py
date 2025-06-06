@@ -71,9 +71,9 @@ class SpatialBasePlot(Spatial):
             assert use_label is not None, "Please specify `use_label` parameter!"
 
         if use_label is not None:
-            assert use_label in self.adata[0].obs.columns, (
-                "Please choose the right label in `adata.obs.columns`!"
-            )
+            assert (
+                use_label in self.adata[0].obs.columns
+            ), "Please choose the right label in `adata.obs.columns`!"
             self.use_label = use_label
 
             if self.list_clusters is None:
