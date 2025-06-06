@@ -3,7 +3,8 @@ Plotting of continuous features stored in adata.obs.
 """
 
 from typing import (
-    Optional, Tuple,  # Special
+    Optional,
+    Tuple,  # Special
 )
 
 import matplotlib

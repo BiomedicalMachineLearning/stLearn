@@ -782,7 +782,6 @@ class BokehLRPlot(Spatial):
         else:
             image = (self.img * 255).astype(np.uint8)
 
-
         img_pillow = Image.fromarray(image).convert("RGBA")
 
         self.xdim, self.ydim = img_pillow.size

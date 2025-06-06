@@ -37,7 +37,6 @@ def _check_spot_size(spatial_data: Mapping | None, spot_size: float | None) -> f
     return spatial_data["scalefactors"]["spot_diameter_fullres"]
 
 
-
 def _check_scale_factor(
     spatial_data: Mapping | None,
     img_key: str | None,
@@ -118,7 +117,12 @@ def _check_img(
             if img_key is _empty:
                 # Looks for image - or None if not found.
                 new_img_key = next(
-                    (k for k in ["hires", "lowres", "fulres"] if k in spatial_data["images"]), None
+                    (
+                        k
+                        for k in ["hires", "lowres", "fulres"]
+                        if k in spatial_data["images"]
+                    ),
+                    None,
                 )
             else:
                 new_img_key = img_key
@@ -133,7 +137,7 @@ def _check_img(
 
 
 def _check_coords(
-        obsm: Mapping | None, scale_factor: float | None
+    obsm: Mapping | None, scale_factor: float | None
 ) -> tuple[np.ndarray, np.ndarray]:
     if obsm is None:
         raise ValueError("obsm cannot be None")

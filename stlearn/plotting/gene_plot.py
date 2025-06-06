@@ -1,5 +1,6 @@
 from typing import (  # Special
-    Optional, Tuple,  # Classes
+    Optional,
+    Tuple,  # Classes
 )
 
 import matplotlib
@@ -15,35 +16,35 @@ from stlearn.utils import _docs_params
 
 @_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def gene_plot(
-        adata: AnnData,
-        gene_symbols: str | list | None = None,
-        threshold: float | None = None,
-        method: str = "CumSum",
-        contour: bool = False,
-        step_size: int | None = None,
-        title: str | None = None,
-        figsize: Tuple[float, float] | None = None,
-        cmap: str = "Spectral_r",
-        use_label: str | None = None,
-        list_clusters: list | None = None,
-        ax: matplotlib.axes.Axes | None = None,
-        fig: matplotlib.figure.Figure | None = None,
-        show_plot: bool = True,
-        show_axis: bool = False,
-        show_image: bool = True,
-        show_color_bar: bool = True,
-        color_bar_label: str = "",
-        zoom_coord: Tuple[float, float, float, float] | None = None,
-        crop: bool = True,
-        margin: float = 100,
-        size: float = 7,
-        image_alpha: float = 1.0,
-        cell_alpha: float = 0.7,
-        use_raw: bool = False,
-        fname: str | None = None,
-        dpi: int = 120,
-        vmin: float | None = None,
-        vmax: float | None = None,
+    adata: AnnData,
+    gene_symbols: str | list | None = None,
+    threshold: float | None = None,
+    method: str = "CumSum",
+    contour: bool = False,
+    step_size: int | None = None,
+    title: str | None = None,
+    figsize: Tuple[float, float] | None = None,
+    cmap: str = "Spectral_r",
+    use_label: str | None = None,
+    list_clusters: list | None = None,
+    ax: matplotlib.axes.Axes | None = None,
+    fig: matplotlib.figure.Figure | None = None,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    color_bar_label: str = "",
+    zoom_coord: Tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 7,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 0.7,
+    use_raw: bool = False,
+    fname: str | None = None,
+    dpi: int = 120,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ) -> AnnData | None:
     """\
     Allows the visualization of a single gene or multiple genes as the values

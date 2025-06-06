@@ -65,6 +65,7 @@ class stLearnConfig:  # noqa N801
     """\
     Config manager for scanpy.
     """
+
     _logpath: Path | None
     _logfile: TextIO
     _verbosity: Verbosity

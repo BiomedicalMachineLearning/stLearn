@@ -12,6 +12,7 @@ from .plotting.cci_plot import grid_plot
 from .plotting.cci_plot import het_plot
 from .plotting.cci_plot import lr_diagnostics, lr_n_spots, lr_summary, lr_go
 from .plotting.cci_plot import lr_plot, lr_result_plot
+
 # from .plotting.cci_plot import het_plot_interactive
 from .plotting.cci_plot import lr_plot_interactive, spatialcci_plot_interactive
 from .plotting.cluster_plot import cluster_plot

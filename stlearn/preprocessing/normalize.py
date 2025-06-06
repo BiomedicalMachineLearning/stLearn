@@ -5,6 +5,7 @@ import numpy as np
 import scanpy
 from anndata import AnnData
 
+
 def normalize_total(
     adata: AnnData,
     target_sum: float | None = None,

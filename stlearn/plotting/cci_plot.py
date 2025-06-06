@@ -3,7 +3,8 @@ import math
 import sys
 from typing import (
     Any,
-    Optional, Tuple,  # Special
+    Optional,
+    Tuple,  # Special
 )
 
 import matplotlib

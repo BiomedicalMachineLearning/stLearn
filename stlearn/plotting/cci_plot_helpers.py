@@ -1,4 +1,5 @@
 """Helper functions for cci_plot.py."""
+
 from typing import List, Tuple, Optional
 
 import matplotlib
@@ -232,8 +233,8 @@ def add_arrows(
     int_df: pd.DataFrame | None,
     head_width: float = 4,
     width: float = 0.001,
-    arrow_cmap: str | None =None,
-    arrow_vmax: float | None =None,
+    arrow_cmap: str | None = None,
+    arrow_vmax: float | None = None,
 ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.

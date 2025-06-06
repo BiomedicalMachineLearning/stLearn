@@ -11,6 +11,7 @@ from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from tqdm import tqdm
 from stlearn.pl import het_plot
 
+
 def get_hotspots(
     adata: AnnData,
     lr_scores: np.ndarray,

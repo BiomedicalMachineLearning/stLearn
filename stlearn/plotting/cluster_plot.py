@@ -1,5 +1,6 @@
 from typing import (
-    Optional, Tuple,  # Special
+    Optional,
+    Tuple,  # Special
 )
 
 import matplotlib
@@ -44,7 +45,7 @@ def cluster_plot(
     show_node: bool = False,
     threshold_spots: int = 5,
     text_box_size: float = 5,
-    color_bar_size: float= 10,
+    color_bar_size: float = 10,
     bbox_to_anchor: tuple[float, float] | None = (1, 1),
     # trajectory
     trajectory_node_size: int = 10,

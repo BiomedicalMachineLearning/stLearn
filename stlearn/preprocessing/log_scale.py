@@ -38,7 +38,9 @@ def log1p(
     Returns or updates `data`, depending on `copy`.
     """
 
-    result = scanpy.pp.log1p(adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base)
+    result = scanpy.pp.log1p(
+        adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base
+    )
     print("Log transformation step is finished in adata.X")
     return result
 
@@ -75,6 +77,8 @@ def scale(
     Depending on `copy` returns or updates `adata` with a scaled `adata.X`.
     """
 
-    result = scanpy.pp.scale(adata, zero_center=zero_center, max_value=max_value, copy=copy)
+    result = scanpy.pp.scale(
+        adata, zero_center=zero_center, max_value=max_value, copy=copy
+    )
     print("Scale step is finished in adata.X")
     return result

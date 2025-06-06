@@ -15,7 +15,9 @@ def deconvolution_plot(
     data_alpha: float = 1.0,
     threshold: float = 0.0,
     cmap: str = "tab20",
-    colors: list[tuple[float, float, float, float]] | None = None,  # The colors to use for each label...
+    colors: (
+        list[tuple[float, float, float, float]] | None
+    ) = None,  # The colors to use for each label...
     spot_size: float | int = 10,
     show_axis: bool = False,
     show_legend: bool = True,

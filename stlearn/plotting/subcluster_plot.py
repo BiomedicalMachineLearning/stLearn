@@ -31,11 +31,11 @@ def subcluster_plot(
     image_alpha: float = 1.0,
     cell_alpha: float = 1.0,
     fname: str | None = None,
-    dpi: int  = 120,
+    dpi: int = 120,
     # subcluster plot param
     cluster: int = 0,
     threshold_spots: int = 5,
-    text_box_size: float= 5,
+    text_box_size: float = 5,
     bbox_to_anchor: tuple[float, float] | None = (1, 1),
 ) -> AnnData | None:
     """\

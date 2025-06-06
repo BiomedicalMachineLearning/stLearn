@@ -8,6 +8,7 @@ from scipy.sparse import spmatrix
 import scanpy
 from louvain.VertexPartition import MutableVertexPartition
 
+
 def louvain(
     adata: AnnData,
     resolution: float | None = None,

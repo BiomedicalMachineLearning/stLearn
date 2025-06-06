@@ -35,7 +35,9 @@ def transition_markers_plot(
     """
 
     if trajectory not in adata.uns:
-        raise ValueError("Please input the right trajectory name - not found in adata.uns!")
+        raise ValueError(
+            "Please input the right trajectory name - not found in adata.uns!"
+        )
 
     pos = (
         adata.uns[trajectory][adata.uns[trajectory]["score"] >= 0]
