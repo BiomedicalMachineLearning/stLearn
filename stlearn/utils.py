@@ -57,6 +57,11 @@ def _check_spatial_data(
     """
     Given a mapping, try and extract a library id/ mapping with spatial data.
     Assumes this is `.uns` from how we parse visium data.
+
+    Parameters
+    ----------
+    library_id : None | str | Empty
+        If None - don't find an image. Empty - find best image, or specify with str.
     """
     spatial_mapping = uns.get("spatial", {})
     if library_id is _empty:

@@ -27,7 +27,7 @@ class Spatial:
         basis: str = "spatial",
         img: np.ndarray | None = None,
         img_key: str | None | Empty = _empty,
-        library_id: str | None = None,
+        library_id: str | None | Empty = _empty,
         crop_coord: bool = True,
         bw: bool = False,
         scale_factor: float | None = None,
