@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 
 _CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
 
-def new_extract_feature(
+def extract_feature(
     adata: AnnData,
     cnn_base: _CNN_BASE = "resnet50",
     n_components: int = 50,
