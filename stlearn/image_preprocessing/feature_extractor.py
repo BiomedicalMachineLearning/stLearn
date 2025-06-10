@@ -8,7 +8,7 @@ from PIL import Image
 # Test progress bar
 from tqdm import tqdm
 
-from .model_zoo import Model, encode
+from .model_zoo import Model
 from sklearn.decomposition import PCA
 
 _CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
