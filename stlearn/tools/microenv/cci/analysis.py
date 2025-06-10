@@ -44,7 +44,7 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndar
     """
     if names is None:
         names = ["connectomeDB2020_lit"]
-    if names is str:
+    if isinstance(names, str):
         names = [names]
 
     path = os.path.dirname(os.path.realpath(__file__))

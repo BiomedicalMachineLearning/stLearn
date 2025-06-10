@@ -217,7 +217,9 @@ def getCCIForm(adata):
         fields = []
         mix = False
     else:
-        fields = [key for key in adata.obs.keys() if adata.obs[key].values[0] is str]
+        fields = [
+            key for key in adata.obs.keys() if isinstance(adata.obs[key].values[0], str)
+        ]
         mix = fields[0] in adata.uns.keys()
     element_values = [fields, 20, mix, 0.2, 100]
     return createSuperForm(elements, element_fields, element_values)

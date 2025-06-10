@@ -81,7 +81,7 @@ class SpatialBasePlot(Spatial):
                     self.adata[0].obs[use_label].cat.categories
                 )
             else:
-                if self.list_clusters is not list:
+                if not isinstance(self.list_clusters, list):
                     self.list_clusters = [self.list_clusters]
 
                 clusters_indexes = [
@@ -101,12 +101,12 @@ class SpatialBasePlot(Spatial):
         stlearn_cmap = ["jana_40", "default"]
         cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
         error_msg = (
-            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
+            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR "
             "one of these: " + str(cmap_available)
         )
-        if cmap is str:
+        if isinstance(cmap, str):
             assert cmap in cmap_available, error_msg
-        elif cmap is not matplotlib.colors.LinearSegmentedColormap:
+        elif not isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):
             raise Exception(error_msg)
         self.cmap = cmap
 
@@ -380,7 +380,7 @@ class GenePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap) if self.cmap is str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=gene_values,
         )
         return plot
@@ -409,7 +409,7 @@ class GenePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap) if self.cmap is str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
@@ -547,7 +547,7 @@ class FeaturePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap) if self.cmap is str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=feature_values,
         )
         return plot
@@ -576,7 +576,7 @@ class FeaturePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap) if self.cmap is str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
@@ -1031,7 +1031,7 @@ class SubClusterPlot(SpatialBasePlot):
             edgecolor="none",
             s=self.size,
             marker="o",
-            cmap=plt.get_cmap(self.cmap) if self.cmap is str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=colors,
             alpha=self.cell_alpha,
         )

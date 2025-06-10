@@ -5,6 +5,7 @@
 import unittest
 
 import numpy.testing as npt
+
 from stlearn.classes import Spatial
 
 from .utils import read_test_data
@@ -26,8 +27,11 @@ class TestSpatial(unittest.TestCase):
         self.assertEqual(False, spatial.use_raw)
         npt.assert_array_almost_equal(
             [896.782, 1370.627, 1483.498, 1178.713, 1584.901],
-            spatial.imagecol[:5], decimal=3)
+            spatial.imagecol[:5],
+            decimal=3,
+        )
         npt.assert_array_almost_equal(
             [1549.092, 1158.003, 1040.594, 1373.267, 1021.205],
             spatial.imagerow[:5],
-            decimal=3)
+            decimal=3,
+        )

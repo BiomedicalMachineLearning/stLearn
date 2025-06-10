@@ -50,7 +50,7 @@ def global_level(
     inds_cat = {v: k for (k, v) in cat_inds.items()}
 
     # Query cluster
-    if list_clusters[0] is str:
+    if isinstance(list_clusters[0], str):
         list_clusters = [cat_inds[label] for label in list_clusters]
     query_nodes = list_clusters
 

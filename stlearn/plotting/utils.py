@@ -70,10 +70,10 @@ def get_cmap(cmap):
         cmap = palettes_st.jana_40
     elif cmap == "default":
         cmap = palettes_st.default
-    elif cmap is str:  # If refers to matplotlib cmap
+    elif isinstance(cmap, str):  # If refers to matplotlib cmap
         cmap_n = plt.get_cmap(cmap).N
         return plt.get_cmap(cmap), cmap_n
-    elif cmap is matplotlib.colors.LinearSegmentedColormap:  # already cmap
+    elif isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):  # already cmap
         cmap_n = cmap.N
         return cmap, cmap_n
 
@@ -94,9 +94,9 @@ def check_cmap(cmap):
         "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
         "one of these: " + str(cmap_available)
     )
-    if cmap is str:
+    if isinstance(cmap, str):
         assert cmap in cmap_available, error_msg
-    elif cmap is not matplotlib.colors.LinearSegmentedColormap:
+    elif not isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):
         raise Exception(error_msg)
 
     return cmap

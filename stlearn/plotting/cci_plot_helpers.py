@@ -715,7 +715,7 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1):
         ]
         if len(x) > 10:
             print("x is too large! Use x smaller than 10")
-    if colors[0] is str:
+    if isinstance(colors[0], str):
         colors = [hex2rgb(colors[i]) for i in range(len(x))]
 
     # find position for each start and end
