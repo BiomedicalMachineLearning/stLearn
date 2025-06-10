@@ -35,12 +35,17 @@ class TestFeatureExtractionPerformance(unittest.TestCase):
         data1 = self.test_data.copy()
         data2 = self.test_data.copy()
 
-        st.pp.extract_feature(data1, seeds=42, batch=16)
-        st.pp.extract_feature(data2, seeds=42, batch=32)
+        st.pp.extract_feature(data1, seeds=42)
+        st.pp.extract_feature(data2, seeds=42)
 
         np.testing.assert_array_equal(
             data1.obsm["X_morphology"],
             data2.obsm["X_morphology"],
+            err_msg="Results should be deterministic with same seed"
+        )
+        np.testing.assert_array_equal(
+            data1.obsm["X_tile_feature"],
+            data2.obsm["X_tile_feature"],
             err_msg="Results should be deterministic with same seed"
         )
 
