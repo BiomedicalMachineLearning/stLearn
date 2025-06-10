@@ -79,7 +79,7 @@ def extract_feature(
             features = _read_and_predict(tile_paths[i], model, verbose=verbose)
             feature_matrix[i] = features
             if i % 10 == 0:
-                pbar.update(10)
+                pbar.update(100)
 
     adata.obsm["X_tile_feature"] = feature_matrix
     pca = PCA(n_components=n_components, random_state=seeds)
