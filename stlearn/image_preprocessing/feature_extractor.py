@@ -78,7 +78,7 @@ def extract_feature(
         for i in range(1, n_spots):
             features = _read_and_predict(tile_paths[i], model, verbose=verbose)
             feature_matrix[i] = features
-            if i % 10 == 0:
+            if i % 100 == 0:
                 pbar.update(100)
 
     adata.obsm["X_tile_feature"] = feature_matrix
