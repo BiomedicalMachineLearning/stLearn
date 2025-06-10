@@ -1,9 +1,3 @@
-def encode(tiles, model):
-    features = model.predict(tiles)
-    features = features.ravel()
-    return features
-
-
 class Model:
     __name__ = "CNN base model"
 

@@ -77,6 +77,8 @@ def new_extract_feature(
                 batch_array = np.stack(batch_tiles, axis=0)
                 batch_features = model.predict(batch_array)
 
+                batch_features = batch_features.reshape(batch_features.shape[0], -1)
+
                 if feature_matrix is None:
                     n_features = batch_features.shape[1]
                     feature_matrix = np.empty((n_spots, n_features),
@@ -127,6 +129,12 @@ def _load_batch_images(batch_spots, verbose=False):
             continue
 
     return images, names
+
+
+def _encode(tiles, model):
+    features = model.predict(tiles)
+    features = features.ravel()
+    return features
 
 def extract_feature(
     adata: AnnData,
@@ -182,7 +190,7 @@ def extract_feature(
             tile = np.stack([tile])
             if verbose:
                 print(f"extract feature for spot: {str(spot)}")
-            features = encode(tile, model)
+            features = _encode(tile, model)
             feature_dfs.append(pd.DataFrame(features, columns=[spot]))
             pbar.update(1)
 
