@@ -691,7 +691,8 @@ class ClusterPlot(SpatialBasePlot):
             # self.adata[0].uns[self.use_label + "_set"] = []
             self.adata[0].uns[self.use_label + "_colors"] = []
 
-            for i, cluster in enumerate(self.adata[0].obs.groupby(self.use_label)):
+            for i, cluster in enumerate(self.adata[0].obs.groupby(self.use_label,
+                                                                  observed=True)):
                 self.adata[0].uns[self.use_label + "_colors"].append(
                     matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
                 )
@@ -700,7 +701,8 @@ class ClusterPlot(SpatialBasePlot):
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
-        for i, cluster in enumerate(self.query_adata.obs.groupby(self.use_label)):
+        for i, cluster in enumerate(
+                self.query_adata.obs.groupby(self.use_label, observed=True)):
             # Plot scatter plot based on pixel of spots
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
@@ -742,7 +744,7 @@ class ClusterPlot(SpatialBasePlot):
             handleheight=1.0,
             edgecolor="white",
         )
-        for handle in lgnd.legendHandles:
+        for handle in lgnd.legend_handles:
             handle.set_sizes([20.0])
 
     def _add_cluster_labels(self):
