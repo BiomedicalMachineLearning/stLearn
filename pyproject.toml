@@ -11,7 +11,7 @@ authors = [
 description = "A downstream analysis toolkit for Spatial Transcriptomic data"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "BSD license"}
-requires-python = ">=3.10"
+requires-python = "==3.10"
 keywords = ["stlearn"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -19,9 +19,6 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
 ]
 dynamic = ["dependencies"]
 
