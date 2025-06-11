@@ -7,7 +7,7 @@ import scanpy
 from anndata import AnnData
 from numpy.random import RandomState
 
-_Method = Literal["umap", "gauss", "rapids"]
+_Method = Literal["umap", "gauss"]
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
 # from sklearn.metrics.pairwise_distances.__doc__:
 _MetricSparseCapable = Literal[
@@ -42,7 +42,7 @@ def neighbors(
     use_rep: str | None = None,
     knn: bool = True,
     random_state: int | RandomState | None = 0,
-    method: _Method | None = "umap",
+    method: _Method = "umap",
     metric: _Metric | _MetricFn = "euclidean",
     metric_kwds: Mapping[str, Any] = MappingProxyType({}),
     copy: bool = False,
@@ -78,8 +78,6 @@ def neighbors(
     method
         Use 'umap' [McInnes18]_ or 'gauss' (Gauss kernel following [Coifman05]_
         with adaptive width [Haghverdi16]_) for computing connectivities.
-        Use 'rapids' for the RAPIDS implementation of UMAP (experimental, GPU
-        only).
     metric
         A known metric’s name or a callable that returns a distance.
     metric_kwds
@@ -97,7 +95,7 @@ def neighbors(
         neighbors.
     """
 
-    scanpy.pp.neighbors(
+    adata = scanpy.pp.neighbors(
         adata,
         n_neighbors=n_neighbors,
         n_pcs=n_pcs,
@@ -112,4 +110,4 @@ def neighbors(
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")
 
-    return adata
+    return adata if copy else None
