@@ -6,16 +6,16 @@ from anndata import AnnData
 from tqdm import tqdm
 
 _SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
-
+_METHOD = Literal["mean", "median", "sum"]
 
 def adjust(
     adata: AnnData,
     use_data: str = "X_pca",
     radius: float = 50.0,
     rates: int = 1,
-    method="mean",
-    copy: bool = False,
+    method: _SIMILARITY_MATRIX = "mean",
     similarity_matrix: _SIMILARITY_MATRIX = "cosine",
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     SME normalisation: Using spot location information and tissue morphological
@@ -23,23 +23,22 @@ def adjust(
 
     Parameters
     ----------
-    adata
+    adata : AnnData
         Annotated data matrix.
-    use_data
+    use_data : str, default "X_pca"
         Input date to be adjusted by morphological features.
         choose one from ["raw", "X_pca", "X_umap"]
-    radius
+    radius: float, default 50.0
         Radius to select neighbour spots.
-    rates
-        Strength for adjustment.
-    method
-        Method for disk smoothing.
-        choose one from ["means", "median"]
-    copy
+    rates: int, default 1
+        Number of times to add the aggregated neighbor contribution.
+        Higher values increase the strength of morphological adjustment.
+    method: {'mean', 'median', 'sum'}, default 'mean'
+        Method for aggregating neighbor contributions.
+    similarity_matrix : {'cosine', 'euclidean', 'pearson', 'spearman'}, default 'cosine'
+        Method to calculate morphological similarity between spots.
+    copy : bool, default False
         Return a copy instead of writing to adata.
-    similarity_matrix
-        Matrix to calculate morphological similarity of two spots
-        choose one from ["cosine", "euclidean", "pearson", "spearman"]
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
