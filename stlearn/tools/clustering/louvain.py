@@ -97,4 +97,4 @@ def louvain(
         "Louvain cluster is done! The labels are stored in adata.obs['%s']" % key_added
     )
 
-    return adata if copy else None
+    return adata
