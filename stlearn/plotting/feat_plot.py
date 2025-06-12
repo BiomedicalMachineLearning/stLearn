@@ -2,58 +2,47 @@
 Plotting of continuous features stored in adata.obs.
 """
 
-from matplotlib import pyplot as plt
-from PIL import Image
-import pandas as pd
+from typing import (
+    Optional,  # Special
+)
+
 import matplotlib
-import numpy as np
-
-from typing import Optional, Union, Mapping  # Special
-from typing import Sequence, Iterable  # ABCs
-from typing import Tuple  # Classes
-
 from anndata import AnnData
-import warnings
 
 from stlearn.plotting.classes import FeaturePlot
-from stlearn.plotting.classes_bokeh import BokehGenePlot
-from stlearn.plotting._docs import doc_spatial_base_plot, doc_gene_plot
-from stlearn.utils import Empty, _empty, _AxesSubplot, _docs_params
 
-from bokeh.io import push_notebook, output_notebook
-from bokeh.plotting import show
 
 # @_docs_params(spatial_base_plot=doc_spatial_base_plot, gene_plot=doc_gene_plot)
 def feat_plot(
     adata: AnnData,
-    feature: str = None,
-    threshold: Optional[float] = None,
+    feature: str | None = None,
+    threshold: float | None = None,
     contour: bool = False,
-    step_size: Optional[int] = None,
+    step_size: int | None = None,
     title: Optional["str"] = None,
-    figsize: Optional[Tuple[float, float]] = None,
-    cmap: Optional[str] = "Spectral_r",
-    use_label: Optional[str] = None,
-    list_clusters: Optional[list] = None,
-    ax: Optional[matplotlib.axes.Axes] = None,
-    fig: Optional[matplotlib.figure.Figure] = None,
-    show_plot: Optional[bool] = True,
-    show_axis: Optional[bool] = False,
-    show_image: Optional[bool] = True,
-    show_color_bar: Optional[bool] = True,
-    color_bar_label: Optional[str] = "",
-    zoom_coord: Optional[float] = None,
-    crop: Optional[bool] = True,
-    margin: Optional[bool] = 100,
-    size: Optional[float] = 7,
-    image_alpha: Optional[float] = 1.0,
-    cell_alpha: Optional[float] = 0.7,
-    use_raw: Optional[bool] = False,
-    fname: Optional[str] = None,
-    dpi: Optional[int] = 120,
-    vmin: Optional[float] = None,
-    vmax: Optional[float] = None,
-) -> Optional[AnnData]:
+    figsize: tuple[float, float] | None = None,
+    cmap: str = "Spectral_r",
+    use_label: str | None = None,
+    list_clusters: list | None = None,
+    ax: matplotlib.axes.Axes | None = None,
+    fig: matplotlib.figure.Figure | None = None,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    color_bar_label: str = "",
+    zoom_coord: tuple[float, float, float, float] | None = None,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 7,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 0.7,
+    use_raw: bool = False,
+    fname: str | None = None,
+    dpi: int = 120,
+    vmin: float | None = None,
+    vmax: float | None = None,
+) -> AnnData | None:
     """\
     Allows the visualization of a continuous features stored in adata.obs
      for Spatial transcriptomics array.
@@ -101,3 +90,5 @@ def feat_plot(
         vmin=vmin,
         vmax=vmax,
     )
+
+    return adata

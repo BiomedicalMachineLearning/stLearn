@@ -1,18 +1,14 @@
-from typing import Optional, Union
-from anndata import AnnData
-from matplotlib import pyplot as plt
-from pathlib import Path
-import os
-import sys
+from os import PathLike
+
 import numpy as np
+from anndata import AnnData
 
 
 def parsing(
     adata: AnnData,
-    coordinates_file: Union[Path, str],
+    coordinates_file: int | str | bytes | PathLike[str] | PathLike[bytes],
     copy: bool = True,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Parsing the old spaital transcriptomics data
 
@@ -33,7 +29,7 @@ def parsing(
 
     # Get a map of the new coordinates
     new_coordinates = dict()
-    with open(coordinates_file, "r") as filehandler:
+    with open(coordinates_file) as filehandler:
         for line in filehandler.readlines():
             tokens = line.split()
             assert len(tokens) >= 6 or len(tokens) == 4
@@ -52,6 +48,8 @@ def parsing(
                         "the coordinates file only contains 4 columns\n"
                     )
 
+    adata = adata.copy() if copy else adata
+
     counts_table = adata.to_df()
     new_index_values = list()
 
@@ -66,7 +64,7 @@ def parsing(
             imgcol.append(new_x)
             imgrow.append(new_y)
 
-            new_index_values.append("{0}x{1}".format(new_x, new_y))
+            new_index_values.append(f"{new_x}x{new_y}")
         except KeyError:
             counts_table.drop(index, inplace=True)
 
@@ -80,7 +78,6 @@ def parsing(
 
     adata.obs["imagecol"] = imgcol
     adata.obs["imagerow"] = imgrow
-
     adata.obsm["spatial"] = np.c_[[imgcol, imgrow]].reshape(-1, 2)
 
     return adata if copy else None

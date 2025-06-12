@@ -1,8 +1,8 @@
-from sklearn.metrics import pairwise_distances
-from typing import Optional, Union
-from anndata import AnnData
+from typing import Literal
+
 import numpy as np
-from ..._compat import Literal
+from anndata import AnnData
+from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
 
 _PLATFORM = Literal["Visium", "Old_ST"]
@@ -19,13 +19,15 @@ _WEIGHTING_MATRIX = Literal[
 
 def calculate_weight_matrix(
     adata: AnnData,
-    adata_imputed: Union[AnnData, None] = None,
+    adata_imputed: AnnData | None = None,
     pseudo_spots: bool = False,
     platform: _PLATFORM = "Visium",
-) -> Optional[AnnData]:
-    from sklearn.linear_model import LinearRegression
+) -> AnnData | None:
     import math
 
+    from sklearn.linear_model import LinearRegression
+
+    rate: float
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
@@ -101,14 +103,15 @@ def calculate_weight_matrix(
             adata.uns["gene_expression_correlation"]
             * adata.uns["morphological_distance"]
         )
+    return adata
 
 
 def impute_neighbour(
     adata: AnnData,
-    count_embed: Union[np.ndarray, None] = None,
+    count_embed: np.ndarray,
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     coor = adata.obs[["imagecol", "imagerow"]]
 
     weights_matrix = adata.uns[weights]
@@ -123,7 +126,6 @@ def impute_neighbour(
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(len(coor)):
-
             main_weights = weights_matrix[i]
 
             if weights == "physical_distance":

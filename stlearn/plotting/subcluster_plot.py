@@ -1,19 +1,12 @@
-from matplotlib import pyplot as plt
-from PIL import Image
-import pandas as pd
-import matplotlib
-import numpy as np
-
-from typing import Optional, Union, Mapping  # Special
-from typing import Sequence, Iterable  # ABCs
-from typing import Tuple  # Classes
+from typing import (
+    Optional,  # Special
+)
 
 from anndata import AnnData
-import warnings
 
-from stlearn.plotting.classes import SubClusterPlot
 from stlearn.plotting._docs import doc_spatial_base_plot, doc_subcluster_plot
-from stlearn.utils import _AxesSubplot, Axes, _docs_params
+from stlearn.plotting.classes import SubClusterPlot
+from stlearn.utils import _AxesSubplot, _docs_params
 
 
 @_docs_params(
@@ -23,28 +16,28 @@ def subcluster_plot(
     adata: AnnData,
     # plotting param
     title: Optional["str"] = None,
-    figsize: Optional[Tuple[float, float]] = None,
-    cmap: Optional[str] = "jet",
-    use_label: Optional[str] = None,
-    list_clusters: Optional[list] = None,
-    ax: Optional[_AxesSubplot] = None,
-    show_plot: Optional[bool] = True,
-    show_axis: Optional[bool] = False,
-    show_image: Optional[bool] = True,
-    show_color_bar: Optional[bool] = True,
-    crop: Optional[bool] = True,
-    margin: Optional[bool] = 100,
-    size: Optional[float] = 5,
-    image_alpha: Optional[float] = 1.0,
-    cell_alpha: Optional[float] = 1.0,
-    fname: Optional[str] = None,
-    dpi: Optional[int] = 120,
+    figsize: tuple[float, float] | None = None,
+    cmap: str = "jet",
+    use_label: str | None = None,
+    list_clusters: list | None = None,
+    ax: _AxesSubplot | None = None,
+    show_plot: bool = True,
+    show_axis: bool = False,
+    show_image: bool = True,
+    show_color_bar: bool = True,
+    crop: bool = True,
+    margin: float = 100,
+    size: float = 5,
+    image_alpha: float = 1.0,
+    cell_alpha: float = 1.0,
+    fname: str | None = None,
+    dpi: int = 120,
     # subcluster plot param
-    cluster: Optional[int] = 0,
-    threshold_spots: Optional[int] = 5,
-    text_box_size: Optional[float] = 5,
-    bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
-) -> Optional[AnnData]:
+    cluster: int = 0,
+    threshold_spots: int = 5,
+    text_box_size: float = 5,
+    bbox_to_anchor: tuple[float, float] | None = (1, 1),
+) -> AnnData | None:
     """\
     Allows the visualization of a subclustering results as the discretes values
     of dot points in the Spatial transcriptomics array.
@@ -64,7 +57,7 @@ def subcluster_plot(
 
     """
 
-    assert use_label != None, "Please select `use_label` parameter"
+    assert use_label is not None, "Please select `use_label` parameter"
     assert (
         use_label in adata.obs.columns
     ), "Please run `stlearn.spatial.cluster.localization` function!"
@@ -93,3 +86,5 @@ def subcluster_plot(
         cluster=cluster,
         threshold_spots=threshold_spots,
     )
+
+    return adata

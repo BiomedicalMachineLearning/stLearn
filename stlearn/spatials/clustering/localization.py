@@ -1,19 +1,17 @@
-from anndata import AnnData
-from typing import Optional, Union
 import numpy as np
 import pandas as pd
-from sklearn.cluster import DBSCAN
+from anndata import AnnData
 from natsort import natsorted
+from sklearn.cluster import DBSCAN
 
 
 def localization(
     adata: AnnData,
     use_label: str = "louvain",
-    eps: int = 20,
+    eps: float = 20,
     min_samples: int = 0,
     copy: bool = False,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Perform local cluster by using DBSCAN.
 
@@ -38,13 +36,14 @@ def localization(
     Anndata
     """
 
+    adata = adata.copy() if copy else adata
+
     if "sub_cluster_labels" in adata.obs.columns:
         adata.obs = adata.obs.drop("sub_cluster_labels", axis=1)
 
     pd.set_option("mode.chained_assignment", None)
     subclusters_list = []
     for i in adata.obs[use_label].unique():
-
         tmp = adata.obs[adata.obs[use_label] == i]
 
         clustering = DBSCAN(eps=eps, min_samples=1, algorithm="kd_tree").fit(

@@ -1,16 +1,12 @@
-from typing import Optional, Union, List
 from anndata import AnnData
-from matplotlib import pyplot as plt
-from pathlib import Path
-import os
 
 
 def annotation(
     adata: AnnData,
-    label_list: List[str],
+    label_list: list[str],
     use_label: str = "louvain",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding annotation for cluster
 
@@ -30,9 +26,10 @@ def annotation(
     **[cluster method name]_anno** : `adata.obs` field
         The annotation of cluster results.
     """
-
     if label_list is None:
         raise ValueError("Please give the label list!")
+
+    adata = adata.copy() if copy else adata
 
     if len(label_list) != len(adata.obs[use_label].unique()):
         raise ValueError("Please give the correct number of label list!")

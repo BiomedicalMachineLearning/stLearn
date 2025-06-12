@@ -1,23 +1,21 @@
-from typing import Optional, Union, Iterable, Dict
+from collections.abc import Iterable
+from typing import Literal
 
 import numpy as np
-from anndata import AnnData
-from scipy.sparse import issparse
-from sklearn.utils import sparsefuncs
-from stlearn._compat import Literal
 import scanpy
+from anndata import AnnData
 
 
 def normalize_total(
     adata: AnnData,
-    target_sum: Optional[float] = None,
+    target_sum: float | None = None,
     exclude_highly_expressed: bool = False,
     max_fraction: float = 0.05,
-    key_added: Optional[str] = None,
-    layers: Union[Literal["all"], Iterable[str]] = None,
-    layer_norm: Optional[str] = None,
+    key_added: str | None = None,
+    layers: Literal["all"] | Iterable[str] | None = None,
+    layer_norm: str | None = None,
     inplace: bool = True,
-) -> Optional[Dict[str, np.ndarray]]:
+) -> dict[str, np.ndarray] | None:
     """\
     Wrap function from scanpy.pp.log1p
     Normalize counts per cell.
@@ -72,7 +70,7 @@ def normalize_total(
     `adata.X` and `adata.layers`, depending on `inplace`.
     """
 
-    scanpy.pp.normalize_total(
+    t = scanpy.pp.normalize_total(
         adata,
         target_sum=target_sum,
         exclude_highly_expressed=exclude_highly_expressed,
@@ -84,3 +82,5 @@ def normalize_total(
     )
 
     print("Normalization step is finished in adata.X")
+
+    return t

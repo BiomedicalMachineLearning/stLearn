@@ -1,18 +1,16 @@
-from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
-from anndata import AnnData
 import numpy as np
-from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
 import scanpy
+from anndata import AnnData
 
 
 def filter_genes(
     adata: AnnData,
-    min_counts: Optional[int] = None,
-    min_cells: Optional[int] = None,
-    max_counts: Optional[int] = None,
-    max_cells: Optional[int] = None,
+    min_counts: int | None = None,
+    min_cells: int | None = None,
+    max_counts: int | None = None,
+    max_cells: int | None = None,
     inplace: bool = True,
-) -> Union[AnnData, None, Tuple[np.ndarray, np.ndarray]]:
+) -> AnnData | None | tuple[np.ndarray, np.ndarray]:
     """\
     Wrap function scanpy.pp.filter_genes
 
@@ -24,7 +22,7 @@ def filter_genes(
     `max_counts`, `max_cells` per call.
     Parameters
     ----------
-    data
+    adata
         An annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
         to cells and columns to genes.
     min_counts
@@ -49,7 +47,7 @@ def filter_genes(
         `n_counts` or `n_cells` per gene.
     """
 
-    scanpy.pp.filter_genes(
+    return scanpy.pp.filter_genes(
         adata,
         min_counts=min_counts,
         min_cells=min_cells,

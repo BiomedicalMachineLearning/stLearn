@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 """Helper utilities and decorators."""
+
 from flask import flash
-import matplotlib.pyplot as plt
 
 
 def flash_errors(form, category="warning"):
@@ -12,7 +11,6 @@ def flash_errors(form, category="warning"):
 
 
 def get_all_paths(adata):
-
     import networkx as nx
 
     G = nx.from_numpy_array(adata.uns["paga"]["connectivities_tree"].toarray())

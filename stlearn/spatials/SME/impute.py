@@ -1,18 +1,20 @@
-from typing import Optional, Union
-from anndata import AnnData
 from pathlib import Path
+from typing import Literal
+
 import numpy as np
-from scipy.sparse import csr_matrix
 import pandas as pd
+import scipy
+from anndata import AnnData
+from scipy.sparse import csr_matrix
+
+import stlearn
+
 from ._weighting_matrix import (
+    _PLATFORM,
+    _WEIGHTING_MATRIX,
     calculate_weight_matrix,
     impute_neighbour,
-    _WEIGHTING_MATRIX,
-    _PLATFORM,
 )
-import stlearn
-import scipy
-from ..._compat import Literal
 
 
 def SME_impute0(
@@ -21,10 +23,10 @@ def SME_impute0(
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     platform: _PLATFORM = "Visium",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
-    using spatial location (S), tissue morphological feature (M) and gene expression (E) information to impute missing
-    values
+    using spatial location (S), tissue morphological feature (M) and gene
+    expression (E) information to impute missing values
 
     Parameters
     ----------
@@ -34,10 +36,10 @@ def SME_impute0(
         input data, can be `raw` counts or log transformed data
     weights
         weighting matrix for imputation.
-        if `weights_matrix_all`, matrix combined all information from spatial location (S),
-        tissue morphological feature (M) and gene expression (E)
-        if `weights_matrix_pd_md`, matrix combined information from spatial location (S),
-        tissue morphological feature (M)
+        if `weights_matrix_all`, matrix combined all information from spatial
+        location (S), tissue morphological feature (M) and gene expression (E)
+        if `weights_matrix_pd_md`, matrix combined information from spatial
+        location (S), tissue morphological feature (M)
     platform
         `Visium` or `Old_ST`
     copy
@@ -46,6 +48,8 @@ def SME_impute0(
     -------
     Anndata
     """
+    adata = adata.copy() if copy else adata
+
     if use_data == "raw":
         if isinstance(adata.X, csr_matrix):
             count_embed = adata.X.toarray()
@@ -86,23 +90,25 @@ _COPY = Literal["pseudo_spot_adata", "combined_adata"]
 
 def pseudo_spot(
     adata: AnnData,
-    tile_path: Union[Path, str] = Path("/tmp/tiles"),
+    tile_path: Path | str = Path("/tmp/tiles"),
     use_data: str = "raw",
-    crop_size: int = "auto",
+    crop_size: str | int = "auto",
     platform: _PLATFORM = "Visium",
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
     copy: _COPY = "pseudo_spot_adata",
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
-    using spatial location (S), tissue morphological feature (M) and gene expression (E) information to impute
-    gap between spots and increase resolution for gene detection
+    using spatial location (S), tissue morphological feature (M) and gene
+    expression (E) information to impute gap between spots and increase resolution
+    for gene detection
 
     Parameters
     ----------
     adata
         Annotated data matrix.
     use_data
-        Input data, can be `raw` counts, log transformed data or dimension reduced space(`X_pca` and `X_umap`)
+        Input data, can be `raw` counts, log transformed data or dimension
+        reduced space(`X_pca` and `X_umap`)
     tile_path
         Path to save spot image tiles
     crop_size
@@ -110,10 +116,10 @@ def pseudo_spot(
         if `auto`, automatically detect crop size
     weights
         Weighting matrix for imputation.
-        if `weights_matrix_all`, matrix combined all information from spatial location (S),
-        tissue morphological feature (M) and gene expression (E)
-        if `weights_matrix_pd_md`, matrix combined information from spatial location (S),
-        tissue morphological feature (M)
+        if `weights_matrix_all`, matrix combined all information from spatial
+        location (S), tissue morphological feature (M) and gene expression (E)
+        if `weights_matrix_pd_md`, matrix combined information from spatial
+        location (S), tissue morphological feature (M)
     platform
         `Visium` or `Old_ST`
     copy
@@ -124,15 +130,17 @@ def pseudo_spot(
     -------
     Anndata
     """
-    from sklearn.linear_model import LinearRegression
     import math
+
+    from sklearn.linear_model import LinearRegression
+
+    adata = adata.copy() if copy else adata
 
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
         array_row = adata.obs["array_row"]
         array_col = adata.obs["array_col"]
-        rate = 3
         obs_df_ = adata.obs[["array_row", "array_col"]].copy()
         obs_df_.loc[:, "array_row"] = obs_df_["array_row"].apply(lambda x: x - 2 / 3)
         obs_df = adata.obs[["array_row", "array_col"]].copy()
@@ -145,7 +153,6 @@ def pseudo_spot(
         img_col = adata.obs["imagecol"]
         array_row = adata.obs_names.map(lambda x: x.split("x")[1])
         array_col = adata.obs_names.map(lambda x: x.split("x")[0])
-        rate = 1.5
         obs_df_left = pd.DataFrame(
             {"array_row": array_row.to_list(), "array_col": array_col.to_list()},
             dtype=np.float64,
@@ -276,10 +283,14 @@ def pseudo_spot(
     pseudo_spot_adata = AnnData(impute_df, obs=obs_df)
     pseudo_spot_adata.uns["spatial"] = adata.uns["spatial"]
 
+    actual_crop_size: int
     if crop_size == "auto":
-        crop_size = round(unit / 2)
-
-    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=crop_size)
+        actual_crop_size = round(unit / 2)
+    elif isinstance(crop_size, int):
+        actual_crop_size = crop_size
+    else:
+        raise ValueError(f"crop_size must be 'auto' or an integer, got {crop_size}")
+    stlearn.pp.tiling(pseudo_spot_adata, tile_path, crop_size=actual_crop_size)
 
     stlearn.pp.extract_feature(pseudo_spot_adata)
 
@@ -319,7 +330,7 @@ def _merge(
     adata1: AnnData,
     adata2: AnnData,
     copy: bool = True,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     merged_df = adata1.to_df().append(adata2.to_df())
     merged_df_obs = adata1.obs.append(adata2.obs)
     merged_adata = AnnData(merged_df, obs=merged_df_obs)

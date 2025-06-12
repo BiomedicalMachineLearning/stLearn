@@ -1,5 +1,9 @@
-from .spatials import clustering
-from .spatials import smooth
-from .spatials import trajectory
-from .spatials import morphology
-from .spatials import SME
+from .spatials import SME, clustering, morphology, smooth, trajectory
+
+__all__ = [
+    "clustering",
+    "smooth",
+    "trajectory",
+    "morphology",
+    "SME",
+]

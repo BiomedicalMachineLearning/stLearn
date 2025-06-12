@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from anndata import AnnData
 
 
@@ -25,7 +24,8 @@ def merge(
 
     if verbose:
         print(
-            "Results of spatial interaction analysis has been written to adata.uns['merged']"
+            "Results of spatial interaction analysis has been written to "
+            + "adata.uns['merged']"
         )
 
     return adata

@@ -1,23 +1,12 @@
-from matplotlib import pyplot as plt
-from PIL import Image
-import pandas as pd
-import matplotlib
-import numpy as np
-
-from stlearn._compat import Literal
-from typing import Optional, Union
-from anndata import AnnData
-import warnings
-
 # from .utils import get_img_from_fig, checkType
 import scanpy
+from anndata import AnnData
 
 
 def non_spatial_plot(
     adata: AnnData,
     use_label: str = "louvain",
-) -> Optional[AnnData]:
-
+) -> None:
     """\
     A wrap function to plot all the non-spatial plot from scanpy.
 
@@ -56,7 +45,6 @@ def non_spatial_plot(
         scanpy.pl.draw_graph(adata, color="dpt_pseudotime")
 
     else:
-
         scanpy.pl.draw_graph(adata)
         # adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 

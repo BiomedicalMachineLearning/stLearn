@@ -1,8 +1,9 @@
-from scipy.stats import spearmanr
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
-import networkx as nx
+from scipy.stats import spearmanr
+
 from ...utils import _read_graph
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -152,7 +153,7 @@ def get_rank_cor(adata, screening_genes=None, use_raw_count=True):
         tmp = tmp.to_df()
     else:
         tmp = adata.to_df()
-    if screening_genes != None:
+    if screening_genes is not None:
         tmp = tmp[screening_genes]
     dpt = adata.obs["dpt_pseudotime"].values
     genes = []

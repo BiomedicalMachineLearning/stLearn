@@ -1,24 +1,22 @@
-from anndata import AnnData
-from typing import Optional, Union
-import numpy as np
-import pandas as pd
+import networkx
 import networkx as nx
+import numpy as np
+from anndata import AnnData
 from scipy.spatial.distance import cdist
+
 from stlearn.utils import _read_graph
-from sklearn.metrics import pairwise_distances
 
 
 def global_level(
     adata: AnnData,
+    list_clusters: list[str],
+    w: float,
     use_label: str = "louvain",
     use_rep: str = "X_pca",
     n_dims: int = 40,
-    list_clusters: list = [],
     return_graph: bool = False,
-    w: float = None,
     verbose: bool = True,
-    copy: bool = False,
-) -> Optional[AnnData]:
+) -> networkx.Graph | None:
     """\
     Perform global sptial trajectory inference.
 
@@ -28,17 +26,18 @@ def global_level(
         Annotated data matrix.
     list_clusters
         Setup a list of cluster to perform pseudo-space-time
+    w
+        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     use_label
         Use label result of cluster method.
     return_graph
         Return PTS graph
-    w
-        Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
-    copy
-        Return a copy instead of writing to adata.
     Returns
     -------
-    Anndata
+    networkx.Graph:
+
+    adata.uns["PTS_graph"]["graph"]:
+    adata.uns["PTS_graph"]["node_dict"]:
     """
 
     assert w <= 1, "w should be in range 0 to 1"
@@ -51,7 +50,7 @@ def global_level(
     inds_cat = {v: k for (k, v) in cat_inds.items()}
 
     # Query cluster
-    if type(list_clusters[0]) == str:
+    if isinstance(list_clusters[0], str):
         list_clusters = [cat_inds[label] for label in list_clusters]
     query_nodes = list_clusters
 
@@ -112,10 +111,11 @@ def global_level(
     centroid_dict = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
 
-    H_sub = H.edge_subgraph(edge_list)
+    H_sub: networkx.Graph = H.edge_subgraph(edge_list)
     if not nx.is_connected(H_sub.to_undirected()):
         raise ValueError(
-            "The chosen clusters are not available to construct the spatial trajectory! Please choose other path."
+            "The chosen clusters are not available to construct the spatial "
+            + "trajectory! Please choose other path."
         )
     H_sub = nx.DiGraph(H_sub)
     prepare_root = []
@@ -177,13 +177,11 @@ def global_level(
 
     if return_graph:
         return H_sub
+    else:
+        return None
 
 
-########################
-## Global level PTS ##
-########################
-
-
+# Global level PTS
 def get_node(node_list, split_node):
     result = np.array([])
     for node in node_list:
@@ -199,42 +197,6 @@ def ordering_nodes(node_list, use_label, adata):
         )
 
     return list(np.array(node_list)[np.argsort(mean_dpt)])
-
-
-# def dpt_distance_matrix(adata, cluster1, cluster2, use_label):
-#     tmp = adata.obs[adata.obs[use_label] == str(cluster1)]
-#     chosen_adata1 = adata[list(tmp.index)]
-#     tmp = adata.obs[adata.obs[use_label] == str(cluster2)]
-#     chosen_aadata = adata[list(tmp.index)]
-
-#     sub_dpt1 = []
-#     chosen_sub1 = chosen_adata1.obs["sub_cluster_labels"].unique()
-#     for i in range(0, len(chosen_sub1)):
-#         sub_dpt1.append(
-#             chosen_adata1.obs[
-#                 chosen_adata1.obs["sub_cluster_labels"] == chosen_sub1[i]
-#             ]["dpt_pseudotime"].median()
-#         )
-
-#     sub_dpt2 = []
-#     chosen_sub2 = chosen_aadata.obs["sub_cluster_labels"].unique()
-#     for i in range(0, len(chosen_sub2)):
-#         sub_dpt2.append(
-#             chosen_aadata.obs[
-#                 chosen_aadata.obs["sub_cluster_labels"] == chosen_sub2[i]
-#             ]["dpt_pseudotime"].median()
-#         )
-
-#     dm = cdist(
-#         np.array(sub_dpt1).reshape(-1, 1),
-#         np.array(sub_dpt2).reshape(-1, 1),
-#         lambda u, v: v - u,
-#     )
-#     from sklearn.preprocessing import MinMaxScaler
-#     scaler = MinMaxScaler()
-#     scale_dm = scaler.fit_transform(dm)
-#     # scale_dm = (dm + (-np.min(dm))) / np.max(dm)
-#     return scale_dm
 
 
 def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
@@ -257,8 +219,6 @@ def spatial_distance_matrix(adata, cluster1, cluster2, use_label):
         sub_coord2.append(centroid_dict[int(chosen_sub2[i])])
 
     sdm = cdist(np.array(sub_coord1), np.array(sub_coord2), "euclidean")
-
-    from sklearn.preprocessing import MinMaxScaler
 
     # scaler = MinMaxScaler()
     # scale_sdm = scaler.fit_transform(sdm)
@@ -303,8 +263,6 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
         for j in range(0, len(sub_coord2)):
             results.append(cdist(sub_coord1[i], sub_coord2[j], "cosine").mean())
     results = np.array(results).reshape(len(sub_coord1), len(sub_coord2))
-
-    from sklearn.preprocessing import MinMaxScaler
 
     # scaler = MinMaxScaler()
     # scale_sdm = scaler.fit_transform(results)

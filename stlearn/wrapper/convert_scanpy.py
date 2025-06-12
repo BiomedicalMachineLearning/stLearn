@@ -1,15 +1,10 @@
-from typing import Optional, Union
 from anndata import AnnData
-from matplotlib import pyplot as plt
-from pathlib import Path
-import os
 
 
 def convert_scanpy(
     adata: AnnData,
     use_quality: str = "hires",
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     adata.var_names_make_unique()
 
     library_id = list(adata.uns["spatial"].keys())[0]

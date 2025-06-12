@@ -1,9 +1,8 @@
-from sklearn.cluster import KMeans
-from anndata import AnnData
-from typing import Optional, Union
-import pandas as pd
 import numpy as np
+import pandas as pd
+from anndata import AnnData
 from natsort import natsorted
+from sklearn.cluster import KMeans
 
 
 def kmeans(
@@ -14,13 +13,12 @@ def kmeans(
     n_init: int = 10,
     max_iter: int = 300,
     tol: float = 0.0001,
-    random_state: str = None,
+    random_state: int | np.random.RandomState = None,
     copy_x: bool = True,
     algorithm: str = "auto",
     key_added: str = "kmeans",
     copy: bool = False,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Perform kmeans cluster for spatial transcriptomics data
 

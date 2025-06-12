@@ -1,32 +1,34 @@
-"""Reading and Writing
-"""
+"""Reading and Writing"""
 
-from pathlib import Path, PurePath
-from typing import Optional, Union
-from anndata import AnnData
-import numpy as np
-from PIL import Image
-import pandas as pd
-import stlearn
-from .._compat import Literal
-import scanpy
-import scipy
-import matplotlib.pyplot as plt
-from matplotlib.image import imread
 import json
+import logging as logg
+from collections.abc import Iterator
+from os import PathLike
+from pathlib import Path
+from typing import Literal
 
-_QUALITY = Literal["fulres", "hires", "lowres"]
-_background = ["black", "white"]
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scanpy
+from anndata import AnnData
+from matplotlib.image import imread
+from PIL import Image
+
+import stlearn
+
+_Quality = Literal["fulres", "hires", "lowres"]
+_Background = Literal["black", "white"]
 
 
 def Read10X(
-    path: Union[str, Path],
-    genome: Optional[str] = None,
+    path: str | Path,
+    genome: str | None = None,
     count_file: str = "filtered_feature_bc_matrix.h5",
-    library_id: str = None,
-    load_images: Optional[bool] = True,
-    quality: _QUALITY = "hires",
-    image_path: Union[str, Path] = None,
+    library_id: str | None = None,
+    load_images: bool = True,
+    quality: _Quality = "hires",
+    image_path: str | Path | None = None,
 ) -> AnnData:
     """\
     Read Visium data from 10X (wrap read_visium from scanpy)
@@ -36,23 +38,26 @@ def Read10X(
     coordinates and scale factors.
     Based on the `Space Ranger output docs`_.
 
-    .. _Space Ranger output docs: https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
+    _Space Ranger output docs:
+    https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
 
     Parameters
     ----------
     path
-        Path to directory for visium datafiles.
+        The path to directory for Visium datafiles.
     genome
         Filter expression to genes within this genome.
     count_file
-        Which file in the passed directory to use as the count file. Typically would be one of:
-        'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
+        Which file in the directory to use as the count file. Typically, it would be one
+        of: 'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating multiple
+        adata objects.
     load_images
         Load image or not.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     image_path
         Path to image. Only need when loading full resolution image.
 
@@ -92,9 +97,9 @@ def Read10X(
 
     with File(path / count_file, mode="r") as f:
         attrs = dict(f.attrs)
+
     if library_id is None:
         library_id = str(attrs.pop("library_ids")[0], "utf-8")
-
     adata.uns["spatial"][library_id] = dict()
 
     tissue_positions_file = (
@@ -116,8 +121,7 @@ def Read10X(
             if not f.exists():
                 if any(x in str(f) for x in ["hires_image", "lowres_image"]):
                     logg.warning(
-                        f"You seem to be missing an image file.\n"
-                        f"Could not find '{f}'."
+                        f"You seem to be missing an image file.\nCould not find '{f}'."
                     )
                 else:
                     raise OSError(f"Could not find '{f}'")
@@ -159,39 +163,38 @@ def Read10X(
         adata.obsm["spatial"] = (
             adata.obs[["pxl_row_in_fullres", "pxl_col_in_fullres"]]
             .to_numpy()
-            .astype(int)
+            .astype(float)
         )
         adata.obs.drop(
             columns=["barcode", "pxl_row_in_fullres", "pxl_col_in_fullres"],
             inplace=True,
         )
 
-        # put image path in uns
-        if image_path is not None:
-            # get an absolute path
-            image_path = str(Path(image_path).resolve())
-            adata.uns["spatial"][library_id]["metadata"]["source_image_path"] = str(
-                image_path
-            )
+        if quality == "fulres":
+            # put image path in uns
+            if image_path is not None:
+                # get an absolute path
+                image_path = str(Path(image_path).resolve())
+                adata.uns["spatial"][library_id]["metadata"]["source_image_path"] = str(
+                    image_path
+                )
+            else:
+                raise ValueError("Trying to load fulres but no image_path set.")
+
+            image_coor = adata.obsm["spatial"]
+            img = plt.imread(image_path, None)
+            adata.uns["spatial"][library_id]["images"]["fulres"] = img
+        else:
+            scale = adata.uns["spatial"][library_id]["scalefactors"][
+                "tissue_" + quality + "_scalef"
+            ]
+            image_coor = adata.obsm["spatial"] * scale
+
+        adata.obs["imagecol"] = image_coor[:, 0]
+        adata.obs["imagerow"] = image_coor[:, 1]
+        adata.uns["spatial"][library_id]["use_quality"] = quality
 
     adata.var_names_make_unique()
-
-    if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
-
-    if quality == "fulres":
-        image_coor = adata.obsm["spatial"]
-        img = plt.imread(image_path, 0)
-        adata.uns["spatial"][library_id]["images"]["fulres"] = img
-    else:
-        scale = adata.uns["spatial"][library_id]["scalefactors"][
-            "tissue_" + quality + "_scalef"
-        ]
-        image_coor = adata.obsm["spatial"] * scale
-
-    adata.obs["imagecol"] = image_coor[:, 0]
-    adata.obs["imagerow"] = image_coor[:, 1]
-    adata.uns["spatial"][library_id]["use_quality"] = quality
 
     adata.obs["array_row"] = adata.obs["array_row"].astype(int)
     adata.obs["array_col"] = adata.obs["array_col"].astype(int)
@@ -201,9 +204,9 @@ def Read10X(
 
 
 def ReadOldST(
-    count_matrix_file: Union[str, Path] = None,
-    spatial_file: Union[str, Path] = None,
-    image_file: Union[str, Path] = None,
+    count_matrix_file: PathLike[str] | str | Iterator[str],
+    spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
+    image_file: str | Path | None = None,
     library_id: str = "OldST",
     scale: float = 1.0,
     quality: str = "hires",
@@ -217,15 +220,17 @@ def ReadOldST(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     image_file
         Path to the tissue image file
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
 
@@ -249,13 +254,13 @@ def ReadOldST(
 
 
 def ReadSlideSeq(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
-    library_id: str = None,
-    scale: float = None,
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Slide-seq data
@@ -265,17 +270,19 @@ def ReadSlideSeq(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating
+        multiple adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
 
     Returns
     -------
@@ -291,7 +298,7 @@ def ReadSlideSeq(
 
     adata.obs["index"] = meta["index"].values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(meta[["x", "y"]].values)
         scale = 2000 / max_coor
 
@@ -330,13 +337,13 @@ def ReadSlideSeq(
 
 
 def ReadMERFISH(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
-    library_id: str = None,
-    scale: float = None,
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read MERFISH data
@@ -346,17 +353,19 @@ def ReadMERFISH(
     count_matrix_file
         Path to count matrix file.
     spatial_file
-        Path to spatial location file.
+        Path to the spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the Visium library. Can be modified when concatenating
+        multiple adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
 
     Returns
     -------
@@ -373,7 +382,7 @@ def ReadMERFISH(
     adata_merfish = counts[coordinates.index, :]
     adata_merfish.obsm["spatial"] = coordinates.to_numpy()
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata_merfish.obsm["spatial"])
         scale = 2000 / max_coor
 
@@ -411,14 +420,14 @@ def ReadMERFISH(
 
 
 def ReadSeqFish(
-    count_matrix_file: Union[str, Path],
-    spatial_file: Union[str, Path],
-    library_id: str = None,
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
     scale: float = 1.0,
     quality: str = "hires",
     field: int = 0,
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read SeqFish data
@@ -430,17 +439,19 @@ def ReadSeqFish(
     spatial_file
         Path to spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     field
         Set field of view for SeqFish data
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData
@@ -458,7 +469,7 @@ def ReadSeqFish(
 
     adata = AnnData(count)
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(spatial[["X", "Y"]])
         scale = 2000 / max_coor
 
@@ -497,14 +508,14 @@ def ReadSeqFish(
 
 
 def ReadXenium(
-    feature_cell_matrix_file: Union[str, Path],
-    cell_summary_file: Union[str, Path],
-    image_path: Optional[Path] = None,
-    library_id: str = None,
+    feature_cell_matrix_file: str | Path,
+    cell_summary_file: str | Path,
+    image_path: Path | None = None,
+    library_id: str | None = None,
     scale: float = 1.0,
     quality: str = "hires",
     spot_diameter_fullres: float = 15,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Xenium data
@@ -518,15 +529,17 @@ def ReadXenium(
     image_path
         Path to image. Only need when loading full resolution image.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData
@@ -541,7 +554,7 @@ def ReadXenium(
 
     adata.obsm["spatial"] = spatial.values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata.obsm["spatial"])
         scale = 2000 / max_coor
 
@@ -551,7 +564,7 @@ def ReadXenium(
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
-    if image_path != None:
+    if image_path is not None:
         stlearn.add.image(
             adata,
             library_id=library_id,
@@ -591,11 +604,11 @@ def create_stlearn(
     count: pd.DataFrame,
     spatial: pd.DataFrame,
     library_id: str,
-    image_path: Optional[Path] = None,
-    scale: float = None,
+    image_path: Path | None = None,
+    scale: float | None = None,
     quality: str = "hires",
     spot_diameter_fullres: float = 50,
-    background_color: _background = "white",
+    background_color: _Background = "white",
 ):
     """\
     Create AnnData object for stLearn
@@ -607,15 +620,17 @@ def create_stlearn(
     spatial
         Pandas Dataframe of spatial location of cells/spots.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating multiple
+        adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow']
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow']
     spot_diameter_fullres
         Diameter of spot in full resolution
     background_color
-        Color of the backgound. Only `black` or `white` is allowed.
+        Color of the background. Only `black` or `white` is allowed.
     Returns
     -------
     AnnData
@@ -624,14 +639,14 @@ def create_stlearn(
 
     adata.obsm["spatial"] = spatial.values
 
-    if scale == None:
+    if scale is None:
         max_coor = np.max(adata.obsm["spatial"])
         scale = 2000 / max_coor
 
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
-    if image_path != None:
+    if image_path is not None:
         stlearn.add.image(
             adata,
             library_id=library_id,

@@ -1,28 +1,23 @@
-from matplotlib import pyplot as plt
-from PIL import Image
-import pandas as pd
 import matplotlib
-import numpy as np
 import networkx as nx
-from stlearn._compat import Literal
-from typing import Optional, Union
+import numpy as np
 from anndata import AnnData
-import warnings
+from matplotlib import pyplot as plt
 
 from stlearn.utils import _read_graph
 
 
 def pseudotime_plot(
     adata: AnnData,
-    library_id: str = None,
+    library_id: str | None = None,
     use_label: str = "louvain",
     pseudotime_key: str = "pseudotime_key",
-    list_clusters: Union[str, list] = None,
+    list_clusters: str | list | None = None,
     cell_alpha: float = 1.0,
     image_alpha: float = 1.0,
     edge_alpha: float = 0.8,
     node_alpha: float = 1.0,
-    spot_size: Union[float, int] = 6.5,
+    spot_size: float | int = 6.5,
     node_size: float = 5,
     show_color_bar: bool = True,
     show_axis: bool = False,
@@ -34,12 +29,11 @@ def pseudotime_plot(
     cropped: bool = True,
     margin: int = 100,
     dpi: int = 150,
-    output: str = None,
-    name: str = None,
+    output: str | None = None,
+    name: str | None = None,
     copy: bool = False,
     ax=None,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Global trajectory inference plot (Only DPT).
 
@@ -80,7 +74,9 @@ def pseudotime_plot(
     dpi
         DPI of the output figure.
     output
-        Save the figure as file or not.
+        The output folder of the plot.
+    name
+        The filename of the plot.
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -88,20 +84,12 @@ def pseudotime_plot(
     Nothing
     """
 
-    # plt.rcParams['figure.dpi'] = dpi
-
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
-
-    if list_clusters == None:
+    if list_clusters is None:
         list_clusters = np.array(range(0, len(adata.obs[use_label].unique()))).astype(
             int
         )
-    # Get query clusters
-    command = []
-    # for i in list_clusters:
-    #    command.append(use_label + ' == "' + str(i) + '"')
-    # tmp = adata.obs.query(" or ".join(command))
     tmp = adata.obs
     G = _read_graph(adata, "global_graph")
 
@@ -121,13 +109,11 @@ def pseudotime_plot(
             result2.append(labels[edge[::-1]] + 0.5)
 
     fig, a = plt.subplots()
-    if ax != None:
+    if ax is not None:
         a = ax
     centroid_dict = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     dpt = adata.obs[pseudotime_key]
-
-    colors = adata.obs[use_label].astype(int)
     vmin = min(dpt)
     vmax = max(dpt)
     # Plot scatter plot based on pixel of spots
@@ -150,19 +136,9 @@ def pseudotime_plot(
         cmap=plt.get_cmap("viridis"),
         c=scale.reshape(1, -1)[0],
     )
-
-    n_clus = len(colors.unique())
-
     used_colors = adata.uns[use_label + "_colors"]
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
-
     cmap = plt.get_cmap(cmaps)
-    bounds = np.linspace(0, n_clus, n_clus + 1)
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-
-    norm = matplotlib.colors.Normalize(vmin=min(colors), vmax=max(colors))
-    m = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap)
-
     if show_graph:
         nx.draw_networkx(
             G,
@@ -177,7 +153,6 @@ def pseudotime_plot(
         )
 
         for x, y in centroid_dict.items():
-
             if x in get_node(list_clusters, adata.uns["split_node"]):
                 a.text(
                     y[0],
@@ -197,7 +172,6 @@ def pseudotime_plot(
                 )
 
     if show_trajectories:
-
         used_colors = adata.uns[use_label + "_colors"]
         cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
 
@@ -242,7 +216,6 @@ def pseudotime_plot(
 
         if show_node:
             for x, y in centroid_dict.items():
-
                 if x in get_node(list_clusters, adata.uns["split_node"]):
                     a.text(
                         y[0],
@@ -289,10 +262,12 @@ def pseudotime_plot(
         a.set_ylim(a.get_ylim()[::-1])
         # plt.gca().invert_yaxis()
 
-    if output is not None:
+    if output is not None and name is not None:
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
-    if show_plot == True:
+    if show_plot:
         plt.show()
+
+    return adata
 
 
 # get name of cluster by subcluster

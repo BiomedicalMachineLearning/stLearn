@@ -64,11 +64,19 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 
     $ git clone git@github.com:your_name_here/stlearn.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv. This is how you set up your fork for local development::
 
-    $ mkvirtualenv stlearn
+    $ conda create -n stlearn-dev python=3.10 --y
+    $ conda activate stlearn-dev
     $ cd stlearn/
-    $ python setup.py develop
+    $ pip install -e .[dev,test]
+
+   Or if you prefer pip/virtualenv::
+
+    $ python -m venv stlearn-env
+    $ source stlearn-env/bin/activate  # On Windows: stlearn-env\Scripts\activate
+    $ cd stlearn/
+    $ pip install -e .[dev,test]
 
 4. Create a branch for local development::
 
@@ -76,14 +84,16 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass linters and tests::
 
-    $ flake8 stlearn tests
-    $ python setup.py test or pytest
+    $ black stlearn tests
+    $ ruff check stlearn tests
+    $ mypy stlearn tests
+    $ pytest
+
+Or run everything with tox::
+
     $ tox
-
-   To get flake8 and tox, just pip install them into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 

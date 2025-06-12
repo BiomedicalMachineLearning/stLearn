@@ -1,17 +1,17 @@
-import matplotlib.pyplot as plt
 from decimal import Decimal
+
+import matplotlib.pyplot as plt
 from anndata import AnnData
-from typing import Optional, Union
 
 
 def transition_markers_plot(
     adata: AnnData,
+    trajectory: str,
     top_genes: int = 10,
-    trajectory: str = None,
     dpi: int = 150,
-    output: str = None,
-    name: str = None,
-) -> Optional[AnnData]:
+    output: str | None = None,
+    name: str | None = None,
+) -> AnnData | None:
     """\
     Plot transition marker.
 
@@ -19,10 +19,10 @@ def transition_markers_plot(
     ----------
     adata
         Annotated data matrix.
-    top_genes
-        Top genes users want to display in the plot.
     trajectory
         Name of a clade/branch user wants to plot transition markers.
+    top_genes
+        Top genes users want to display in the plot.
     dpi
         The resolution of the plot.
     output
@@ -34,10 +34,10 @@ def transition_markers_plot(
     Anndata
     """
 
-    if trajectory == None:
-        raise ValueError("Please input the trajectory name!")
     if trajectory not in adata.uns:
-        raise ValueError("Please input the right trajectory name!")
+        raise ValueError(
+            "Please input the right trajectory name - not found in adata.uns!"
+        )
 
     pos = (
         adata.uns[trajectory][adata.uns[trajectory]["score"] >= 0]
@@ -100,7 +100,7 @@ def transition_markers_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=6
+            size=6,
         )
         axes[1].text(
             rect.get_x() + 0.01,
@@ -108,7 +108,7 @@ def transition_markers_plot(
             p_value,
             color="w",
             **alignment,
-            size=6
+            size=6,
         )
 
     rects = axes[0].patches
@@ -125,7 +125,7 @@ def transition_markers_plot(
             rect.get_y() + rect.get_height() / 2.0,
             gene_name,
             **alignment,
-            size=6
+            size=6,
         )
         axes[0].text(
             rect.get_x() - 0.01,
@@ -133,7 +133,7 @@ def transition_markers_plot(
             p_value,
             color="w",
             **alignment,
-            size=6
+            size=6,
         )
 
     plt.figtext(0.5, 0.9, trajectory, ha="center", va="center")
@@ -146,7 +146,9 @@ def transition_markers_plot(
     if name is None:
         name = trajectory
 
-    if output is not None:
+    if output is not None and name is not None:
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
     plt.show()
+
+    return adata

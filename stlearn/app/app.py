@@ -1,53 +1,36 @@
-import os, sys, subprocess
+import os
+import sys
+from threading import Thread
 
 sys.path.append(os.path.dirname(__file__))
 
-try:
-    import flask
-except ImportError:
-    subprocess.call(
-        "pip install -r " + os.path.dirname(__file__) + "//requirements.txt", shell=True
-    )
-
-from flask import (
-    Flask,
-    render_template,
-    request,
-    flash,
-    url_for,
-    redirect,
-    session,
-    send_file,
-)
-from bokeh.embed import components
-from bokeh.plotting import figure
-from bokeh.resources import INLINE
-from werkzeug.utils import secure_filename
+import asyncio
 import tempfile
-import traceback
 
-import tempfile
-import shutil
-
-import stlearn
-import scanpy
 import numpy
 import numpy as np
-
-import asyncio
-from bokeh.server.server import BaseServer
-from bokeh.server.tornado import BokehTornado
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+import scanpy
 from bokeh.application import Application
 from bokeh.application.handlers import FunctionHandler
-from bokeh.server.server import Server
 from bokeh.embed import server_document
+from bokeh.layouts import row
+from bokeh.server.server import Server
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
+from tornado.ioloop import IOLoop
+from werkzeug.utils import secure_filename
 
-from bokeh.layouts import column, row
+import stlearn
 
 # Functions related to processing the forms.
-from source.forms import views  # for changing data in response to input
+from stlearn.app.source.forms import views  # for changing data in response to input
 
 # Global variables.
 
@@ -171,7 +154,6 @@ def folder_uploader():
         uploaded = []
         i = 0
         for file in files:
-
             filename = secure_filename(file.filename)
 
             if allow_files[0] in filename:
@@ -243,7 +225,6 @@ def folder_uploader():
 @app.route("/file_uploader", methods=["GET", "POST"])
 def file_uploader():
     if request.method == "POST":
-
         global adata, step_log
 
         # Clean uploads folder before upload a new data
@@ -491,12 +472,10 @@ def bk_worker():
             "/bokeh_annotate_plot": bkapp4,
         },
         io_loop=IOLoop(),
-        allow_websocket_origin=["127.0.0.1:5000", "localhost:5000"],
+        allow_websocket_origin=["127.0.0.1:3000", "localhost:3000"],
     )
     server.start()
     server.io_loop.start()
 
-
-from threading import Thread
 
 Thread(target=bk_worker).start()

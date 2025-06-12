@@ -1,24 +1,19 @@
-""" Helper functions for cci_plot.py.
-"""
+"""Helper functions for cci_plot.py."""
 
-import sys
-import math
+import matplotlib
+import matplotlib.cm as cm
+import matplotlib.colors as plt_colors
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
+from anndata import AnnData
 from matplotlib.axes import Axes
 from matplotlib.patches import Arc, Wedge
+from matplotlib.path import Path
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from matplotlib.path import Path
-import matplotlib.patches as patches
-import matplotlib.colors as plt_colors
-import matplotlib.cm as cm
-
 from ..tools.microenv.cci.het import get_edges
-
-from anndata import AnnData
 
 # Helper functions for overview plots of the LRs.
 
@@ -37,11 +32,11 @@ def lr_scatter(
     show=True,
     max_text=100,
     highlight_color="red",
-    figsize: tuple = None,
+    figsize: tuple | None = None,
     show_all: bool = False,
 ):
     """General plotting of the LR features."""
-    highlight = type(highlight_lrs) != type(None)
+    highlight = highlight_lrs is not None
     if not highlight:
         show_text = show_text if n_top <= max_text else False
     else:
@@ -52,7 +47,7 @@ def lr_scatter(
     lr_features = data.uns["lrfeatures"]
     lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
     if feature not in lr_df.columns:
-        raise Exception(f"Inputted {feature}; must be one of " f"{list(lr_df.columns)}")
+        raise Exception(f"Inputted {feature}; must be one of {list(lr_df.columns)}")
 
     rot = 90 if feature != "n_spots_sig" else 70
 
@@ -139,14 +134,14 @@ def rank_scatter(
     """General plotting function for showing ranked list of items."""
     ranks = np.array(list(range(len(items))))
 
-    highlight = type(highlight_items) != type(None)
-    if type(lr_text_fp) == type(None):
+    highlight = highlight_items is not None
+    if lr_text_fp is None:
         lr_text_fp = {"weight": "bold", "size": 8}
-    if type(axis_text_fp) == type(None):
+    if axis_text_fp is None:
         axis_text_fp = {"weight": "bold", "size": 12}
 
-    if type(ax) == type(None):
-        if type(figsize) == type(None):
+    if ax is None:
+        if figsize is None:
             width = width_ratio * len(ranks) if show_text and not highlight else 7.5
             if width > 20:
                 width = 20
@@ -159,13 +154,13 @@ def rank_scatter(
         y,
         alpha=alpha,
         c=color,
-        s=None if type(point_sizes) == type(None) else point_sizes ** point_size_exp,
+        s=None if point_sizes is None else point_sizes**point_size_exp,
         edgecolors="none",
     )
     y_min, y_max = ax.get_ylim()
     y_max = y_max + y_max * pad
     ax.set_ylim(y_min, y_max)
-    if type(point_sizes) != type(None):
+    if point_sizes is not None:
         # produce a legend with a cross section of sizes from the scatter
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6, num=4)
         [handle.set_markeredgecolor("none") for handle in handles]
@@ -180,7 +175,7 @@ def rank_scatter(
             label.replace(label[(starts[i]) : (ends[i])], "{" + str(counts[i]) + "}")
             for i, label in enumerate(labels)
         ]
-        legend2 = ax.legend(
+        ax.legend(
             handles,
             labels2,
             frameon=False,
@@ -200,7 +195,7 @@ def rank_scatter(
                 c=highlight_color,
                 s=(
                     None
-                    if type(point_sizes) == type(None)
+                    if point_sizes is None
                     else (point_sizes[ranks_] ** point_size_exp)
                 ),
                 edgecolors=color,
@@ -226,18 +221,18 @@ def rank_scatter(
 
 def add_arrows(
     adata: AnnData,
-    l_expr: np.array,
-    r_expr: np.array,
+    l_expr: np.ndarray,
+    r_expr: np.ndarray,
     min_expr: float,
-    sig_bool: np.array,
+    sig_bool: np.ndarray,
     fig,
     ax: Axes,
-    use_label: str,
-    int_df: pd.DataFrame,
-    head_width=4,
-    width=0.001,
-    arrow_cmap=None,
-    arrow_vmax=None,
+    use_label: str | None,
+    int_df: pd.DataFrame | None,
+    head_width: float = 4,
+    width: float = 0.001,
+    arrow_cmap: str | None = None,
+    arrow_vmax: float | None = None,
 ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
@@ -271,14 +266,14 @@ def add_arrows(
     forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
 
     # If int_df specified, means need to subset to CCIs which are significant #
-    if type(int_df) != type(None):
+    if int_df is not None:
         spot_bcs = adata.obs_names.values.astype(str)
         spot_labels = adata.obs[use_label].values.astype(str)
         label_set = int_df.index.values.astype(str)
         interact_bool = int_df.values > 0
 
         # Subsetting to only significant CCI #
-        edges_sub = [[], []]  # forward, reverse
+        edges_sub: list[list[tuple[str, str]]] = [[], []]  # forward, reverse
         # ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
         # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
@@ -303,8 +298,8 @@ def add_arrows(
         forward_edges, reverse_edges = edges_sub
 
     # If cmap specified, colour arrows by average LR expression on edge #
-    if type(arrow_cmap) != type(None):
-        edges_means = [[], []]
+    if arrow_cmap is not None:
+        edges_means: list[list[float]] = [[], []]
         all_means = []
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
@@ -319,13 +314,13 @@ def add_arrows(
                 all_means.append(mean_expr)
 
         # Determining the color maps #
-        arrow_vmax = np.max(all_means) if type(arrow_vmax) == type(None) else arrow_vmax
+        arrow_vmax = np.max(all_means) if arrow_vmax is None else arrow_vmax
         cmap = plt.get_cmap(arrow_cmap)
         c_norm = plt_colors.Normalize(vmin=0, vmax=arrow_vmax)
         scalar_map = cm.ScalarMappable(norm=c_norm, cmap=cmap)
 
         # Determining the edge colors #
-        edges_colors = [[], []]
+        edges_colors: list[list[tuple[float, float, float, float]]] = [[], []]
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for j, edge in enumerate(edges):
                 color_val = scalar_map.to_rgba(edges_means[i][j])
@@ -341,7 +336,7 @@ def add_arrows(
         axc = fig.add_axes(cax)
 
     else:
-        edges_colors = [None, None]
+        edges_colors = [[], []]
 
     # Now performing the plotting #
     # The arrows #
@@ -366,8 +361,8 @@ def add_arrows(
         edge_colors=edges_colors[1],
     )
     # Adding the color map #
-    if type(arrow_cmap) != type(None):
-        cb1 = matplotlib.colorbar.ColorbarBase(
+    if arrow_cmap is not None:
+        matplotlib.colorbar.ColorbarBase(
             axc, cmap=cmap, norm=c_norm, orientation="horizontal"
         )
 
@@ -383,6 +378,8 @@ def add_arrows_by_edges(
     edge_colors=None,
     axc=None,
 ):
+    if edge_colors is None:
+        edge_colors = []
     """Adds the arrows using an edge list."""
     for i, edge in enumerate(edges):
         # cols = ["imagecol", "imagerow"]
@@ -399,7 +396,7 @@ def add_arrows_by_edges(
         x1, y1 = adata.obsm["spatial"][edge0_index, :] * scale_factor
         x2, y2 = adata.obsm["spatial"][edge1_index, :] * scale_factor
         dx, dy = (x2 - x1) * 0.75, (y2 - y1) * 0.75
-        arrow_color = "k" if type(edge_colors) == type(None) else edge_colors[i]
+        arrow_color = "k" if len(edge_colors) == 0 else edge_colors[i]
 
         ax.arrow(
             x1,
@@ -418,9 +415,9 @@ def add_arrows_by_edges(
 
 def get_int_df(adata, lr, use_label, sig_interactions, title):
     """Retrieves the relevant interaction count matrix."""
-    no_title = type(title) == type(None)
+    no_title = title is None
     labels_ordered = adata.obs[use_label].cat.categories
-    if type(lr) == type(None):  # No LR inputted, so just use all
+    if lr is None:  # No LR inputted, so just use all
         int_df = (
             adata.uns[f"lr_cci_{use_label}"]
             if sig_interactions
@@ -428,7 +425,6 @@ def get_int_df(adata, lr, use_label, sig_interactions, title):
         )[labels_ordered].loc[labels_ordered]
         title = "Cell-Cell LR Interactions" if no_title else title
     else:
-
         labels_ordered = adata.obs[use_label].cat.categories
         int_df = (
             adata.uns[f"per_lr_cci_{use_label}"][lr]
@@ -456,10 +452,9 @@ def create_flat_df(int_df):
 
 def _box_map(x, y, size, ax=None, figsize=(6.48, 4.8), cmap=None, square_scaler=700):
     """Main underlying helper function for generating the heatmaps."""
-    if type(cmap) == type(None):
+    if cmap is None:
         cmap = "Spectral_r"
-
-    if type(ax) == type(None):
+    if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
 
     # Mapping from column names to integer coordinates
@@ -567,7 +562,7 @@ def IdeogramArc(
         ]
     )
 
-    if ax == None:
+    if ax is None:
         return verts, codes
     else:
         path = Path(verts, codes)
@@ -631,7 +626,7 @@ def ChordArc(
         Path.CURVE4,
     ]
 
-    if ax == None:
+    if ax is None:
         return verts, codes
     else:
         path = Path(verts, codes)
@@ -669,7 +664,7 @@ def selfChordArc(start=0, end=60, radius=1.0, chordwidth=0.7, ax=None, color=(1,
         Path.CURVE4,
     ]
 
-    if ax == None:
+    if ax is None:
         return verts, codes
     else:
         path = Path(verts, codes)
@@ -688,13 +683,15 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1):
     ax :
         matplotlib `axes` to show the plot
     colors : optional
-        user defined colors in rgb format. Use function hex2rgb() to convert hex color to rgb color. Default: d3.js category10
+        user defined colors in rgb format. Use function hex2rgb() to convert hex
+        color to rgb color. Default: d3.js category10
     width : optional
         width/thickness of the ideogram arc
     pad : optional
         gap pad between two neighboring ideogram arcs, unit: degree, default: 2 degree
     chordwidth : optional
-        position of the control points for the chords, controlling the shape of the chords
+        position of the control points for the chords, controlling the shape
+        of the chords
     """
     # X[i, j]:  i -> j
     x = X.sum(axis=1)  # sum over rows
@@ -718,7 +715,7 @@ def chordDiagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1):
         ]
         if len(x) > 10:
             print("x is too large! Use x smaller than 10")
-    if type(colors[0]) == str:
+    if isinstance(colors[0], str):
         colors = [hex2rgb(colors[i]) for i in range(len(x))]
 
     # find position for each start and end

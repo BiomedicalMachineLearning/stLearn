@@ -1,41 +1,38 @@
-from typing import Optional, Union
-from anndata import AnnData
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import matplotlib as mpl
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 import numpy as np
-import stlearn.plotting.utils as utils
+from anndata import AnnData
 
 
 def deconvolution_plot(
     adata: AnnData,
-    library_id: str = None,
+    library_id: str | None = None,
     use_label: str = "louvain",
-    cluster: [int, str] = None,
-    celltype: str = None,
+    cluster: int | str | None = None,
+    celltype: str | None = None,
     celltype_threshold: float = 0,
     data_alpha: float = 1.0,
     threshold: float = 0.0,
     cmap: str = "tab20",
-    colors: list = None,  # The colors to use for each label...
-    tissue_alpha: float = 1.0,
-    title: str = None,
-    spot_size: Union[float, int] = 10,
+    colors: (
+        list[tuple[float, float, float, float]] | None
+    ) = None,  # The colors to use for each label...
+    spot_size: float | int = 10,
     show_axis: bool = False,
     show_legend: bool = True,
     show_donut: bool = True,
     cropped: bool = True,
     margin: int = 100,
-    name: str = None,
+    name: str | None = None,
     dpi: int = 150,
-    output: str = None,
-    copy: bool = False,
+    output: str | None = None,
     figsize: tuple = (6.4, 4.8),
     show=True,
-) -> Optional[AnnData]:
-
+) -> None:
     """\
-    Clustering plot for sptial transcriptomics data. Also it has a function to display trajectory inference.
+    Clustering plot for sptial transcriptomics data. Also, it has a function to
+    display trajectory inference.
 
     Parameters
     ----------
@@ -45,8 +42,8 @@ def deconvolution_plot(
         Library id stored in AnnData.
     use_label
         Use label result of cluster method.
-    list_cluster
-        Choose set of clusters that will display in the plot.
+    cluster
+        Choose a cluster (in adata.obs[use_label]) that will display in the plot.
     data_alpha
         Opacity of the spot.
     tissue_alpha
@@ -62,7 +59,8 @@ def deconvolution_plot(
     show_donut
         Whether to show the donut plot or not.
     show_trajectory
-        Show the spatial trajectory or not. It requires stlearn.spatial.trajectory.pseudotimespace.
+        Show the spatial trajectory or not. It requires
+        stlearn.spatial.trajectory.pseudotimespace.
     show_subcluster
         Show subcluster or not. It requires stlearn.spatial.trajectory.global_level.
     name
@@ -102,12 +100,11 @@ def deconvolution_plot(
         ]
 
     label_filter_ = label_filter[base.index]
-
-    if type(colors) == type(None):
-        color_vals = list(range(0, len(label_filter_), 1))
-        my_norm = mpl.colors.Normalize(0, len(label_filter_))
-        my_cmap = mpl.cm.get_cmap(cmap, len(color_vals))
-        colors = my_cmap.colors
+    if colors is None:
+        color_vals: list[int] = list(range(0, len(label_filter_), 1))
+        my_norm: mcolors.Normalize = mpl.colors.Normalize(0, len(label_filter_))
+        my_cmap: mcolors.Colormap = mpl.cm.get_cmap(cmap, len(color_vals))
+        colors = [my_cmap(my_norm(i)) for i in color_vals]
 
     for i, xy in enumerate(base.values):
         _ = ax.pie(
@@ -127,14 +124,14 @@ def deconvolution_plot(
     ]
 
     if show_donut:
-        ax_pie = fig.add_axes([0.5, -0.4, 0.03, 0.5])
+        ax_pie = fig.add_axes((0.5, -0.4, 0.03, 0.5))
 
         def my_autopct(pct):
             return ("%1.0f%%" % pct) if pct >= 4 else ""
 
         ax_pie.pie(
             label_filter_.sum(axis=1),
-            colors=my_cmap.colors,
+            colors=colors,
             radius=10,
             # frame=True,
             autopct=my_autopct,
@@ -144,9 +141,9 @@ def deconvolution_plot(
             textprops={"fontsize": 5},
         )
 
-    if show_legend == True:
-        ax_cb = fig.add_axes([0.9, 0.25, 0.03, 0.5], axisbelow=False)
-        cb = mpl.colorbar.ColorbarBase(
+    if show_legend:
+        ax_cb = fig.add_axes((0.9, 0.25, 0.03, 0.5), axisbelow=False)
+        cb = mpl.pyplot.colorbar.ColorbarBase(
             ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals
         )
 
@@ -167,11 +164,8 @@ def deconvolution_plot(
 
     if cropped:
         ax.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
-
         ax.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
-
         ax.set_ylim(ax.get_ylim()[::-1])
-
         # plt.gca().invert_yaxis()
 
     if name is None:

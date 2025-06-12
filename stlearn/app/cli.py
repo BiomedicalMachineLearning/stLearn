@@ -1,7 +1,8 @@
-import click
-from .. import __version__
+import errno
 
-import os
+import click
+
+from .. import __version__
 
 
 @click.group(
@@ -18,7 +19,6 @@ import os
     help="Show the software version and exit.",
 )
 def main():
-    os._exit
     click.echo("Please run `stlearn launch` to start the web app")
 
 
@@ -27,10 +27,14 @@ def launch():
     from .app import app
 
     try:
-        app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+        app.run(host="0.0.0.0", port=3000, debug=True, use_reloader=False)
     except OSError as e:
         if e.errno == errno.EADDRINUSE:
             raise click.ClickException(
                 "Port is in use, please specify an open port using the --port flag."
             ) from e
         raise
+
+
+if __name__ == "__main__":
+    main()

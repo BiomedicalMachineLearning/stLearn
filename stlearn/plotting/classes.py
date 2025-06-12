@@ -4,31 +4,23 @@ Author: Duy Pham
 Date: 20 Feb 2021
 """
 
-from lib2to3.pgen2.token import OP
-from typing import Optional, Union, Mapping, List  # Special
-from typing import Sequence, Iterable  # ABCs
-from typing import Tuple  # Classes
-
 import numbers
+import warnings
+from typing import (  # Special
+    Optional,  # Classes
+)
+
+import matplotlib
+import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
 from anndata import AnnData
-
-from matplotlib import rcParams, ticker, gridspec, axes
-import matplotlib.pyplot as plt
-import matplotlib
 from scipy.interpolate import griddata
-import networkx as nx
 
 from ..classes import Spatial
-from ..utils import _AxesSubplot, Axes, _read_graph
-from .utils import centroidpython, get_cluster, get_node, check_sublist, get_cmap
-
-################################################################
-#                                                              #
-#                  Spatial base plot class                     #
-#                                                              #
-################################################################
+from ..utils import Axes, _AxesSubplot, _read_graph
+from .utils import centroidpython, check_sublist, get_cluster, get_cmap, get_node
 
 
 class SpatialBasePlot(Spatial):
@@ -37,26 +29,26 @@ class SpatialBasePlot(Spatial):
         # plotting param
         adata: AnnData,
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "Spectral_r",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        color_bar_label: Optional[str] = "",
-        zoom_coord: Optional[float] = None,
-        crop: Optional[bool] = True,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 7,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 0.7,
-        use_raw: Optional[bool] = False,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "Spectral_r",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        color_bar_label: str = "",
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        crop: bool = True,
+        margin: float = 100,
+        size: float = 7,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 0.7,
+        use_raw: bool = False,
+        fname: str | None = None,
+        dpi: int = 120,
         **kwds,
     ):
         super().__init__(
@@ -75,23 +67,21 @@ class SpatialBasePlot(Spatial):
         if use_raw:
             self.query_adata = self.adata[0].raw.to_adata().copy()
 
-        if self.list_clusters != None:
-            assert use_label != None, "Please specify `use_label` parameter!"
+        if self.list_clusters is not None:
+            assert use_label is not None, "Please specify `use_label` parameter!"
 
-        if use_label != None:
-
+        if use_label is not None:
             assert (
                 use_label in self.adata[0].obs.columns
             ), "Please choose the right label in `adata.obs.columns`!"
             self.use_label = use_label
 
             if self.list_clusters is None:
-
                 self.list_clusters = np.array(
                     self.adata[0].obs[use_label].cat.categories
                 )
             else:
-                if type(self.list_clusters) != list:
+                if not isinstance(self.list_clusters, list):
                     self.list_clusters = [self.list_clusters]
 
                 clusters_indexes = [
@@ -111,21 +101,21 @@ class SpatialBasePlot(Spatial):
         stlearn_cmap = ["jana_40", "default"]
         cmap_available = plt.colormaps() + scanpy_cmap + stlearn_cmap
         error_msg = (
-            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
+            "cmap must be a matplotlib.colors.LinearSegmentedColormap OR "
             "one of these: " + str(cmap_available)
         )
-        if type(cmap) == str:
+        if isinstance(cmap, str):
             assert cmap in cmap_available, error_msg
-        elif type(cmap) != matplotlib.colors.LinearSegmentedColormap:
+        elif not isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):
             raise Exception(error_msg)
         self.cmap = cmap
 
-        if type(fig) == type(None) and type(ax) == type(None):
+        if fig is None and ax is None:
             self.fig, self.ax = self._generate_frame()
         else:
             self.fig, self.ax = fig, ax
 
-        if show_axis == False:
+        if not show_axis:
             self._remove_axis(self.ax)
 
         if show_image:
@@ -174,7 +164,6 @@ class SpatialBasePlot(Spatial):
         )
 
     def _plot_colorbar(self, plot_ax: Axes, color_bar_label: str = ""):
-
         cb = plt.colorbar(
             plot_ax, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
         )
@@ -184,15 +173,13 @@ class SpatialBasePlot(Spatial):
         main_ax.axis("off")
 
     def _crop_image(self, main_ax: _AxesSubplot, margin: float):
-
         main_ax.set_xlim(self.imagecol.min() - margin, self.imagecol.max() + margin)
-
         main_ax.set_ylim(self.imagerow.min() - margin, self.imagerow.max() + margin)
-
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
-    def _zoom_image(self, main_ax: _AxesSubplot, zoom_coord: Optional[float]):
-
+    def _zoom_image(
+        self, main_ax: _AxesSubplot, zoom_coord: tuple[float, float, float, float]
+    ):
         main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
         main_ax.set_ylim(zoom_coord[3], zoom_coord[2])
 
@@ -219,7 +206,6 @@ class SpatialBasePlot(Spatial):
         return index_query
 
     def _save_output(self):
-
         self.fig.savefig(
             fname=self.fname, bbox_inches="tight", pad_inches=0, dpi=self.dpi
         )
@@ -231,43 +217,43 @@ class SpatialBasePlot(Spatial):
 #                                                              #
 ################################################################
 
-import warnings
-
 
 class GenePlot(SpatialBasePlot):
+    gene_symbols: list[str]
+
     def __init__(
         self,
         adata: AnnData,
         # plotting param
-        title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "Spectral_r",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        color_bar_label: Optional[str] = "",
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 7,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        use_raw: Optional[bool] = False,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        title: str | None = None,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "Spectral_r",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        color_bar_label: str = "",
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 7,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        use_raw: bool = False,
+        fname: str | None = None,
+        dpi: int = 120,
         # gene plot param
-        gene_symbols: Union[str, list] = None,
-        threshold: Optional[float] = None,
+        gene_symbols: str | list[str] | None = None,
+        threshold: float | None = None,
         method: str = "CumSum",
         contour: bool = False,
-        step_size: Optional[int] = None,
-        vmin: float = None,
-        vmax: float = None,
+        step_size: int | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -302,17 +288,17 @@ class GenePlot(SpatialBasePlot):
 
         self.step_size = step_size
 
-        if self.title == None:
-            if type(gene_symbols) == str:
+        if isinstance(gene_symbols, str):
+            self.gene_symbols = [gene_symbols]
+        elif gene_symbols is None:
+            self.gene_symbols = []
+        else:
+            self.gene_symbols = gene_symbols
 
-                self.title = str(gene_symbols)
-                gene_symbols = [gene_symbols]
-            else:
-                self.title = ", ".join(gene_symbols)
+        if self.title is None:
+            self.title = ", ".join(self.gene_symbols)
 
         self._add_title()
-
-        self.gene_symbols = gene_symbols
 
         gene_values = self._get_gene_expression()
 
@@ -328,17 +314,15 @@ class GenePlot(SpatialBasePlot):
         if show_color_bar:
             self._add_color_bar(plot, color_bar_label=color_bar_label)
 
-        if fname != None:
+        if fname is not None:
             self._save_output()
 
     def _get_gene_expression(self):
-
         # Gene plot option
         if len(self.gene_symbols) == 0:
             raise ValueError("Genes should be provided, please input genes")
 
         elif len(self.gene_symbols) == 1:
-
             if self.gene_symbols[0] not in self.query_adata.var_names:
                 raise ValueError(
                     self.gene_symbols[0]
@@ -349,7 +333,6 @@ class GenePlot(SpatialBasePlot):
 
             return colors
         else:
-
             for gene in self.gene_symbols:
                 if gene not in self.query_adata.var.index:
                     self.gene_symbols.remove(gene)
@@ -379,8 +362,7 @@ class GenePlot(SpatialBasePlot):
             return colors
 
     def _plot_genes(self, gene_values: pd.Series):
-
-        if type(self.vmin) == type(None) and type(self.vmax) == type(None):
+        if self.vmin is None and self.vmax is None:
             vmin = min(gene_values)
             vmax = max(gene_values)
         else:
@@ -398,13 +380,12 @@ class GenePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=gene_values,
         )
         return plot
 
     def _plot_contour(self, gene_values: pd.Series):
-
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -417,7 +398,7 @@ class GenePlot(SpatialBasePlot):
         yi = np.linspace(y.min(), y.max(), 100)
         zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="linear")
 
-        if self.step_size == None:
+        if self.step_size is None:
             self.step_size = int(np.max(z) / 50)
             if self.step_size < 1:
                 self.step_size = 1
@@ -428,13 +409,13 @@ class GenePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
 
     def _add_threshold(self, gene_values, threshold):
-        if threshold == None:
+        if threshold is None:
             return np.repeat(True, len(gene_values))
         else:
             return gene_values > threshold
@@ -453,33 +434,33 @@ class FeaturePlot(SpatialBasePlot):
         adata: AnnData,
         # plotting param
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "Spectral_r",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        color_bar_label: Optional[str] = "",
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 7,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        use_raw: Optional[bool] = False,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "Spectral_r",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        color_bar_label: str = "",
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 7,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        use_raw: bool = False,
+        fname: str | None = None,
+        dpi: int = 120,
         # gene plot param
-        feature: str = None,
-        threshold: Optional[float] = None,
+        feature: str | None = None,
+        threshold: float | None = None,
         contour: bool = False,
-        step_size: Optional[int] = None,
-        vmin: float = None,
-        vmax: float = None,
+        step_size: int | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -527,11 +508,10 @@ class FeaturePlot(SpatialBasePlot):
         if show_color_bar:
             self._add_color_bar(plot, color_bar_label=color_bar_label)
 
-        if fname != None:
+        if fname is not None:
             self._save_output()
 
     def _get_feature_values(self):
-
         if self.feature not in self.query_adata.obs:
             raise ValueError(
                 self.feature + " is not in data.obs, please try another feature"
@@ -549,8 +529,7 @@ class FeaturePlot(SpatialBasePlot):
         return colors
 
     def _plot_feature(self, feature_values: pd.Series):
-
-        if type(self.vmin) == type(None) and type(self.vmax) == type(None):
+        if self.vmin is None and self.vmax is None:
             vmin = min(feature_values)
             vmax = max(feature_values)
         else:
@@ -568,13 +547,12 @@ class FeaturePlot(SpatialBasePlot):
             marker="o",
             vmin=vmin,
             vmax=vmax,
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=feature_values,
         )
         return plot
 
     def _plot_contour(self, feature_values: pd.Series):
-
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -587,7 +565,7 @@ class FeaturePlot(SpatialBasePlot):
         yi = np.linspace(y.min(), y.max(), 100)
         zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="linear")
 
-        if self.step_size == None:
+        if self.step_size is None:
             self.step_size = int(np.max(z) / 50)
             if self.step_size < 1:
                 self.step_size = 1
@@ -598,65 +576,59 @@ class FeaturePlot(SpatialBasePlot):
             yi,
             zi,
             range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
         return cs
 
     def _add_threshold(self, feature_values, threshold):
-        if threshold == None:
+        if threshold is None:
             return np.repeat(True, len(feature_values))
         else:
             return feature_values > threshold
 
 
-################################################################
-#                                                              #
-#                      Cluster plot class                      #
-#                                                              #
-################################################################
-
-
+# Cluster plot class
 class ClusterPlot(SpatialBasePlot):
     def __init__(
         self,
         adata: AnnData,
         # plotting param
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "default",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 5,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "default",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 5,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        fname: str | None = None,
+        dpi: int = 120,
         # cluster plot param
-        show_subcluster: Optional[bool] = False,
-        show_cluster_labels: Optional[bool] = False,
-        show_trajectories: Optional[bool] = False,
-        reverse: Optional[bool] = False,
-        show_node: Optional[bool] = False,
-        threshold_spots: Optional[int] = 5,
-        text_box_size: Optional[float] = 5,
-        color_bar_size: Optional[float] = 10,
-        bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
+        show_subcluster: bool = False,
+        show_cluster_labels: bool = False,
+        show_trajectories: bool = False,
+        reverse: bool = False,
+        show_node: bool = False,
+        threshold_spots: int = 5,
+        text_box_size: float = 5,
+        color_bar_size: float = 10,
+        bbox_to_anchor: tuple[float, float] | None = (1, 1),
         # trajectory
-        trajectory_node_size: Optional[int] = 10,
-        trajectory_alpha: Optional[float] = 1.0,
-        trajectory_width: Optional[float] = 2.5,
-        trajectory_edge_color: Optional[str] = "#f4efd3",
-        trajectory_arrowsize: Optional[int] = 17,
+        trajectory_node_size: int = 10,
+        trajectory_alpha: float = 1.0,
+        trajectory_width: float = 2.5,
+        trajectory_edge_color: str = "#f4efd3",
+        trajectory_arrowsize: int = 17,
     ):
         super().__init__(
             adata=adata,
@@ -703,7 +675,6 @@ class ClusterPlot(SpatialBasePlot):
             self._add_sub_clusters()
 
         if show_trajectories:
-
             self.trajectory_node_size = trajectory_node_size
             self.trajectory_alpha = trajectory_alpha
             self.trajectory_width = trajectory_width
@@ -712,33 +683,31 @@ class ClusterPlot(SpatialBasePlot):
 
             self._add_trajectories()
 
-        if fname != None:
+        if fname is not None:
             self._save_output()
 
     def _add_cluster_colors(self):
-        if self.use_label + "_colors" not in self.adata[0].uns:
-            # self.adata[0].uns[self.use_label + "_set"] = []
-            self.adata[0].uns[self.use_label + "_colors"] = []
+        self.adata[0].uns[self.use_label + "_colors"] = []
 
-            for i, cluster in enumerate(self.adata[0].obs.groupby(self.use_label)):
-                self.adata[0].uns[self.use_label + "_colors"].append(
-                    matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
-                )
-                # self.adata[0].uns[self.use_label + "_set"].append( cluster[0] )
+        for i, cluster in enumerate(
+            self.adata[0].obs.groupby(self.use_label, observed=True)
+        ):
+            self.adata[0].uns[self.use_label + "_colors"].append(
+                matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
+            )
 
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
-        # for i, cluster in enumerate(self.query_adata.obs[self.use_label].cat.categories):
-        for i, cluster in enumerate(self.query_adata.obs.groupby(self.use_label)):
-
+        for i, cluster in enumerate(
+            self.query_adata.obs.groupby(self.use_label, observed=True)
+        ):
             # Plot scatter plot based on pixel of spots
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
             ]
 
             if self.use_label + "_colors" in self.adata[0].uns:
-                # label_set = self.adata[0].uns[self.use_label+'_set']
                 label_set = (
                     self.adata[0].obs[self.use_label].cat.categories.values.astype(str)
                 )
@@ -773,13 +742,11 @@ class ClusterPlot(SpatialBasePlot):
             handleheight=1.0,
             edgecolor="white",
         )
-        for handle in lgnd.legendHandles:
+        for handle in lgnd.legend_handles:
             handle.set_sizes([20.0])
 
     def _add_cluster_labels(self):
-
         for i, label in enumerate(self.list_clusters):
-
             label_index = list(
                 self.query_adata.obs[
                     self.query_adata.obs[self.use_label] == str(label)
@@ -818,7 +785,6 @@ class ClusterPlot(SpatialBasePlot):
             )
 
     def _add_sub_clusters(self):
-
         if "sub_cluster_labels" not in self.query_adata.obs.columns:
             raise ValueError("Please run stlearn.spatial.cluster.localization")
 
@@ -942,7 +908,6 @@ class ClusterPlot(SpatialBasePlot):
 
         if self.show_node:
             for x, y in centroid_dict.items():
-
                 if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
                     self.ax.text(
                         y[0],
@@ -977,29 +942,29 @@ class SubClusterPlot(SpatialBasePlot):
         adata: AnnData,
         # plotting param
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "jet",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 5,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "jet",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 5,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        fname: str | None = None,
+        dpi: int = 120,
         # subcluster plot param
-        cluster: Optional[int] = 0,
-        threshold_spots: Optional[int] = 5,
-        text_box_size: Optional[float] = 5,
-        bbox_to_anchor: Optional[Tuple[float, float]] = (1, 1),
+        cluster: int = 0,
+        threshold_spots: int = 5,
+        text_box_size: float = 5,
+        bbox_to_anchor: tuple[float, float] | None = (1, 1),
         **kwargs,
     ):
         super().__init__(
@@ -1032,7 +997,7 @@ class SubClusterPlot(SpatialBasePlot):
 
         self._add_subclusters_label(subset)
 
-        if fname != None:
+        if fname is not None:
             self._save_output()
 
     def _plot_subclusters(self, threshold_spots):
@@ -1060,13 +1025,13 @@ class SubClusterPlot(SpatialBasePlot):
 
         colors = colors.replace(self.mapping)
 
-        plot = self.ax.scatter(
+        self.ax.scatter(
             self.imgcol_new,
             self.imgrow_new,
             edgecolor="none",
             s=self.size,
             marker="o",
-            cmap=plt.get_cmap(self.cmap) if type(self.cmap) == str else self.cmap,
+            cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             c=colors,
             alpha=self.cell_alpha,
         )
@@ -1131,31 +1096,31 @@ class CciPlot(GenePlot):
         adata: AnnData,
         # plotting param
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "Spectral_r",
-        use_label: Optional[str] = None,
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 7,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        use_raw: Optional[bool] = False,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "Spectral_r",
+        use_label: str | None = None,
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 7,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        use_raw: bool = False,
+        fname: str | None = None,
+        dpi: int = 120,
         # cci_rank param
-        use_het: Optional[str] = "het",
+        use_het: str = "het",
         contour: bool = False,
-        step_size: Optional[int] = None,
-        vmin: float = None,
-        vmax: float = None,
+        step_size: int | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         super().__init__(
@@ -1202,44 +1167,42 @@ class LrResultPlot(GenePlot):
         use_result: Optional["str"] = "lr_sig_scores",
         # plotting param
         title: Optional["str"] = None,
-        figsize: Optional[Tuple[float, float]] = None,
-        cmap: Optional[str] = "Spectral_r",
-        list_clusters: Optional[list] = None,
-        ax: Optional[matplotlib.axes.Axes] = None,
-        fig: Optional[matplotlib.figure.Figure] = None,
-        show_plot: Optional[bool] = True,
-        show_axis: Optional[bool] = False,
-        show_image: Optional[bool] = True,
-        show_color_bar: Optional[bool] = True,
-        crop: Optional[bool] = True,
-        zoom_coord: Optional[float] = None,
-        margin: Optional[bool] = 100,
-        size: Optional[float] = 7,
-        image_alpha: Optional[float] = 1.0,
-        cell_alpha: Optional[float] = 1.0,
-        use_raw: Optional[bool] = False,
-        fname: Optional[str] = None,
-        dpi: Optional[int] = 120,
+        figsize: tuple[float, float] | None = None,
+        cmap: str = "Spectral_r",
+        list_clusters: list | None = None,
+        ax: matplotlib.axes.Axes | None = None,
+        fig: matplotlib.figure.Figure | None = None,
+        show_plot: bool = True,
+        show_axis: bool = False,
+        show_image: bool = True,
+        show_color_bar: bool = True,
+        crop: bool = True,
+        zoom_coord: tuple[float, float, float, float] | None = None,
+        margin: float = 100,
+        size: float = 7,
+        image_alpha: float = 1.0,
+        cell_alpha: float = 1.0,
+        use_raw: bool = False,
+        fname: str | None = None,
+        dpi: int = 120,
         # cci_rank param
         contour: bool = False,
-        step_size: Optional[int] = None,
-        vmin: float = None,
-        vmax: float = None,
+        step_size: int | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         **kwargs,
     ):
         # Making sure cci_rank has been run first #
         if "lr_summary" not in adata.uns:
             raise Exception(
-                f"To visualise LR interaction results, must run" f"st.pl.cci.run first."
+                "To visualise LR interaction results, must run st.pl.cci.run first."
             )
 
         # By default, using the LR with most significant spots #
-        if type(use_lr) == type(None):
+        if use_lr is None:
             use_lr = adata.uns["lr_summary"].index.values[0]
         elif use_lr not in adata.uns["lr_summary"].index:
-            raise Exception(
-                f"use_lr must be one of:\n" f'{adata.uns["lr_summary"].index}'
-            )
+            raise Exception(f"use_lr must be one of:\n{adata.uns['lr_summary'].index}")
         else:
             use_lr = str(use_lr)
 

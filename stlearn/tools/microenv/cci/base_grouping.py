@@ -1,15 +1,16 @@
-""" Performs LR analysis by grouping LR pairs which having hotspots across
-    similar tissues.
+"""Performs LR analysis by grouping LR pairs which having hotspots across
+similar tissues.
 """
 
-from stlearn.pl import het_plot
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
-from anndata import AnnData
-from tqdm import tqdm
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sb
+from anndata import AnnData
+from sklearn.cluster import DBSCAN, AgglomerativeClustering
+from tqdm import tqdm
+
+from stlearn.pl import het_plot
 
 
 def get_hotspots(
@@ -22,18 +23,28 @@ def get_hotspots(
     plot_diagnostics: bool = False,
     show_plot: bool = False,
 ):
-    """Determines the hotspots for the inputted scores by progressively setting more stringent cutoffs & cluster in space, chooses point which maximises number of clusters.
+    """Determines the hotspots for the inputted scores by progressively setting
+    more stringent cutoffs & cluster in space, chooses point which maximises number
+    of clusters.
     Parameters
     ----------
-    adata: AnnData          The data object
-    lr_scores: np.ndarray      LR_pair*Spots containing the LR scores.
-    lrs: np.array           The LR_pairs, in-line with the rows of scores.
-    eps: float              The eps parameter used in DBScan to get the number of clusters.
-    quantile: float         The quantiles to use for the cutoffs, if 0.05 then will take non-zero quantiles of 0.05, 0.1,..., 1 quantiles to cluster.
+    adata: AnnData
+        The data object
+    lr_scores: np.ndarray
+        LR_pair*Spots containing the LR scores.
+    lrs: np.array
+        The LR_pairs, in-line with the rows of scores.
+    eps: float
+        The eps parameter used in DBScan to get the number of clusters.
+    quantile: float
+        The quantiles to use for the cutoffs, if 0.05 then will take non-zero
+        quantiles of 0.05, 0.1,..., 1 quantiles to cluster.
 
     Returns
     -------
-    lr_hot_scores: np.ndarray, lr_cutoffs: np.array          First is the LR scores for just the hotspots, second is the cutoff used to get those LR_scores.
+    lr_hot_scores: np.ndarray, lr_cutoffs: np.array
+        First is the LR scores for just the hotspots, second is the cutoff used to
+        get those LR_scores.
     """
     coors = adata.obs[["imagerow", "imagecol"]].values
     lr_summary, lr_hot_scores = hotspot_core(
@@ -107,14 +118,13 @@ def get_hotspots(
     adata.obsm["cluster_scores"] = cluster_scores
 
     if verbose:
-        print(f"\tSummary values of lrs in adata.uns['lr_summary'].")
+        print("\tSummary values of lrs in adata.uns['lr_summary'].")
         print(
-            f"\tMatrix of lr scores in same order as the summary in adata.obsm['lr_scores']."
+            "\tMatrix of lr scores in same order as the summary in "
+            + "adata.obsm['lr_scores']."
         )
-        print(f"\tMatrix of the hotspot scores in adata.obsm['lr_hot_scores'].")
-        print(
-            f"\tMatrix of the mean LR cluster scores in adata.obsm['cluster_scores']."
-        )
+        print("\tMatrix of the hotspot scores in adata.obsm['lr_hot_scores'].")
+        print("\tMatrix of the mean LR cluster scores in adata.obsm['cluster_scores'].")
 
 
 def hotspot_core(
@@ -137,7 +147,7 @@ def hotspot_core(
     # cols: spot_counts, cutoff, hotspot_counts, lr_cluster
     lr_summary = np.zeros((score_copy.shape[0], 4))
 
-    ### Also creating grouping lr_pairs by quantiles to plot diagnostics ###
+    # Also creating grouping lr_pairs by quantiles to plot diagnostics
     if plot_diagnostics:
         lr_quantiles = [(i / 6) for i in range(1, 7)][::-1]
         lr_mean_scores = np.apply_along_axis(non_zero_mean, 1, score_copy)
@@ -152,7 +162,7 @@ def hotspot_core(
         total=len(lrs),
         desc="Removing background lr scores...",
         bar_format="{l_bar}{bar}",
-        disable=verbose == False,
+        disable=verbose is False,
     ) as pbar:
         for i, lr_ in enumerate(lrs):
             lr_score_ = score_copy[i, :]
@@ -185,7 +195,7 @@ def hotspot_core(
             lr_summary[i, 2] = len(np.where(lr_score_ > 0)[0])
 
             # Adding the diagnostic plots #
-            if plot_diagnostics and lr_ in quant_lrs and type(adata) != type(None):
+            if plot_diagnostics and lr_ in quant_lrs and adata is not None:
                 add_diagnostic_plots(
                     adata,
                     i,
@@ -230,7 +240,7 @@ def add_diagnostic_plots(
 
     # Scatter plot #
     axes[q_i][0].scatter(cutoffs, n_clusters)
-    axes[q_i][0].set_title(f"n_clusts*mean_spot_score vs cutoff")
+    axes[q_i][0].set_title("n_clusts*mean_spot_score vs cutoff")
     axes[q_i][0].set_xlabel("cutoffs")
     axes[q_i][0].set_ylabel("n_clusts*mean_spot_score")
 

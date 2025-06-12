@@ -1,14 +1,12 @@
-from .model_zoo import encode, Model
-from typing import Optional, Union
-from anndata import AnnData
-import numpy as np
-from .._compat import Literal
-from PIL import Image
-import pandas as pd
-from pathlib import Path
+from typing import Literal
 
-# Test progress bar
+import numpy as np
+from anndata import AnnData
+from PIL import Image
+from sklearn.decomposition import PCA
 from tqdm import tqdm
+
+from .model_zoo import Model
 
 _CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
 
@@ -17,68 +15,91 @@ def extract_feature(
     adata: AnnData,
     cnn_base: _CNN_BASE = "resnet50",
     n_components: int = 50,
+    seeds: int = 1,
     verbose: bool = False,
     copy: bool = False,
-    seeds: int = 1,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Extract latent morphological features from H&E images using pre-trained
     convolutional neural network base
 
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    cnn_base
+    cnn_base:
         Established convolutional neural network bases
         choose one from ['resnet50', 'vgg16', 'inception_v3', 'xception']
-    n_components
+    n_components:
         Number of principal components to compute for latent morphological features
-    verbose
-        Verbose output
-    copy
-        Return a copy instead of writing to adata.
-    seeds
+    seeds:
         Fix random state
+    verbose:
+        Verbose output
+    copy:
+        Return a copy instead of writing to adata.
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
     **X_morphology** : `adata.obsm` field
         Dimension reduced latent morphological features.
+    Raises
+    ------
+    ValueError
+        If any image fails to process or if tile_path column is missing.
     """
-    feature_dfs = []
-    model = Model(cnn_base)
+
+    adata = adata.copy() if copy else adata
 
     if "tile_path" not in adata.obs:
         raise ValueError("Please run the function stlearn.pp.tiling")
 
+    model = Model(cnn_base)
+
+    # Pre-allocate feature matrix, spot names and arrays to avoid overhead
+    tile_paths = adata.obs["tile_path"].values
+    n_spots = len(tile_paths)
+    if n_spots == 0:
+        raise ValueError("No tile paths found in adata.obs['tile_path']")
+
+    first_features = _read_and_predict(tile_paths[0], model, verbose=verbose)
+    n_features = len(first_features)
+
+    # Setup feature matrix
+    feature_matrix = np.empty((n_spots, n_features), dtype=np.float32)
+    feature_matrix[0] = first_features
+
     with tqdm(
-        total=len(adata),
+        total=n_spots,
         desc="Extract feature",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        initial=1,  # We already processed the first image
     ) as pbar:
-        for spot, tile_path in adata.obs["tile_path"].items():
-            tile = Image.open(tile_path)
-            tile = np.asarray(tile, dtype="int32")
-            tile = tile.astype(np.float32)
-            tile = np.stack([tile])
-            if verbose:
-                print("extract feature for spot: {}".format(str(spot)))
-            features = encode(tile, model)
-            feature_dfs.append(pd.DataFrame(features, columns=[spot]))
-            pbar.update(1)
+        for i in range(1, n_spots):
+            features = _read_and_predict(tile_paths[i], model, verbose=verbose)
+            feature_matrix[i] = features
+            if i % 100 == 0:
+                pbar.update(100)
 
-    feature_df = pd.concat(feature_dfs, axis=1)
-
-    adata.obsm["X_tile_feature"] = feature_df.transpose().to_numpy()
-
-    from sklearn.decomposition import PCA
-
+    adata.obsm["X_tile_feature"] = feature_matrix
     pca = PCA(n_components=n_components, random_state=seeds)
-    pca.fit(feature_df.transpose().to_numpy())
-
-    adata.obsm["X_morphology"] = pca.transform(feature_df.transpose().to_numpy())
+    pca.fit(feature_matrix)
+    adata.obsm["X_morphology"] = pca.transform(feature_matrix)
 
     print("The morphology feature is added to adata.obsm['X_morphology']!")
 
     return adata if copy else None
+
+
+def _read_and_predict(path, model, verbose=False):
+    try:
+        with Image.open(path) as img:
+            tile = np.asarray(img, dtype=np.float32)
+
+        if verbose:
+            print(f"Loaded image: {path}")
+
+        tile = tile[np.newaxis, ...]
+        return model.predict(tile).ravel()
+    except Exception as e:
+        raise ValueError(f"Failed to process image: {path}. Error: {str(e)}")

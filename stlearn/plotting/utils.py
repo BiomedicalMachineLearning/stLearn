@@ -1,24 +1,12 @@
-import numpy as np
-import pandas as pd
-
 import io
-from PIL import Image
 
 import matplotlib
 import matplotlib.pyplot as plt
-from anndata import AnnData
+import numpy as np
+from PIL import Image
 from scanpy.plotting import palettes
+
 from stlearn.plotting import palettes_st
-
-from typing import Optional, Union, Mapping  # Special
-from typing import Sequence, Iterable  # ABCs
-from typing import Tuple  # Classes
-
-from enum import Enum
-
-from matplotlib import rcParams, ticker, gridspec, axes
-from matplotlib.axes import Axes
-from abc import ABC
 
 
 def get_img_from_fig(fig, dpi=180):
@@ -39,8 +27,8 @@ def get_img_from_fig(fig, dpi=180):
 
 
 def centroidpython(x, y):
-    l = len(x)
-    return sum(x) / l, sum(y) / l
+    length_of_x = len(x)
+    return sum(x) / length_of_x, sum(y) / length_of_x
 
 
 def get_cluster(search, dictionary):
@@ -82,10 +70,10 @@ def get_cmap(cmap):
         cmap = palettes_st.jana_40
     elif cmap == "default":
         cmap = palettes_st.default
-    elif type(cmap) == str:  # If refers to matplotlib cmap
+    elif isinstance(cmap, str):  # If refers to matplotlib cmap
         cmap_n = plt.get_cmap(cmap).N
         return plt.get_cmap(cmap), cmap_n
-    elif type(cmap) == matplotlib.colors.LinearSegmentedColormap:  # already cmap
+    elif isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):  # already cmap
         cmap_n = cmap.N
         return cmap, cmap_n
 
@@ -106,9 +94,9 @@ def check_cmap(cmap):
         "cmap must be a matplotlib.colors.LinearSegmentedColormap OR"
         "one of these: " + str(cmap_available)
     )
-    if type(cmap) == str:
+    if isinstance(cmap, str):
         assert cmap in cmap_available, error_msg
-    elif type(cmap) != matplotlib.colors.LinearSegmentedColormap:
+    elif not isinstance(cmap, matplotlib.colors.LinearSegmentedColormap):
         raise Exception(error_msg)
 
     return cmap
@@ -137,7 +125,7 @@ def get_colors(adata, obs_key, cmap="default", label_set=None):
         adata.uns[col_key] = colors_ordered
 
     # Returning the colors of the desired labels in indicated order #
-    if type(label_set) != type(None):
+    if label_set is not None:
         colors_ordered = [
             colors_ordered[np.where(labels_ordered == label)[0][0]]
             for label in label_set

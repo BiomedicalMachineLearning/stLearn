@@ -3,10 +3,8 @@ Helper functions for het.py; primarily counting help.
 """
 
 import numpy as np
-import numba
-from numba import types
+from numba import njit
 from numba.typed import List
-from numba import njit, jit
 
 
 @njit
@@ -32,7 +30,7 @@ def edge_core(
         cell_type_index: int            Column of cell_data that contains the \
                                         cell type of interest.
 
-        neighbourhood_bcs: List         List of lists, inner list for each \
+        neighbourhood_bcs (List):       List of lists, inner list for each \
                                         spot. First element of inner list is \
                                         spot barcode, second element is array \
                                         of neighbourhood spot barcodes.
@@ -77,7 +75,7 @@ def edge_core(
     elif len(spot_indices) == 0:
         return edge_list[1:]
 
-    ### Within-spot mode
+    # Within-spot mode
     # within-spot, will have only itself as a neighbour in this mode
     within_mode = edge_list[0][0] == edge_list[0][1]
     if within_mode:
@@ -86,7 +84,7 @@ def edge_core(
             if neigh_bool[i] and cell_data[i] > cutoff:
                 edge_list.append((neighbourhood_bcs[i][0], neighbourhood_bcs[i][1][0]))
 
-    ### Between-spot mode
+    # Between-spot mode
     else:
         # Subsetting the neighbourhoods to relevant spots #
         neighbourhood_bcs_sub = List()
@@ -228,128 +226,6 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
     )  # neighbourhood_bcs, neighbourhood_indices
 
 
-def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
-    """Retrieves the minimal information necessary to perform edge counting."""
-    # First determining how the edge counting needs to be performed #
-    # Ensuring compatibility with current way of adding label_transfer to object
-    if use_label == "label_transfer" or use_label == "predictions":
-        obs_key, uns_key = "predictions", "label_transfer"
-    else:
-        obs_key, uns_key = use_label, use_label
-
-    # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
-
-    # Getting the cell type information; if not mixtures then populate
-    # matrix with one's indicating pure spots.
-    if mix_mode:
-        cell_props = adata.uns[uns_key]
-        cols = cell_props.columns.values.astype(str)
-        col_order = [
-            np.where([cell_type in col for col in cols])[0][0] for cell_type in all_set
-        ]
-        cell_data = adata.uns[uns_key].iloc[:, col_order].values.astype(np.float64)
-    else:
-        cell_labels = adata.obs.loc[:, obs_key].values
-        cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
-        for i, cell_type in enumerate(all_set):
-            cell_data[:, i] = (
-                (cell_labels == cell_type).astype(np.int32).astype(np.float64)
-            )
-
-    spot_bcs = adata.obs_names.values.astype(str)
-    return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
-
-
-# @njit
-def get_neighbourhoods_FAST(
-    spot_bcs: np.array,
-    spot_neigh_bcs: np.ndarray,
-    n_spots: int,
-    str_dtype: str,
-    neigh_indices: np.array,
-    neigh_bcs: np.array,
-):
-    """Gets the neighbourhood information, njit compiled."""
-
-    # Determining the neighbour spots used for significance testing #
-    # neighbours = List( numba.int64[:] )
-    # neighbourhood_bcs = List((numba.int64, numba.int64[:]))
-    # neighbourhood_indices = List( (types.unicode_type, types.unicode_type[:]) )
-
-    ### Numba version
-    # neighbours = List([neigh_indices])[1:]
-    # neighbourhood_bcs = List()
-    # neighbourhood_indices = List([(0, neigh_indices)])[1:]
-
-    #### Trying normal lists
-    neighbours, neighbourhood_bcs, neighbourhood_indices = [], [], []
-
-    for i in range(spot_neigh_bcs.shape[0]):
-        neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
-        neigh_bcs = neigh_bcs[neigh_bcs != ""]
-        # neigh_bcs_sub = List()
-        # for neigh_bc in neigh_bcs:
-        #    if neigh_bc in spot_bcs:
-        #        neigh_bcs_sub.append( neigh_bc )
-
-        # neigh_bcs_array = np.empty((len(neigh_bcs_sub)), str_dtype)
-        # neigh_bcs_array = np.empty(len(neigh_bcs_sub), dtype=str_dtype)
-        # neigh_indices = np.zeros((len(neigh_bcs_sub)), dtype=np.int64)
-        neigh_bcs_array, neigh_indices = [], []
-        neigh_bcs_sub = List()
-        for j, neigh_bc in enumerate(neigh_bcs):
-
-            bc_indices = np.where(spot_bcs == neigh_bc)[0]
-            if len(bc_indices) > 0:
-
-                neigh_bcs_array.append(neigh_bc)
-                neigh_indices.append(bc_indices[0])
-
-        neigh_bcs_array = np.array(neigh_bcs_array, dtype=str_dtype)
-        neigh_indices = np.array(neigh_indices, dtype=np.int64)
-
-        neighbours.append(neigh_indices)
-        neighbourhood_indices.append((i, neigh_indices))
-        neighbourhood_bcs.append((spot_bcs[i], neigh_bcs_array))
-
-    # return neighbours, neighbourhood_bcs, neighbourhood_indices
-    return List(neighbours), List(neighbourhood_bcs), List(neighbourhood_indices)
-
-
-def get_data_for_counting_OLD(adata, use_label, mix_mode, all_set):
-    """Retrieves the minimal information necessary to perform edge counting."""
-    # First determining how the edge counting needs to be performed #
-    # Ensuring compatibility with current way of adding label_transfer to object
-    if use_label == "label_transfer" or use_label == "predictions":
-        obs_key, uns_key = "predictions", "label_transfer"
-    else:
-        obs_key, uns_key = use_label, use_label
-
-    # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
-
-    # Getting the cell type information; if not mixtures then populate
-    # matrix with one's indicating pure spots.
-    if mix_mode:
-        cell_props = adata.uns[uns_key]
-        cols = cell_props.columns.values.astype(str)
-        col_order = [
-            np.where([cell_type in col for col in cols])[0][0] for cell_type in all_set
-        ]
-        cell_data = adata.uns[uns_key].iloc[:, col_order].values.astype(np.float64)
-    else:
-        cell_labels = adata.obs.loc[:, obs_key].values
-        cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
-        for i, cell_type in enumerate(all_set):
-            cell_data[:, i] = (
-                (cell_labels == cell_type).astype(np.int_).astype(np.float64)
-            )
-
-    spot_bcs = adata.obs_names.values.astype(str)
-    return spot_bcs, cell_data, neighbourhood_bcs, neighbourhood_indices
-
-
 def get_neighbourhoods_FAST(
     spot_bcs: np.array,
     spot_neigh_bcs: np.ndarray,
@@ -368,9 +244,7 @@ def get_neighbourhoods_FAST(
         neigh_bcs = neigh_bcs[neigh_bcs != ""]
 
         neigh_bcs_array, neigh_indices = [], []
-        neigh_bcs_sub = List()
         for j, neigh_bc in enumerate(neigh_bcs):
-
             bc_indices = np.where(spot_bcs == neigh_bc)[0]
             if len(bc_indices) > 0:
                 neigh_bcs_array.append(neigh_bc)
@@ -391,7 +265,7 @@ def get_neighbourhoods(adata):
 
     # Old stlearn version where didn't store neighbourhood barcodes, not good
     #   for anndata subsetting!!
-    if not "spot_neigh_bcs" in adata.obsm:
+    if "spot_neigh_bcs" not in adata.obsm:
         # Determining the neighbour spots used for significance testing #
         neighbours = List()
         for i in range(adata.obsm["spot_neighbours"].shape[0]):
@@ -410,7 +284,6 @@ def get_neighbourhoods(adata):
             neighbourhood_indices.append((spot_i, neighbours[spot_i]))
             neighbourhood_bcs.append((spot_bcs[spot_i], spot_bcs[neighbours[spot_i]]))
     else:  # Newer version
-
         spot_bcs = adata.obs_names.values.astype(str)
         spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values.astype(str)
 

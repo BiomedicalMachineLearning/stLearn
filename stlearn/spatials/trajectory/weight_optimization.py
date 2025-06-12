@@ -1,10 +1,11 @@
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
+from tqdm import tqdm
+
 from .global_level import global_level
 from .local_level import local_level
 from .utils import lambda_dist, resistance_distance
-from tqdm import tqdm
 
 
 def weight_optimizing_global(
@@ -27,7 +28,6 @@ def weight_optimizing_global(
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(0, int(1 / step + 1)):
-
             Gs.append(
                 nx.to_scipy_sparse_array(
                     global_level(
@@ -105,7 +105,6 @@ def weight_optimizing_local(adata, use_label=None, cluster=None, step=0.01):
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(0, int(1 / step + 1)):
-
             Gs.append(
                 local_level(
                     adata,

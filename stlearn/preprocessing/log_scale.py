@@ -1,19 +1,16 @@
-from typing import Union, Optional, Tuple, Collection, Sequence, Iterable
-from anndata import AnnData
 import numpy as np
-from scipy.sparse import issparse, isspmatrix_csr, csr_matrix, spmatrix
-from scipy import sparse
-from stlearn import logging as logg
 import scanpy
+from anndata import AnnData
+from scipy.sparse import spmatrix
 
 
 def log1p(
-    adata: Union[AnnData, np.ndarray, spmatrix],
+    adata: AnnData | np.ndarray | spmatrix,
     copy: bool = False,
     chunked: bool = False,
-    chunk_size: Optional[int] = None,
-    base: Optional[float] = None,
-) -> Optional[AnnData]:
+    chunk_size: int | None = None,
+    base: float | None = None,
+) -> AnnData | None:
     """\
     Wrap function of scanpy.pp.log1p
     Copyright (c) 2017 F. Alexander Wolf, P. Angerer, Theis Lab
@@ -41,17 +38,19 @@ def log1p(
     Returns or updates `data`, depending on `copy`.
     """
 
-    scanpy.pp.log1p(adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base)
-
+    result = scanpy.pp.log1p(
+        adata, copy=copy, chunked=chunked, chunk_size=chunk_size, base=base
+    )
     print("Log transformation step is finished in adata.X")
+    return result
 
 
 def scale(
-    adata: Union[AnnData, np.ndarray, spmatrix],
+    data: AnnData | spmatrix | np.ndarray,
     zero_center: bool = True,
-    max_value: Optional[float] = None,
+    max_value: float | None = None,
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | spmatrix | np.ndarray | None:
     """\
     Wrap function of scanpy.pp.scale
 
@@ -62,7 +61,7 @@ def scale(
         the future, they might be set to NaNs.
     Parameters
     ----------
-    data
+    data:
         The (annotated) data matrix of shape `n_obs` × `n_vars`.
         Rows correspond to cells and columns to genes.
     zero_center
@@ -75,9 +74,11 @@ def scale(
         determines whether a copy is returned.
     Returns
     -------
-    Depending on `copy` returns or updates `adata` with a scaled `adata.X`.
+    Depending on `copy` returns or updates `data` with a scaled `data.X`.
     """
 
-    scanpy.pp.scale(adata, zero_center=zero_center, max_value=max_value, copy=copy)
-
+    result = scanpy.pp.scale(
+        data, zero_center=zero_center, max_value=max_value, copy=copy
+    )
     print("Scale step is finished in adata.X")
+    return result
