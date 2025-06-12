@@ -46,11 +46,11 @@ def log1p(
 
 
 def scale(
-    adata: AnnData | np.ndarray | spmatrix,
+    data: AnnData | spmatrix | np.ndarray,
     zero_center: bool = True,
     max_value: float | None = None,
     copy: bool = False,
-) -> AnnData | None:
+) -> AnnData | spmatrix | np.ndarray | None:
     """\
     Wrap function of scanpy.pp.scale
 
@@ -61,7 +61,7 @@ def scale(
         the future, they might be set to NaNs.
     Parameters
     ----------
-    data
+    data:
         The (annotated) data matrix of shape `n_obs` × `n_vars`.
         Rows correspond to cells and columns to genes.
     zero_center
@@ -74,11 +74,11 @@ def scale(
         determines whether a copy is returned.
     Returns
     -------
-    Depending on `copy` returns or updates `adata` with a scaled `adata.X`.
+    Depending on `copy` returns or updates `data` with a scaled `data.X`.
     """
 
     result = scanpy.pp.scale(
-        adata, zero_center=zero_center, max_value=max_value, copy=copy
+        data, zero_center=zero_center, max_value=max_value, copy=copy
     )
     print("Scale step is finished in adata.X")
     return result
