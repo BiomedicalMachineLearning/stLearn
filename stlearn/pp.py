@@ -1,5 +1,5 @@
-from .image_preprocessing.feature_extractor import extract_feature, old_extract_feature
-from .image_preprocessing.image_tiling import tiling, old_tiling
+from .image_preprocessing.feature_extractor import extract_feature
+from .image_preprocessing.image_tiling import tiling
 from .preprocessing.filter_genes import filter_genes
 from .preprocessing.graph import neighbors
 from .preprocessing.log_scale import log1p, scale
@@ -12,7 +12,5 @@ __all__ = [
     "scale",
     "neighbors",
     "tiling",
-    "old_tiling",
     "extract_feature",
-    "old_extract_feature",
 ]

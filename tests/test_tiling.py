@@ -1,21 +1,15 @@
-
 # !/usr/bin/env python
 
 """Tests for tiling function."""
 
-import unittest
-import time
-import numpy as np
-import pandas as pd
-from pathlib import Path
-import tempfile
-import shutil
 import os
-from PIL import Image
-from unittest.mock import patch, MagicMock
-import filecmp
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
 
-import scanpy as sc
+import numpy as np
+
 import stlearn as st
 
 from .utils import read_test_data
@@ -61,8 +55,9 @@ class TestTiling(unittest.TestCase):
         st.pp.tiling(data, nested_path)
 
         self.assertTrue(nested_path.exists(), "Nested directories not created")
-        self.assertGreater(len(list(nested_path.glob("*"))), 0,
-                           "No files in nested directory")
+        self.assertGreater(
+            len(list(nested_path.glob("*"))), 0, "No files in nested directory"
+        )
 
     def test_quality_parameter(self):
         """Test JPEG quality parameter."""

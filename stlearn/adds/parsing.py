@@ -29,7 +29,7 @@ def parsing(
 
     # Get a map of the new coordinates
     new_coordinates = dict()
-    with open(coordinates_file, mode='r') as filehandler:
+    with open(coordinates_file) as filehandler:
         for line in filehandler.readlines():
             tokens = line.split()
             assert len(tokens) >= 6 or len(tokens) == 4

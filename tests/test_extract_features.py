@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import unittest
-import numpy as np
-import tempfile
-import shutil
 import os
+import shutil
+import tempfile
+import unittest
 
+import numpy as np
 import scanpy as sc
+
 import stlearn as st
 
 from .utils import read_test_data
@@ -41,14 +42,13 @@ class TestFeatureExtractionPerformance(unittest.TestCase):
         np.testing.assert_array_equal(
             data1.obsm["X_morphology"],
             data2.obsm["X_morphology"],
-            err_msg="Results should be deterministic with same seed"
+            err_msg="Results should be deterministic with same seed",
         )
         np.testing.assert_array_equal(
             data1.obsm["X_tile_feature"],
             data2.obsm["X_tile_feature"],
-            err_msg="Results should be deterministic with same seed"
+            err_msg="Results should be deterministic with same seed",
         )
-
 
     def test_copy_behavior(self):
         """Test copy=True vs copy=False behavior."""
@@ -64,4 +64,3 @@ class TestFeatureExtractionPerformance(unittest.TestCase):
         result_inplace = st.pp.extract_feature(original_data, copy=False)
         self.assertIsNone(result_inplace)
         self.assertIn("X_morphology", original_data.obsm)
-
