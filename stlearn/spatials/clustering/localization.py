@@ -17,19 +17,20 @@ def localization(
 
     Parameters
     ----------
-    adata
+    adata: AnnData
         Annotated data matrix.
-    use_label
+    use_label: str, default = "louvain"
         Use label result of cluster method.
-    eps
+    eps:
         The maximum distance between two samples for one to be considered as
         in the neighborhood of the other. This is not a maximum bound on the
         distances of points within a cluster. This is the most important DBSCAN
         parameter to choose appropriately for your data set and distance function.
-    min_samples
+    min_samples:
         The number of samples (or total weight) in a neighborhood for a point to be
-        considered as a core point. This includes the point itself.
-    copy
+        considered as a core point. This includes the point itself. Passed into DBSCAN's
+        min_samples parameter.
+    copy:
         Return a copy instead of writing to adata.
     Returns
     -------
@@ -46,7 +47,7 @@ def localization(
     for i in adata.obs[use_label].unique():
         tmp = adata.obs[adata.obs[use_label] == i]
 
-        clustering = DBSCAN(eps=eps, min_samples=1, algorithm="kd_tree").fit(
+        clustering = DBSCAN(eps=eps, min_samples=min_samples, algorithm="kd_tree").fit(
             tmp[["imagerow", "imagecol"]]
         )
 

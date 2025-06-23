@@ -16,18 +16,18 @@ def local_level(
 
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    use_label
+    use_label:
         Use label result of cluster method.
-    cluster
+    cluster:
         Choose cluster to perform local spatial trajectory inference.
-    threshold
-        Threshold to find the significant connection for PAGA graph.
-    w
+    w: float, default=0.5
         Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
-    return_matrix
+    return_matrix:
         Return PTS matrix for local level
+    verbose : bool, default=True
+        Whether to print progress information.
     Returns
     -------
     np.ndarray: the STDM (spatio-temporal distance matrix) - weighted combination of

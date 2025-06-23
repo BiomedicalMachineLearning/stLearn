@@ -1,3 +1,5 @@
+from typing import Literal
+
 from anndata import AnnData
 
 from .global_level import global_level
@@ -11,7 +13,7 @@ def pseudotimespace_global(
     use_rep: str = "X_pca",
     n_dims: int = 40,
     list_clusters=None,
-    model: str = "spatial",
+    model: Literal["spatial", "gene_expression", "mixed"] = "spatial",
     step=0.01,
     k=10,
 ) -> AnnData | None:
@@ -20,23 +22,24 @@ def pseudotimespace_global(
 
     Parameters
     ----------
-    adata:
+    adata: AnnData
         Annotated data matrix.
-    use_label:
+    use_label: str, default = "louvain"
         Use label result of cluster method.
-    use_rep:
+    use_rep: str, default = "X_pca"
         Which obsm location to use.
-    n_dims:
+    n_dims: int, default = 40
         Number of dimensions to use in PCA
-    list_clusters:
-        List of cluster used to reconstruct spatial trajectory.
-    model:
+    list_clusters: list, optional
+        List of cluster used to reconstruct spatial trajectory. If None, uses all
+        clusters.
+    model: Literal["spatial", "gene_expression", "mixed"] = "mixed",
         Can be mixed, spatial or gene expression. spatial sets weight to 0,
         gene expression sets weight to 1 and mixed uses the list_clusters, step and k.
-    step:
-        Step for screening weighting factor
-    k
-        The number of eigenvalues to be compared
+    step: float, default = 0.01
+        Step for screening weighting factor.
+    k: int, default = 10
+        The number of eigenvalues to be compared.
     Returns
     -------
     Anndata
@@ -82,9 +85,9 @@ def pseudotimespace_local(
 
     Parameters
     ----------
-    adata:
+    adata: AnnData
         Annotated data matrix.
-    use_label:
+    use_label: str, default = "louvain"
         Use label result of cluster method.
     cluster:
         Cluster used to reconstruct intra regional spatial trajectory.
