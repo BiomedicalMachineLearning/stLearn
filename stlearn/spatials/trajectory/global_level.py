@@ -50,9 +50,13 @@ def global_level(
     inds_cat = {v: k for (k, v) in cat_inds.items()}
 
     # Query cluster
-    if isinstance(list_clusters[0], str):
-        list_clusters = [cat_inds[label] for label in list_clusters]
-    query_nodes = list_clusters
+    if len(list_clusters) == 0:
+        print("No clusters specified, using all available clusters")
+        query_nodes = list(cat_inds.values())
+    else:
+        if isinstance(list_clusters[0], str):
+            list_clusters = [cat_inds[label] for label in list_clusters]
+        query_nodes = list_clusters
 
     query_nodes = ordering_nodes(query_nodes, use_label, adata)
     if verbose:
