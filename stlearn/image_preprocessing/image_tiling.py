@@ -58,7 +58,7 @@ def tiling(
     library_id = _get_library_id(adata, library_id)
     img_pillow = _load_and_prepare_image(adata, library_id)
 
-    coordinates = list(zip(adata.obs["image_row"], adata.obs["image_col"]))
+    coordinates = list(zip(adata.obs["imagerow"], adata.obs["imagecol"]))
 
     tile_names = []
 
