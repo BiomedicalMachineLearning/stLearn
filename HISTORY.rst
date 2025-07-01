@@ -2,6 +2,17 @@
 History
 =======
 
+0.5.0 (2025-07-01)
+------------------
+* Support Python 3.10.x
+* Added quality checks black, ruff and mypy and fixed appropriate source code.
+* Copy parameters now work with the same semantics as scanpy.
+* Library upgrades for leidenalg, louvain, numba, numpy, scanpy, and tensorflow.
+
+API and Bug Fixes:
+* Consistent with type annotations - mainly missing None annotations.
+* pl.cluster_plot - Does not keep colours from previous runs when clustering.
+
 0.4.11 (2022-11-25)
 ------------------
 0.4.10 (2022-11-22)

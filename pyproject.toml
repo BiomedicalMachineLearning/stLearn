@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stlearn"
-version = "0.4.2"
+version = "0.5.0"
 authors = [
     {name = "Genomics and Machine Learning lab", email = "andrew.newman@uq.edu.au"},
 ]
