@@ -1,4 +1,5 @@
 bokeh==3.7.3
+boto3==1.38.45
 click==8.2.1
 leidenalg==0.10.2
 louvain==0.8.2
