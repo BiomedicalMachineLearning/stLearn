@@ -761,7 +761,7 @@ def lr_plot(
             lr_cmap = "default"  # This gets ignored due to setting colours below
             if lr_colors is None:
                 lr_colors = {
-                    ligand: matplotlib.colors.to_hex("receptor"),
+                    ligand: matplotlib.colors.to_hex("r"),
                     receptor: matplotlib.colors.to_hex("limegreen"),
                     lr: matplotlib.colors.to_hex("b"),
                     "": "#836BC6",  # Neutral color in H&E images.
