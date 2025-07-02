@@ -12,7 +12,7 @@ def nonzero_quantile(expr, q, interpolation):
     """Calculating the non-zero quantiles."""
     nonzero_expr = expr[expr > 0]
     quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation)
-    if quants is not np.array:
+    if not isinstance(quants, np.ndarray) or quants.ndim == 0:
         quants = np.array([quants])
     return quants
 
