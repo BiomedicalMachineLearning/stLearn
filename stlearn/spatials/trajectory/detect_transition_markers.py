@@ -1,7 +1,9 @@
 import warnings
+from typing import List
 
 import numpy as np
 import pandas as pd
+from anndata import AnnData
 from scipy.stats import spearmanr
 
 from ...utils import _read_graph
@@ -10,33 +12,46 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def detect_transition_markers_clades(
-    adata,
-    clade,
-    cutoff_spearman=0.4,
-    cutoff_pvalue=0.05,
-    screening_genes=None,
-    use_raw_count=False,
+    adata: AnnData,
+    clade: int,
+    cutoff_spearman: float = 0.4,
+    cutoff_pvalue: float = 0.05,
+    screening_genes: None | List[str] = None,
+    use_raw_count: bool = False,
 ):
     """\
     Transition markers detection of a clade.
 
     Parameters
     ----------
-    adata
-        Annotated data matrix.
-    clade
-        Name of a clade user wants to detect transition markers.
-    cutoff_spearman
-        The threshold of correlation coefficient.
-    cutoff_pvalue
-        The threshold of p-value.
-    screening_genes
-        List of customised genes.
-    use_raw_count
+    adata : AnnData
+        Annotated data matrix containing spatial transcriptomics data with
+        computed pseudotime and clade information.
+    clade : int
+        Numeric identifier of the clade for which to detect transition markers.
+        Should correspond to a clade ID present in the trajectory analysis.
+    cutoff_spearman : float, default 0.4
+        The minimum Spearman correlation coefficient threshold for identifying
+        significant gene-pseudotime correlations. Must be between 0 and 1.
+    cutoff_pvalue : float, default 0.05
+        The maximum p-value threshold for statistical significance testing.
+        Must be between 0 and 1. Lower values result in more stringent
+        statistical filtering.
+    screening_genes : list of str, optional
+        Custom list of gene names to restrict the analysis to. If None,
+        all genes in the dataset will be considered. Useful for focusing
+        on specific gene sets or reducing computational time.
+    use_raw_count : bool, default False
         True if user wants to use raw layer data.
     Returns
     -------
-    Anndata
+    AnnData
+        The input AnnData object with additional information stored in
+        adata.uns about the detected transition markers, including:
+        - Correlation coefficients
+        - P-values
+        - Gene rankings
+        - Clade-specific marker information
     """
 
     print("Detecting the transition markers of clade_" + str(clade) + "...")

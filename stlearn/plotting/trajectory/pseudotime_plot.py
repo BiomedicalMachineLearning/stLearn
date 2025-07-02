@@ -1,3 +1,5 @@
+from typing import List
+
 import matplotlib
 import networkx as nx
 import numpy as np
@@ -12,7 +14,7 @@ def pseudotime_plot(
     library_id: str | None = None,
     use_label: str = "louvain",
     pseudotime_key: str = "pseudotime_key",
-    list_clusters: str | list | None = None,
+    list_clusters: str | List[str] | None = None,
     cell_alpha: float = 1.0,
     image_alpha: float = 1.0,
     edge_alpha: float = 0.8,
@@ -87,9 +89,8 @@ def pseudotime_plot(
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
     if list_clusters is None:
-        list_clusters = np.array(range(0, len(adata.obs[use_label].unique()))).astype(
-            int
-        )
+        unique_labels = adata.obs[use_label].unique()
+        list_clusters = [str(i) for i in range(len(unique_labels))]
     tmp = adata.obs
     G = _read_graph(adata, "global_graph")
 
@@ -157,13 +158,13 @@ def pseudotime_plot(
                 a.text(
                     y[0],
                     y[1],
-                    get_cluster(str(x), adata.uns["split_node"]),
+                    get_cluster(x, adata.uns["split_node"]),
                     color="white",
                     fontsize=node_size,
                     zorder=100,
                     bbox=dict(
                         facecolor=cmap(
-                            int(get_cluster(str(x), adata.uns["split_node"]))
+                            int(get_cluster(x, adata.uns["split_node"]))
                             / (len(used_colors) - 1)
                         ),
                         boxstyle="circle",
@@ -220,13 +221,13 @@ def pseudotime_plot(
                     a.text(
                         y[0],
                         y[1],
-                        get_cluster(str(x), adata.uns["split_node"]),
+                        get_cluster(x, adata.uns["split_node"]),
                         color="black",
                         fontsize=8,
                         zorder=100,
                         bbox=dict(
                             facecolor=cmap(
-                                int(get_cluster(str(x), adata.uns["split_node"]))
+                                int(get_cluster(x, adata.uns["split_node"]))
                                 / (len(used_colors) - 1)
                             ),
                             boxstyle="circle",
@@ -280,5 +281,6 @@ def get_cluster(search, dictionary):
 def get_node(node_list, split_node):
     result = np.array([])
     for node in node_list:
-        result = np.append(result, np.array(split_node[int(node)]).astype(int))
-    return result.astype(int)
+        node_ = split_node[node]
+        result = np.append(result, np.array(node_).astype(int))
+    return result

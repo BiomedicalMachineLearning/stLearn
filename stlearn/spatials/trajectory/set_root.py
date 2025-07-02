@@ -16,7 +16,7 @@ def set_root(adata: AnnData, use_label: str, cluster: str, use_raw: bool = False
         Use label result of cluster method.
     cluster: str
         Cluster identifier to use as the root cluster. Must exist in
-        `adata.obs[use_label]`. Will be converted to string for comparison.
+        `adata.obs[use_label]`.
     use_raw: bool, default False
         If True, use `adata.raw.X` for calculations; otherwise use `adata.X`.
     Returns

@@ -99,14 +99,11 @@ def pseudotime(
     cnt_matrix = adata.uns["paga"]["connectivities"].toarray()
 
     # Filter by threshold
-
     cnt_matrix[cnt_matrix < threshold] = 0.0
     cnt_matrix = pd.DataFrame(cnt_matrix)
 
     # Mapping louvain label to subcluster
-
     cat_ind = adata.uns[use_label + "_index_dict"]
-
     split_node = {}
     for label in adata.obs[use_label].unique():
         meaningful_sub = []
