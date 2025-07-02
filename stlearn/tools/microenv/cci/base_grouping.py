@@ -162,7 +162,7 @@ def hotspot_core(
         total=len(lrs),
         desc="Removing background lr scores...",
         bar_format="{l_bar}{bar}",
-        disable=verbose is False,
+        disable=not verbose,
     ) as pbar:
         for i, lr_ in enumerate(lrs):
             lr_score_ = score_copy[i, :]

@@ -36,8 +36,10 @@ def set_root(adata: AnnData, use_label: str, cluster: str, use_raw: bool = False
     # Subset the data based on the chosen cluster
     available_clusters = tmp_adata.obs[use_label].unique()
     if str(cluster) not in available_clusters.astype(str):
-        raise ValueError(f"Cluster '{cluster}' not found in available clusters: " +
-                         "{sorted(available_clusters)}")
+        raise ValueError(
+            f"Cluster '{cluster}' not found in available clusters: "
+            + "{sorted(available_clusters)}"
+        )
 
     tmp_adata = tmp_adata[
         tmp_adata.obs[tmp_adata.obs[use_label] == str(cluster)].index, :

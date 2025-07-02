@@ -100,8 +100,9 @@ def tiling(
     return adata if copy else None
 
 
-def _validate_inputs(crop_size: int, target_size: int, img_fmt: str,
-                     quality: int) -> None:
+def _validate_inputs(
+    crop_size: int, target_size: int, img_fmt: str, quality: int
+) -> None:
 
     if not isinstance(crop_size, int) or crop_size <= 0:
         raise ValueError("crop_size must be a positive integer")
@@ -113,7 +114,8 @@ def _validate_inputs(crop_size: int, target_size: int, img_fmt: str,
         raise ValueError("img_fmt must be 'JPEG' or 'PNG'")
 
     if img_fmt.upper() == "JPEG" and (
-            not isinstance(quality, int) or not 1 <= quality <= 100):
+        not isinstance(quality, int) or not 1 <= quality <= 100
+    ):
         raise ValueError("quality must be an integer between 1 and 100 for JPEG format")
 
 
@@ -137,7 +139,8 @@ def _load_and_prepare_image(adata: AnnData, library_id: str) -> Image.Image:
         image = spatial_data["images"][use_quality]
     except KeyError as e:
         raise ValueError(
-            f"Could not find image data in adata.uns['spatial']['{library_id}']: {e}")
+            f"Could not find image data in adata.uns['spatial']['{library_id}']: {e}"
+        )
 
     if image.dtype in (np.float32, np.float64):
         image = np.clip(image, 0, 1)

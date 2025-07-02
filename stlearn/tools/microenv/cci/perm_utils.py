@@ -119,7 +119,7 @@ def get_similar_genes(
     -------
     similar_genes: np.array Array of strings for gene names.
     """
-    if quantiles is float:
+    if isinstance(quantiles, float):
         quantiles = np.array([quantiles])
     else:
         quantiles = np.array(quantiles)
@@ -186,7 +186,7 @@ def get_similar_genes_Quantiles(
     similar_genes: np.array Array of strings for gene names.
     """
 
-    if quantiles is float:
+    if isinstance(quantiles, float):
         quantiles = np.array([quantiles])
     else:
         quantiles = np.array(quantiles)

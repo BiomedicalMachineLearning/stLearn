@@ -90,18 +90,20 @@ def run_label_transfer(
 def get_counts(data):
     """Gets count data from anndata if available."""
     # Standard layer has counts #
-    if data.X is not np.ndarray and np.all(np.mod(data.X[0, :].todense(), 1) == 0):
+    if not isinstance(data.X, np.ndarray) and np.all(
+        np.mod(data.X[0, :].todense(), 1) == 0
+    ):
         counts = data.to_df().transpose()
-    elif data.X is np.ndarray and np.all(np.mod(data.X[0, :], 1) == 0):
+    elif isinstance(data.X, np.ndarray) and np.all(np.mod(data.X[0, :], 1) == 0):
         counts = data.to_df().transpose()
     elif (
-        data.X is not np.ndarray
+        not isinstance(data.X, np.ndarray)
         and hasattr(data, "raw")
         and np.all(np.mod(data.raw.X[0, :].todense(), 1) == 0)
     ):
         counts = data.raw.to_adata()[data.obs_names, data.var_names].to_df().transpose()
     elif (
-        data.X is np.ndarray
+        isinstance(data.X, np.ndarray)
         and hasattr(data, "raw")
         and np.all(np.mod(data.raw.X[0, :], 1) == 0)
     ):

@@ -1,19 +1,17 @@
-from typing import Literal
-
 import numpy as np
 import scipy.spatial as spatial
 from anndata import AnnData
 from tqdm import tqdm
 
-_SIMILARITY_MATRIX = Literal["cosine", "euclidean", "pearson", "spearman"]
-_METHOD = Literal["mean", "median", "sum"]
+from stlearn.types import _METHOD, _SIMILARITY_MATRIX
+
 
 def adjust(
     adata: AnnData,
     use_data: str = "X_pca",
     radius: float = 50.0,
     rates: int = 1,
-    method: _SIMILARITY_MATRIX = "mean",
+    method: _METHOD = "mean",
     similarity_matrix: _SIMILARITY_MATRIX = "cosine",
     copy: bool = False,
 ) -> AnnData | None:

@@ -690,7 +690,7 @@ def run_cci(
         desc="Counting celltype-celltype interactions per LR and permuting "
         + f"{n_perms} times.",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-        disable=verbose is False,
+        disable=not verbose,
     ) as pbar:
         for i, best_lr in enumerate(best_lrs):
             ligand, receptor = best_lr.split("_")

@@ -193,7 +193,10 @@ def get_spot_lrs(
             if lr.split("_")[0] in df.columns and lr.split("_")[1] in df.columns
         ]
 
-    lr_cols = [pair.split("_")[int(lr_order is False)] for pair in pairs_wRev]
+    if lr_order:
+        lr_cols = [pair.split("_")[0] for pair in pairs_wRev]  # Get ligand
+    else:
+        lr_cols = [pair.split("_")[1] for pair in pairs_wRev]  # Get receptor
     spot_lrs = df[lr_cols]
     return spot_lrs
 

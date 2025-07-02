@@ -93,7 +93,7 @@ def perform_spot_testing(
         total=lr_scores.shape[1],
         desc="Generating backgrounds & testing each LR pair...",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-        disable=verbose is False,
+        disable=not verbose,
     ) as pbar:
         # Keep track of genes which can be used to gen. rand-pairs.
         gene_bg_genes: dict[str, np.ndarray] = {}
@@ -177,7 +177,7 @@ def perform_spot_testing(
             lr_summary[sig_lrs_in_spot, 1] += 1
             lr_summary[sigpval_lrs_in_spot, 2] += 1
 
-            lr_sig_scores[spot_i, sig_lrs_in_spot is False] = 0
+            lr_sig_scores[spot_i, ~sig_lrs_in_spot] = 0
 
     # Ordering the results according to number of significant spots per LR#
     order = np.argsort(-lr_summary[:, 1])
@@ -527,7 +527,7 @@ def get_stats(
         pvals = np.zeros((1, len(scores)), dtype=np.float)[0, :]
         nonzero_score_bool = scores > 0
         nonzero_score_indices = np.where(nonzero_score_bool)[0]
-        zero_score_indices = np.where(nonzero_score_bool is False)[0]
+        zero_score_indices = np.where(~nonzero_score_bool)[0]
         pvals[zero_score_indices] = (total_bg - len(background)) / total_bg
         pvals[nonzero_score_indices] = [
             len(np.where(background >= scores[i])[0]) / total_bg

@@ -4,6 +4,8 @@ import pandas as pd
 import scanpy
 from anndata import AnnData
 
+from stlearn.types import _METHOD
+
 
 def pseudotime(
     adata: AnnData,
@@ -13,7 +15,7 @@ def pseudotime(
     use_rep: str = "X_pca",
     threshold: float = 0.01,
     radius: int = 50,
-    method: str = "mean",
+    method: _METHOD = "mean",
     threshold_spots: int = 5,
     use_sme: bool = False,
     reverse: bool = False,

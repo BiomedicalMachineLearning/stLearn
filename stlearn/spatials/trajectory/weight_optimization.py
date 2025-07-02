@@ -25,26 +25,34 @@ def weight_optimizing_global(
     actual_k = k
     if use_label and list_clusters:
         if "sub_cluster_labels" not in adata.obs.columns:
-            print("Warning: 'sub_cluster_labels' column not found. Using provided " +
-                  "k value.")
+            print(
+                "Warning: 'sub_cluster_labels' column not found. Using provided "
+                + "k value."
+            )
         else:
             try:
                 filtered_data = adata.obs[adata.obs[use_label].isin(list_clusters)]
                 if len(filtered_data) == 0:
-                    raise ValueError(f"No cells found for clusters {list_clusters} " +
-                                     "in column '{use_label}'")
+                    raise ValueError(
+                        f"No cells found for clusters {list_clusters} "
+                        + "in column '{use_label}'"
+                    )
 
                 # Minimum 1 cluster, use K or max available sub-clusters
                 n_subclusters = len(filtered_data["sub_cluster_labels"].unique())
                 actual_k = max(1, min(k, n_subclusters))
 
                 if actual_k != k:
-                    print(f"Adjusted k from {k} to {actual_k} based on available " +
-                          "sub-clusters ({n_subclusters})")
+                    print(
+                        f"Adjusted k from {k} to {actual_k} based on available "
+                        + "sub-clusters ({n_subclusters})"
+                    )
 
             except Exception as e:
-                print(f"Warning: Could not determine sub-cluster count: {e}. " +
-                      "Using provided k value.")
+                print(
+                    f"Warning: Could not determine sub-cluster count: {e}. "
+                    + "Using provided k value."
+                )
                 actual_k = k
 
     # Screening PTS graph
@@ -59,13 +67,17 @@ def weight_optimizing_global(
     ) as pbar:
         for i in range(0, total_iterations):
             weight = round(i * step, 2)
-            matrix = global_level(adata, use_label=use_label,
-                                  list_clusters=list_clusters, use_rep=use_rep,
-                                  n_dims=n_dims, w=weight, return_graph=True,
-                                  verbose=False, )
-            Gs.append(
-                nx.to_scipy_sparse_array(matrix)
+            matrix = global_level(
+                adata,
+                use_label=use_label,
+                list_clusters=list_clusters,
+                use_rep=use_rep,
+                n_dims=n_dims,
+                w=weight,
+                return_graph=True,
+                verbose=False,
             )
+            Gs.append(nx.to_scipy_sparse_array(matrix))
             j = j + step
             pbar.update(1)
 
@@ -109,10 +121,9 @@ def weight_optimizing_global(
         return 0.5
 
 
-def weight_optimizing_local(adata: AnnData,
-                            use_label: str = "louvain",
-                            cluster=None,
-                            step=0.01):
+def weight_optimizing_local(
+    adata: AnnData, use_label: str = "louvain", cluster=None, step=0.01
+):
     # Screening PTS graph
     print("Screening PTS local graph...")
     Gs = []
@@ -123,8 +134,14 @@ def weight_optimizing_local(adata: AnnData,
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(0, int(1 / step + 1)):
-            matrix = local_level(adata, use_label=use_label, cluster=cluster,
-                                w=round(j, 2), verbose=False, return_matrix=True)
+            matrix = local_level(
+                adata,
+                use_label=use_label,
+                cluster=cluster,
+                w=round(j, 2),
+                verbose=False,
+                return_matrix=True,
+            )
             Gs.append(matrix)
             j = j + step
             pbar.update(1)
@@ -169,4 +186,3 @@ def weight_optimizing_local(adata: AnnData,
 
 def normalize_data(data):
     return (data - np.min(data)) / (np.max(data) - np.min(data))
-
