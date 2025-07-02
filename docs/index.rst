@@ -40,6 +40,8 @@ In the new release, we provide the interactive plots:
 Latest additions
 ----------------
 
+.. include:: release_notes/1.1.0.rst
+
 .. include:: release_notes/0.4.11.rst
 
 .. include:: release_notes/0.4.6.rst

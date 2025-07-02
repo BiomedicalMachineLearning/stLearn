@@ -2,7 +2,7 @@
 
 __author__ = """Genomics and Machine Learning lab"""
 __email__ = "andrew.newman@uq.edu.au"
-__version__ = "0.5.0"
+__version__ = "1.1.0"
 
 from . import add, datasets, em, pl, pp, spatial, tl, types
 from ._settings import settings
