@@ -773,7 +773,7 @@ class ClusterPlot(SpatialBasePlot):
             handleheight=1.0,
             edgecolor="white",
         )
-        for handle in lgnd.legendHandles:
+        for handle in lgnd.legend_handles:
             handle.set_sizes([20.0])
 
     def _add_cluster_labels(self):
