@@ -1,40 +1,39 @@
-from typing import List
-
 import matplotlib
 import networkx as nx
 import numpy as np
 from anndata import AnnData
 from matplotlib import pyplot as plt
+from numpy._typing import NDArray
 
 from stlearn.utils import _read_graph
 
 
 def pseudotime_plot(
-    adata: AnnData,
-    library_id: str | None = None,
-    use_label: str = "louvain",
-    pseudotime_key: str = "pseudotime_key",
-    list_clusters: str | List[str] | None = None,
-    cell_alpha: float = 1.0,
-    image_alpha: float = 1.0,
-    edge_alpha: float = 0.8,
-    node_alpha: float = 1.0,
-    spot_size: float | int = 6.5,
-    node_size: float = 5,
-    show_color_bar: bool = True,
-    show_axis: bool = False,
-    show_graph: bool = True,
-    show_trajectories: bool = False,
-    reverse: bool = False,
-    show_node: bool = True,
-    show_plot: bool = True,
-    cropped: bool = True,
-    margin: int = 100,
-    dpi: int = 150,
-    output: str | None = None,
-    name: str | None = None,
-    copy: bool = False,
-    ax=None,
+        adata: AnnData,
+        library_id: str | None = None,
+        use_label: str = "louvain",
+        pseudotime_key: str = "pseudotime_key",
+        list_clusters: str | list[str] | None = None,
+        cell_alpha: float = 1.0,
+        image_alpha: float = 1.0,
+        edge_alpha: float = 0.8,
+        node_alpha: float = 1.0,
+        spot_size: float | int = 6.5,
+        node_size: float = 5,
+        show_color_bar: bool = True,
+        show_axis: bool = False,
+        show_graph: bool = True,
+        show_trajectories: bool = False,
+        reverse: bool = False,
+        show_node: bool = True,
+        show_plot: bool = True,
+        cropped: bool = True,
+        margin: int = 100,
+        dpi: int = 150,
+        output: str | None = None,
+        name: str | None = None,
+        copy: bool = False,
+        ax=None,
 ) -> AnnData | None:
     """\
     Global trajectory inference plot (Only DPT).
@@ -86,18 +85,22 @@ def pseudotime_plot(
     Nothing
     """
 
-    imagecol = adata.obs["imagecol"]
-    imagerow = adata.obs["imagerow"]
+    checked_list_clusters: list[str]
     if list_clusters is None:
         unique_labels = adata.obs[use_label].unique()
-        list_clusters = [str(i) for i in range(len(unique_labels))]
+        checked_list_clusters = [str(i) for i in range(len(unique_labels))]
+    elif isinstance(list_clusters, str):
+        checked_list_clusters = [list_clusters]
+
+    imagecol = adata.obs["imagecol"]
+    imagerow = adata.obs["imagerow"]
     tmp = adata.obs
     G = _read_graph(adata, "global_graph")
 
     labels = nx.get_edge_attributes(G, "weight")
 
     result = []
-    query_node = get_node(list_clusters, adata.uns["split_node"])
+    query_node = get_node(checked_list_clusters, adata.uns["split_node"])
     for edge in G.edges(query_node):
         if (edge[0] in query_node) and (edge[1] in query_node):
             result.append(edge)
@@ -112,7 +115,7 @@ def pseudotime_plot(
     fig, a = plt.subplots()
     if ax is not None:
         a = ax
-    centroid_dict = adata.uns["centroid_dict"]
+    centroid_dict: dict[int, NDArray[np.float64]] = adata.uns["centroid_dict"]
     centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     dpt = adata.obs[pseudotime_key]
     vmin = min(dpt)
@@ -154,7 +157,7 @@ def pseudotime_plot(
         )
 
         for x, y in centroid_dict.items():
-            if x in get_node(list_clusters, adata.uns["split_node"]):
+            if x in get_node(checked_list_clusters, adata.uns["split_node"]):
                 a.text(
                     y[0],
                     y[1],
@@ -217,7 +220,7 @@ def pseudotime_plot(
 
         if show_node:
             for x, y in centroid_dict.items():
-                if x in get_node(list_clusters, adata.uns["split_node"]):
+                if x in get_node(checked_list_clusters, adata.uns["split_node"]):
                     a.text(
                         y[0],
                         y[1],
@@ -272,15 +275,16 @@ def pseudotime_plot(
 
 
 # get name of cluster by subcluster
-def get_cluster(search, dictionary):
-    for cl, sub in dictionary.items():
-        if search in sub:
+def get_cluster(search: int, split_node: dict[str, list[str]]):
+    for cl, sub in split_node.items():
+        if str(search) in sub:
             return cl
 
 
-def get_node(node_list, split_node):
-    result = np.array([])
+def get_node(
+        node_list: list[str], split_node: dict[str, list[str]]
+) -> NDArray[np.int64]:
+    all_values = []
     for node in node_list:
-        node_ = split_node[node]
-        result = np.append(result, np.array(node_).astype(int))
-    return result
+        all_values.extend(split_node[node])
+    return np.array([int(val) for val in all_values], dtype=np.int64)

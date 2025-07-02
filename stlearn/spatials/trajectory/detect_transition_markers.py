@@ -1,5 +1,4 @@
 import warnings
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -16,7 +15,7 @@ def detect_transition_markers_clades(
     clade: int,
     cutoff_spearman: float = 0.4,
     cutoff_pvalue: float = 0.05,
-    screening_genes: None | List[str] = None,
+    screening_genes: None | list[str] = None,
     use_raw_count: bool = False,
 ):
     """\
