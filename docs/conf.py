@@ -76,7 +76,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "stLearn"
-copyright = "2022, Genomics and Machine Learning lab"
+copyright = "2022-2025, Genomics and Machine Learning lab"
 author = "Genomics and Machine Learning lab"
 
 # The version info for the project you're documenting, acts as replacement
