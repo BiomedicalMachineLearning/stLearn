@@ -91,6 +91,8 @@ def pseudotime_plot(
         checked_list_clusters = [str(i) for i in range(len(unique_labels))]
     elif isinstance(list_clusters, str):
         checked_list_clusters = [list_clusters]
+    else:
+        checked_list_clusters = list_clusters
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
