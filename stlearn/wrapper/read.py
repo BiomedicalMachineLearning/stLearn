@@ -5,7 +5,6 @@ import logging as logg
 from collections.abc import Iterator
 from os import PathLike
 from pathlib import Path
-from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,9 +15,8 @@ from anndata import AnnData
 from matplotlib.image import imread
 
 import stlearn
-
-_Quality = Literal["fulres", "hires", "lowres"]
-_Background = Literal["black", "white"]
+from stlearn.types import _QUALITY, _BACKGROUND
+from stlearn.wrapper.xenium_alignment import apply_alignment_transformation
 
 
 def Read10X(
@@ -27,7 +25,7 @@ def Read10X(
         count_file: str = "filtered_feature_bc_matrix.h5",
         library_id: str | None = None,
         load_images: bool = True,
-        quality: _Quality = "hires",
+        quality: _QUALITY = "hires",
         image_path: str | Path | None = None,
 ) -> AnnData:
     """\
@@ -259,7 +257,7 @@ def ReadSlideSeq(
         scale: float | None = None,
         quality: str = "hires",
         spot_diameter_fullres: float = 50,
-        background_color: _Background = "white",
+        background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read Slide-seq data
@@ -342,7 +340,7 @@ def ReadMERFISH(
         scale: float | None = None,
         quality: str = "hires",
         spot_diameter_fullres: float = 50,
-        background_color: _Background = "white",
+        background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read MERFISH data
@@ -426,7 +424,7 @@ def ReadSeqFish(
         quality: str = "hires",
         field: int = 0,
         spot_diameter_fullres: float = 50,
-        background_color: _Background = "white",
+        background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read SeqFish data
@@ -514,7 +512,10 @@ def ReadXenium(
         scale: float = 1.0,
         quality: str = "hires",
         spot_diameter_fullres: float = 15,
-        background_color: _Background = "white",
+        background_color: _BACKGROUND = "white",
+        alignment_matrix_file: str | Path | None = None,
+        experiment_xenium_file: str | Path | None = None,
+        default_pixel_size_microns: float = 0.2125,
 ) -> AnnData:
     """\
     Read Xenium data
@@ -539,6 +540,14 @@ def ReadXenium(
         Diameter of spot in full resolution
     background_color
         Color of the background. Only `black` or `white` is allowed.
+    alignment_matrix_file
+        Path to transformation matrix CSV file exported from Xenium Explorer.
+        If provided, coordinates will be transformed according to coordinate_space.
+    experiment_xenium_file
+        Path to experiment.xenium JSON file. If provided, pixel_size will be read from
+        here.
+    default_pixel_size_microns
+        Pixel size in microns (default 0.2125 for Xenium data).
     Returns
     -------
     AnnData
@@ -548,9 +557,29 @@ def ReadXenium(
 
     adata = scanpy.read_10x_h5(feature_cell_matrix_file)
 
-    spatial = metadata[["x_centroid", "y_centroid"]]
-    spatial.columns = ["imagecol", "imagerow"]
+    # Get original spatial coordinates
+    spatial = metadata[["x_centroid", "y_centroid"]].copy()
 
+    # Get pixel size from experiment.xenium file or use parameter
+    if experiment_xenium_file is not None:
+        with open(experiment_xenium_file, 'r') as f:
+            experiment_data = json.load(f)
+        pixel_size_microns = experiment_data.get('pixel_size')
+    else:
+        pixel_size_microns = default_pixel_size_microns
+        print(f"Warning: Using default pixel size of {pixel_size_microns} microns. "
+              "Consider providing experiment_xenium_file for accurate pixel size.")
+
+    # Get and apply alignment transformation if provided
+    if alignment_matrix_file is not None:
+        transform_mat = pd.read_csv(alignment_matrix_file, header=None).values
+        spatial = apply_alignment_transformation(
+            spatial,
+            transform_mat,
+            pixel_size_microns,
+        )
+
+    spatial.columns = ["imagecol", "imagerow"]
     adata.obsm["spatial"] = spatial.values
 
     if scale is None:
@@ -607,7 +636,7 @@ def create_stlearn(
         scale: float | None = None,
         quality: str = "hires",
         spot_diameter_fullres: float = 50,
-        background_color: _Background = "white",
+        background_color: _BACKGROUND = "white",
 ):
     """\
     Create AnnData object for stLearn
