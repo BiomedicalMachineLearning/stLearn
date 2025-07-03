@@ -15,7 +15,7 @@ def kmeans(
     tol: float = 0.0001,
     random_state: int | np.random.RandomState = None,
     copy_x: bool = True,
-    algorithm: str = "auto",
+    algorithm: str = "lloyd",
     key_added: str = "kmeans",
     copy: bool = False,
 ) -> AnnData | None:
@@ -37,7 +37,7 @@ def kmeans(
         Maximum number of iterations of the k-means algorithm for a
         single run.
     tol
-        Relative tolerance with regards to inertia to declare convergence.
+        Relative tolerance with regard to inertia to declare convergence.
     random_state
         Determines random number generation for centroid initialization. Use
         an int to make the randomness deterministic.
@@ -50,10 +50,9 @@ def kmeans(
         the data mean, in this case it will also not ensure that data is
         C-contiguous which may cause a significant slowdown.
     algorithm
-        K-means algorithm to use. The classical EM-style algorithm is "full".
-        The "elkan" variation is more efficient by using the triangle
-        inequality, but currently doesn't support sparse data. "auto" chooses
-        "elkan" for dense data and "full" for sparse data.
+        K-means algorithm to use. The classical EM-style algorithm is "lloyd".
+        The "elkan" variation can be more efficient on some datasets with
+        well-defined clusters, by using the triangle inequality.
     key_added
         Key add to adata.obs
     copy
