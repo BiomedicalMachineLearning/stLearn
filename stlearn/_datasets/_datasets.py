@@ -42,8 +42,7 @@ def xenium_sge(
     library_dir = settings.datasetdir / library_id
     library_dir.mkdir(parents=True, exist_ok=True)
 
-    files_to_extract = ["cell_feature_matrix.h5", "cells.csv.gz", "imagealignment.csv",
-                        "experiment.xenium"]
+    files_to_extract = ["cell_feature_matrix.h5", "cells.csv.gz", "experiment.xenium"]
     all_sge_files_exist = all(
         (library_dir / sge_file).exists() for sge_file in files_to_extract
     )
@@ -52,7 +51,7 @@ def xenium_sge(
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
     if include_hires_tiff and not (library_dir / image_filename).exists():
-        download_filenames.append(image_filename)
+        download_filenames += ["imagealignment.csv", image_filename]
 
     for file_name in download_filenames:
         file_path = library_dir / file_name
@@ -68,4 +67,4 @@ def xenium_sge(
                     with open(library_dir / zip_filename, "wb") as file_name:
                         file_name.write(zip_ref.read(f"outs/{zip_filename}"))
         except zf.BadZipFile:
-            raise ValueError(f"Invalid zip file: {zip_file_path}")
+            raise ValueError(f"Invalid zip file: {library_dir / zip_filename}")
