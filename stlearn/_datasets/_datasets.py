@@ -24,6 +24,7 @@ def example_bcba() -> AnnData:
 def xenium_sge(
         base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
         image_filename="he_image.ome.tif",
+        alignment_filename="imagealignment.csv",
         zip_filename="outs.zip",
         library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
         include_hires_tiff: bool = False,
@@ -35,6 +36,7 @@ def xenium_sge(
     Args:
         base_url: Base URL for downloads
         image_filename: Name of the image file to download
+        alignment_filename: Name of the affine transformation file to download
         zip_filename: Name of the zip file to download
         library_id: Identifier for the library
         include_hires_tiff: Whether to download the high-res TIFF image
@@ -50,8 +52,11 @@ def xenium_sge(
     download_filenames = []
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
-    if include_hires_tiff and not (library_dir / image_filename).exists():
-        download_filenames += ["imagealignment.csv", image_filename]
+    if (include_hires_tiff
+            and not (library_dir / alignment_filename).exists()
+            and not (library_dir / image_filename).exists()
+    ):
+        download_filenames += [alignment_filename, image_filename]
 
     for file_name in download_filenames:
         file_path = library_dir / file_name
