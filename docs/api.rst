@@ -208,3 +208,4 @@ Tools: `datasets`
    :toctree: .
 
    datasets.example_bcba()
+   datasets.xenium_sge()
