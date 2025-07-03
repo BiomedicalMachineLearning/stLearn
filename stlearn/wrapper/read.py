@@ -10,23 +10,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scanpy
-from PIL import Image
 from anndata import AnnData
 from matplotlib.image import imread
+from PIL import Image
 
 import stlearn
-from stlearn.types import _QUALITY, _BACKGROUND
+from stlearn.types import _BACKGROUND, _QUALITY
 from stlearn.wrapper.xenium_alignment import apply_alignment_transformation
 
 
 def Read10X(
-        path: str | Path,
-        genome: str | None = None,
-        count_file: str = "filtered_feature_bc_matrix.h5",
-        library_id: str | None = None,
-        load_images: bool = True,
-        quality: _QUALITY = "hires",
-        image_path: str | Path | None = None,
+    path: str | Path,
+    genome: str | None = None,
+    count_file: str = "filtered_feature_bc_matrix.h5",
+    library_id: str | None = None,
+    load_images: bool = True,
+    quality: _QUALITY = "hires",
+    image_path: str | Path | None = None,
 ) -> AnnData:
     """\
     Read data from 10X.
@@ -184,7 +184,7 @@ def Read10X(
         else:
             scale = adata.uns["spatial"][library_id]["scalefactors"][
                 "tissue_" + quality + "_scalef"
-                ]
+            ]
             image_coor = adata.obsm["spatial"] * scale
 
         adata.obs["imagecol"] = image_coor[:, 0]
@@ -201,13 +201,13 @@ def Read10X(
 
 
 def ReadOldST(
-        count_matrix_file: PathLike[str] | str | Iterator[str],
-        spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
-        image_file: str | Path | None = None,
-        library_id: str = "OldST",
-        scale: float = 1.0,
-        quality: str = "hires",
-        spot_diameter_fullres: float = 50,
+    count_matrix_file: PathLike[str] | str | Iterator[str],
+    spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
+    image_file: str | Path | None = None,
+    library_id: str = "OldST",
+    scale: float = 1.0,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 50,
 ) -> AnnData:
     """\
     Read Old Spatial Transcriptomics data
@@ -251,13 +251,13 @@ def ReadOldST(
 
 
 def ReadSlideSeq(
-        count_matrix_file: str | Path,
-        spatial_file: str | Path,
-        library_id: str | None = None,
-        scale: float | None = None,
-        quality: str = "hires",
-        spot_diameter_fullres: float = 50,
-        background_color: _BACKGROUND = "white",
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
+    scale: float | None = None,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 50,
+    background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read Slide-seq data
@@ -323,7 +323,7 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
 
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
@@ -334,13 +334,13 @@ def ReadSlideSeq(
 
 
 def ReadMERFISH(
-        count_matrix_file: str | Path,
-        spatial_file: str | Path,
-        library_id: str | None = None,
-        scale: float | None = None,
-        quality: str = "hires",
-        spot_diameter_fullres: float = 50,
-        background_color: _BACKGROUND = "white",
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
+    scale: float | None = None,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 50,
+    background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read MERFISH data
@@ -408,7 +408,7 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -417,14 +417,14 @@ def ReadMERFISH(
 
 
 def ReadSeqFish(
-        count_matrix_file: str | Path,
-        spatial_file: str | Path,
-        library_id: str | None = None,
-        scale: float = 1.0,
-        quality: str = "hires",
-        field: int = 0,
-        spot_diameter_fullres: float = 50,
-        background_color: _BACKGROUND = "white",
+    count_matrix_file: str | Path,
+    spatial_file: str | Path,
+    library_id: str | None = None,
+    scale: float = 1.0,
+    quality: str = "hires",
+    field: int = 0,
+    spot_diameter_fullres: float = 50,
+    background_color: _BACKGROUND = "white",
 ) -> AnnData:
     """\
     Read SeqFish data
@@ -496,7 +496,7 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-        ] = scale
+    ] = scale
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -505,17 +505,17 @@ def ReadSeqFish(
 
 
 def ReadXenium(
-        feature_cell_matrix_file: str | Path,
-        cell_summary_file: str | Path,
-        image_path: Path | None = None,
-        library_id: str | None = None,
-        scale: float = 1.0,
-        quality: str = "hires",
-        spot_diameter_fullres: float = 15,
-        background_color: _BACKGROUND = "white",
-        alignment_matrix_file: str | Path | None = None,
-        experiment_xenium_file: str | Path | None = None,
-        default_pixel_size_microns: float = 0.2125,
+    feature_cell_matrix_file: str | Path,
+    cell_summary_file: str | Path,
+    image_path: Path | None = None,
+    library_id: str | None = None,
+    scale: float = 1.0,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 15,
+    background_color: _BACKGROUND = "white",
+    alignment_matrix_file: str | Path | None = None,
+    experiment_xenium_file: str | Path | None = None,
+    default_pixel_size_microns: float = 0.2125,
 ) -> AnnData:
     """\
     Read Xenium data
@@ -562,13 +562,15 @@ def ReadXenium(
 
     # Get pixel size from experiment.xenium file or use parameter
     if experiment_xenium_file is not None:
-        with open(experiment_xenium_file, 'r') as f:
+        with open(experiment_xenium_file) as f:
             experiment_data = json.load(f)
-        pixel_size_microns = experiment_data.get('pixel_size')
+        pixel_size_microns = experiment_data.get("pixel_size")
     else:
         pixel_size_microns = default_pixel_size_microns
-        print(f"Warning: Using default pixel size of {pixel_size_microns} microns. "
-              "Consider providing experiment_xenium_file for accurate pixel size.")
+        print(
+            f"Warning: Using default pixel size of {pixel_size_microns} microns. "
+            "Consider providing experiment_xenium_file for accurate pixel size."
+        )
 
     # Get and apply alignment transformation if provided
     if alignment_matrix_file is not None:
@@ -620,7 +622,7 @@ def ReadXenium(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-            ] = scale
+        ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres
@@ -629,14 +631,14 @@ def ReadXenium(
 
 
 def create_stlearn(
-        count: pd.DataFrame,
-        spatial: pd.DataFrame,
-        library_id: str,
-        image_path: Path | None = None,
-        scale: float | None = None,
-        quality: str = "hires",
-        spot_diameter_fullres: float = 50,
-        background_color: _BACKGROUND = "white",
+    count: pd.DataFrame,
+    spatial: pd.DataFrame,
+    library_id: str,
+    image_path: Path | None = None,
+    scale: float | None = None,
+    quality: str = "hires",
+    spot_diameter_fullres: float = 50,
+    background_color: _BACKGROUND = "white",
 ):
     """\
     Create AnnData object for stLearn
@@ -702,7 +704,7 @@ def create_stlearn(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-            ] = scale
+        ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres

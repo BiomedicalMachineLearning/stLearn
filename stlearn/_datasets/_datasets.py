@@ -22,12 +22,12 @@ def example_bcba() -> AnnData:
 
 
 def xenium_sge(
-        base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
-        image_filename="he_image.ome.tif",
-        alignment_filename="he_imagealignment.csv",
-        zip_filename="outs.zip",
-        library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
-        include_hires_tiff: bool = False,
+    base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
+    image_filename="he_image.ome.tif",
+    alignment_filename="he_imagealignment.csv",
+    zip_filename="outs.zip",
+    library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    include_hires_tiff: bool = False,
 ):
     """
     Download and extract Xenium SGE data files. Unlike scanpy this current does not
@@ -52,9 +52,9 @@ def xenium_sge(
     download_filenames = []
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
-    if (include_hires_tiff
-            and (not (library_dir / alignment_filename).exists()
-            or not (library_dir / image_filename).exists())
+    if include_hires_tiff and (
+        not (library_dir / alignment_filename).exists()
+        or not (library_dir / image_filename).exists()
     ):
         download_filenames += [alignment_filename, image_filename]
 

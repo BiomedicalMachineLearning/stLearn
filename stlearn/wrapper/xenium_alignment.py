@@ -1,6 +1,6 @@
-from pathlib import Path
 import numpy as np
 import pandas as pd
+
 
 def apply_alignment_transformation(
     coordinates: pd.DataFrame,
