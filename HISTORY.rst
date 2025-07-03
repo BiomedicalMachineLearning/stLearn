@@ -8,8 +8,10 @@ History
 * Added quality checks black, ruff and mypy and fixed appropriate source code.
 * Copy parameters now work with the same semantics as scanpy.
 * Library upgrades for leidenalg, louvain, numba, numpy, scanpy, and tensorflow.
+* .datasets.xenium_sge - loads Xenium data (and caches it) similar to scanpy's visium_sge call.
 
 API and Bug Fixes:
+* Xenium TIFF and cell positions are now aligned.
 * Consistent with type annotations - mainly missing None annotations.
 * pl.cluster_plot - Does not keep colours from previous runs when clustering.
 * pl.trajectory.pseudotime_plot - Fix typing of cluster values in .uns["split_node"].
