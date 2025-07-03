@@ -25,45 +25,46 @@ def xenium_sge(
     base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
     image_filename="he_image.ome.tif",
     zip_filename="outs.zip",
-    sample_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
     include_hires_tiff: bool = False,
 ):
     """
-    Download and extract Xenium SGE data files.
+    Download and extract Xenium SGE data files. Unlike scanpy this current does not
+    load the data. Data is located in `settings.datasetdir` / `library_id`.
 
     Args:
         base_url: Base URL for downloads
         image_filename: Name of the image file to download
         zip_filename: Name of the zip file to download
-        sample_id: Sample identifier
+        library_id: Identifier for the library
         include_hires_tiff: Whether to download the high-res TIFF image
     """
-    sample_dir = settings.datasetdir / sample_id
-    sample_dir.mkdir(parents=True, exist_ok=True)
+    library_dir = settings.datasetdir / library_id
+    library_dir.mkdir(parents=True, exist_ok=True)
 
     files_to_extract = ["cell_feature_matrix.h5", "cells.csv.gz"]
     all_sge_files_exist = all(
-        (sample_dir / sge_file).exists() for sge_file in files_to_extract
+        (library_dir / sge_file).exists() for sge_file in files_to_extract
     )
 
     download_filenames = []
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
-    if include_hires_tiff and not (sample_dir / image_filename).exists():
+    if include_hires_tiff and not (library_dir / image_filename).exists():
         download_filenames.append(image_filename)
 
     for file_name in download_filenames:
-        file_path = sample_dir / file_name
-        url = f"{base_url}/{sample_id}/{sample_id}_{file_name}"
+        file_path = library_dir / file_name
+        url = f"{base_url}/{library_id}/{library_id}_{file_name}"
         if not file_path.is_file():
             sc.readwrite._download(url=url, path=file_path)
 
     if not all_sge_files_exist:
         try:
-            zip_file_path = sample_dir / zip_filename
+            zip_file_path = library_dir / zip_filename
             with zf.ZipFile(zip_file_path, "r") as zip_ref:
                 for zip_filename in files_to_extract:
-                    with open(sample_dir / zip_filename, "wb") as file_name:
+                    with open(library_dir / zip_filename, "wb") as file_name:
                         file_name.write(zip_ref.read(f"outs/{zip_filename}"))
         except zf.BadZipFile:
             raise ValueError(f"Invalid zip file: {zip_file_path}")

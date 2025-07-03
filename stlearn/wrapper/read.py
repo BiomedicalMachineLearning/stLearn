@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scanpy
+from PIL import Image
 from anndata import AnnData
 from matplotlib.image import imread
-from PIL import Image
 
 import stlearn
 
@@ -22,21 +22,20 @@ _Background = Literal["black", "white"]
 
 
 def Read10X(
-    path: str | Path,
-    genome: str | None = None,
-    count_file: str = "filtered_feature_bc_matrix.h5",
-    library_id: str | None = None,
-    load_images: bool = True,
-    quality: _Quality = "hires",
-    image_path: str | Path | None = None,
+        path: str | Path,
+        genome: str | None = None,
+        count_file: str = "filtered_feature_bc_matrix.h5",
+        library_id: str | None = None,
+        load_images: bool = True,
+        quality: _Quality = "hires",
+        image_path: str | Path | None = None,
 ) -> AnnData:
     """\
-    Read Visium data from 10X (wrap read_visium from scanpy)
+    Read data from 10X.
 
-    In addition to reading regular 10x output,
-    this looks for the `spatial` folder and loads images,
-    coordinates and scale factors.
-    Based on the `Space Ranger output docs`_.
+    In addition to reading regular 10x output, this looks for the `spatial` folder
+    and loads images, coordinates and scale factors. Based on the
+    `Space Ranger output docs`_.
 
     _Space Ranger output docs:
     https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
@@ -44,14 +43,14 @@ def Read10X(
     Parameters
     ----------
     path
-        The path to directory for Visium datafiles.
+        The path to directory for the datafiles.
     genome
         Filter expression to genes within this genome.
     count_file
         Which file in the directory to use as the count file. Typically, it would be one
         of: 'filtered_feature_bc_matrix.h5' or 'raw_feature_bc_matrix.h5'.
     library_id
-        Identifier for the Visium library. Can be modified when concatenating multiple
+        Identifier for the library. Can be modified when concatenating multiple
         adata objects.
     load_images
         Load image or not.
@@ -187,7 +186,7 @@ def Read10X(
         else:
             scale = adata.uns["spatial"][library_id]["scalefactors"][
                 "tissue_" + quality + "_scalef"
-            ]
+                ]
             image_coor = adata.obsm["spatial"] * scale
 
         adata.obs["imagecol"] = image_coor[:, 0]
@@ -204,13 +203,13 @@ def Read10X(
 
 
 def ReadOldST(
-    count_matrix_file: PathLike[str] | str | Iterator[str],
-    spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
-    image_file: str | Path | None = None,
-    library_id: str = "OldST",
-    scale: float = 1.0,
-    quality: str = "hires",
-    spot_diameter_fullres: float = 50,
+        count_matrix_file: PathLike[str] | str | Iterator[str],
+        spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
+        image_file: str | Path | None = None,
+        library_id: str = "OldST",
+        scale: float = 1.0,
+        quality: str = "hires",
+        spot_diameter_fullres: float = 50,
 ) -> AnnData:
     """\
     Read Old Spatial Transcriptomics data
@@ -224,7 +223,7 @@ def ReadOldST(
     image_file
         Path to the tissue image file
     library_id
-        Identifier for the Visium library. Can be modified when concatenating multiple
+        Identifier for the library. Can be modified when concatenating multiple
         adata objects.
     scale
         Set scale factor.
@@ -254,13 +253,13 @@ def ReadOldST(
 
 
 def ReadSlideSeq(
-    count_matrix_file: str | Path,
-    spatial_file: str | Path,
-    library_id: str | None = None,
-    scale: float | None = None,
-    quality: str = "hires",
-    spot_diameter_fullres: float = 50,
-    background_color: _Background = "white",
+        count_matrix_file: str | Path,
+        spatial_file: str | Path,
+        library_id: str | None = None,
+        scale: float | None = None,
+        quality: str = "hires",
+        spot_diameter_fullres: float = 50,
+        background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Slide-seq data
@@ -272,7 +271,7 @@ def ReadSlideSeq(
     spatial_file
         Path to the spatial location file.
     library_id
-        Identifier for the Visium library. Can be modified when concatenating
+        Identifier for the library. Can be modified when concatenating
         multiple adata objects.
     scale
         Set scale factor.
@@ -326,7 +325,7 @@ def ReadSlideSeq(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-    ] = scale
+        ] = scale
 
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
@@ -337,13 +336,13 @@ def ReadSlideSeq(
 
 
 def ReadMERFISH(
-    count_matrix_file: str | Path,
-    spatial_file: str | Path,
-    library_id: str | None = None,
-    scale: float | None = None,
-    quality: str = "hires",
-    spot_diameter_fullres: float = 50,
-    background_color: _Background = "white",
+        count_matrix_file: str | Path,
+        spatial_file: str | Path,
+        library_id: str | None = None,
+        scale: float | None = None,
+        quality: str = "hires",
+        spot_diameter_fullres: float = 50,
+        background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read MERFISH data
@@ -355,7 +354,7 @@ def ReadMERFISH(
     spatial_file
         Path to the spatial location file.
     library_id
-        Identifier for the Visium library. Can be modified when concatenating
+        Identifier for the library. Can be modified when concatenating
         multiple adata objects.
     scale
         Set scale factor.
@@ -411,7 +410,7 @@ def ReadMERFISH(
     adata_merfish.uns["spatial"][library_id]["scalefactors"] = {}
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-    ] = scale
+        ] = scale
     adata_merfish.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -420,14 +419,14 @@ def ReadMERFISH(
 
 
 def ReadSeqFish(
-    count_matrix_file: str | Path,
-    spatial_file: str | Path,
-    library_id: str | None = None,
-    scale: float = 1.0,
-    quality: str = "hires",
-    field: int = 0,
-    spot_diameter_fullres: float = 50,
-    background_color: _Background = "white",
+        count_matrix_file: str | Path,
+        spatial_file: str | Path,
+        library_id: str | None = None,
+        scale: float = 1.0,
+        quality: str = "hires",
+        field: int = 0,
+        spot_diameter_fullres: float = 50,
+        background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read SeqFish data
@@ -439,7 +438,7 @@ def ReadSeqFish(
     spatial_file
         Path to spatial location file.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple
+        Identifier for the library. Can be modified when concatenating multiple
         adata objects.
     scale
         Set scale factor.
@@ -499,7 +498,7 @@ def ReadSeqFish(
     adata.uns["spatial"][library_id]["scalefactors"] = {}
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
-    ] = scale
+        ] = scale
     adata.uns["spatial"][library_id]["scalefactors"][
         "spot_diameter_fullres"
     ] = spot_diameter_fullres
@@ -508,14 +507,14 @@ def ReadSeqFish(
 
 
 def ReadXenium(
-    feature_cell_matrix_file: str | Path,
-    cell_summary_file: str | Path,
-    image_path: Path | None = None,
-    library_id: str | None = None,
-    scale: float = 1.0,
-    quality: str = "hires",
-    spot_diameter_fullres: float = 15,
-    background_color: _Background = "white",
+        feature_cell_matrix_file: str | Path,
+        cell_summary_file: str | Path,
+        image_path: Path | None = None,
+        library_id: str | None = None,
+        scale: float = 1.0,
+        quality: str = "hires",
+        spot_diameter_fullres: float = 15,
+        background_color: _Background = "white",
 ) -> AnnData:
     """\
     Read Xenium data
@@ -529,7 +528,7 @@ def ReadXenium(
     image_path
         Path to image. Only need when loading full resolution image.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple
+        Identifier for the Xenium library. Can be modified when concatenating multiple
         adata objects.
     scale
         Set scale factor.
@@ -592,7 +591,7 @@ def ReadXenium(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-        ] = scale
+            ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres
@@ -601,14 +600,14 @@ def ReadXenium(
 
 
 def create_stlearn(
-    count: pd.DataFrame,
-    spatial: pd.DataFrame,
-    library_id: str,
-    image_path: Path | None = None,
-    scale: float | None = None,
-    quality: str = "hires",
-    spot_diameter_fullres: float = 50,
-    background_color: _Background = "white",
+        count: pd.DataFrame,
+        spatial: pd.DataFrame,
+        library_id: str,
+        image_path: Path | None = None,
+        scale: float | None = None,
+        quality: str = "hires",
+        spot_diameter_fullres: float = 50,
+        background_color: _Background = "white",
 ):
     """\
     Create AnnData object for stLearn
@@ -620,7 +619,7 @@ def create_stlearn(
     spatial
         Pandas Dataframe of spatial location of cells/spots.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple
+        Identifier for the library. Can be modified when concatenating multiple
         adata objects.
     scale
         Set scale factor.
@@ -674,7 +673,7 @@ def create_stlearn(
         adata.uns["spatial"][library_id]["scalefactors"] = {}
         adata.uns["spatial"][library_id]["scalefactors"][
             "tissue_" + quality + "_scalef"
-        ] = scale
+            ] = scale
         adata.uns["spatial"][library_id]["scalefactors"][
             "spot_diameter_fullres"
         ] = spot_diameter_fullres
