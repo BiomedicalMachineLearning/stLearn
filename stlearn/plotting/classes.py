@@ -1039,8 +1039,11 @@ class SubClusterPlot(SpatialBasePlot):
         return subset
 
     def _add_subclusters_label(self, subset):
-        if len(subset["sub_cluster_labels"].unique()) < 2:
-            print("lower than 2")
+        unique_subcluster_labels = len(subset["sub_cluster_labels"].unique())
+        if unique_subcluster_labels == 1:
+            print("No unique labels found")
+            return
+        elif unique_subcluster_labels == 1:
             imgcol = subset["imagecol"].values
             imgrow = subset["imagerow"].values
             centroids = [centroidpython(imgcol, imgrow)]
