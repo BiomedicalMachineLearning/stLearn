@@ -32,7 +32,7 @@ class SpatialBasePlot(Spatial):
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -54,6 +54,7 @@ class SpatialBasePlot(Spatial):
         super().__init__(
             adata,
         )
+
         self.title = title
         self.figsize = figsize
         self.image_alpha = image_alpha
@@ -76,17 +77,16 @@ class SpatialBasePlot(Spatial):
             ), "Please choose the right label in `adata.obs.columns`!"
             self.use_label = use_label
 
+            unique_categories = np.array(self.adata[0].obs[use_label].cat.categories)
+
             if self.list_clusters is None:
-                self.list_clusters = np.array(
-                    self.adata[0].obs[use_label].cat.categories
-                )
+                self.list_clusters = unique_categories
             else:
                 if not isinstance(self.list_clusters, list):
                     self.list_clusters = [self.list_clusters]
 
                 clusters_indexes = [
-                    np.where(adata.obs[use_label].cat.categories == i)[0][0]
-                    for i in self.list_clusters
+                    np.where(unique_categories == i)[0][0] for i in self.list_clusters
                 ]
                 self.list_clusters = np.array(self.list_clusters)[
                     np.argsort(clusters_indexes)
@@ -229,7 +229,7 @@ class GenePlot(SpatialBasePlot):
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -437,7 +437,7 @@ class FeaturePlot(SpatialBasePlot):
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -598,7 +598,7 @@ class ClusterPlot(SpatialBasePlot):
         figsize: tuple[float, float] | None = None,
         cmap: str = "default",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -708,9 +708,7 @@ class ClusterPlot(SpatialBasePlot):
             ]
 
             if self.use_label + "_colors" in self.adata[0].uns:
-                label_set = (
-                    self.adata[0].obs[self.use_label].cat.categories.values.astype(str)
-                )
+                label_set = self.adata[0].obs[self.use_label].cat.categories.values
                 col_index = np.where(label_set == cluster[0])[0][0]
                 color = self.adata[0].uns[self.use_label + "_colors"][col_index]
             else:
@@ -907,19 +905,23 @@ class ClusterPlot(SpatialBasePlot):
             )
 
         if self.show_node:
-            for x, y in centroid_dict.items():
-                if x in get_node(self.list_clusters, self.adata[0].uns["split_node"]):
+            for node, pos in centroid_dict.items():
+                if str(node) in get_node(
+                    self.list_clusters, self.adata[0].uns["split_node"]
+                ):
                     self.ax.text(
-                        y[0],
-                        y[1],
-                        get_cluster(str(x), self.adata[0].uns["split_node"]),
+                        pos[0],
+                        pos[1],
+                        get_cluster(str(node), self.adata[0].uns["split_node"]),
                         color="black",
                         fontsize=8,
                         zorder=100,
                         bbox=dict(
                             facecolor=cmap(
                                 int(
-                                    get_cluster(str(x), self.adata[0].uns["split_node"])
+                                    get_cluster(
+                                        str(node), self.adata[0].uns["split_node"]
+                                    )
                                 )
                                 / (len(used_colors) - 1)
                             ),
@@ -945,7 +947,7 @@ class SubClusterPlot(SpatialBasePlot):
         figsize: tuple[float, float] | None = None,
         cmap: str = "jet",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -1104,7 +1106,7 @@ class CciPlot(GenePlot):
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
         use_label: str | None = None,
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,
@@ -1174,7 +1176,7 @@ class LrResultPlot(GenePlot):
         title: Optional["str"] = None,
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
-        list_clusters: list | None = None,
+        list_clusters: str | list[str] | None = None,
         ax: matplotlib.axes.Axes | None = None,
         fig: matplotlib.figure.Figure | None = None,
         show_plot: bool = True,

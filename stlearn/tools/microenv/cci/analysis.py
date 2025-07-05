@@ -174,7 +174,7 @@ def grid(
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
         grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
         grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
-            list(adata.obs[use_label].cat.categories)
+            adata.obs[use_label].cat.categories
         )
         if f"{use_label}_colors" in adata.uns:
             grid_data.uns[f"{use_label}_colors"] = adata.uns[f"{use_label}_colors"]

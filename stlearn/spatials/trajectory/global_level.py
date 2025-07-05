@@ -55,7 +55,7 @@ def global_level(
         query_nodes = list(cat_inds.values())
     else:
         if isinstance(list_clusters[0], str):
-            list_clusters = [cat_inds[label] for label in list_clusters]
+            list_clusters = [cat_inds[int(label)] for label in list_clusters]
         query_nodes = list_clusters
 
     query_nodes = ordering_nodes(query_nodes, use_label, adata)
@@ -75,19 +75,19 @@ def global_level(
         ].unique():
             query_dict[int(j)] = int(i)
             order_dict[int(j)] = int(order)
-
             order += 1
     dm_list = []
     sdm_list = []
     order_big_dict = {}
     edge_list = []
 
+    split_node = adata.uns["split_node"]
     for i, j in enumerate(query_nodes):
         order_big_dict[j] = int(i)
         if i == len(query_nodes) - 1:
             break
-        for j in adata.uns["split_node"][query_nodes[i]]:
-            for k in adata.uns["split_node"][query_nodes[i + 1]]:
+        for j in split_node[str(query_nodes[i])]:
+            for k in split_node[str(query_nodes[i + 1])]:
                 edge_list.append((int(j), int(k)))
 
         # Calculate DPT distance matrix
@@ -123,7 +123,7 @@ def global_level(
         )
     H_sub = nx.DiGraph(H_sub)
     prepare_root = []
-    for node in adata.uns["split_node"][query_nodes[0]]:
+    for node in split_node[str(query_nodes[0])]:
         H_sub.add_edge(9999, int(node))
         prepare_root.append(centroid_dict[int(node)])
 
@@ -141,7 +141,7 @@ def global_level(
     H_sub = nx.DiGraph(H_sub)
 
     prepare_root = []
-    for node in adata.uns["split_node"][query_nodes[0]]:
+    for node in split_node[str(query_nodes[0])]:
         H_sub.add_edge(9999, int(node))
         prepare_root.append(centroid_dict[int(node)])
 

@@ -5,6 +5,7 @@ from anndata import AnnData
 from matplotlib import pyplot as plt
 from numpy._typing import NDArray
 
+from stlearn.plotting.utils import get_cluster, get_node
 from stlearn.utils import _read_graph
 
 
@@ -12,7 +13,7 @@ def pseudotime_plot(
     adata: AnnData,
     library_id: str | None = None,
     use_label: str = "louvain",
-    pseudotime_key: str = "pseudotime_key",
+    pseudotime_key: str = "dpt_pseudotime",
     list_clusters: str | list[str] | None = None,
     cell_alpha: float = 1.0,
     image_alpha: float = 1.0,
@@ -32,7 +33,6 @@ def pseudotime_plot(
     dpi: int = 150,
     output: str | None = None,
     name: str | None = None,
-    copy: bool = False,
     ax=None,
 ) -> AnnData | None:
     """\
@@ -78,8 +78,6 @@ def pseudotime_plot(
         The output folder of the plot.
     name
         The filename of the plot.
-    copy
-        Return a copy instead of writing to adata.
     Returns
     -------
     Nothing
@@ -87,8 +85,7 @@ def pseudotime_plot(
 
     checked_list_clusters: list[str]
     if list_clusters is None:
-        unique_labels = adata.obs[use_label].unique()
-        checked_list_clusters = [str(i) for i in range(len(unique_labels))]
+        checked_list_clusters = adata.obs[use_label].cat.categories
     elif isinstance(list_clusters, str):
         checked_list_clusters = [list_clusters]
     else:
@@ -102,7 +99,9 @@ def pseudotime_plot(
     labels = nx.get_edge_attributes(G, "weight")
 
     result = []
-    query_node = get_node(checked_list_clusters, adata.uns["split_node"])
+    query_node = list(
+        map(int, get_node(checked_list_clusters, adata.uns["split_node"]))
+    )
     for edge in G.edges(query_node):
         if (edge[0] in query_node) and (edge[1] in query_node):
             result.append(edge)
@@ -158,18 +157,18 @@ def pseudotime_plot(
             edge_color="#333333",
         )
 
-        for x, y in centroid_dict.items():
-            if x in get_node(checked_list_clusters, adata.uns["split_node"]):
+        for node, pos in centroid_dict.items():
+            if str(node) in get_node(checked_list_clusters, adata.uns["split_node"]):
                 a.text(
-                    y[0],
-                    y[1],
-                    get_cluster(x, adata.uns["split_node"]),
+                    pos[0],
+                    pos[1],
+                    get_cluster(str(node), adata.uns["split_node"]),
                     color="white",
                     fontsize=node_size,
                     zorder=100,
                     bbox=dict(
                         facecolor=cmap(
-                            int(get_cluster(x, adata.uns["split_node"]))
+                            int(get_cluster(str(node), adata.uns["split_node"]))
                             / (len(used_colors) - 1)
                         ),
                         boxstyle="circle",
@@ -221,18 +220,20 @@ def pseudotime_plot(
             )
 
         if show_node:
-            for x, y in centroid_dict.items():
-                if x in get_node(checked_list_clusters, adata.uns["split_node"]):
+            for node, pos in centroid_dict.items():
+                if str(node) in get_node(
+                    checked_list_clusters, adata.uns["split_node"]
+                ):
                     a.text(
-                        y[0],
-                        y[1],
-                        get_cluster(x, adata.uns["split_node"]),
+                        pos[0],
+                        pos[1],
+                        str(get_cluster(str(node), adata.uns["split_node"])),
                         color="black",
                         fontsize=8,
                         zorder=100,
                         bbox=dict(
                             facecolor=cmap(
-                                int(get_cluster(x, adata.uns["split_node"]))
+                                get_cluster(str(node), adata.uns["split_node"])
                                 / (len(used_colors) - 1)
                             ),
                             boxstyle="circle",
@@ -274,19 +275,3 @@ def pseudotime_plot(
         plt.show()
 
     return adata
-
-
-# get name of cluster by subcluster
-def get_cluster(search: int, split_node: dict[str, list[str]]):
-    for cl, sub in split_node.items():
-        if str(search) in sub:
-            return cl
-
-
-def get_node(
-    node_list: list[str], split_node: dict[str, list[str]]
-) -> NDArray[np.int64]:
-    all_values = []
-    for node in node_list:
-        all_values.extend(split_node[node])
-    return np.array([int(val) for val in all_values], dtype=np.int64)

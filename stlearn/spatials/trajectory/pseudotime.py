@@ -1,15 +1,19 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-import scanpy
+import scanpy as sc
 from anndata import AnnData
+from sklearn.neighbors import NearestCentroid
 
+from stlearn.pp import neighbors
+from stlearn.spatials.clustering import localization
+from stlearn.spatials.morphology import adjust
 from stlearn.types import _METHOD
 
 
 def pseudotime(
     adata: AnnData,
-    use_label: str | None = None,
+    use_label: str = "louvain",
     eps: float = 20,
     n_neighbors: int = 25,
     use_rep: str = "X_pca",
@@ -68,30 +72,21 @@ def pseudotime(
     except:
         pass
 
-    assert use_label is not None, "Please choose the right `use_label`!"
-
-    # Localize
-    from stlearn.spatials.clustering import localization
-
-    if "sub_clusters_laber" not in adata.obs.columns:
+    if "sub_cluster_labels" not in adata.obs.columns:
         localization(adata, use_label=use_label, eps=eps)
 
     # Running knn
 
     if run_knn:
-        from stlearn.pp import neighbors
-
         neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
 
     # Running paga
-    scanpy.tl.paga(adata, groups=use_label)
+    sc.tl.paga(adata, groups=use_label)
 
     # Denoising the graph
-    scanpy.tl.diffmap(adata)
+    sc.tl.diffmap(adata)
 
     if use_sme:
-        from stlearn.spatials.morphology import adjust
-
         adjust(adata, use_data="X_diffmap", radius=radius, method=method)
         adata.obsm["X_diffmap"] = adata.obsm["X_diffmap_morphology"]
 
@@ -103,9 +98,9 @@ def pseudotime(
     cnt_matrix = pd.DataFrame(cnt_matrix)
 
     # Mapping louvain label to subcluster
-    cat_ind = adata.uns[use_label + "_index_dict"]
+    cat_inds = adata.uns[use_label + "_index_dict"]
     split_node = {}
-    for label in adata.obs[use_label].unique():
+    for label in adata.obs[use_label].cat.categories:
         meaningful_sub = []
         for i in adata.obs[adata.obs[use_label] == label][
             "sub_cluster_labels"
@@ -116,10 +111,12 @@ def pseudotime(
             ):
                 meaningful_sub.append(i)
 
-        split_node[cat_ind[label]] = meaningful_sub
+        label = cat_inds[int(label)]
+        split_node[label] = meaningful_sub
 
     adata.uns["threshold_spots"] = threshold_spots
-    adata.uns["split_node"] = split_node
+    # split_node has string keys for rest of code/plotting (names a strings)
+    adata.uns["split_node"] = {str(k): v for k, v in split_node.items()}
 
     # Replicate louvain label row to prepare for subcluster connection
     # matrix construction
@@ -155,8 +152,6 @@ def pseudotime(
     adata.uns["global_graph"]["node_dict"] = node_convert
 
     # Create centroid dict for subclusters
-    from sklearn.neighbors import NearestCentroid
-
     clf = NearestCentroid()
     clf.fit(adata.obs[["imagecol", "imagerow"]].values, adata.obs["sub_cluster_labels"])
     centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_))
@@ -174,10 +169,9 @@ def pseudotime(
         centroid_dict[int(cl)] = new_centroid
 
     adata.uns["centroid_dict"] = centroid_dict
-    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
 
     # Running diffusion pseudo-time
-    scanpy.tl.dpt(adata)
+    sc.tl.dpt(adata)
 
     if reverse:
         adata.obs[pseudotime_key] = 1 - adata.obs[pseudotime_key]

@@ -1,6 +1,6 @@
 import networkx as nx
-import numpy as np
 
+from stlearn.plotting.utils import get_node
 from stlearn.utils import _read_graph
 
 
@@ -26,7 +26,7 @@ def shortest_path_spatial_PAGA(
             key
         ].max()
 
-    # Force original PAGA to directed PAGA based on pseudotime
+    # Force original PAGA to a directed PAGA based on pseudotime
     edge_to_remove = []
     for edge in H.edges:
         if node_pseudotime[edge[0]] - node_pseudotime[edge[1]] > 0:
@@ -70,20 +70,6 @@ def shortest_path_spatial_PAGA(
     # Find the shortest path
     shortest_path = min(dist_dict, key=lambda x: dist_dict[x])
     return shortest_path.split(",")
-
-
-# get name of cluster by subcluster
-def get_cluster(search, dictionary):
-    for cl, sub in dictionary.items():
-        if search in sub:
-            return cl
-
-
-def get_node(node_list, split_node):
-    result = np.array([])
-    for node in node_list:
-        result = np.append(result, np.array(split_node[int(node)]).astype(int))
-    return result.astype(int)
 
 
 def find_min_max_node(adata, key="dpt_pseudotime", use_label="leiden"):

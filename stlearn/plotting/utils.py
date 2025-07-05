@@ -31,22 +31,18 @@ def centroidpython(x, y):
     return sum(x) / length_of_x, sum(y) / length_of_x
 
 
-def get_cluster(search, dictionary):
-    for (
-        cl,
-        sub,
-    ) in (
-        dictionary.items()
-    ):  # for name, age in dictionary.iteritems():  (for Python 2.x)
-        if search in sub:
+# get name of cluster by subcluster
+def get_cluster(search: str, split_node: dict[str, list[str]]):
+    for cl, sub in split_node.items():
+        if str(search) in sub:
             return cl
 
 
-def get_node(node_list, split_node):
-    result = np.array([])
+def get_node(node_list: list[str], split_node: dict[str, list[str]]) -> list[str]:
+    all_values = []
     for node in node_list:
-        result = np.append(result, np.array(split_node[node]).astype(int))
-    return result.astype(int)
+        all_values.extend(split_node[node])
+    return all_values
 
 
 def check_sublist(full, sub):

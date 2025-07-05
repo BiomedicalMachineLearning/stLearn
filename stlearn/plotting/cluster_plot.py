@@ -21,7 +21,7 @@ def cluster_plot(
     figsize: tuple[float, float] | None = None,
     cmap: str = "default",
     use_label: str | None = None,
-    list_clusters: list | None = None,
+    list_clusters: str | list[str] | None = None,
     ax: matplotlib.axes.Axes | None = None,
     fig: matplotlib.figure.Figure | None = None,
     show_plot: bool = True,
