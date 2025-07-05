@@ -56,7 +56,7 @@ def feat_plot(
     Examples
     -------------------------------------
     >>> import stlearn as st
-    >>> adata = st.datasets.example_bcba()
+    >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> st.pl.gene_plot(adata, 'dpt_pseudotime')
 
     """

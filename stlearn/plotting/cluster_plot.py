@@ -67,7 +67,7 @@ def cluster_plot(
     Examples
     -------------------------------------
     >>> import stlearn as st
-    >>> adata = st.datasets.example_bcba()
+    >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> label = "louvain"
     >>> st.pl.cluster_plot(adata, use_label = label, show_trajectories = True)
 

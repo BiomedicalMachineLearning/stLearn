@@ -2,24 +2,34 @@ import zipfile as zf
 
 import scanpy as sc
 from anndata import AnnData
+from scanpy.datasets._datasets import VisiumSampleID
 
 from .._settings import settings
 
+def visium_sge(
+    sample_id: VisiumSampleID = "V1_Breast_Cancer_Block_A_Section_1",
+    *,
+    include_hires_tiff: bool = False,
+) -> AnnData:
+    """Processed Visium Spatial Gene Expression data from 10x Genomics’ database.
 
-def example_bcba() -> AnnData:
-    """\
-    Download processed BCBA data (10X genomics published data).
-    Reference:
-    https://support.10xgenomics.com/spatial-gene-expression/datasets/1.1.0/V1_Breast_Cancer_Block_A_Section_1
+    The database_ can be browsed online to find the ``sample_id`` you want.
+
+    .. _database: https://support.10xgenomics.com/spatial-gene-expression/datasets
+
+    Parameters
+    ----------
+    sample_id
+        The ID of the data sample in 10x’s spatial database.
+    include_hires_tiff
+        Download and include the high-resolution tissue image (tiff) in
+        `adata.uns["spatial"][sample_id]["metadata"]["source_image_path"]`.
+
+    Returns
+    -------
+    Annotated data matrix.
     """
-    settings.datasetdir.mkdir(parents=True, exist_ok=True)
-    filename = settings.datasetdir / "example_bcba.h5"
-    url = "https://www.dropbox.com/s/u3m2f16mvdom1am/example_bcba.h5ad?dl=1"
-    if not filename.is_file():
-        sc.readwrite._download(url=url, path=filename)
-    adata = sc.read_h5ad(filename)
-    return adata
-
+    return sc.datasets.visium_sge(sample_id, include_hires_tiff=include_hires_tiff)
 
 def xenium_sge(
     base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",

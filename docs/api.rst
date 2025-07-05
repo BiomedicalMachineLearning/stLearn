@@ -207,5 +207,5 @@ Tools: `datasets`
 .. autosummary::
    :toctree: .
 
-   datasets.example_bcba()
+   datasets.visium_sge()
    datasets.xenium_sge()

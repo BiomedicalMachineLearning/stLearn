@@ -50,7 +50,7 @@ def subcluster_plot(
     Examples
     -------------------------------------
     >>> import stlearn as st
-    >>> adata = st.datasets.example_bcba()
+    >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> label = "louvain"
     >>> cluster = 6
     >>> st.pl.cluster_plot(adata, use_label = label, cluster = cluster)
