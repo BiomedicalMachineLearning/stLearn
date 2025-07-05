@@ -2,8 +2,6 @@ import zipfile as zf
 
 import scanpy as sc
 from anndata import AnnData
-from scanpy.datasets._datasets import VisiumSampleID
-
 from .._settings import settings
 
 # TODO - Add scanpy and covert this over.
@@ -30,6 +28,7 @@ def visium_sge(
     -------
     Annotated data matrix.
     """
+    sc.settings.datasetdir = settings.datasetdir
     return sc.datasets.visium_sge(sample_id, include_hires_tiff=include_hires_tiff)
 
 def xenium_sge(
@@ -52,6 +51,7 @@ def xenium_sge(
         library_id: Identifier for the library
         include_hires_tiff: Whether to download the high-res TIFF image
     """
+    sc.settings.datasetdir = settings.datasetdir
     library_dir = settings.datasetdir / library_id
     library_dir.mkdir(parents=True, exist_ok=True)
 
