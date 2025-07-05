@@ -786,7 +786,7 @@ class ClusterPlot(SpatialBasePlot):
 
     def _add_sub_clusters(self):
         if "sub_cluster_labels" not in self.query_adata.obs.columns:
-            raise ValueError("Please run stlearn.spatial.cluster.localization")
+            raise ValueError("Please run stlearn.spatial.clustering.localization")
 
         for i, label in enumerate(self.list_clusters):
             label_index = list(
