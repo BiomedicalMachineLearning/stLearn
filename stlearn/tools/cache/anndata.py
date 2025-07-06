@@ -9,8 +9,8 @@ def write_subset_h5ad(adata, filename, obsm_keys=None, uns_keys=None):
     # Create a minimal AnnData object with the same structure
     minimal_adata = ad.AnnData(
         X=np.zeros((adata.n_obs, 1)),
-        obs=adata.obs.index.to_frame(name='cell_id'),
-        var=pd.DataFrame(index=['placeholder'])
+        obs=adata.obs.index.to_frame(name="cell_id"),
+        var=pd.DataFrame(index=["placeholder"]),
     )
 
     if obsm_keys:
@@ -32,7 +32,7 @@ def write_subset_h5ad(adata, filename, obsm_keys=None, uns_keys=None):
             else:
                 print(f"Warning: uns['{key}'] not found")
 
-    minimal_adata.write_h5ad(filename, compression='gzip', compression_opts=9)
+    minimal_adata.write_h5ad(filename, compression="gzip", compression_opts=9)
     print(f"Wrote subset to {filename}")
 
 

@@ -324,7 +324,7 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
         cols[1]: np.array(lr_prop_means, dtype=np.float64),
         cols[2]: np.array(median_ranks, dtype=np.float64),
         cols[3]: np.array(prop_ranks, dtype=np.float64),
-        cols[4]: np.array(mean_ranks, dtype=np.float64)
+        cols[4]: np.array(mean_ranks, dtype=np.float64),
     }
     lr_features = pd.DataFrame(lr_features_data, index=lrs)
     lr_features = lr_features.iloc[np.argsort(mean_ranks), :]

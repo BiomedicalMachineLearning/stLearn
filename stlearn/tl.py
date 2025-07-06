@@ -1,5 +1,4 @@
-from .tools import cache
-from .tools import clustering
+from .tools import cache, clustering
 from .tools.label import label
 from .tools.microenv import cci
 

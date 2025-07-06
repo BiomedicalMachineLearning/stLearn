@@ -46,7 +46,9 @@ def lr_scatter(
         missing_lrs = [lr for lr in highlight_lrs if lr not in lr_df.index]
         if missing_lrs:
             raise ValueError(
-                f"The following highlight_lrs are not found in lr_summary index: {missing_lrs}")
+                "The following highlight_lrs are not found in lr_summary index: "
+                + ",".join(missing_lrs)
+            )
         highlight_lrs = highlight_lrs[0:max_text]
 
     lrs = lr_df.index.values.astype(str)[0:n_top]

@@ -8,9 +8,9 @@ from .._settings import settings
 
 # TODO - Add scanpy and covert this over.
 def visium_sge(
-        sample_id="V1_Breast_Cancer_Block_A_Section_1",
-        *,
-        include_hires_tiff: bool = False,
+    sample_id="V1_Breast_Cancer_Block_A_Section_1",
+    *,
+    include_hires_tiff: bool = False,
 ) -> AnnData:
     """Processed Visium Spatial Gene Expression data from 10x Genomics’ database.
 
@@ -35,12 +35,12 @@ def visium_sge(
 
 
 def xenium_sge(
-        base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
-        image_filename="he_image.ome.tif",
-        alignment_filename="he_imagealignment.csv",
-        zip_filename="outs.zip",
-        library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
-        include_hires_tiff: bool = False,
+    base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
+    image_filename="he_image.ome.tif",
+    alignment_filename="he_imagealignment.csv",
+    zip_filename="outs.zip",
+    library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    include_hires_tiff: bool = False,
 ):
     """
     Download and extract Xenium SGE data files. Unlike scanpy this current does not
@@ -67,8 +67,8 @@ def xenium_sge(
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
     if include_hires_tiff and (
-            not (library_dir / alignment_filename).exists()
-            or not (library_dir / image_filename).exists()
+        not (library_dir / alignment_filename).exists()
+        or not (library_dir / image_filename).exists()
     ):
         download_filenames += [alignment_filename, image_filename]
 
