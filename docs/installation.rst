@@ -6,7 +6,7 @@ Installation
 
 
 Install by Anaconda
----------------
+-------------------
 
 **Step 1:**
 

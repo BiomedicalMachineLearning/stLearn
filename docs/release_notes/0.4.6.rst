@@ -1,7 +1,7 @@
 0.4.0 `2022-02-03`
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. rubric:: Feature
+.. rubric:: Features
 
 - Upgrade stSME, PSTS and CCI analysis methods.
 

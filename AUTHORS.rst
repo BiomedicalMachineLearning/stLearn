@@ -5,9 +5,12 @@ Credits
 Development Lead
 ----------------
 
-* Genomics and Machine Learning lab
+* Genomics and Machine Learning Lab
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Brad Balderson
+* Andrew Newman
+* Duy Pham
+* Xiao Tan
