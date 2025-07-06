@@ -8,6 +8,10 @@ sphinx-autosummary-accessors>=2023.4.0
 sphinx-copybutton>=0.5.2
 ipykernel>=6.0.0
 
+# Typing
+typing-extensions>=4.0.0
+types-setuptools
+
 # Core dependencies (lightweight versions)
 numpy
 pandas
