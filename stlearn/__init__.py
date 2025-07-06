@@ -1,6 +1,6 @@
 """Top-level package for stLearn."""
 
-__author__ = """Genomics and Machine Learning lab"""
+__author__ = """Genomics and Machine Learning Lab"""
 __email__ = "andrew.newman@uq.edu.au"
 __version__ = "1.1.0"
 

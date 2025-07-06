@@ -35,19 +35,25 @@ def lr_scatter(
     figsize: tuple | None = None,
     show_all: bool = False,
 ):
-    """General plotting of the LR features."""
-    highlight = highlight_lrs is not None
-    if not highlight:
+    lr_df = data.uns["lr_summary"]
+
+    if max_text > len(lr_df):
+        print(f"Note: max_text ({max_text}) exceeds available LRs ({len(lr_df)})")
+
+    if highlight_lrs is None:
         show_text = show_text if n_top <= max_text else False
     else:
+        missing_lrs = [lr for lr in highlight_lrs if lr not in lr_df.index]
+        if missing_lrs:
+            raise ValueError(
+                f"The following highlight_lrs are not found in lr_summary index: {missing_lrs}")
         highlight_lrs = highlight_lrs[0:max_text]
 
-    lr_df = data.uns["lr_summary"]
     lrs = lr_df.index.values.astype(str)[0:n_top]
     lr_features = data.uns["lrfeatures"]
     lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
     if feature not in lr_df.columns:
-        raise Exception(f"Inputted {feature}; must be one of {list(lr_df.columns)}")
+        raise ValueError(f"Inputted {feature}; must be one of {list(lr_df.columns)}")
 
     rot = 90 if feature != "n_spots_sig" else 70
 
@@ -72,39 +78,6 @@ def lr_scatter(
         pad=0,
         show_all=show_all,
     )
-    # ranks = np.array(list(range(len(n_spots))))
-    #
-    # if type(lr_text_fp)==type(None):
-    #     lr_text_fp = {'weight': 'bold', 'size': 8}
-    # if type(axis_text_fp)==type(None):
-    #     axis_text_fp = {'weight': 'bold', 'size': 12}
-    #
-    # if type(ax)==type(None):
-    #     width = (7.5 / 50) * n_top if show_text and not highlight else 7.5
-    #     if width > 20:
-    #         width = 20
-    #     fig, ax = plt.subplots(figsize=(width, 4))
-    #
-    # # Plotting the points #
-    # ax.scatter(ranks, n_spots, alpha=alpha, c=color)
-    #
-    # if show_text:
-    #     if highlight:
-    #         ranks = ranks[[np.where(lrs==lr)[0][0] for lr in highlight_lrs]]
-    #         ax.scatter(ranks, n_spots[ranks], alpha=alpha, c=highlight_color)
-    #
-    #     for i in ranks:
-    #         ax.text(i-.2, n_spots[i], lrs[i], rotation=rot, fontdict=lr_text_fp)
-    #
-    # ax.spines['top'].set_visible(False)
-    # ax.spines['right'].set_visible(False)
-    # ax.set_xlabel('LR Rank', axis_text_fp)
-    # ax.set_ylabel(feature, axis_text_fp)
-    #
-    # if show:
-    #     plt.show()
-    # else:
-    #     return ax
 
 
 def rank_scatter(
@@ -161,7 +134,7 @@ def rank_scatter(
     y_max = y_max + y_max * pad
     ax.set_ylim(y_min, y_max)
     if point_sizes is not None:
-        # produce a legend with a cross section of sizes from the scatter
+        # produce a legend with a cross-section of sizes from the scatter
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.6, num=4)
         [handle.set_markeredgecolor("none") for handle in handles]
         starts = [label.find("{") for label in labels]
@@ -257,7 +230,7 @@ def add_arrows(
     # in the base plotting function class.
     # Reason why is because scale_factor refers to scaling the
     # image to match the spot spatial coordinates, not the
-    # the spots to match the image coordinates!!!
+    # spots to match the image coordinates!!!
 
     L_bool = l_expr > min_expr
     R_bool = r_expr > min_expr

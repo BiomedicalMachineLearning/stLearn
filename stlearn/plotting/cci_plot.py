@@ -132,7 +132,7 @@ def lr_summary(
         A list of LRs to highlight on the plot, will added text and change color
         of points for these LRs. Useful for highlighting LRs of interest.
     y: str
-        The way to rank the LRs, default is by the no. of signifcant spots,
+        The way to rank the LRs, default is by the no. of significant spots,
         but can be any column in adata.uns['lr_summary'].
     color: str
         The color of the points.
@@ -1379,13 +1379,13 @@ def lr_chord_plot(
 
         Each cell type has a labelled edge taking up a proportion of the outter circle.
         Chords connecting cell type edges are coloured by the dominant sending cell.
-        Each chord linking cell types has an assymetric shape.
+        Each chord linking cell types has an asymmetric shape.
         For two cell types, A and B, the side of the chord attached to edge A is
         sized by the total interactions from B->A, where B is expressing the ligand & A
         is expressing the receptor.
-        Hence, the proportion of a cell type's edge in the chordplot circle
+        Hence, the proportion of a cell type's edge in the chord plot circle
         represents the total input signals to that cell type; while the
-        area of the chordplot circle taken up by the outputted chords from a given
+        area of the chord plot circle taken up by the outputted chords from a given
         cell type represents the total output signals from that cell type.
 
     Parameters
@@ -1550,7 +1550,7 @@ def grid_plot(
         return fig, ax
 
 
-####################### Bokeh Interactive Plots ################################
+# Bokeh Interactive Plots
 def lr_plot_interactive(adata: AnnData):
     """Plots the LR scores for significant spots interatively using Bokeh.
 
@@ -1575,78 +1575,3 @@ def spatialcci_plot_interactive(adata: AnnData):
     bokeh_object = BokehSpatialCciPlot(adata)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
-
-
-# def het_plot_interactive(adata: AnnData):
-#     bokeh_object = BokehCciPlot(adata)
-#     output_notebook()
-#     show(bokeh_object.app, notebook_handle=True)
-
-
-# Bokeh & old grid plots;
-# has not been tested since multi-LR testing implimentation.
-
-# def het_plot_interactive(adata: AnnData):
-#     bokeh_object = BokehCciPlot(adata)
-#     output_notebook()
-#     show(bokeh_object.app, notebook_handle=True)
-
-
-# def grid_plot(
-# 	adata: AnnData,
-# 	use_het: str = None,
-# 	num_row: int = 10,
-# 	num_col: int = 10,
-# 	vmin: float = None,
-# 	vmax: float = None,
-# 	cropped: bool = True,
-# 	margin: int = 100,
-# 	dpi: int = 100,
-# 	name: str = None,
-# 	output: str = None,
-# 	copy: bool = False,
-# ) -> Optional[AnnData]:
-#
-# 	"""
-# 	Cell diversity plot for sptial transcriptomics data.
-#
-# 	Parameters
-# 	----------
-# 	adata:                  Annotated data matrix.
-# 	use_het:                Cluster heterogeneity count results from tl.cci_rank.het
-# 	num_row: int            Number of grids on height
-# 	num_col: int            Number of grids on width
-# 	cropped                 crop image or not.
-# 	margin                  margin used in cropping.
-# 	dpi:                    Set dpi as the resolution for the plot.
-# 	name:                   Name of the output figure file.
-# 	output:                 Save the figure as file or not.
-# 	copy:                   Return a copy instead of writing to adata.
-#
-# 	Returns
-# 	-------
-# 	Nothing
-# 	"""
-#
-# 	try:
-# 		import seaborn as sns
-# 	except:
-# 		raise ImportError("Please run `pip install seaborn`")
-# 	plt.subplots()
-#
-# 	sns.heatmap(
-# 		pd.DataFrame(np.array(adata.obsm[use_het]).reshape(num_col, num_row)).T,
-# 		vmin=vmin,
-# 		vmax=vmax,
-# 	)
-# 	plt.axis("equal")
-#
-# 	if output is not None:
-# 		plt.savefig(
-# 			output + "/" + name + "_heatmap.pdf",
-# 			dpi=dpi,
-# 			bbox_inches="tight",
-# 			pad_inches=0,
-# 		)
-#
-# 	plt.show()
