@@ -3,9 +3,6 @@ import sys
 import re
 import requests
 
-sys.path.insert(0, os.path.abspath(".."))
-import stlearn
-
 def download_gdrive_file(file_id, filename):
     session = requests.Session()
     url = f"https://docs.google.com/uc?export=download&id={file_id}"
@@ -39,7 +36,6 @@ def download_gdrive_file(file_id, filename):
 project = 'stLearn'
 copyright = '2022-2025, Genomics and Machine Learning Lab'
 author = 'Genomics and Machine Learning Lab'
-release = stlearn.__version__
 html_logo = "images/logo.png"
 
 # -- General configuration ---------------------------------------------------
@@ -82,8 +78,41 @@ autosummary_imported_members = True
 autosummary_generate_overwrite = True
 
 autodoc_mock_imports = [
-    'numpy', 'pandas', 'scipy', 'sklearn', 'scanpy', 'anndata',
-    'matplotlib', 'seaborn', 'plotly', 'bokeh', 'cv2', 'PIL',
-    'rpy2', 'louvain', 'numba', 'leidenalg',
-    # Add any other packages causing import issues
+    'numpy',
+    'pandas',
+    'scipy',
+    'sklearn',
+    'scanpy',
+    'anndata',
+    'matplotlib',
+    'seaborn',
+    'plotly',
+    'bokeh',
+    'cv2',
+    'PIL',
+    'rpy2',
+    'louvain',
+    'numba',
+    'leidenalg',
+    'squidpy',
+    'cellphonedb',
+    'torch',
+    'tensorflow',
+    'keras',
+    'networkx',
+    'igraph',
+    'fa2',
+    'umap',
+    'phate',
+    'harmonypy',
+    'bbknn',
+    'scanorama',
+    'combat',
+    'magic',
+    'palantir',
+    'pypng',
+    'tifffile',
+    'imageio',
+    'skimage',
+    'cv2',
 ]
