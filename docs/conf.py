@@ -80,3 +80,10 @@ autosummary_imported_members = True
 
 # Output directory for autosummary
 autosummary_generate_overwrite = True
+
+autodoc_mock_imports = [
+    'numpy', 'pandas', 'scipy', 'sklearn', 'scanpy', 'anndata',
+    'matplotlib', 'seaborn', 'plotly', 'bokeh', 'cv2', 'PIL',
+    'rpy2', 'louvain', 'numba', 'leidenalg',
+    # Add any other packages causing import issues
+]
