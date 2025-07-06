@@ -1,6 +1,6 @@
 
 
-stLearn - Spatial Transcriptomics Toolkit
+stLearn - A Spatial Transcriptomics Toolkit
 ============================================================================
 
 |PyPI| |PyPIDownloads| |Docs|
