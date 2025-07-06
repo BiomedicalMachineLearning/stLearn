@@ -53,10 +53,9 @@ Latest Additions
 
 
    installation
+   api
    tutorials
    interactive
    release_notes/index
    authors
    references
-
-..   api

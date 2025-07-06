@@ -22,6 +22,10 @@ html_logo = "images/logo.png"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
     'nbsphinx',
 ]
 
@@ -37,3 +41,10 @@ html_static_path = ['_static']
 # Configure nbsphinx
 nbsphinx_execute = 'never'  # Don't re-execute notebooks
 nbsphinx_allow_errors = True  # Allow notebooks with errors
+
+# Autosummary
+autosummary_generate = True
+autosummary_imported_members = True
+
+# Output directory for autosummary
+autosummary_generate_overwrite = True

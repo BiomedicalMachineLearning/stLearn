@@ -15,7 +15,7 @@ API and Bug Fixes:
 * Consistent with type annotations - mainly missing None annotations.
 * pl.cluster_plot - Does not keep colours from previous runs when clustering.
 * pl.trajectory.pseudotime_plot - Fix typing of cluster values in .uns["split_node"].
-* Removed datasets.example_bcba - Replaces with wrapper for scanpy.visium_sge.
+* Removed datasets.example_bcba - Replaced with wrapper for scanpy.visium_sge.
 
 0.4.11 (2022-11-25)
 ------------------
