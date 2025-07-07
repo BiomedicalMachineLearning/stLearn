@@ -106,7 +106,7 @@ def apply_mask(
     """
     from scanpy.plotting import palettes
 
-    from stlearn.plotting import palettes_st
+    from stlearn.pl import palettes_st
 
     adata = adata.copy() if copy else adata
 

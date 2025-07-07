@@ -286,7 +286,7 @@ def run_psts(request, adata, step_log):
 
     else:
         try:
-            from stlearn.spatials.trajectory import set_root
+            from stlearn.spatial.trajectory import set_root
 
             root_index = set_root(
                 adata, use_label="clusters", cluster=str(element_values[0])

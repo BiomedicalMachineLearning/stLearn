@@ -13,7 +13,6 @@ Import stLearn as::
 Wrapper functions: `wrapper`
 ------------------------------
 
-.. module:: stlearn.wrapper
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -31,7 +30,6 @@ Wrapper functions: `wrapper`
 Add: `add`
 -------------------
 
-.. module:: stlearn.add
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -130,7 +128,6 @@ Spatial: `spatial`
 Tools: `tl`
 -------------------
 
-.. module:: stlearn.tl.clustering
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -138,13 +135,6 @@ Tools: `tl`
 
    tl.clustering.kmeans
    tl.clustering.louvain
-
-.. module:: stlearn.tl.cci
-.. currentmodule:: stlearn
-
-.. autosummary::
-   :toctree: api/
-
    tl.cci.load_lrs
    tl.cci.grid
    tl.cci.run
@@ -155,7 +145,6 @@ Tools: `tl`
 Plot: `pl`
 -------------------
 
-.. module:: stlearn.pl
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -166,7 +155,6 @@ Plot: `pl`
    pl.gene_plot_interactive
    pl.cluster_plot
    pl.cluster_plot_interactive
-   pl.subcluster_plot
    pl.subcluster_plot
    pl.non_spatial_plot
    pl.deconvolution_plot
@@ -185,7 +173,6 @@ Plot: `pl`
    pl.lr_plot_interactive
    pl.spatialcci_plot_interactive
 
-.. module:: stlearn.pl.trajectory
 .. currentmodule:: stlearn
 
 .. autosummary::
@@ -198,9 +185,8 @@ Plot: `pl`
    pl.trajectory.DE_transition_plot
 
 Datasets: `datasets`
--------------------
+---------------------------
 
-.. module:: stlearn.datasets
 .. currentmodule:: stlearn
 
 .. autosummary::

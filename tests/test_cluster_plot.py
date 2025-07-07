@@ -9,7 +9,7 @@ import matplotlib.colors
 import numpy as np
 import pandas as pd
 
-from stlearn.plotting.classes import ClusterPlot
+from stlearn.pl.classes import ClusterPlot
 
 from .utils import read_test_data
 

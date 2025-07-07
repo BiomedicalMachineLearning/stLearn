@@ -8,8 +8,8 @@ import numpy as np
 from numba.typed import List
 
 import stlearn as st
-import stlearn.tools.microenv.cci.het as het
-import stlearn.tools.microenv.cci.het_helpers as het_hs
+import stlearn.tl.cci.het as het
+import stlearn.tl.cci.het_helpers as het_hs
 from tests.utils import read_test_data
 
 global adata

@@ -33,9 +33,6 @@ def Read10X(
 
     In addition to reading regular 10x output, this looks for the `spatial` folder
     and loads images, coordinates and scale factors. Based on the
-    `Space Ranger output docs.bk`_.
-
-    _Space Ranger output docs.bk:
     https://support.10xgenomics.com/spatial-gene-expression/software/pipelines/latest/output/overview
 
     Parameters

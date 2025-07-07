@@ -366,7 +366,7 @@ def save_adata():
 
 
 def modify_doc_gene_plot(doc):
-    from stlearn.plotting.classes_bokeh import BokehGenePlot
+    from stlearn.pl.classes_bokeh import BokehGenePlot
 
     gp_object = BokehGenePlot(adata)
     doc.add_root(row(gp_object.layout, width=800))
@@ -383,7 +383,7 @@ def modify_doc_gene_plot(doc):
 
 
 def modify_doc_cluster_plot(doc):
-    from stlearn.plotting.classes_bokeh import BokehClusterPlot
+    from stlearn.pl.classes_bokeh import BokehClusterPlot
 
     gp_object = BokehClusterPlot(adata)
     doc.add_root(row(gp_object.layout, width=800))
@@ -404,7 +404,7 @@ def modify_doc_cluster_plot(doc):
 
 
 def modify_doc_spatial_cci_plot(doc):
-    from stlearn.plotting.classes_bokeh import BokehSpatialCciPlot
+    from stlearn.pl.classes_bokeh import BokehSpatialCciPlot
 
     gp_object = BokehSpatialCciPlot(adata)
     doc.add_root(row(gp_object.layout, width=800))
@@ -420,7 +420,7 @@ def modify_doc_spatial_cci_plot(doc):
 
 
 def modify_doc_lr_plot(doc):
-    from stlearn.plotting.classes_bokeh import BokehLRPlot
+    from stlearn.pl.classes_bokeh import BokehLRPlot
 
     gp_object = BokehLRPlot(adata)
     doc.add_root(row(gp_object.layout, width=800))
@@ -434,7 +434,7 @@ def modify_doc_lr_plot(doc):
 
 
 def modify_doc_annotate_plot(doc):
-    from stlearn.plotting.classes_bokeh import Annotate
+    from stlearn.pl.classes_bokeh import Annotate
 
     gp_object = Annotate(adata)
     doc.add_root(row(gp_object.layout, width=800))
