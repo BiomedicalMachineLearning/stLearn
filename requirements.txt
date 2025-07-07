@@ -4,7 +4,7 @@ leidenalg==0.10.2
 louvain==0.8.2
 numba==0.58.1
 numpy==1.26.4
-pillow==11.2.1
+pillow==11.3.0
 scanpy==1.10.4
 scikit-image==0.22.0
 tensorflow==2.14.1
