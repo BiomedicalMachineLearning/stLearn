@@ -71,7 +71,7 @@ nbsphinx_execute = 'never'  # Don't re-execute notebooks
 nbsphinx_allow_errors = True  # Allow notebooks with errors
 
 nbsphinx_thumbnails = {
-    "tutorials/working_with_scanpy": "images/scanpy.png",
+    "tutorials/working_with_scanpy": "_static/images/scanpy.png",
 }
 
 # Autosummary
