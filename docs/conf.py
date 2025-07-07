@@ -70,6 +70,10 @@ html_css_files = [
 nbsphinx_execute = 'never'  # Don't re-execute notebooks
 nbsphinx_allow_errors = True  # Allow notebooks with errors
 
+nbsphinx_thumbnails = {
+    "tutorials/working_with_scanpy": "images/scanpy.png",
+}
+
 # Autosummary
 autosummary_generate = True
 autosummary_imported_members = True
