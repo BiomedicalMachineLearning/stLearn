@@ -1,9 +1,6 @@
 # stlearn/tl/__init__.py
 
-from . import cache
-from . import clustering
-from . import cci
-from . import label
+from . import cache, cci, clustering, label
 
 __all__ = [
     "cache",
