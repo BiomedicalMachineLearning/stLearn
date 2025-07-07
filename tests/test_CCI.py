@@ -2,19 +2,15 @@
 
 """Tests for `stlearn` package."""
 
-import os
-
 import unittest
 
 import numpy as np
 from numba.typed import List
 
 import stlearn as st
-import scanpy as sc
+import stlearn.tl.cci.het as het
+import stlearn.tl.cci.het_helpers as het_hs
 from tests.utils import read_test_data
-
-import stlearn.tools.microenv.cci.het_helpers as het_hs
-import stlearn.tools.microenv.cci.het as het
 
 global adata
 adata = read_test_data()
@@ -26,7 +22,7 @@ class TestCCI(unittest.TestCase):
     def setUp(self) -> None:
         """Setup some basic test-cases as sanity checks."""
 
-        ##### Unit neighbourhood, containing just 1 spot and 6 neighbours ######
+        # Unit neighbourhood, containing just 1 spot and 6 neighbours
         """
         * A is the middle spot, B/C/D/E/F/G are the neighbouring spots clock-
                                                   wise starting at the top-left.
@@ -55,7 +51,7 @@ class TestCCI(unittest.TestCase):
         self.neighbourhood_indices = neighbourhood_indices
         self.neigh_dict = neigh_dict
 
-    ##### Basic tests #######
+    # Basic tests
     def test_load_lrs(self):
         """Testing loading lr database."""
         sizes = [2293, 4071]  # lit lr db size, putative lr db size.
@@ -71,7 +67,7 @@ class TestCCI(unittest.TestCase):
         lrs = st.tl.cci.load_lrs()
         self.assertEqual(len(lrs), sizes[0])
 
-        ### Testing loading mouse as species ####
+        # Testing loading mouse as species
         lrs = st.tl.cci.load_lrs(species="mouse")
         genes1 = [lr_.split("_")[0] for lr_ in lrs]
         genes2 = [lr_.split("_")[1] for lr_ in lrs]
@@ -80,9 +76,9 @@ class TestCCI(unittest.TestCase):
         self.assertTrue(np.all([gene[0].isupper() for gene in genes2]))
         self.assertTrue(np.all([gene[1:] == gene[1:].lower() for gene in genes2]))
 
-    ####### Important, granular tests related to LR scoring #########
+    # Important, granular tests related to LR scoring
 
-    ###### Important, granular tests related to CCI counting #######
+    # Important, granular tests related to CCI counting
     def test_edge_retrieval_basic(self):
         """ Basic test of functionality to retrieve edges via \
                                                     get_between_spot_edge_array.
@@ -93,7 +89,7 @@ class TestCCI(unittest.TestCase):
         # Initialising the edge list #
         edge_list = het_hs.init_edge_list(neighbourhood_bcs)
 
-        ############# Basic case, should populate with all edges ###############
+        # Basic case, should populate with all edges
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
         cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
         het_hs.get_between_spot_edge_array(
@@ -115,7 +111,7 @@ class TestCCI(unittest.TestCase):
             np.all([edge in all_edges or edge[::-1] in all_edges for edge in edge_list])
         )
 
-        ########### Some neighbours not valid but no effect on edge list #######
+        # Some neighbours not valid but no effect on edge list
         # No effect since though not a valid neighbour, still a valid spot #
         edge_list = het_hs.init_edge_list(neighbourhood_bcs)
         invalid_neighs = ["B", "E"]
@@ -130,7 +126,7 @@ class TestCCI(unittest.TestCase):
             np.all([edge in all_edges or edge[::-1] in all_edges for edge in edge_list])
         )
 
-        ########### Some neighbours not valid, effects the edge list ###########
+        # Some neighbours not valid, effects the edge list
         # Two neighbouring spots no longer valid neighbours #
         edge_list = het_hs.init_edge_list(neighbourhood_bcs)
         invalid_neighs = ["B", "C"]
@@ -152,7 +148,7 @@ class TestCCI(unittest.TestCase):
             )
         )
 
-        ######### Middle spot not neighbour, cell type, or spot of interest ####
+        # Middle spot not neighbour, cell type, or spot of interest
         # Removing the centre-spot as being the cell type of interest #
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
         neigh_bool[0] = False
@@ -177,7 +173,7 @@ class TestCCI(unittest.TestCase):
             )
         )
 
-        ### Corner spot valid neighbour, not cell type, not spot of interest ###
+        # Corner spot valid neighbour, not cell type, not spot of interest
         neigh_bool = np.array([True] * len(neighbourhood_bcs))
         cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
         cell_data[1] = 0
@@ -209,7 +205,7 @@ class TestCCI(unittest.TestCase):
             and spots of another cell type expressing the receptor.
         """
 
-        ####### Case 1 ######
+        # Case 1
         """ Middle spot only spot of interest.
             Cell type 1, 2, or 3.
             Middle spot expresses ligand.

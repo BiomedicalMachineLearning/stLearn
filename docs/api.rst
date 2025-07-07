@@ -13,11 +13,10 @@ Import stLearn as::
 Wrapper functions: `wrapper`
 ------------------------------
 
-.. module:: stlearn.wrapper
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    Read10X
    ReadOldST
@@ -31,11 +30,10 @@ Wrapper functions: `wrapper`
 Add: `add`
 -------------------
 
-.. module:: stlearn.add
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    add.image
    add.positions
@@ -56,7 +54,7 @@ Preprocessing: `pp`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    pp.filter_genes
    pp.log1p
@@ -75,7 +73,7 @@ Embedding: `em`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    em.run_pca
    em.run_umap
@@ -91,7 +89,7 @@ Spatial: `spatial`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    spatial.clustering.localization
 
@@ -99,7 +97,7 @@ Spatial: `spatial`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    spatial.trajectory.pseudotime
    spatial.trajectory.pseudotimespace_global
@@ -113,7 +111,7 @@ Spatial: `spatial`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    spatial.morphology.adjust
 
@@ -121,7 +119,7 @@ Spatial: `spatial`
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    spatial.SME.SME_impute0
    spatial.SME.pseudo_spot
@@ -130,22 +128,13 @@ Spatial: `spatial`
 Tools: `tl`
 -------------------
 
-.. module:: stlearn.tl.clustering
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    tl.clustering.kmeans
    tl.clustering.louvain
-
-
-.. module:: stlearn.tl.cci
-.. currentmodule:: stlearn
-
-.. autosummary::
-   :toctree: .
-
    tl.cci.load_lrs
    tl.cci.grid
    tl.cci.run
@@ -156,18 +145,16 @@ Tools: `tl`
 Plot: `pl`
 -------------------
 
-.. module:: stlearn.pl
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    pl.QC_plot
    pl.gene_plot
    pl.gene_plot_interactive
    pl.cluster_plot
    pl.cluster_plot_interactive
-   pl.subcluster_plot
    pl.subcluster_plot
    pl.non_spatial_plot
    pl.deconvolution_plot
@@ -186,11 +173,10 @@ Plot: `pl`
    pl.lr_plot_interactive
    pl.spatialcci_plot_interactive
 
-.. module:: stlearn.pl.trajectory
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
    pl.trajectory.pseudotime_plot
    pl.trajectory.local_plot
@@ -198,13 +184,13 @@ Plot: `pl`
    pl.trajectory.transition_markers_plot
    pl.trajectory.DE_transition_plot
 
-Tools: `datasets`
--------------------
+Datasets: `datasets`
+---------------------------
 
-.. module:: stlearn.datasets
 .. currentmodule:: stlearn
 
 .. autosummary::
-   :toctree: .
+   :toctree: api/
 
-   datasets.example_bcba()
+   datasets.visium_sge
+   datasets.xenium_sge

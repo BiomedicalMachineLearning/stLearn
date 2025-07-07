@@ -1,16 +1,14 @@
-from typing import Optional, Union
-from anndata import AnnData
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import pandas as pd
+from anndata import AnnData
 
 
 def add_deconvolution(
     adata: AnnData,
-    annotation_path: Union[Path, str],
+    annotation_path: Path | str,
     copy: bool = False,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Adding label transfered from Seurat
 
@@ -29,7 +27,11 @@ def add_deconvolution(
         The annotation of cluster results.
 
     """
+    adata = adata.copy() if copy else adata
+
     label = pd.read_csv(annotation_path, index_col=0)
     label = label[adata.obs_names]
 
     adata.obsm["deconvolution"] = label[adata.obs.index].T
+
+    return adata

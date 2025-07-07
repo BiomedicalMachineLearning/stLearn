@@ -1,14 +1,13 @@
+from collections.abc import Callable, Mapping
 from types import MappingProxyType
-from typing import Union, Optional, Any, Mapping, Callable
+from typing import Any, Literal
 
 import numpy as np
-import scipy
+import scanpy
 from anndata import AnnData
 from numpy.random import RandomState
-from .._compat import Literal
-import scanpy
 
-_Method = Literal["umap", "gauss", "rapids"]
+_Method = Literal["umap", "gauss"]
 _MetricFn = Callable[[np.ndarray, np.ndarray], float]
 # from sklearn.metrics.pairwise_distances.__doc__:
 _MetricSparseCapable = Literal[
@@ -33,21 +32,21 @@ _MetricScipySpatial = Literal[
     "sqeuclidean",
     "yule",
 ]
-_Metric = Union[_MetricSparseCapable, _MetricScipySpatial]
+_Metric = _MetricSparseCapable | _MetricScipySpatial
 
 
 def neighbors(
     adata: AnnData,
     n_neighbors: int = 15,
-    n_pcs: Optional[int] = None,
-    use_rep: Optional[str] = None,
+    n_pcs: int | None = None,
+    use_rep: str | None = None,
     knn: bool = True,
-    random_state: Optional[Union[int, RandomState]] = 0,
-    method: Optional[_Method] = "umap",
-    metric: Union[_Metric, _MetricFn] = "euclidean",
+    random_state: int | RandomState | None = 0,
+    method: _Method = "umap",
+    metric: _Metric | _MetricFn = "euclidean",
     metric_kwds: Mapping[str, Any] = MappingProxyType({}),
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Compute a neighborhood graph of observations [McInnes18]_.
     The neighbor search efficiency of this heavily relies on UMAP [McInnes18]_,
@@ -79,8 +78,6 @@ def neighbors(
     method
         Use 'umap' [McInnes18]_ or 'gauss' (Gauss kernel following [Coifman05]_
         with adaptive width [Haghverdi16]_) for computing connectivities.
-        Use 'rapids' for the RAPIDS implementation of UMAP (experimental, GPU
-        only).
     metric
         A known metric’s name or a callable that returns a distance.
     metric_kwds
@@ -98,7 +95,7 @@ def neighbors(
         neighbors.
     """
 
-    scanpy.pp.neighbors(
+    adata = scanpy.pp.neighbors(
         adata,
         n_neighbors=n_neighbors,
         n_pcs=n_pcs,
@@ -112,3 +109,5 @@ def neighbors(
     )
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")
+
+    return adata if copy else None

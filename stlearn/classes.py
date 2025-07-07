@@ -4,40 +4,37 @@ Author: Duy Pham
 Date: 20 Feb 2021
 """
 
-from typing import Optional, Union, Mapping  # Special
-from typing import Sequence, Iterable  # ABCs
-from typing import Tuple  # Classes
-
 import numpy as np
 from anndata import AnnData
 
 from .utils import (
     Empty,
-    _empty,
-    _check_spatial_data,
-    _check_img,
-    _check_spot_size,
-    _check_scale_factor,
     _check_coords,
+    _check_img,
+    _check_scale_factor,
+    _check_spatial_data,
+    _check_spot_size,
+    _empty,
 )
 
 
-class Spatial(object):
+class Spatial:
+    img: np.ndarray | None
+
     def __init__(
         self,
         adata: AnnData,
         basis: str = "spatial",
-        img: Union[np.ndarray, None] = None,
-        img_key: Union[str, None, Empty] = _empty,
-        library_id: Union[str, None] = _empty,
-        crop_coord: Optional[bool] = True,
-        bw: Optional[bool] = False,
-        scale_factor: Optional[float] = None,
-        spot_size: Optional[float] = None,
-        use_raw: Optional[bool] = False,
+        img: np.ndarray | None = None,
+        img_key: str | None | Empty = _empty,
+        library_id: str | None | Empty = _empty,
+        crop_coord: bool = True,
+        bw: bool = False,
+        scale_factor: float | None = None,
+        spot_size: float | None = None,
+        use_raw: bool = False,
         **kwargs,
     ):
-
         self.adata = (adata,)
         self.library_id, self.spatial_data = _check_spatial_data(adata.uns, library_id)
         self.img, self.img_key = _check_img(self.spatial_data, img, img_key, bw=bw)

@@ -1,10 +1,7 @@
-Release notes
+Release Notes
 ===================================================
 
-Version 0.4.9
----------------------------
-
-.. include:: 0.4.10.rst
+.. include:: 1.1.0.rst
 
 .. include:: 0.4.6.rst
 

@@ -1,8 +1,8 @@
-from typing import Optional, Union
+import os
+from pathlib import Path
+
 from anndata import AnnData
 from matplotlib import pyplot as plt
-from pathlib import Path
-import os
 from PIL import Image
 
 Image.MAX_IMAGE_PIXELS = None
@@ -10,15 +10,14 @@ Image.MAX_IMAGE_PIXELS = None
 
 def image(
     adata: AnnData,
-    imgpath: Union[Path, str],
+    imgpath: Path | str | None,
     library_id: str,
     quality: str = "hires",
     scale: float = 1.0,
     visium: bool = False,
     spot_diameter_fullres: float = 50,
     copy: bool = False,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Adding image data to the Anndata object
 
@@ -29,11 +28,13 @@ def image(
     imgpath
         Image path.
     library_id
-        Identifier for the visium library. Can be modified when concatenating multiple adata objects.
+        Identifier for the visium library. Can be modified when concatenating
+        multiple adata objects.
     scale
         Set scale factor.
     quality
-        Set quality that convert to stlearn to use. Store in anndata.obs['imagecol' & 'imagerow'].
+        Set quality that convert to stlearn to use. Store in
+        anndata.obs['imagecol' & 'imagerow'].
     visium
         Is this anndata read from Visium platform or not.
     copy
@@ -44,6 +45,7 @@ def image(
     **tissue_img** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
+    adata = adata.copy() if copy else adata
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
@@ -68,8 +70,6 @@ def image(
                 adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
 
             print("Added tissue image to the object!")
-
-            return adata if copy else None
         except:
             raise ValueError(
                 f"""\

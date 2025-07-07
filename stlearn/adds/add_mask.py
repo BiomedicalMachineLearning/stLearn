@@ -1,19 +1,18 @@
-from pathlib import Path
-import matplotlib
-from matplotlib import pyplot as plt
-import numpy as np
-from typing import Optional, Union
-from anndata import AnnData
 import os
-from stlearn._compat import Literal
+from pathlib import Path
+
+import matplotlib
+import numpy as np
+from anndata import AnnData
+from matplotlib import pyplot as plt
 
 
 def add_mask(
     adata: AnnData,
-    imgpath: Union[Path, str],
+    imgpath: Path | str,
     key: str = "mask",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Adding binary mask image to the Anndata object
 
@@ -33,12 +32,14 @@ def add_mask(
     **mask_image** : `adata.uns` field
         Array format of image, saving by Pillow package.
     """
+    adata = adata.copy() if copy else adata
+
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
         raise KeyError(
-            f"""\
+            """\
         Please read ST data first and try again
         """
         )
@@ -59,8 +60,6 @@ def add_mask(
 
             adata.uns["mask_image"][library_id][key][quality] = img
             print("Added tissue mask to the object!")
-
-            return adata if copy else None
         except:
             raise ValueError(
                 f"""\
@@ -78,11 +77,11 @@ def add_mask(
 
 def apply_mask(
     adata: AnnData,
-    masks: Optional[list] = "all",
+    masks: list | str = "all",
     select: str = "black",
-    cmap: str = "default",
+    cmap_name: str = "default",
     copy: bool = False,
-) -> Optional[AnnData]:
+) -> AnnData | None:
     """\
     Parsing the old spaital transcriptomics data
 
@@ -106,19 +105,22 @@ def apply_mask(
         Array format of image, saving by Pillow package.
     """
     from scanpy.plotting import palettes
-    from stlearn.plotting import palettes_st
 
-    if cmap == "vega_10_scanpy":
+    from stlearn.pl import palettes_st
+
+    adata = adata.copy() if copy else adata
+
+    if cmap_name == "vega_10_scanpy":
         cmap = palettes.vega_10_scanpy
-    elif cmap == "vega_20_scanpy":
+    elif cmap_name == "vega_20_scanpy":
         cmap = palettes.vega_20_scanpy
-    elif cmap == "default_102":
+    elif cmap_name == "default_102":
         cmap = palettes.default_102
-    elif cmap == "default_28":
+    elif cmap_name == "default_28":
         cmap = palettes.default_28
-    elif cmap == "jana_40":
+    elif cmap_name == "jana_40":
         cmap = palettes_st.jana_40
-    elif cmap == "default":
+    elif cmap_name == "default":
         cmap = palettes_st.default
     else:
         raise ValueError(
@@ -126,7 +128,6 @@ def apply_mask(
         )
 
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
-
     cmap_ = plt.cm.get_cmap(cmaps)
 
     try:
@@ -134,7 +135,7 @@ def apply_mask(
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except:
         raise KeyError(
-            f"""\
+            """\
         Please read ST data first and try again
         """
         )
@@ -163,16 +164,18 @@ def apply_mask(
             mask_image = np.where(mask_image > 155, 0, 1)
         else:
             raise ValueError(
-                f"""\
+                """\
             Only support black and white mask yet.
             """
             )
         mask_image_2d = mask_image.mean(axis=2)
-        apply_spot_mask = (
-            lambda x: [i, mask]
-            if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1
-            else [x[key + "_code"], x[key]]
-        )
+
+        def apply_spot_mask(x):
+            if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1:
+                return [i, mask]
+            else:
+                return [x[key + "_code"], x[key]]
+
         spot_mask_df = adata.obs.apply(apply_spot_mask, axis=1, result_type="expand")
         adata.obs[key + "_code"] = spot_mask_df[0]
         adata.obs[key] = spot_mask_df[1]

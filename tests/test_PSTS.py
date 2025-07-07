@@ -2,13 +2,14 @@
 
 """Tests for `stlearn` package."""
 
-
 import unittest
 
-import stlearn as st
-import scanpy as sc
-from .utils import read_test_data
 import numpy as np
+import scanpy as sc
+
+import stlearn as st
+
+from .utils import read_test_data
 
 global adata
 adata = read_test_data()

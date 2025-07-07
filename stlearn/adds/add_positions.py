@@ -1,18 +1,16 @@
-from typing import Optional, Union
-from anndata import AnnData
-import pandas as pd
 from pathlib import Path
-import os
+
+import pandas as pd
+from anndata import AnnData
 
 
 def positions(
     adata: AnnData,
-    position_filepath: Union[Path, str] = None,
-    scale_filepath: Union[Path, str] = None,
+    position_filepath: Path | str,
+    scale_filepath: Path | str,
     quality: str = "low",
     copy: bool = False,
-) -> Optional[AnnData]:
-
+) -> AnnData | None:
     """\
     Adding spatial information into the Anndata object
 
@@ -34,6 +32,8 @@ def positions(
     **imagecol** and **imagerow** : `adata.obs` field
         Spatial information of the tissue image.
     """
+
+    adata = adata.copy() if copy else adata
 
     tissue_positions = pd.read_csv(position_filepath, header=None)
     tissue_positions.columns = [
