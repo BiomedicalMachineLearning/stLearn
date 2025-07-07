@@ -2,7 +2,7 @@
 History
 =======
 
-1.1.0 (2025-07-02)
+1.1.1 (2025-07-07)
 ------------------
 * Support Python 3.10.x
 * Added quality checks black, ruff and mypy and fixed appropriate source code.
