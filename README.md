@@ -16,12 +16,6 @@
       <img src="https://static.pepy.tech/personalized-badge/stlearn?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads"
         alt="PyPI downloads">
       </a>
-      <a href="https://anaconda.org/conda-forge/stlearn">
-      <img src="https://anaconda.org/conda-forge/stlearn/badges/downloads.svg" alt="Conda downloads">
-      </a>
-      <a href="https://anaconda.org/conda-forge/stlearn">
-      <img src="https://anaconda.org/conda-forge/stlearn/badges/downloads.svg" alt="Install">
-      </a>
     </td>
   </tr>
   <tr>
