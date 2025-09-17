@@ -2,6 +2,11 @@
 History
 =======
 
+1.1.2 (2025-09-17)
+------------------
+* Add Leiden clustering wrapper.
+* Fix documentation, refactor code in spatial.SME.
+
 1.1.1 (2025-07-07)
 ------------------
 * Support Python 3.10.x

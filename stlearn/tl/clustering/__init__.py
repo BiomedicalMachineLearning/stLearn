@@ -5,5 +5,6 @@ from .louvain import louvain
 __all__ = [
     "kmeans",
     "louvain",
+    "leiden",
     "annotate_interactive",
 ]

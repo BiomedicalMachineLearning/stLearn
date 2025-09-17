@@ -12,3 +12,4 @@ keras==2.14.0
 types-tensorflow>=2.8.0
 imageio==2.37.0
 scipy==1.11.4
+scikit-learn==1.7.0
