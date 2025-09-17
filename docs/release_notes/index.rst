@@ -1,7 +1,7 @@
 Release Notes
 ===================================================
 
-.. include:: 1.1.4.rst
+.. include:: 1.1.5.rst
 
 .. include:: 1.1.1.rst
 

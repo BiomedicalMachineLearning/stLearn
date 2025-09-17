@@ -2,7 +2,7 @@
 History
 =======
 
-1.1.4 (2025-09-17)
+1.1.5 (2025-09-17)
 ------------------
 * Add Leiden clustering wrapper.
 * Fix documentation, refactor code in spatial.SME.
