@@ -4,6 +4,8 @@ import numpy as np
 from anndata import AnnData
 from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
+from sklearn.linear_model import LinearRegression
+import math
 
 _PLATFORM = Literal["Visium", "Old_ST"]
 _WEIGHTING_MATRIX = Literal[
@@ -17,17 +19,7 @@ _WEIGHTING_MATRIX = Literal[
 ]
 
 
-def calculate_weight_matrix(
-    adata: AnnData,
-    adata_imputed: AnnData | None = None,
-    pseudo_spots: bool = False,
-    platform: _PLATFORM = "Visium",
-) -> AnnData | None:
-    import math
-
-    from sklearn.linear_model import LinearRegression
-
-    rate: float
+def row_col_by_platform(adata, platform):
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
@@ -46,64 +38,61 @@ def calculate_weight_matrix(
                 {platform!r} does not support.
                 """
         )
-
     reg_row = LinearRegression().fit(array_row.values.reshape(-1, 1), img_row)
-
     reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
+    return reg_col, reg_row, rate
 
-    if pseudo_spots and adata_imputed:
-        pd = pairwise_distances(
-            adata_imputed.obs[["imagecol", "imagerow"]],
-            adata.obs[["imagecol", "imagerow"]],
-            metric="euclidean",
-        )
-        unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
-        pd_norm = np.where(pd >= unit, 0, 1)
 
-        md = 1 - pairwise_distances(
-            adata_imputed.obsm["X_morphology"],
-            adata.obsm["X_morphology"],
-            metric="cosine",
-        )
-        md[md < 0] = 0
+def weight_matrix(adata, platform):
+    reg_col, reg_row, rate = row_col_by_platform(adata, platform)
+    pd = pairwise_distances(adata.obs[["imagecol", "imagerow"]], metric="euclidean")
+    unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+    pd_norm = np.where(pd >= rate * unit, 0, 1)
+    md = 1 - pairwise_distances(adata.obsm["X_morphology"], metric="cosine")
+    md[md < 0] = 0
+    gd = 1 - pairwise_distances(adata.obsm["X_pca"], metric="correlation")
+    adata.uns["gene_expression_correlation"] = gd
+    adata.uns["physical_distance"] = pd_norm
+    adata.uns["morphological_distance"] = md
+    adata.uns["weights_matrix_all"] = (
+        adata.uns["physical_distance"]
+        * adata.uns["morphological_distance"]
+        * adata.uns["gene_expression_correlation"]
+    )
+    adata.uns["weights_matrix_pd_gd"] = (
+        adata.uns["physical_distance"] * adata.uns["gene_expression_correlation"]
+    )
+    adata.uns["weights_matrix_pd_md"] = (
+        adata.uns["physical_distance"] * adata.uns["morphological_distance"]
+    )
+    adata.uns["weights_matrix_gd_md"] = (
+        adata.uns["gene_expression_correlation"]
+        * adata.uns["morphological_distance"]
+    )
 
-        adata_imputed.uns["physical_distance"] = pd_norm
-        adata_imputed.uns["morphological_distance"] = md
 
-        adata_imputed.uns["weights_matrix_all"] = (
-            adata_imputed.uns["physical_distance"]
-            * adata_imputed.uns["morphological_distance"]
-        )
+def weight_matrix_imputed(adata, adata_imputed, platform):
+    reg_col, reg_row, _ = row_col_by_platform(adata, platform)
 
-    else:
-        pd = pairwise_distances(adata.obs[["imagecol", "imagerow"]], metric="euclidean")
-        unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
-        pd_norm = np.where(pd >= rate * unit, 0, 1)
-
-        md = 1 - pairwise_distances(adata.obsm["X_morphology"], metric="cosine")
-        md[md < 0] = 0
-
-        gd = 1 - pairwise_distances(adata.obsm["X_pca"], metric="correlation")
-        adata.uns["gene_expression_correlation"] = gd
-        adata.uns["physical_distance"] = pd_norm
-        adata.uns["morphological_distance"] = md
-
-        adata.uns["weights_matrix_all"] = (
-            adata.uns["physical_distance"]
-            * adata.uns["morphological_distance"]
-            * adata.uns["gene_expression_correlation"]
-        )
-        adata.uns["weights_matrix_pd_gd"] = (
-            adata.uns["physical_distance"] * adata.uns["gene_expression_correlation"]
-        )
-        adata.uns["weights_matrix_pd_md"] = (
-            adata.uns["physical_distance"] * adata.uns["morphological_distance"]
-        )
-        adata.uns["weights_matrix_gd_md"] = (
-            adata.uns["gene_expression_correlation"]
-            * adata.uns["morphological_distance"]
-        )
-    return adata
+    pd = pairwise_distances(
+        adata_imputed.obs[["imagecol", "imagerow"]],
+        adata.obs[["imagecol", "imagerow"]],
+        metric="euclidean",
+    )
+    unit = math.sqrt(reg_row.coef_ ** 2 + reg_col.coef_ ** 2)
+    pd_norm = np.where(pd >= unit, 0, 1)
+    md = 1 - pairwise_distances(
+        adata_imputed.obsm["X_morphology"],
+        adata.obsm["X_morphology"],
+        metric="cosine",
+    )
+    md[md < 0] = 0
+    adata_imputed.uns["physical_distance"] = pd_norm
+    adata_imputed.uns["morphological_distance"] = md
+    adata_imputed.uns["weights_matrix_all"] = (
+        adata_imputed.uns["physical_distance"]
+        * adata_imputed.uns["morphological_distance"]
+    )
 
 
 def impute_neighbour(

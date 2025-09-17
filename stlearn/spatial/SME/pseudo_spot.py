@@ -12,78 +12,9 @@ import stlearn
 from ._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
-    calculate_weight_matrix,
     impute_neighbour,
+    weight_matrix_imputed
 )
-
-
-def SME_impute0(
-    adata: AnnData,
-    use_data: str = "raw",
-    weights: _WEIGHTING_MATRIX = "weights_matrix_all",
-    platform: _PLATFORM = "Visium",
-    copy: bool = False,
-) -> AnnData | None:
-    """\
-    using spatial location (S), tissue morphological feature (M) and gene
-    expression (E) information to impute missing values
-
-    Parameters
-    ----------
-    adata
-        Annotated data matrix.
-    use_data
-        input data, can be `raw` counts or log transformed data
-    weights
-        weighting matrix for imputation.
-        if `weights_matrix_all`, matrix combined all information from spatial
-        location (S), tissue morphological feature (M) and gene expression (E)
-        if `weights_matrix_pd_md`, matrix combined information from spatial
-        location (S), tissue morphological feature (M)
-    platform
-        `Visium` or `Old_ST`
-    copy
-        Return a copy instead of writing to adata.
-    Returns
-    -------
-    Anndata
-    """
-    adata = adata.copy() if copy else adata
-
-    if use_data == "raw":
-        if isinstance(adata.X, csr_matrix):
-            count_embed = adata.X.toarray()
-        elif isinstance(adata.X, np.ndarray):
-            count_embed = adata.X
-        elif isinstance(adata.X, pd.Dataframe):
-            count_embed = adata.X.values
-        else:
-            raise ValueError(
-                f"""\
-                    {type(adata.X)} is not a valid type.
-                    """
-            )
-    else:
-        count_embed = adata.obsm[use_data]
-
-    calculate_weight_matrix(adata, platform=platform)
-
-    impute_neighbour(adata, count_embed=count_embed, weights=weights)
-
-    imputed_data = adata.obsm["imputed_data"].astype(float)
-    mask = count_embed != 0
-    count_embed_ = count_embed.astype(float)
-    count_embed_[count_embed_ == 0] = np.nan
-    adjusted_count_matrix = np.nanmean(np.array([count_embed_, imputed_data]), axis=0)
-    adjusted_count_matrix[mask] = count_embed[mask]
-
-    key_added = use_data + "_SME_imputed"
-    adata.obsm[key_added] = adjusted_count_matrix
-
-    print("The data adjusted by SME is added to adata.obsm['" + key_added + "']")
-
-    return adata if copy else None
-
 
 _COPY = Literal["pseudo_spot_adata", "combined_adata"]
 
@@ -98,9 +29,8 @@ def pseudo_spot(
     copy: _COPY = "pseudo_spot_adata",
 ) -> AnnData | None:
     """\
-    using spatial location (S), tissue morphological feature (M) and gene
-    expression (E) information to impute gap between spots and increase resolution
-    for gene detection
+    Improve spatial resolution by imputing (creating) new spots from existing ones
+    using spatial, morphological, and expression (SME) information.
 
     Parameters
     ----------
@@ -306,8 +236,8 @@ def pseudo_spot(
     else:
         count_embed = adata.obsm[use_data]
 
-    calculate_weight_matrix(
-        adata, pseudo_spot_adata, pseudo_spots=True, platform=platform
+    weight_matrix_imputed(
+        adata, pseudo_spot_adata, platform=platform
     )
 
     impute_neighbour(pseudo_spot_adata, count_embed=count_embed, weights=weights)
