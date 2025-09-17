@@ -6,7 +6,8 @@ from scipy.sparse import csr_matrix
 from ._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
-    impute_neighbour, weight_matrix,
+    impute_neighbour,
+    weight_matrix,
 )
 
 

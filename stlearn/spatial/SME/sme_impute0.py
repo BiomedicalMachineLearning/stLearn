@@ -3,8 +3,12 @@ import pandas as pd
 from anndata import AnnData
 from scipy.sparse import csr_matrix
 
-from stlearn.spatial.SME._weighting_matrix import _WEIGHTING_MATRIX, _PLATFORM, \
-    weight_matrix, impute_neighbour
+from stlearn.spatial.SME._weighting_matrix import (
+    _PLATFORM,
+    _WEIGHTING_MATRIX,
+    impute_neighbour,
+    weight_matrix,
+)
 
 
 def SME_impute0(

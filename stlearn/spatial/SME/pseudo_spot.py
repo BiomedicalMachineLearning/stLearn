@@ -13,7 +13,7 @@ from ._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
     impute_neighbour,
-    weight_matrix_imputed
+    weight_matrix_imputed,
 )
 
 _COPY = Literal["pseudo_spot_adata", "combined_adata"]
@@ -236,9 +236,7 @@ def pseudo_spot(
     else:
         count_embed = adata.obsm[use_data]
 
-    weight_matrix_imputed(
-        adata, pseudo_spot_adata, platform=platform
-    )
+    weight_matrix_imputed(adata, pseudo_spot_adata, platform=platform)
 
     impute_neighbour(pseudo_spot_adata, count_embed=count_embed, weights=weights)
 

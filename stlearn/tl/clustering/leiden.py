@@ -1,6 +1,4 @@
-from collections.abc import Mapping, Sequence
-from types import MappingProxyType
-from typing import Any, Literal
+from collections.abc import Sequence
 
 import scanpy
 from anndata import AnnData
