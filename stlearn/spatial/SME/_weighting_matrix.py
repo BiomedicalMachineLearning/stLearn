@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 from anndata import AnnData
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression  # type: ignore
 from sklearn.metrics import pairwise_distances
 from tqdm import tqdm
 
@@ -19,7 +19,10 @@ _WEIGHTING_MATRIX = Literal[
 ]
 
 
-def row_col_by_platform(adata, platform):
+def row_col_by_platform(
+    adata, platform
+) -> tuple[LinearRegression, LinearRegression, float]:
+    rate: float
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
@@ -38,15 +41,16 @@ def row_col_by_platform(adata, platform):
                 {platform!r} does not support.
                 """
         )
-    reg_row = LinearRegression().fit(array_row.values.reshape(-1, 1), img_row)
-    reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
+    regression = LinearRegression()
+    reg_row: LinearRegression = regression.fit(array_row.values.reshape(-1, 1), img_row)  # type: ignore
+    reg_col: LinearRegression = regression.fit(array_col.values.reshape(-1, 1), img_col)  # type: ignore
     return reg_col, reg_row, rate
 
 
 def weight_matrix(adata, platform):
     reg_col, reg_row, rate = row_col_by_platform(adata, platform)
     pd = pairwise_distances(adata.obs[["imagecol", "imagerow"]], metric="euclidean")
-    unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
+    unit = math.sqrt(reg_row.coef_[0] ** 2 + reg_col.coef_[0] ** 2)
     pd_norm = np.where(pd >= rate * unit, 0, 1)
     md = 1 - pairwise_distances(adata.obsm["X_morphology"], metric="cosine")
     md[md < 0] = 0
@@ -78,7 +82,7 @@ def weight_matrix_imputed(adata, adata_imputed, platform):
         adata.obs[["imagecol", "imagerow"]],
         metric="euclidean",
     )
-    unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
+    unit = math.sqrt(reg_row.coef_[0] ** 2 + reg_col.coef_[0] ** 2)
     pd_norm = np.where(pd >= unit, 0, 1)
     md = 1 - pairwise_distances(
         adata_imputed.obsm["X_morphology"],
