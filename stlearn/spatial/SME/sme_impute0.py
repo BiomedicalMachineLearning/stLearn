@@ -35,7 +35,7 @@ def SME_impute0(
     weights : _WEIGHTING_MATRIX, default="weights_matrix_all"
         Strategy for computing neighbor similarity weights:
         - "weights_matrix_all": Combines spatial location (S) +
-            morphological features (M) + gene expression correlation (E).
+        morphological features (M) + gene expression correlation (E).
         - "weights_matrix_pd_gd": Physical distance + gene expression correlation only.
         - "weights_matrix_pd_md": Physical distance + morphological features only.
         - "weights_matrix_gd_md": Gene expression + morphological features only.
