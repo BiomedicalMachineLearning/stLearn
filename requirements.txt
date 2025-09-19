@@ -8,7 +8,7 @@ pillow==11.3.0
 scanpy==1.10.4
 scikit-image==0.22.0
 tensorflow==2.14.1
-keras==2.14.0
+keras==3.11.0
 types-tensorflow>=2.8.0
 imageio==2.37.0
 scipy==1.11.4
