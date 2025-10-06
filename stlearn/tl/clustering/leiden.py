@@ -7,7 +7,7 @@ from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
 
 
-def louvain(
+def leiden(
     adata: AnnData,
     resolution: float | None = None,
     random_state: int | RandomState | None = 0,
