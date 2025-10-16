@@ -2,6 +2,11 @@
 History
 =======
 
+1.1.6 (2025-10-16)
+------------------
+* Added support for Python 3.11 and 3.12.
+* Upgraded scanpy to 1.11 - clustering will be different.
+
 1.1.5 (2025-09-17)
 ------------------
 * Add Leiden clustering wrapper.

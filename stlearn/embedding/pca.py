@@ -9,7 +9,7 @@ def run_pca(
     data: AnnData | np.ndarray | spmatrix,
     n_comps: int = 50,
     zero_center: bool | None = True,
-    svd_solver: str = "auto",
+    svd_solver: str = "arpack",
     random_state: int | RandomState | None = 0,
     return_info: bool = False,
     use_highly_variable: bool | None = None,
@@ -38,11 +38,11 @@ def run_pca(
         Passing `None` decides automatically based on sparseness of the data.
     svd_solver
         SVD solver to use:
-        `'arpack'`
+        `'arpack'` (the default - deterministic)
           for the ARPACK wrapper in SciPy (:func:`~scipy.sparse.linalg.svds`)
         `'randomized'`
           for the randomized algorithm due to Halko (2009).
-        `'auto'` (the default)
+        `'auto'`
           chooses automatically depending on the size of the problem.
     random_state
         Change to use different initial states for the optimization.
