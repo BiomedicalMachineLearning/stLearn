@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stlearn"
-version = "1.1.5"
+version = "1.1.6"
 authors = [
     {name = "Genomics and Machine Learning lab", email = "andrew.newman@uq.edu.au"},
 ]
 description = "A downstream analysis toolkit for Spatial Transcriptomic data"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "BSD license"}
-requires-python = "~=3.10.0"
+requires-python = ">=3.10,<3.13"
 keywords = ["stlearn"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -19,6 +19,8 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 dynamic = ["dependencies"]
 
@@ -34,6 +36,7 @@ dev = [
     "furo==2024.8.6",
     "myst-parser>=0.18",
     "nbsphinx>=0.9.0",
+    "types-tensorflow>=2.8.0",
     "sphinx-autodoc-typehints>=1.24.0",
     "sphinx-autosummary-accessors>=2023.4.0",
 ]
@@ -74,7 +77,7 @@ dependencies = {file = ["requirements.txt"]}
 
 [tool.ruff]
 line-length=88
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP"]
