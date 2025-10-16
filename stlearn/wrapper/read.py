@@ -11,14 +11,15 @@ import numpy as np
 import pandas as pd
 import scanpy
 from anndata import AnnData
+from h5py import File
 from matplotlib.image import imread
 from PIL import Image
+from scanpy import read_csv
 
 import stlearn
 from stlearn.types import _BACKGROUND, _QUALITY
 from stlearn.wrapper.xenium_alignment import apply_alignment_transformation
-from h5py import File
-from scanpy import read_csv
+
 
 def Read10X(
     path: str | Path,
