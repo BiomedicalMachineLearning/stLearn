@@ -253,6 +253,43 @@ class TestCCI(unittest.TestCase):
             self.assertEqual(len(observed_edgesi), len(expect_edgesi))
             self.assertTrue(np.all(match_bool))
 
+    def test_get_interaction_matrix(self):
+        """Test getting the interaction matrix for cell type pairs."""
+
+        # 3 cell types: A,E -> CT1, B,G -> CT2, C,F -> CT3
+        unique_cell_type_labels = np.array(["CT1", "CT2", "CT3"])
+        cell_annots = ["CT1", "CT2", "CT3", "CT2", "CT1", "CT3", "CT2"]
+        cell_data = np.zeros((len(cell_annots), len(unique_cell_type_labels)),
+                             dtype=np.float64)
+        for i, annot in enumerate(cell_annots):
+            ct_index = np.where(unique_cell_type_labels == annot)[0][0]
+            cell_data[i, ct_index] = 1
+
+        # Middle spot (A) is significant and expresses ligand
+        sig_bool = np.array([True] + ([False] * 6))
+        L_bool = sig_bool.copy()
+
+        # Neighbors D, E, G express receptor
+        R_bool = np.array([False] * len(cell_annots))
+        R_bool[[3, 4, 6]] = True
+
+        # Get interaction matrix
+        int_matrix = het.get_interaction_matrix(
+            cell_data,
+            self.neighbourhood_bcs,
+            self.neighbourhood_indices,
+            unique_cell_type_labels,
+            sig_bool,
+            L_bool,
+            R_bool,
+            cell_prop_cutoff=0.2
+        )
+
+        # Expected: CT1 (A) -> CT2 (D,G): 2 interactions, CT1 -> CT1 (E): 1 interaction
+        # Matrix is [CT1->CT1, CT1->CT2, CT1->CT3, CT2->CT1, ...]
+        self.assertEqual(int_matrix.shape, (3, 3))
+        self.assertEqual(int_matrix[0, 0], 1)  # CT1 -> CT1 (A->E)
+        self.assertEqual(int_matrix[0, 1], 2)  # CT1 -> CT2 (A->D, A->G)
+
     # TODO next things to test:
-    #   1. Getting the interaction matrix.
-    #   2. Getting the LR scores.
+    #   1. Getting the LR scores.
