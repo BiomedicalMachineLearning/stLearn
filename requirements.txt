@@ -9,6 +9,7 @@ scanpy>=1.11.0,<2.0
 scikit-image>=0.22.0,<0.23
 tensorflow>=2.14.1
 keras>=2.14.0
+pandas>=2.3.0
 imageio>=2.37.0,<3.0
 scipy>=1.11.0,<2.0
 scikit-learn>=1.7.0,<2.0

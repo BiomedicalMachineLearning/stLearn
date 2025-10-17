@@ -1,6 +1,3 @@
-from collections.abc import Iterable
-from typing import Literal
-
 import numpy as np
 import scanpy
 from anndata import AnnData
