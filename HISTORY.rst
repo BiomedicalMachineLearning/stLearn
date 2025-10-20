@@ -2,7 +2,7 @@
 History
 =======
 
-1.2.0 (2025-10-20)
+1.2.1 (2025-10-20)
 ------------------
 * Added support for Python 3.11 and 3.12.
 * Upgraded scanpy to 1.11 - clustering will be different.
