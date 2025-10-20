@@ -22,7 +22,6 @@ def leiden(
 ) -> AnnData | None:
     """\
     Wrap function scanpy.tl.leiden
-
     This requires having ran :func:`~scanpy.pp.neighbors` or
     :func:`~scanpy.external.pp.bbknn` first,
     or explicitly passing a ``adjacency`` matrix.
