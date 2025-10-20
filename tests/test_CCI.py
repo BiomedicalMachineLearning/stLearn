@@ -285,7 +285,7 @@ class TestCCI(unittest.TestCase):
             sig_bool,
             ligand_bool,
             receptor_bool,
-            cell_prop_cutoff=0.2
+            cell_prop_cutoff=0.2,
         )
 
         # Expected: CT1 (A) -> CT2 (D,G): 2 interactions, CT1 -> CT1 (E): 1 interaction
@@ -297,8 +297,9 @@ class TestCCI(unittest.TestCase):
 
     @staticmethod
     def create_cci(cell_annotations: list[str], unique_cell_type_labels):
-        cell_data = np.zeros((len(cell_annotations), len(unique_cell_type_labels)),
-                             dtype=np.float64)
+        cell_data = np.zeros(
+            (len(cell_annotations), len(unique_cell_type_labels)), dtype=np.float64
+        )
         for i, annot in enumerate(cell_annotations):
             ct_index = np.where(unique_cell_type_labels == annot)[0][0]
             cell_data[i, ct_index] = 1
