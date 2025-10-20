@@ -11,8 +11,10 @@ import numpy as np
 import pandas as pd
 import scanpy
 from anndata import AnnData
+from h5py import File
 from matplotlib.image import imread
 from PIL import Image
+from scanpy import read_csv
 
 import stlearn
 from stlearn.types import _BACKGROUND, _QUALITY
@@ -86,8 +88,6 @@ def Read10X(
     adata = scanpy.read_10x_h5(path / count_file, genome=genome)
 
     adata.uns["spatial"] = dict()
-
-    from h5py import File
 
     with File(path / count_file, mode="r") as f:
         attrs = dict(f.attrs)
@@ -369,7 +369,6 @@ def ReadMERFISH(
     coordinates = pd.read_excel(spatial_file, index_col=0)
     if coordinates.min().min() < 0:
         coordinates = coordinates + np.abs(coordinates.min().min()) + 100
-    from scanpy import read_csv
 
     counts = read_csv(count_matrix_file).transpose()
 

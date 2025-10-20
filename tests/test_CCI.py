@@ -12,6 +12,12 @@ import stlearn.tl.cci.het as het
 import stlearn.tl.cci.het_helpers as het_hs
 from tests.utils import read_test_data
 
+# Per line - which cells to annotate
+CELL_TYPE_ANNOTATIONS = ["CT1", "CT2", "CT3", "CT2", "CT1", "CT3", "CT2"]
+
+# 3 cell types: A,E -> CT1, B,G -> CT2, C,F -> CT3
+CELL_TYPE_LABELS = np.array(["CT1", "CT2", "CT3"])
+
 global adata
 adata = read_test_data()
 
@@ -212,15 +218,17 @@ class TestCCI(unittest.TestCase):
             3 neighbours express receptor:
                 * One is cell type 1, two are cell type 2.
         """
-        cell_annots = [1, 2, 3, 2, 1, 3, 2]
-        cell_data = np.zeros((len(cell_annots), 3), dtype=np.float64)
-        for i, annot in enumerate(cell_annots):
-            cell_data[i, annot - 1] = 1
-        all_set = np.array([str(i) for i in range(1, 4)])
-        sig_bool = np.array([True] + ([False] * (len(cell_annots) - 1)))
-        l_bool = sig_bool
-        r_bool = np.array([False] * len(cell_annots))
-        r_bool[[3, 4, 6]] = True
+
+        # Create 0 matrix using the above annotations to create position.
+        # i.e. CT1 = 0.
+        cell_data = TestCCI.create_cci(CELL_TYPE_ANNOTATIONS, CELL_TYPE_LABELS)
+
+        # Create middle ligand interacting with 3 neighbour receptors.
+        sig_bool = np.array([True] + ([False] * (len(CELL_TYPE_ANNOTATIONS) - 1)))
+        ligand_boolean = sig_bool.copy()
+
+        receptor_boolean = np.array([False] * len(CELL_TYPE_ANNOTATIONS))
+        receptor_boolean[[3, 4, 6]] = True
 
         # NOTE that format of output is an edge list for each celltype-celltype
         # interaction, where edge list represents interactions between:
@@ -235,10 +243,10 @@ class TestCCI(unittest.TestCase):
             cell_data,
             self.neighbourhood_bcs,
             self.neighbourhood_indices,
-            all_set,
+            CELL_TYPE_LABELS,
             sig_bool,
-            l_bool,
-            r_bool,
+            ligand_boolean,
+            receptor_boolean,
             0,
         )
 
@@ -253,6 +261,48 @@ class TestCCI(unittest.TestCase):
             self.assertEqual(len(observed_edgesi), len(expect_edgesi))
             self.assertTrue(np.all(match_bool))
 
+    def test_get_interaction_matrix(self):
+        """Test getting the interaction matrix for cell type pairs."""
+
+        # Create 0 matrix using the above annotations to create position.
+        # i.e. CT1 = 0.
+        cell_data = TestCCI.create_cci(CELL_TYPE_ANNOTATIONS, CELL_TYPE_LABELS)
+
+        # Middle spot (A) is significant and expresses ligand
+        sig_bool = np.array([True] + ([False] * 6))
+        ligand_bool = sig_bool.copy()
+
+        # Neighbors D, E, G express receptor
+        receptor_bool = np.array([False] * len(CELL_TYPE_ANNOTATIONS))
+        receptor_bool[[3, 4, 6]] = True
+
+        # Get interaction matrix
+        int_matrix = het.get_interaction_matrix(
+            cell_data,
+            self.neighbourhood_bcs,
+            self.neighbourhood_indices,
+            CELL_TYPE_LABELS,
+            sig_bool,
+            ligand_bool,
+            receptor_bool,
+            cell_prop_cutoff=0.2
+        )
+
+        # Expected: CT1 (A) -> CT2 (D,G): 2 interactions, CT1 -> CT1 (E): 1 interaction
+        # Matrix is [CT1->CT1, CT1->CT2, CT1->CT3, CT2->CT1, ...]
+        self.assertEqual(int_matrix.shape, (3, 3))
+        self.assertEqual(int_matrix[0, 0], 1)  # CT1 -> CT1 (A->E)
+        self.assertEqual(int_matrix[0, 1], 2)  # CT1 -> CT2 (A->D, A->G)
+        self.assertEqual(int_matrix[0, 2], 0)  # CT1 -> CT3 None
+
+    @staticmethod
+    def create_cci(cell_annotations: list[str], unique_cell_type_labels):
+        cell_data = np.zeros((len(cell_annotations), len(unique_cell_type_labels)),
+                             dtype=np.float64)
+        for i, annot in enumerate(cell_annotations):
+            ct_index = np.where(unique_cell_type_labels == annot)[0][0]
+            cell_data[i, ct_index] = 1
+        return cell_data
+
     # TODO next things to test:
-    #   1. Getting the interaction matrix.
-    #   2. Getting the LR scores.
+    #   1. Getting the LR scores.

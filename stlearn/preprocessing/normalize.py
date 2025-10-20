@@ -1,6 +1,3 @@
-from collections.abc import Iterable
-from typing import Literal
-
 import numpy as np
 import scanpy
 from anndata import AnnData
@@ -12,8 +9,7 @@ def normalize_total(
     exclude_highly_expressed: bool = False,
     max_fraction: float = 0.05,
     key_added: str | None = None,
-    layers: Literal["all"] | Iterable[str] | None = None,
-    layer_norm: str | None = None,
+    layer: str | None = None,
     inplace: bool = True,
 ) -> dict[str, np.ndarray] | None:
     """\
@@ -48,18 +44,6 @@ def normalize_total(
     key_added
         Name of the field in `adata.obs` where the normalization factor is
         stored.
-    layers
-        List of layers to normalize. Set to `'all'` to normalize all layers.
-    layer_norm
-        Specifies how to normalize layers:
-        * If `None`, after normalization, for each layer in *layers* each cell
-          has a total count equal to the median of the *counts_per_cell* before
-          normalization of the layer.
-        * If `'after'`, for each layer in *layers* each cell has
-          a total count equal to `target_sum`.
-        * If `'X'`, for each layer in *layers* each cell has a total count
-          equal to the median of total counts for observations (cells) of
-          `adata.X` before normalization.
     inplace
         Whether to update `adata` or return dictionary with normalized copies of
         `adata.X` and `adata.layers`.
@@ -76,8 +60,7 @@ def normalize_total(
         exclude_highly_expressed=exclude_highly_expressed,
         max_fraction=max_fraction,
         key_added=key_added,
-        layers=layers,
-        layer_norm=layer_norm,
+        layer=layer,
         inplace=inplace,
     )
 

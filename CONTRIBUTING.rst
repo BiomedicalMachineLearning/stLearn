@@ -66,10 +66,17 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 
 3. Install your local copy into a virtualenv. This is how you set up your fork for local development::
 
-    $ conda create -n stlearn-dev python=3.10 --y
+    Run the following:
+    $ conda create -n stlearn-dev python=3.12 --y
     $ conda activate stlearn-dev
     $ cd stlearn/
     $ pip install -e .[dev,test]
+
+    If you get an error for louvain package on MacOS, make sure you have cmake installed first (if you have brew):
+    $ brew install cmake
+
+    You can also use conda to install these dependencies (after creating the environment):
+    $ conda install -c conda-forge louvain leidenalg python-igraph
 
    Or if you prefer pip/virtualenv::
 
