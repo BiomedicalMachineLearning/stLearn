@@ -42,7 +42,7 @@ def run_pca(
         SVD solver to use:
 
         - `'arpack'` (the default - deterministic) for the ARPACK wrapper in
-        SciPy (:func:`~scipy.sparse.linalg.svds`)
+          SciPy (:func:`~scipy.sparse.linalg.svds`)
         - `'randomized'` for the randomized algorithm due to Halko (2009).
         - `'auto'` chooses automatically depending on the size of the problem.
 
@@ -80,7 +80,7 @@ def run_pca(
         - `.varm['PCs']` - The principal components containing the loadings.
         - `.uns['pca']['variance_ratio']` - Ratio of explained variance.
         - `.uns['pca']['variance']` - Explained variance, equivalent to the
-        eigenvalues of the covariance matrix.
+          eigenvalues of the covariance matrix.
 
     """
 
