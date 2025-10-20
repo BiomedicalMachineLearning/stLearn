@@ -21,7 +21,7 @@ def normalize_total(
     cell. This is meaningful as these can strongly influence the resulting
     normalized values for all other genes [Weinreb17]_.
     Similar functions are used, for example, by Seurat [Satija15]_, Cell Ranger
-    [Zheng17]_ or SPRING [Weinreb16]_.
+    [Zheng17]_ or SPRING [Weinreb17]_.
 
     Parameters
     ----------

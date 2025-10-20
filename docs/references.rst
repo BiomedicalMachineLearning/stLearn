@@ -24,7 +24,7 @@ References
    *UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction*,
    `arXiv <https://arxiv.org/abs/1802.03426>`__.
 
-.. [Weinreb16] Weinreb *et al.* (2016),
+.. [Weinreb17] Weinreb *et al.* (2017),
    *SPRING: a kinetic interface for visualizing high dimensional single-cell expression data*,
    `bioRxiv <https://doi.org/10.1101/090332>`__.
 
@@ -35,10 +35,6 @@ References
 .. [Zheng17] Zheng *et al.* (2017),
    *Massively parallel digital transcriptional profiling of single cells*,
    `Nature Communications <https://doi.org/10.1038/ncomms14049>`__.
-
-.. [Weinreb17] Weinreb *et al.* (2016),
-   *SPRING: a kinetic interface for visualizing high dimensional single-cell expression data*,
-   `bioRxiv <https://doi.org/10.1101/090332>`__.
 
 .. [Blondel08] Blondel *et al.* (2008),
    *Fast unfolding of communities in large networks*,
