@@ -2,9 +2,11 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. rubric:: Features
+
 * Added support for Python 3.11 and 3.12.
 * Upgraded scanpy to 1.11 - clustering will be different.
 * Added more CCI tests.
 
 .. rubric:: Bugs
+
 * Fixed copy-paste error in louvain.py file.

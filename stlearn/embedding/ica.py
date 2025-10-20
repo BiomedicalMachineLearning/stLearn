@@ -26,9 +26,10 @@ def run_ica(
         or 'cube'.
         You can also provide your own function. It should return a tuple
         containing the value of the function, and of its derivative, in the
-        point. Example:
-        def my_g(x):
-            return x ** 3, (3 * x ** 2).mean(axis=-1)
+        point. Example::
+
+           def my_g(x):
+                return x ** 3, (3 * x ** 2).mean(axis=-1)
     tol
         Tolerance on update at each iteration.
     use_data
@@ -36,11 +37,11 @@ def run_ica(
         the chosen data from adata.obsm.
     copy
         Return a copy instead of writing to adata.
+
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
     `X_ica` : :class:`numpy.ndarray` (`adata.obsm`)
-        Independent Component Analysis representation of data.
     """
 
     adata = adata.copy() if copy else adata

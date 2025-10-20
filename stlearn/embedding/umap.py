@@ -26,7 +26,9 @@ def run_umap(
 ) -> AnnData | None:
     """\
     Wrap function scanpy.pp.umap
+
     Embed the neighborhood graph using UMAP [McInnes18]_.
+
     UMAP (Uniform Manifold Approximation and Projection) is a manifold learning
     technique suitable for visualizing high-dimensional data. Besides tending to
     be faster than tSNE, it optimizes the embedding such that it best reflects
@@ -37,6 +39,7 @@ def run_umap(
     implementation of `umap-learn <https://github.com/lmcinnes/umap>`__
     [McInnes18]_. For a few comparisons of UMAP with tSNE, see this `preprint
     <https://doi.org/10.1101/298430>`__.
+
     Parameters
     ----------
     adata
@@ -48,6 +51,7 @@ def run_umap(
         If `RandomState`, `random_state` is the random number generator;
         If `None`, the random number generator is the `RandomState` instance used
         by `np.random`.
+
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.

@@ -15,11 +15,14 @@ def filter_genes(
     Wrap function scanpy.pp.filter_genes
 
     Filter genes based on number of cells or counts.
+
     Keep genes that have at least `min_counts` counts or are expressed in at
     least `min_cells` cells or have at most `max_counts` counts or are expressed
     in at most `max_cells` cells.
+
     Only provide one of the optional parameters `min_counts`, `min_cells`,
     `max_counts`, `max_cells` per call.
+
     Parameters
     ----------
     adata
@@ -35,6 +38,7 @@ def filter_genes(
         Maximum number of cells expressed required for a gene to pass filtering.
     inplace
         Perform computation inplace or return result.
+
     Returns
     -------
     Depending on `inplace`, returns the following arrays or directly subsets
