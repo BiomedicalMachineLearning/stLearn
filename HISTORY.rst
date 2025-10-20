@@ -8,6 +8,9 @@ History
 * Upgraded scanpy to 1.11 - clustering will be different.
 * Added more CCI tests.
 
+API and Bug Fixes:
+* Fixed copy-paste error in louvain.py file.
+
 1.1.5 (2025-09-17)
 ------------------
 * Add Leiden clustering wrapper.
