@@ -134,6 +134,7 @@ Tools: `tl`
    :toctree: api/
 
    tl.clustering.kmeans
+   tl.clustering.leiden
    tl.clustering.louvain
    tl.cci.load_lrs
    tl.cci.grid
