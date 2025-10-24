@@ -5,6 +5,7 @@ the inputted data / state of the anndata object.
 import os
 
 import numba
+import os as os
 import numpy as np
 import pandas as pd
 from anndata import AnnData
@@ -77,7 +78,7 @@ def grid(
     n_row: int = 10,
     n_col: int = 10,
     use_label: str | None = None,
-    n_cpus: int = 1,
+    n_cpus: int | None = None,
     verbose: bool = True,
 ):
     """Creates a new anndata representing a gridded version of the data; can be
@@ -95,7 +96,7 @@ def grid(
     use_label: str
         The cell type labels in adata.obs to join together & save as deconvolution data.
     n_cpus: int
-        Number of threads to use.
+        Number of threads to use or if None use os.cpu_count()
     Returns
     -------
     grid_data: AnnData
@@ -108,6 +109,8 @@ def grid(
     # Setting threads for paralellisation #
     if n_cpus is not None:
         numba.set_num_threads(n_cpus)
+    else:
+        numba.set_num_threads(os.cpu_count())
 
     # Retrieving the coordinates of each grid #
     n_squares = n_row * n_col
@@ -225,7 +228,7 @@ def run(
         Number of random pairs of genes to generate when creating the background
         distribution per LR pair; higher than more accurate p-value estimation.
     n_cpus: int
-        The number of cpus to use for multi-threading.
+        Number of threads to use or if None use os.cpu_count()
     use_label: str
         The cell type deconvolution results to use in counting stored in
         adata.uns; if not specified only considered LR expression without cell
@@ -267,8 +270,11 @@ def run(
             per spot.
     """
     # Setting threads for parallelisation
+    # Setting threads for paralellisation #
     if n_cpus is not None:
         numba.set_num_threads(n_cpus)
+    else:
+        numba.set_num_threads(os.cpu_count())
 
     # Making sure none of the var_names contains '_' already, these will need
     # to be renamed.
@@ -526,7 +532,7 @@ def run_cci(
     cell_prop_cutoff: float = 0.2,
     p_cutoff: float = 0.05,
     n_perms: int = 100,
-    n_cpus: int = 1,
+    n_cpus: int | None = None,
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data
@@ -561,7 +567,7 @@ def run_cci(
         raw counting of the cell type interactions with each LR hotspot. This
         can still be visualised downstream by setting paramters to plot
         significant interactions to false.
-    n_cpus: int
+    n_cpus: int | None
         cpu resources to use.
     verbose: bool
         True if print dialogue to user during run-time.
@@ -600,6 +606,8 @@ def run_cci(
     # Setting threads for paralellisation #
     if n_cpus is not None:
         numba.set_num_threads(n_cpus)
+    else:
+        numba.set_num_threads(os.cpu_count())
 
     ran_lr = "lr_summary" in adata.uns
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
