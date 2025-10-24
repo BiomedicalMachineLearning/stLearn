@@ -54,11 +54,12 @@ def neighbors(
     the connectivity of the manifold (`method=='umap'`). If `method=='gauss'`,
     connectivities are computed according to [Coifman05]_, in the adaption of
     [Haghverdi16]_.
+
     Parameters
     ----------
-    adata
+    adata:
         Annotated data matrix.
-    n_neighbors
+    n_neighbors:
         The size of local neighborhood (in terms of number of neighboring data
         points) used for manifold approximation. Larger values result in more
         global views of the manifold, while smaller values result in more local
@@ -68,22 +69,23 @@ def neighbors(
         `n_neighbors` neighbor.
     {n_pcs}
     {use_rep}
-    knn
+    knn:
         If `True`, use a hard threshold to restrict the number of neighbors to
         `n_neighbors`, that is, consider a knn graph. Otherwise, use a Gaussian
         Kernel to assign low weights to neighbors more distant than the
         `n_neighbors` nearest neighbor.
-    random_state
+    random_state:
         A numpy random seed.
-    method
+    method:
         Use 'umap' [McInnes18]_ or 'gauss' (Gauss kernel following [Coifman05]_
         with adaptive width [Haghverdi16]_) for computing connectivities.
-    metric
+    metric:
         A known metric’s name or a callable that returns a distance.
-    metric_kwds
+    metric_kwds:
         Options for the metric.
-    copy
+    copy:
         Return a copy instead of writing to adata.
+
     Returns
     -------
     Depending on `copy`, updates or returns `adata` with the following:

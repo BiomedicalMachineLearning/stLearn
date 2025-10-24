@@ -2,5 +2,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. rubric:: Features
+
 * Add Leiden clustering wrapper.
 * Fix documentation, refactor code in spatial.SME.

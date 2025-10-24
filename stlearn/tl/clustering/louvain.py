@@ -16,7 +16,7 @@ def louvain(
     restrict_to: tuple[str, Sequence[str]] | None = None,
     key_added: str = "louvain",
     adjacency: spmatrix | None = None,
-    flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag",  # noqa: F821
+    flavor: Literal["vtraag", "igraph", "rapids"] = "vtraag",
     directed: bool = True,
     use_weights: bool = False,
     partition_type: type[MutableVertexPartition] | None = None,
@@ -26,13 +26,16 @@ def louvain(
 ) -> AnnData | None:
     """\
     Wrap function scanpy.tl.louvain
+
     Cluster cells into subgroups [Blondel08]_ [Levine15]_ [Traag17]_.
     Cluster cells using the Louvain algorithm [Blondel08]_ in the implementation
     of [Traag17]_. The Louvain algorithm has been proposed for single-cell
     analysis by [Levine15]_.
+
     This requires having ran :func:`~scanpy.pp.neighbors` or
     :func:`~scanpy.external.pp.bbknn` first,
     or explicitly passing a ``adjacency`` matrix.
+
     Parameters
     ----------
     adata:
@@ -41,7 +44,7 @@ def louvain(
         For the default flavor (``'vtraag'``), you can provide a resolution
         (higher resolution means finding more and smaller clusters),
         which defaults to 1.0.
-        See “Time as a resolution parameter” in [Lambiotte09]_.
+        See "Time as a resolution parameter" in [Lambiotte09]_.
     random_state:
         Change the initialization of the optimization.
     restrict_to:
@@ -70,14 +73,16 @@ def louvain(
         `obsp` and `neighbors_key` at the same time.
     copy:
         Copy adata or modify it inplace.
+
     Returns
     -------
-    :obj:`None`
+    None or AnnData
         By default (``copy=False``), updates ``adata`` with the following fields:
-        ``adata.obs['louvain']`` (:class:`pandas.Series`, dtype ``category``)
-            Array of dim (number of samples) that stores the subgroup id
-            (``'0'``, ``'1'``, ...) for each cell.
-    :class:`~anndata.AnnData`
+
+        - ``adata.obs['louvain']`` (:class:`pandas.Series`, dtype ``category``) -
+          Array of dim (number of samples) that stores the subgroup id
+          (``'0'``, ``'1'``, ...) for each cell.
+
         When ``copy=True`` is set, a copy of ``adata`` with those fields is returned.
     """
 

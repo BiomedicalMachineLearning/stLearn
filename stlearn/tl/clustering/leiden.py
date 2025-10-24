@@ -22,9 +22,11 @@ def leiden(
 ) -> AnnData | None:
     """\
     Wrap function scanpy.tl.leiden
+
     This requires having ran :func:`~scanpy.pp.neighbors` or
     :func:`~scanpy.external.pp.bbknn` first,
     or explicitly passing a ``adjacency`` matrix.
+
     Parameters
     ----------
     adata:
@@ -58,14 +60,16 @@ def leiden(
         `obsp` and `neighbors_key` at the same time.
     copy:
         Copy adata or modify it inplace.
+
     Returns
     -------
-    :obj:`None`
+    None or AnnData
         By default (``copy=False``), updates ``adata`` with the following fields:
-        ``adata.obs['leiden' | key_added]`` (:class:`pandas.Series`, dtype ``category``)
-            Array of dim (number of samples) that stores the subgroup id
-            (``'0'``, ``'1'``, ...) for each cell.
-    :class:`~anndata.AnnData`
+
+        - ``adata.obs['leiden']`` (:class:`pandas.Series`, dtype ``category``) -
+          Array of dim (number of samples) that stores the subgroup id
+          (``'0'``, ``'1'``, ...) for each cell.
+
         When ``copy=True`` is set, a copy of ``adata`` with those fields is returned.
     """
 

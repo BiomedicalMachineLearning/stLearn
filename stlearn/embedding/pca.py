@@ -20,9 +20,11 @@ def run_pca(
 ) -> AnnData | None:
     """\
     Wrap function scanpy.pp.pca
+
     Principal component analysis [Pedregosa11]_.
     Computes PCA coordinates, loadings and variance decomposition.
     Uses the implementation of *scikit-learn* [Pedregosa11]_.
+
     Parameters
     ----------
     data
@@ -38,12 +40,12 @@ def run_pca(
         Passing `None` decides automatically based on sparseness of the data.
     svd_solver
         SVD solver to use:
-        `'arpack'` (the default - deterministic)
-          for the ARPACK wrapper in SciPy (:func:`~scipy.sparse.linalg.svds`)
-        `'randomized'`
-          for the randomized algorithm due to Halko (2009).
-        `'auto'`
-          chooses automatically depending on the size of the problem.
+
+        - `'arpack'` (the default - deterministic) for the ARPACK wrapper in
+          SciPy (:func:`~scipy.sparse.linalg.svds`)
+        - `'randomized'` for the randomized algorithm due to Halko (2009).
+        - `'auto'` chooses automatically depending on the size of the problem.
+
     random_state
         Change to use different initial states for the optimization.
     return_info
@@ -52,7 +54,7 @@ def run_pca(
     use_highly_variable
         Whether to use highly variable genes only, stored in
         `.var['highly_variable']`.
-        By default uses them if they have been determined beforehand.
+        By default, uses them if they have been determined beforehand.
     dtype
         Numpy data type string to which to convert the result.
     copy
@@ -65,22 +67,21 @@ def run_pca(
     chunk_size
         Number of observations to include in each chunk.
         Required if `chunked=True` was passed.
+
     Returns
     -------
-    X_pca : :class:`~scipy.sparse.spmatrix`, :class:`~numpy.ndarray`
+    X_pca: :class:`~scipy.sparse.spmatrix`, :class:`~numpy.ndarray`
         If `data` is array-like and `return_info=False` was passed,
-        this function only returns `X_pca`…
-    adata : anndata.AnnData
-        …otherwise if `copy=True` it returns or else adds fields to `adata`:
-        `.obsm['X_pca']`
-             PCA representation of data.
-        `.varm['PCs']`
-             The principal components containing the loadings.
-        `.uns['pca']['variance_ratio']`
-             Ratio of explained variance.
-        `.uns['pca']['variance']`
-             Explained variance, equivalent to the eigenvalues of the
-             covariance matrix.
+        this function only returns `X_pca`.
+    adata: anndata.AnnData
+        Otherwise if `copy=True` it returns or else adds fields to `adata`:
+
+        - `.obsm['X_pca']` - PCA representation of data.
+        - `.varm['PCs']` - The principal components containing the loadings.
+        - `.uns['pca']['variance_ratio']` - Ratio of explained variance.
+        - `.uns['pca']['variance']` - Explained variance, equivalent to the
+          eigenvalues of the covariance matrix.
+
     """
 
     adata = scanpy.pp.pca(
