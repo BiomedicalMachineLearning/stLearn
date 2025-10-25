@@ -90,7 +90,7 @@ def tree_plot_simple(
             generate_tree_viz(
                 adata, use_label, G, axs[idx], starter_node=start_nodes[idx]
             )
-        except:
+        except Exception:
             axs[idx] = axs[idx].axis("off")
 
     if name is None:

@@ -91,7 +91,7 @@ def transition_markers_plot(
         try:
             gene_name = list(pos["gene"])[i]
             p_value = "{:.2E}".format(Decimal(str(list(pos["p-value"])[i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
@@ -116,7 +116,7 @@ def transition_markers_plot(
         try:
             gene_name = list(neg["gene"])[i]
             p_value = "{:.2E}".format(Decimal(str(list(neg["p-value"])[i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}

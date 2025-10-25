@@ -349,9 +349,8 @@ def lr_pandas(
     # check whether neighbours exist
     try:
         nb_lr2.shape[1]
-    except:
+    except (AttributeError, IndexError):
         raise ValueError("No neighbours found within given distance.")
-
     # keep value of nb_lr2 only when lr1 is also expressed on the spots
     spot_lr = pd.DataFrame(
         spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values,

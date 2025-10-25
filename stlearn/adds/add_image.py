@@ -70,7 +70,7 @@ def image(
                 adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
 
             print("Added tissue image to the object!")
-        except:
+        except ValueError:
             raise ValueError(
                 f"""\
             {imgpath!r} does not end on a valid extension.

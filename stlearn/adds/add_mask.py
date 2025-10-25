@@ -37,7 +37,7 @@ def add_mask(
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
-    except:
+    except KeyError:
         raise KeyError(
             """\
         Please read ST data first and try again
@@ -60,7 +60,7 @@ def add_mask(
 
             adata.uns["mask_image"][library_id][key][quality] = img
             print("Added tissue mask to the object!")
-        except:
+        except KeyError:
             raise ValueError(
                 f"""\
             {imgpath!r} does not end on a valid extension.
@@ -133,7 +133,7 @@ def apply_mask(
     try:
         library_id = list(adata.uns["spatial"].keys())[0]
         quality = adata.uns["spatial"][library_id]["use_quality"]
-    except:
+    except KeyError:
         raise KeyError(
             """\
         Please read ST data first and try again
@@ -151,7 +151,7 @@ def apply_mask(
     for i, mask in enumerate(masks):
         try:
             mask_image = adata.uns["mask_image"][library_id][mask][quality]
-        except:
+        except KeyError:
             raise KeyError(
                 f"""\
             Please load mask {mask} images first and try again

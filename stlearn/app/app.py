@@ -239,7 +239,7 @@ def file_uploader():
         f.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         try:
             adata = scanpy.read_h5ad(app.config["UPLOAD_FOLDER"] + "/" + f.filename)
-        except:
+        except Exception:
             flash("Upload ERROR: Please choose the right AnnData file ")
 
         ### Updating log file with current anndata state ###

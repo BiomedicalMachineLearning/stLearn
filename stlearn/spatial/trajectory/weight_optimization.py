@@ -116,7 +116,7 @@ def weight_optimizing_global(
         opt_w = round(index[optimized_ind], 2)
         print("The optimized weighting is:", str(opt_w))
         return opt_w
-    except:
+    except (ValueError, RuntimeError, np.linalg.LinAlgError):
         print("The optimized weighting is: 0.5")
         return 0.5
 

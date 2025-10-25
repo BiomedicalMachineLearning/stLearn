@@ -6,9 +6,9 @@ class Model:
         self.model, self.preprocess = self.load_model()
         self.batch_size = batch_size
 
-        from tensorflow.keras import backend as K
+        from tensorflow.keras import backend as k_backend
 
-        self.data_format = K.image_data_format()
+        self.data_format = k_backend.image_data_format()
 
     def load_model(self):
         if self.base == "resnet50":
@@ -50,9 +50,9 @@ class Model:
         self,
         x,
     ):
-        from tensorflow.keras import backend as K
+        from tensorflow.keras import backend as k_backend
 
         if self.data_format == "channels_first":
             x = x.transpose(0, 3, 1, 2)
-        x = self.preprocess(x.astype(K.floatx()))
+        x = self.preprocess(x.astype(k_backend.floatx()))
         return self.model(x, training=False).numpy()

@@ -155,7 +155,7 @@ def _eigs(M, which="SR", k=None):
     else:
         try:
             M = M.todense()
-        except:
+        except AttributeError:
             pass
         evals, evecs = la.eig(M)
         # sort dem eigenvalues
@@ -365,7 +365,7 @@ def resistance_matrix(A, check_connected=True):
     L = laplacian_matrix(A)
     try:
         L = L.todense()
-    except:
+    except AttributeError:
         pass
     M = la.pinv(L)
     # calculate R in terms of M

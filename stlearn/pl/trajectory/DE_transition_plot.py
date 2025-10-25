@@ -126,7 +126,7 @@ def DE_transition_plot(
         try:
             gene_name = pos_1.index[i]
             p_value = "{:.2E}".format(Decimal(str(pos_1["p-value"][i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
@@ -151,7 +151,7 @@ def DE_transition_plot(
         try:
             gene_name = neg_1.index[i]
             p_value = "{:.2E}".format(Decimal(str(neg_1["p-value"][i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}
@@ -176,7 +176,7 @@ def DE_transition_plot(
         try:
             gene_name = pos_2.index[i]
             p_value = "{:.2E}".format(Decimal(str(pos_2["p-value"][i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
@@ -201,7 +201,7 @@ def DE_transition_plot(
         try:
             gene_name = neg_2.index[i]
             p_value = "{:.2E}".format(Decimal(str(neg_2["p-value"][i])))
-        except:
+        except (KeyError, IndexError, ValueError):
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}

@@ -108,10 +108,9 @@ def pseudotime_plot(
 
     result2 = []
     for edge in result:
-        try:
-            result2.append(labels[edge] + 0.5)
-        except:
-            result2.append(labels[edge[::-1]] + 0.5)
+        value = labels.get(edge, labels.get(edge[::-1]))
+        if value is not None:
+            result2.append(value + 0.5)
 
     fig, a = plt.subplots()
     if ax is not None:

@@ -65,11 +65,11 @@ def pseudotime(
 
     try:
         del adata.obsm["X_diffmap"]
-    except:
+    except KeyError:
         pass
     try:
         del adata.obsm["X_draw_graph_fr"]
-    except:
+    except KeyError:
         pass
 
     if "sub_cluster_labels" not in adata.obs.columns:

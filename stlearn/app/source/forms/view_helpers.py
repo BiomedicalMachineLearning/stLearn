@@ -34,5 +34,7 @@ def getLR(lr_input, gene_names):
 
         return lrs, ""
 
-    except:
-        return None, "ERROR: LR pairs misformatted."
+    except AttributeError:
+        return None, "ERROR: LR pairs must be a string."
+    except TypeError:
+        return None, "ERROR: gene_names must be an iterable (list, set, etc.)."
