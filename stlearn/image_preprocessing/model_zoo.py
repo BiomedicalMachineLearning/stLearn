@@ -7,6 +7,7 @@ class Model:
         self.batch_size = batch_size
 
         from tensorflow.keras import backend as K
+
         self.data_format = K.image_data_format()
 
     def load_model(self):
@@ -21,12 +22,14 @@ class Model:
             )
         elif self.base == "vgg16":
             from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
+
             cnn_base_model = VGG16(include_top=False, weights="imagenet", pooling="avg")
         elif self.base == "inception_v3":
             from tensorflow.keras.applications.inception_v3 import (
                 InceptionV3,
                 preprocess_input,
             )
+
             cnn_base_model = InceptionV3(
                 include_top=False, weights="imagenet", pooling="avg"
             )
@@ -43,7 +46,10 @@ class Model:
             raise ValueError(f"{self.base} is not a valid model")
         return cnn_base_model, preprocess_input
 
-    def predict(self, x, ):
+    def predict(
+        self,
+        x,
+    ):
         from tensorflow.keras import backend as K
 
         if self.data_format == "channels_first":
