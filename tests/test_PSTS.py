@@ -5,10 +5,7 @@
 import unittest
 
 import numpy as np
-import scanpy as sc
-
 import stlearn as st
-
 from .utils import read_test_data
 
 global adata
@@ -19,13 +16,12 @@ class TestPSTS(unittest.TestCase):
     """Tests for `stlearn` package."""
 
     def test_PSTS(self):
-        sc.pp.pca(adata)
+        st.em.run_pca(adata)
         print("Done PCA!")
-        sc.pp.neighbors(adata)
+        st.pp.neighbors(adata)
         print("Done KNN!")
-        sc.tl.leiden(adata, resolution=0.6)
+        st.tl.clustering.leiden(adata, resolution=0.6)
         print("Done leiden!")
-        # sc.tl.louvain(adata)
 
         adata.uns["iroot"] = np.flatnonzero(adata.obs["leiden"] == "0")[0]
         st.spatial.trajectory.pseudotime(
