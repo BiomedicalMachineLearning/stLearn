@@ -76,7 +76,7 @@ def get_cmap(cmap):
     cmap_n = len(cmap)
     cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
 
-    cmap_ = plt.cm.get_cmap(cmaps)
+    cmap_ = plt.get_cmap(cmaps)
 
     return cmap_, cmap_n
 

@@ -12,13 +12,13 @@ _CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
 
 
 def extract_feature(
-        adata: AnnData,
-        cnn_base: _CNN_BASE = "resnet50",
-        n_components: int = 50,
-        seeds: int = 1,
-        batch_size: int = 32,
-        verbose: bool = False,
-        copy: bool = False,
+    adata: AnnData,
+    cnn_base: _CNN_BASE = "resnet50",
+    n_components: int = 50,
+    seeds: int = 1,
+    batch_size: int = 32,
+    verbose: bool = False,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Extract latent morphological features from H&E images using pre-trained
@@ -83,9 +83,9 @@ def extract_feature(
     # Get features
     all_features = []
     for i in tqdm(
-            range(0, n_spots, batch_size), desc="Predicting", disable=not verbose
+        range(0, n_spots, batch_size), desc="Predicting", disable=not verbose
     ):
-        batch = images[i: i + batch_size]
+        batch = images[i : i + batch_size]
         features = model.predict(batch)
         all_features.append(features)
 
@@ -98,8 +98,10 @@ def extract_feature(
     pca = PCA(n_components=n_components, random_state=seeds)
     pca.fit(feature_matrix)
     if verbose:
-        print("PCA complete! Explained variance: " +
-              f"{pca.explained_variance_ratio_.sum():.2%}")
+        print(
+            "PCA complete! Explained variance: "
+            + f"{pca.explained_variance_ratio_.sum():.2%}"
+        )
 
     adata.obsm["X_morphology"] = pca.transform(feature_matrix)
 

@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 import scanpy
 from anndata import AnnData
-from louvain.VertexPartition import MutableVertexPartition
+from leidenalg.VertexPartition import MutableVertexPartition
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
 

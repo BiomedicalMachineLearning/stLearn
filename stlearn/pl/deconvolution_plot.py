@@ -103,7 +103,7 @@ def deconvolution_plot(
     if colors is None:
         color_vals: list[int] = list(range(0, len(label_filter_), 1))
         my_norm: mcolors.Normalize = mpl.colors.Normalize(0, len(label_filter_))
-        my_cmap: mcolors.Colormap = mpl.cm.get_cmap(cmap, len(color_vals))
+        my_cmap: mcolors.Colormap = mpl.colormaps.get_cmap(cmap, len(color_vals))
         colors = [my_cmap(my_norm(i)) for i in color_vals]
 
     for i, xy in enumerate(base.values):

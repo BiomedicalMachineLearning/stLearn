@@ -1,8 +1,9 @@
 from collections.abc import Sequence
+from typing import Literal
 
 import scanpy
 from anndata import AnnData
-from louvain.VertexPartition import MutableVertexPartition
+from leidenalg.VertexPartition import MutableVertexPartition
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
 
@@ -14,8 +15,10 @@ def leiden(
     restrict_to: tuple[str, Sequence[str]] | None = None,
     key_added: str = "leiden",
     adjacency: spmatrix | None = None,
-    directed: bool = True,
+    directed: bool = False,
     use_weights: bool = False,
+    flavor: Literal["leidenalg", "igraph"] = "igraph",
+    n_iterations: int = 2,
     partition_type: type[MutableVertexPartition] | None = None,
     obsp: str | None = None,
     copy: bool = False,
@@ -50,6 +53,12 @@ def leiden(
         Interpret the ``adjacency`` matrix as directed graph?
     use_weights:
         Use weights from knn graph.
+    flavor:
+        Choose between 'leidenalg' and 'igraph'. 'igraph' is the future default
+        and generally faster.
+    n_iterations:
+        Number of iterations of the Leiden algorithm. This only applies to
+        flavor='igraph'. The default (2) matches the future scanpy default.
     partition_type:
         Type of partition to use.
         Defaults to :class:`~leidenalg.RBConfigurationVertexPartition`.
@@ -83,6 +92,8 @@ def leiden(
         adjacency=adjacency,
         directed=directed,
         use_weights=use_weights,
+        flavor=flavor,
+        n_iterations=n_iterations,
         partition_type=partition_type,
         obsp=obsp,
         copy=copy,
