@@ -7,7 +7,6 @@ import unittest
 import scanpy as sc
 
 import stlearn as st
-
 from .utils import read_test_data
 
 global adata
@@ -20,7 +19,7 @@ class TestSME(unittest.TestCase):
     def test_SME(self):
         sc.pp.pca(adata)
         st.pp.tiling(adata, "./tiling")
-        st.pp.extract_feature(adata)
+        st.pp.extract_feature(adata, verbose=True)
         import shutil
 
         shutil.rmtree("./tiling")

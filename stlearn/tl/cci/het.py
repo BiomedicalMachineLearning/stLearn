@@ -124,7 +124,7 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.a
     R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
 
     # To keep the get_between_spot_edge_array function happy #
-    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float_)
+    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float64)
 
     # Retrieving the edges #
     gene_bools = [R_bool, L_bool]

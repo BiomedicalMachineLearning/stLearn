@@ -12,6 +12,25 @@ description = "A downstream analysis toolkit for Spatial Transcriptomic data"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "BSD license"}
 requires-python = ">=3.10,<3.13"
+dependencies = [
+    "anndata>=0.11.0",
+    "igraph>=0.11.6",
+    "leidenalg>=0.10.2",
+    "louvain>=0.8.2",
+    "numba>=0.60.0",
+    "numpy>=1.26.0",
+    "pandas>=2.0.0",
+    "scanpy>=1.11.0",
+    "squidpy>=1.6.1",
+    "scipy>=1.13.0",
+    "scikit-learn>=1.5.0",
+    "scikit-image>=0.24.0",
+    "tensorflow>=2.18.0",
+    "bokeh>=3.6.0",
+    "click>=8.2.0,<9.0",
+    "pillow>=10.0.0",
+    "imageio>=2.30.0",
+]
 keywords = ["stlearn"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -22,7 +41,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dynamic = ["dependencies"]
 
 [project.optional-dependencies]
 dev = [
@@ -72,16 +90,13 @@ include = ["stlearn", "stlearn.*"]
 [tool.setuptools.package-data]
 "*" = ["*"]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
-
 [tool.ruff]
 line-length=88
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP"]
-ignore = ["E722", "F811", "N802", "N803", "N806", "N818", "N999", "UP031"]
+select = ["E", "F", "W", "I", "N", "UP", "NPY201"]
+ignore = ["F811", "N802", "N803", "N806", "N818", "N999", "UP031"]
 exclude = [".git", "__pycache__", "build", "dist"]
 
 [tool.ruff.format]

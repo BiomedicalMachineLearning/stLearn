@@ -67,7 +67,7 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 3. Install your local copy into a virtualenv. This is how you set up your fork for local development::
 
     Run the following:
-    $ conda create -n stlearn-dev python=3.12 --y
+    $ conda create -n stlearn-dev python=3.12 cmake --y
     $ conda activate stlearn-dev
     $ cd stlearn/
     $ pip install -e .[dev,test]
