@@ -2,7 +2,16 @@
 
 __author__ = """Genomics and Machine Learning Lab"""
 __email__ = "andrew.newman@uq.edu.au"
-__version__ = "1.2.2"
+
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:  # Python < 3.8
+    from importlib_metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("stlearn")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 from . import add, datasets, em, pl, pp, spatial, tl, types
 from ._settings import settings
