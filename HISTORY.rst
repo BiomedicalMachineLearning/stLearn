@@ -9,6 +9,7 @@ History
 * Added more CCI tests.
 
 API and Bug Fixes:
+
 * Fixed copy-paste error in louvain.py file.
 
 1.1.5 (2025-09-17)
@@ -25,6 +26,7 @@ API and Bug Fixes:
 * datasets.xenium_sge - loads Xenium data (and caches it) similar to scanpy.visium_sge.
 
 API and Bug Fixes:
+
 * Xenium TIFF and cell positions are now aligned.
 * Consistent with type annotations - mainly missing None annotations.
 * pl.cluster_plot - Does not keep colours from previous runs when clustering.

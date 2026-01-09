@@ -3,9 +3,9 @@ the inputted data / state of the anndata object.
 """
 
 import os
+import os as os
 
 import numba
-import os as os
 import numpy as np
 import pandas as pd
 from anndata import AnnData
