@@ -34,7 +34,7 @@ def download_gdrive_file(file_id, filename):
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'stLearn'
-copyright = '2022-2025, Genomics and Machine Learning Lab'
+copyright = '2022-2026, Genomics and Machine Learning Lab'
 author = 'Genomics and Machine Learning Lab'
 html_logo = "images/logo.png"
 
