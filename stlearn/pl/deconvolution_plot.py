@@ -8,7 +8,7 @@ from anndata import AnnData
 def deconvolution_plot(
     adata: AnnData,
     library_id: str | None = None,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     cluster: int | str | None = None,
     celltype: str | None = None,
     celltype_threshold: float = 0,
@@ -127,7 +127,7 @@ def deconvolution_plot(
         ax_pie = fig.add_axes((0.5, -0.4, 0.03, 0.5))
 
         def my_autopct(pct):
-            return ("%1.0f%%" % pct) if pct >= 4 else ""
+            return f"{pct}%" if pct >= 4 else ""
 
         ax_pie.pie(
             label_filter_.sum(axis=1),

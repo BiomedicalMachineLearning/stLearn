@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 
 def local_level(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     cluster: int = 9,
     w: float = 0.5,
     return_matrix: bool = False,

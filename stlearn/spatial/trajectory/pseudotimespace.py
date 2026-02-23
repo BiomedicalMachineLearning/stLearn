@@ -9,7 +9,7 @@ from .weight_optimization import weight_optimizing_global, weight_optimizing_loc
 
 def pseudotimespace_global(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     use_rep: str = "X_pca",
     n_dims: int = 40,
     list_clusters=None,
@@ -24,7 +24,7 @@ def pseudotimespace_global(
     ----------
     adata: AnnData
         Annotated data matrix.
-    use_label: str, default = "louvain"
+    use_label: str, default = "leiden"
         Use label result of cluster method.
     use_rep: str, default = "X_pca"
         Which obsm location to use.
@@ -76,7 +76,7 @@ def pseudotimespace_global(
 
 def pseudotimespace_local(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     cluster=None,
     w: float | None = None,
 ) -> AnnData | None:
@@ -87,7 +87,7 @@ def pseudotimespace_local(
     ----------
     adata: AnnData
         Annotated data matrix.
-    use_label: str, default = "louvain"
+    use_label: str, default = "leiden"
         Use label result of cluster method.
     cluster:
         Cluster used to reconstruct intra regional spatial trajectory.

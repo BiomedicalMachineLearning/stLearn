@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import proj3d
 def local_plot(
     adata: AnnData,
     use_cluster: int,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     reverse: bool = False,
     cluster: int = 0,
     data_alpha: float = 1.0,

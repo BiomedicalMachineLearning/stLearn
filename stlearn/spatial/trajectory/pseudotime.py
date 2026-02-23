@@ -13,7 +13,7 @@ from stlearn.types import _METHOD
 
 def pseudotime(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     eps: float = 20,
     n_neighbors: int = 25,
     use_rep: str = "X_pca",
@@ -58,25 +58,40 @@ def pseudotime(
         Maximum number of node in available paths
     copy:
         Return a copy instead of writing to adata.
+
+    Notes
+    -----
+    Each run clears any previously computed values for: X_diffmap,
+    X_draw_graph_fr, X_diffmap_morphology, split_node, global_graph,
+    centroid_dict, available_paths, threshold_spots, and sub_cluster_labels.
+
     Returns
     -------
     Anndata
+
     """
 
-    try:
-        del adata.obsm["X_diffmap"]
-    except:
-        pass
-    try:
-        del adata.obsm["X_draw_graph_fr"]
-    except:
-        pass
+    keys_obsm = ["X_diffmap", "X_draw_graph_fr", "X_diffmap_morphology"]
+    keys_uns = [
+        "split_node",
+        "global_graph",
+        "centroid_dict",
+        "available_paths",
+        "threshold_spots",
+    ]
+    keys_obs = ["sub_cluster_labels"]
 
-    if "sub_cluster_labels" not in adata.obs.columns:
-        localization(adata, use_label=use_label, eps=eps)
+    for key in keys_obsm:
+        adata.obsm.pop(key, None)
+    for key in keys_uns:
+        adata.uns.pop(key, None)
+    for key in keys_obs:
+        if key in adata.obs.columns:
+            del adata.obs[key]
+
+    localization(adata, use_label=use_label, eps=eps)
 
     # Running knn
-
     if run_knn:
         neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
 
@@ -97,7 +112,7 @@ def pseudotime(
     cnt_matrix[cnt_matrix < threshold] = 0.0
     cnt_matrix = pd.DataFrame(cnt_matrix)
 
-    # Mapping louvain label to subcluster
+    # Mapping leiden label to subcluster
     cat_inds = adata.uns[use_label + "_index_dict"]
     split_node = {}
     for label in adata.obs[use_label].cat.categories:
@@ -118,7 +133,7 @@ def pseudotime(
     # split_node has string keys for rest of code/plotting (names a strings)
     adata.uns["split_node"] = {str(k): v for k, v in split_node.items()}
 
-    # Replicate louvain label row to prepare for subcluster connection
+    # Replicate leiden label row to prepare for subcluster connection
     # matrix construction
     replicate_list = np.array([])
     for i in range(0, len(cnt_matrix)):
@@ -196,7 +211,7 @@ def replace_with_dict(ar, dic):
 def selection_sort(x):
     for i in range(len(x)):
         swap = i + np.argmin(x[i:])
-        (x[i], x[swap]) = (x[swap], x[i])
+        x[i], x[swap] = (x[swap], x[i])
     return x
 
 

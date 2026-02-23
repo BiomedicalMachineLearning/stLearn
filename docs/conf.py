@@ -56,7 +56,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 def setup(app):
     if not os.path.isdir("./tutorials"):
-        download_gdrive_file("1FNMzO4-KsHK8tPd8k5-sTiRS40S97Qs4", "tutorials.zip")
+        download_gdrive_file("1wiSKmdrP9ZSLu87l_0qiU8eerXxdrubm", "tutorials.zip")
         os.system("unzip tutorials.zip")
     return
 

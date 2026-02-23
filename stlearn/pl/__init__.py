@@ -22,14 +22,14 @@ from .feat_plot import feat_plot
 from .gene_plot import gene_plot, gene_plot_interactive
 from .mask_plot import plot_mask
 from .non_spatial_plot import non_spatial_plot
-from .QC_plot import QC_plot
+from .qc_plot import qc_plot
 from .stack_3d_plot import stack_3d_plot
 from .subcluster_plot import subcluster_plot
 
 # Import trajectory functions
 from .trajectory import (
-    DE_transition_plot,
     check_trajectory,
+    de_transition_plot,
     local_plot,
     pseudotime_plot,
     transition_markers_plot,
@@ -63,7 +63,7 @@ __all__ = [
     "gene_plot_interactive",
     "plot_mask",
     "non_spatial_plot",
-    "QC_plot",
+    "qc_plot",
     "stack_3d_plot",
     "subcluster_plot",
     # Trajectory functions
@@ -71,7 +71,7 @@ __all__ = [
     "local_plot",
     "tree_plot",
     "transition_markers_plot",
-    "DE_transition_plot",
+    "de_transition_plot",
     "tree_plot_simple",
     "check_trajectory",
 ]

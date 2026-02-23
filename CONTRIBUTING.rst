@@ -72,11 +72,8 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
     $ cd stlearn/
     $ pip install -e .[dev,test]
 
-    If you get an error for louvain package on MacOS, make sure you have cmake installed first (if you have brew):
-    $ brew install cmake
-
     You can also use conda to install these dependencies (after creating the environment):
-    $ conda install -c conda-forge louvain leidenalg python-igraph
+    $ conda install -c conda-forge leidenalg python-igraph
 
    Or if you prefer pip/virtualenv::
 

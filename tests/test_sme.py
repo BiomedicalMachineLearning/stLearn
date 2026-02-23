@@ -24,7 +24,7 @@ class TestSME(unittest.TestCase):
         if Path(self.tiling_dir).exists():
             shutil.rmtree(self.tiling_dir)
 
-    def test_SME(self):
+    def test_sme(self):
         sc.pp.pca(self.adata)
         st.pp.tiling(self.adata, self.tiling_dir)
         st.pp.extract_feature(self.adata)
@@ -33,6 +33,6 @@ class TestSME(unittest.TestCase):
         self.assertEqual(self.adata.obsm["X_pca"].shape, (316, 50))
         self.assertEqual(self.adata.obsm["X_tile_feature"].shape, (316, 2048))
         self.assertEqual(self.adata.obsm["X_morphology"].shape, (316, 50))
-        data_SME = self.adata.copy()
+        data_sme = self.adata.copy()
         # apply stSME to normalise log transformed data
-        st.spatial.SME.SME_normalize(data_SME, use_data="raw")
+        st.spatial.sme.sme_normalize(data_sme, use_data="raw")

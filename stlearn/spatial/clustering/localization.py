@@ -7,7 +7,7 @@ from sklearn.cluster import DBSCAN
 
 def localization(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     eps: float = 20.0,
     min_samples: int = 1,
     copy: bool = False,
@@ -19,7 +19,7 @@ def localization(
     ----------
     adata: AnnData
         Annotated data matrix.
-    use_label: str, default = "louvain"
+    use_label: str, default = "leiden"
         Use label result of cluster method.
     eps: float, default 20.0
         The maximum distance between two samples for one to be considered as

@@ -5,7 +5,7 @@ import os
 import stlearn.tl.cci.r_helpers as rhs
 
 
-def run_GO(genes, bg_genes, species, r_path, p_cutoff=0.01, q_cutoff=0.5, onts="BP"):
+def run_go(genes, bg_genes, species, r_path, p_cutoff=0.01, q_cutoff=0.5, onts="BP"):
     """Running GO term analysis."""
 
     # Setting up the R environment #

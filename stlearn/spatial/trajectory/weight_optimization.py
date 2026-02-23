@@ -11,7 +11,7 @@ from .utils import lambda_dist, resistance_distance
 
 def weight_optimizing_global(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     list_clusters=None,
     step=0.01,
     k=10,
@@ -122,7 +122,7 @@ def weight_optimizing_global(
 
 
 def weight_optimizing_local(
-    adata: AnnData, use_label: str = "louvain", cluster=None, step=0.01
+    adata: AnnData, use_label: str = "leiden", cluster=None, step=0.01
 ):
     # Screening PTS graph
     print("Screening PTS local graph...")

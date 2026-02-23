@@ -8,7 +8,7 @@ def check_trajectory(
     adata: AnnData,
     trajectory: list[int],
     library_id: str | None = None,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     basis: str = "umap",
     pseudotime_key: str = "dpt_pseudotime",
     figsize=(10, 4),

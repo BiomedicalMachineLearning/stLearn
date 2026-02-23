@@ -5,7 +5,7 @@ from anndata import AnnData
 
 def non_spatial_plot(
     adata: AnnData,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
 ) -> None:
     """\
     A wrap function to plot all the non-spatial plot from scanpy.

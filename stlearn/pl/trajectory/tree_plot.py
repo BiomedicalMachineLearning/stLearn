@@ -13,7 +13,7 @@ def tree_plot(
     library_id: str | None = None,
     figsize: tuple[float, float] = (10, 4),
     data_alpha: float = 1.0,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     spot_size: float | int = 50,
     fontsize: int = 6,
     piesize: float = 0.15,

@@ -226,7 +226,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
     )  # neighbourhood_bcs, neighbourhood_indices
 
 
-def get_neighbourhoods_FAST(
+def get_neighbourhoods_fast(
     spot_bcs: np.array,
     spot_neigh_bcs: np.ndarray,
     n_spots: int,
@@ -298,7 +298,7 @@ def get_neighbourhoods(adata):
         neigh_indices = np.zeros((n_spots), dtype=np.int64)
         neigh_bcs = np.empty((n_spots), dtype=str_dtype)
 
-        return get_neighbourhoods_FAST(
+        return get_neighbourhoods_fast(
             spot_bcs, spot_neigh_bcs, n_spots, str_dtype, neigh_indices, neigh_bcs
         )
 

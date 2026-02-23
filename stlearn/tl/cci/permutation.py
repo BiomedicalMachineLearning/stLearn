@@ -361,7 +361,7 @@ def permutation(
     n_pairs: int            Number of gene pairs to run permutation test (default: 1000)
     distance: int           Distance between spots (default: 30)
     use_lr: str             LR cluster used for permutation test
-                            (default: 'lr_neighbours_louvain_max')
+                            (default: 'lr_neighbours_leiden_max')
     use_het: str            cell type diversity counts used for permutation test
                             (default 'het')
     neg_binom: bool         Whether to fit neg binomial parameters to bg distribution
@@ -662,10 +662,10 @@ def get_median_index(ligand, receptor, means_ordered, genes_ordered):
 
 
 # Disable printing
-def blockPrint():
+def block_print():
     sys.stdout = open(os.devnull, "w")
 
 
 # Restore printing
-def enablePrint():
+def enable_print():
     sys.stdout = sys.__stdout__

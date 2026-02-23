@@ -20,15 +20,10 @@ class TestTools(unittest.TestCase):
         self.assertTrue(callable(st.tl.clustering.annotate_interactive))
         self.assertTrue(callable(st.tl.clustering.kmeans))
         self.assertTrue(callable(st.tl.clustering.leiden))
-        self.assertTrue(callable(st.tl.clustering.louvain))
 
     def test_kmeans(self):
         st.tl.clustering.kmeans(self.adata)
         self.assertIn("kmeans", self.adata.obs.columns)
-
-    def test_louvain_runs(self):
-        st.tl.clustering.louvain(self.adata, resolution=1.0)
-        self.assertIn("louvain", self.adata.obs.columns)
 
     def test_leiden_runs(self):
         st.tl.clustering.leiden(self.adata, resolution=1.0)

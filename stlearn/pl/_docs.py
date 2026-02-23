@@ -9,7 +9,7 @@ cmap
     Color map to use for continous variables or discretes variables (e.g. viridis,
     Set1,...).
 use_label
-    Key for the label use in `adata.obs` (e.g. `leiden`, `louvain`,...).
+    Key for the label use in `adata.obs` (e.g. `leiden`,...).
 list_clusters
     A set of cluster to be displayed in the figure (e.g. [0,1,2,3]).
 ax

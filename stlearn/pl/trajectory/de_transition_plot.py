@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from anndata import AnnData
 
 
-def DE_transition_plot(
+def de_transition_plot(
     adata: AnnData,
     top_genes: int = 10,
     font_size: int = 6,

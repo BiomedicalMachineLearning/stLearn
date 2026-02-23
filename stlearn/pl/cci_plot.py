@@ -26,7 +26,7 @@ from ..utils import _docs_params
 from ._docs import doc_het_plot, doc_spatial_base_plot
 from .cci_plot_helpers import (
     _box_map,
-    chordDiagram,
+    chord_diagram,
     create_flat_df,
     get_int_df,
 )
@@ -1467,7 +1467,7 @@ def lr_chord_plot(
     colors = get_colors(adata, use_label, cmap=cmap, label_set=cell_names)
 
     ax = plt.pyplot.axes((0, 0, 1, 1))
-    nodePos = chordDiagram(flux, ax, lim=1.25, colors=colors)
+    nodePos = chord_diagram(flux, ax, lim=1.25, colors=colors)
     ax.axis("off")
     prop: dict[str, Any] = dict(fontsize=label_size, ha="center", va="center")
     label_rotation_ = label_rotation

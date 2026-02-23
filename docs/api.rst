@@ -18,13 +18,14 @@ Wrapper functions: `wrapper`
 .. autosummary::
    :toctree: api/
 
-   Read10X
-   ReadOldST
-   ReadSlideSeq
-   ReadMERFISH
-   ReadSeqFish
-   convert_scanpy
+   read_10x
+   read_old_st
+   read_slide_seq
+   read_merfish
+   read_seq_fish
+   read_xenium
    create_stlearn
+   convert_scanpy
 
 
 Add: `add`
@@ -115,15 +116,15 @@ Spatial: `spatial`
 
    spatial.morphology.adjust
 
-.. module:: stlearn.spatial.SME
+.. module:: stlearn.spatial.sme
 .. currentmodule:: stlearn
 
 .. autosummary::
    :toctree: api/
 
-   spatial.SME.SME_impute0
-   spatial.SME.pseudo_spot
-   spatial.SME.SME_normalize
+   spatial.sme.sme_impute0
+   spatial.sme.pseudo_spot
+   spatial.sme.sme_normalize
 
 Tools: `tl`
 -------------------
@@ -135,7 +136,6 @@ Tools: `tl`
 
    tl.clustering.kmeans
    tl.clustering.leiden
-   tl.clustering.louvain
    tl.cci.load_lrs
    tl.cci.grid
    tl.cci.run
@@ -151,7 +151,7 @@ Plot: `pl`
 .. autosummary::
    :toctree: api/
 
-   pl.QC_plot
+   pl.qc_plot
    pl.gene_plot
    pl.gene_plot_interactive
    pl.cluster_plot
@@ -183,7 +183,7 @@ Plot: `pl`
    pl.trajectory.local_plot
    pl.trajectory.tree_plot
    pl.trajectory.transition_markers_plot
-   pl.trajectory.DE_transition_plot
+   pl.trajectory.de_transition_plot
 
 Datasets: `datasets`
 ---------------------------

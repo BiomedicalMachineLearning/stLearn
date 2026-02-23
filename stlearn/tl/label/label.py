@@ -210,7 +210,7 @@ def run_rctd(
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
 
 
-def run_singleR(
+def run_single_r(
     st_data,
     sc_data,
     sc_label_col,
