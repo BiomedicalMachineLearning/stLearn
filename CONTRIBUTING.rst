@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/duypham2108/stlearn/issues.
+Report bugs at https://github.com/BiomedicalMachineLearning/stLearn/issues
 
 If you are reporting a bug, please include:
 
