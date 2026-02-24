@@ -4,7 +4,7 @@
 .. rubric:: Features
 
 * Removed interactive stLearn/embedded web application.
-* Removed louvain clustering - replaced with leiden.
+* Removed louvain clustering.
+* Renamed methods and classes to follow lowercase standard.
 
-.. rubric:: Bugs
 
