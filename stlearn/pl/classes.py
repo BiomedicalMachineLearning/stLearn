@@ -739,7 +739,7 @@ class ClusterPlot(SpatialBasePlot):
             labelspacing=0.05,
             fontsize=self.color_bar_size,
             handleheight=1.0,
-            loc='upper right',
+            loc="upper right",
             edgecolor="white",
         )
         for handle in lgnd.legend_handles:
