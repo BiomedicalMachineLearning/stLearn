@@ -735,9 +735,11 @@ class ClusterPlot(SpatialBasePlot):
     def _add_cluster_bar(self, bbox_to_anchor):
         lgnd = self.ax.legend(
             bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=self.ax.transAxes,
             labelspacing=0.05,
             fontsize=self.color_bar_size,
             handleheight=1.0,
+            loc="upper right",
             edgecolor="white",
         )
         for handle in lgnd.legend_handles:

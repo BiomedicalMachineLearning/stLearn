@@ -21,7 +21,7 @@ from stlearn.types import _BACKGROUND, _QUALITY
 from stlearn.wrapper.xenium_alignment import apply_alignment_transformation
 
 
-def Read10X(
+def read_10x(
     path: str | Path,
     genome: str | None = None,
     count_file: str = "filtered_feature_bc_matrix.h5",
@@ -197,7 +197,7 @@ def Read10X(
     return adata
 
 
-def ReadOldST(
+def read_old_st(
     count_matrix_file: PathLike[str] | str | Iterator[str],
     spatial_file: int | str | bytes | PathLike[str] | PathLike[bytes],
     image_file: str | Path | None = None,
@@ -247,7 +247,7 @@ def ReadOldST(
     return adata
 
 
-def ReadSlideSeq(
+def read_slide_seq(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
     library_id: str | None = None,
@@ -330,7 +330,7 @@ def ReadSlideSeq(
     return adata
 
 
-def ReadMERFISH(
+def read_merfish(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
     library_id: str | None = None,
@@ -412,7 +412,7 @@ def ReadMERFISH(
     return adata_merfish
 
 
-def ReadSeqFish(
+def read_seq_fish(
     count_matrix_file: str | Path,
     spatial_file: str | Path,
     library_id: str | None = None,
@@ -500,7 +500,7 @@ def ReadSeqFish(
     return adata
 
 
-def ReadXenium(
+def read_xenium(
     feature_cell_matrix_file: str | Path,
     cell_summary_file: str | Path,
     image_path: Path | None = None,

@@ -11,7 +11,7 @@ from ._weighting_matrix import (
 )
 
 
-def SME_normalize(
+def sme_normalize(
     adata: AnnData,
     use_data: str = "raw",
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
@@ -61,11 +61,9 @@ def SME_normalize(
         elif isinstance(adata.X, pd.Dataframe):
             count_embed = adata.X.values
         else:
-            raise ValueError(
-                f"""\
+            raise ValueError(f"""\
                     {type(adata.X)} is not a valid type.
-                    """
-            )
+                    """)
     else:
         count_embed = adata.obsm[use_data]
 

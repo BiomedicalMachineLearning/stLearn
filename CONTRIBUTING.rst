@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/duypham2108/stlearn/issues.
+Report bugs at https://github.com/BiomedicalMachineLearning/stLearn/issues
 
 If you are reporting a bug, please include:
 
@@ -72,11 +72,8 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
     $ cd stlearn/
     $ pip install -e .[dev,test]
 
-    If you get an error for louvain package on MacOS, make sure you have cmake installed first (if you have brew):
-    $ brew install cmake
-
     You can also use conda to install these dependencies (after creating the environment):
-    $ conda install -c conda-forge louvain leidenalg python-igraph
+    $ conda install -c conda-forge leidenalg python-igraph
 
    Or if you prefer pip/virtualenv::
 
@@ -119,9 +116,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-   https://travis-ci.org/duypham2108/stlearn/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+3. The pull request should work for Python 3.12 and above.
 
 Tips
 ----

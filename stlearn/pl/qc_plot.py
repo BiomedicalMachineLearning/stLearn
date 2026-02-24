@@ -3,7 +3,7 @@ from anndata import AnnData
 from matplotlib import pyplot as plt
 
 
-def QC_plot(
+def qc_plot(
     adata: AnnData,
     name: str,
     library_id: str | None = None,

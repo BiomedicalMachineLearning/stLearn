@@ -4,7 +4,7 @@ from anndata import AnnData
 def annotation(
     adata: AnnData,
     label_list: list[str],
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     copy: bool = False,
 ) -> AnnData | None:
     """\

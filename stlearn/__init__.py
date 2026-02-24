@@ -11,13 +11,13 @@ from .wrapper.convert_scanpy import convert_scanpy
 
 # Wrapper
 from .wrapper.read import (
-    Read10X,
-    ReadMERFISH,
-    ReadOldST,
-    ReadSeqFish,
-    ReadSlideSeq,
-    ReadXenium,
     create_stlearn,
+    read_10x,
+    read_merfish,
+    read_old_st,
+    read_seq_fish,
+    read_slide_seq,
+    read_xenium,
 )
 
 # from . import cli
@@ -29,12 +29,12 @@ __all__ = [
     "pl",
     "spatial",
     "datasets",
-    "ReadSlideSeq",
-    "Read10X",
-    "ReadOldST",
-    "ReadMERFISH",
-    "ReadSeqFish",
-    "ReadXenium",
+    "read_slide_seq",
+    "read_10x",
+    "read_old_st",
+    "read_merfish",
+    "read_seq_fish",
+    "read_xenium",
     "create_stlearn",
     "settings",
     "types",

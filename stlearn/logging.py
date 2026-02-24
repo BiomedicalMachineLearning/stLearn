@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Mapping
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from functools import partial, update_wrapper
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING
 from typing import Any, overload
@@ -40,7 +40,7 @@ class _RootLogger(logging.RootLogger):
     ) -> datetime:
         from . import settings
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         time_passed: timedelta | None = None if time is None else now - time
         extra = {
             **(extra or {}),
@@ -240,7 +240,7 @@ _DEPENDENCIES_NUMERICS = [
     ("sklearn", "scikit-learn"),
     "statsmodels",
     ("igraph", "python-igraph"),
-    "louvain",
+    "leidenalg",
 ]
 
 _DEPENDENCIES_PLOTTING = ["matplotlib", "seaborn"]
@@ -280,7 +280,7 @@ def print_version_and_date():
     from ._settings import settings
 
     print(
-        f"Running Scanpy {__version__}, on {datetime.now():%Y-%m-%d %H:%M}.",
+        f"Running Scanpy {__version__}, on {datetime.now(UTC):%Y-%m-%d %H:%M}.",
         file=settings.logfile,
     )
 
@@ -318,7 +318,7 @@ def error(
     from ._settings import settings
 
     result = settings._root_logger.error(msg, time=time, deep=deep, extra=extra)
-    return result or datetime.now(timezone.utc)
+    return result or datetime.now(UTC)
 
 
 @_copy_docs_and_signature(error)
@@ -332,7 +332,7 @@ def warning(
     from ._settings import settings
 
     result = settings._root_logger.warning(msg, time=time, deep=deep, extra=extra)
-    return result or datetime.now(timezone.utc)
+    return result or datetime.now(UTC)
 
 
 @_copy_docs_and_signature(error)
@@ -346,7 +346,7 @@ def info(
     from ._settings import settings
 
     result = settings._root_logger.info(msg, time=time, deep=deep, extra=extra)
-    return result or datetime.now(timezone.utc)
+    return result or datetime.now(UTC)
 
 
 @_copy_docs_and_signature(error)
@@ -373,4 +373,4 @@ def debug(
     from ._settings import settings
 
     result = settings._root_logger.debug(msg, time=time, deep=deep, extra=extra)
-    return result or datetime.now(timezone.utc)
+    return result or datetime.now(UTC)

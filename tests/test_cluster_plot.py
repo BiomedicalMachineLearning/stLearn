@@ -13,16 +13,18 @@ from stlearn.pl.classes import ClusterPlot
 
 from .utils import read_test_data
 
-global adata
-adata = read_test_data()
-
 
 class TestClusterPlot(unittest.TestCase):
     """Tests for ClusterPlot."""
 
+    @classmethod
+    def setUpClass(cls):
+        cls._base_adata = read_test_data()
+        cls._label_name = "test_clusters"
+
     def setUp(self):
         """Set up test data with known clusters."""
-        self.adata = adata.copy()
+        self.adata = self.__class__._base_adata.copy()
 
         # Create test clustering data
         n_spots = len(self.adata.obs)
@@ -129,7 +131,6 @@ class TestClusterPlot(unittest.TestCase):
             self.assertNotEqual(colors[:2], existing_colors)
 
     def tearDown(self):
-        """Clean up after each test."""
-        # Clear any test artifacts
-        if hasattr(self, "adata") and "test_clusters_colors" in self.adata.uns:
-            del self.adata.uns["test_clusters_colors"]
+        key = f"{self.__class__._label_name}_colors"
+        if hasattr(self, "adata") and key in self.adata.uns:
+            del self.adata.uns[key]

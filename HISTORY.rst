@@ -2,6 +2,16 @@
 History
 =======
 
+1.3.0 (2026-02-24)
+------------------
+* Removed interactive stLearn/embedded web application.
+* Removed louvain clustering - replaced with leiden.
+
+API and Bug Fixes:
+* Fix import on MutableVertexPartition to use leidenalg.VertexPartition.
+* Switch default flavour in leiden to use igraph (and its required parameters).
+* Renamed methods and classes to follow lowercase standard.
+
 1.2.2 (2025-10-20)
 ------------------
 * Added support for Python 3.11 and 3.12.

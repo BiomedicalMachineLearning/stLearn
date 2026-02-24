@@ -13,7 +13,7 @@ from statsmodels.stats.multitest import multipletests
 from tqdm import tqdm
 
 from .base import calc_distance, calc_neighbours, get_lrs_scores
-from .go import run_GO
+from .go import run_go
 from .het import (
     count,
     get_data_for_counting,
@@ -508,7 +508,7 @@ def run_lr_go(
         bg_genes = np.unique(all_genes)
 
     # Running the GO analysis
-    go_results = run_GO(
+    go_results = run_go(
         top_genes,
         bg_genes,
         species,

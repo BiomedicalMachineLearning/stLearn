@@ -161,7 +161,7 @@ def get_similar_genes(
     return similar_genes
 
 
-def get_similar_genes_Quantiles(
+def get_similar_genes_quantiles(
     gene_expr: np.array,
     n_genes: int,
     candidate_quants: np.ndarray,
@@ -222,7 +222,7 @@ def get_similar_genes_Quantiles(
 
 
 @njit(parallel=True)
-def get_similar_genesFAST(
+def get_similar_genes_fast(
     ref_quants: np.array,
     n_genes: int,
     candidate_quants: np.ndarray,
@@ -356,7 +356,7 @@ def get_lr_bg(
     """Gets the LR-specific background & bg spot indices."""
     l_, r_ = lr_.split("_")
     if l_ not in gene_bg_genes:
-        l_genes = get_similar_genesFAST(
+        l_genes = get_similar_genes_fast(
             l_quant,
             n_genes,
             candidate_quants,
@@ -367,7 +367,7 @@ def get_lr_bg(
         l_genes = gene_bg_genes[l_]
 
     if r_ not in gene_bg_genes:
-        r_genes = get_similar_genesFAST(
+        r_genes = get_similar_genes_fast(
             r_quant,
             n_genes,
             candidate_quants,

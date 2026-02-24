@@ -11,7 +11,7 @@ def global_level(
     adata: AnnData,
     list_clusters: list[str],
     w: float,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     use_rep: str = "X_pca",
     n_dims: int = 40,
     return_graph: bool = False,

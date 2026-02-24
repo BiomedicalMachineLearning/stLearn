@@ -1,13 +1,9 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 from anndata import AnnData
 from scipy.stats import spearmanr
 
 from ...utils import _read_graph
-
-warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def detect_transition_markers_clades(
@@ -17,7 +13,7 @@ def detect_transition_markers_clades(
     cutoff_pvalue: float = 0.05,
     screening_genes: None | list[str] = None,
     use_raw_count: bool = False,
-):
+) -> None:
     """\
     Transition markers detection of a clade.
 
@@ -53,12 +49,11 @@ def detect_transition_markers_clades(
         - Clade-specific marker information
     """
 
-    print("Detecting the transition markers of clade_" + str(clade) + "...")
+    clade_key = f"clade_{clade}"
+    print(f"Detecting the transition markers of {clade_key}...")
 
     tmp = _read_graph(adata, "PTS_graph")
-
     G = tmp.copy()
-
     remove = [edge for edge in G.edges if 9999 in edge]
     G.remove_edges_from(remove)
     G.remove_node(9999)
@@ -86,22 +81,18 @@ def detect_transition_markers_clades(
     ].sort_values("score")
 
     result = pd.concat([positive, negative])
-
-    adata.uns["clade_" + str(clade)] = result
-
-    print(
-        "Transition markers result is stored in adata.uns['clade_" + str(clade) + "']"
-    )
+    adata.uns[clade_key] = result
+    print(f"Transition markers result is stored in adata.uns['{clade_key}']")
 
 
 def detect_transition_markers_branches(
-    adata,
-    branch,
-    cutoff_spearman=0.4,
-    cutoff_pvalue=0.05,
-    screening_genes=None,
-    use_raw_count=False,
-):
+    adata: AnnData,
+    branch: list[int],
+    cutoff_spearman: float = 0.4,
+    cutoff_pvalue: float = 0.05,
+    screening_genes: None | list[str] = None,
+    use_raw_count: bool = False,
+) -> None:
     """\
     Transition markers detection of a branch.
 
@@ -123,10 +114,8 @@ def detect_transition_markers_branches(
     -------
     Anndata
     """
-    print(
-        "Detecting the transition markers of branch_"
-        + "_".join(np.array(branch).astype(str))
-    )
+    branch_key = f"branch_{'_'.join(np.array(branch).astype(str))}"
+    print(f"Detecting the transition markers of {branch_key}")
 
     query_adata = adata[adata.obs.query(create_query(branch)).index]
 
@@ -143,41 +132,43 @@ def detect_transition_markers_branches(
     ].sort_values("score")
 
     result = pd.concat([positive, negative])
-
-    adata.uns["branch_" + "_".join(np.array(branch).astype(str))] = result
-
-    print(
-        "Transition markers result is stored in adata.uns['branch_"
-        + "_".join(np.array(branch).astype(str))
-        + "']"
-    )
+    adata.uns[branch_key] = result
+    print(f"Transition markers result is stored in adata.uns['{branch_key}']")
 
 
-def create_query(list_sub_clusters):
-    ini = ""
-    for sub in list_sub_clusters:
-        ini = ini + 'sub_cluster_labels == "' + str(sub) + '" | '
-    return ini[:-2]
+def create_query(list_sub_clusters: list) -> str:
+    return " | ".join(f'sub_cluster_labels == "{sub}"' for sub in list_sub_clusters)
 
 
-def get_rank_cor(adata, screening_genes=None, use_raw_count=True):
+def get_rank_cor(
+    adata: AnnData,
+    screening_genes: list[str] | None = None,
+    use_raw_count: bool = True,
+) -> pd.DataFrame:
     if use_raw_count:
         tmp = adata.copy()
         tmp.X = adata.layers["raw_count"]
         tmp = tmp.to_df()
     else:
         tmp = adata.to_df()
+
     if screening_genes is not None:
         tmp = tmp[screening_genes]
+
     dpt = adata.obs["dpt_pseudotime"].values
     genes = []
     score = []
     pvalue = []
-    for gene in list(adata.var.index):
-        genes.append(gene)
-        score.append(spearmanr(tmp[gene].values, dpt)[0])
-        pvalue.append(spearmanr(tmp[gene].values, dpt)[1])
-    import pandas as pd
 
-    final = pd.DataFrame({"gene": genes, "score": score, "p-value": pvalue})
-    return final
+    for gene in list(adata.var.index):
+        gene_values = tmp[gene].values
+        if np.std(gene_values) == 0 or np.std(dpt) == 0:
+            genes.append(gene)
+            score.append(np.nan)
+            pvalue.append(np.nan)
+        else:
+            result = spearmanr(gene_values, dpt)
+            genes.append(gene)
+            score.append(result[0])
+            pvalue.append(result[1])
+    return pd.DataFrame({"gene": genes, "score": score, "p-value": pvalue})

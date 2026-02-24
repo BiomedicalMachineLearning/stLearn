@@ -17,7 +17,7 @@ adata = read_test_data()
 class TestSpatial(unittest.TestCase):
     """Tests for `stlearn` package."""
 
-    def test_setup_Spatial(self):
+    def test_setup_spatial(self):
         spatial = Spatial(adata)
         self.assertIsNotNone(spatial)
         self.assertEqual("V1_Breast_Cancer_Block_A_Section_1", spatial.library_id)

@@ -1,7 +1,7 @@
-from .label import run_label_transfer, run_rctd, run_singleR
+from .label import run_label_transfer, run_rctd, run_single_r
 
 __all__ = [
-    "run_singleR",
+    "run_single_r",
     "run_rctd",
     "run_label_transfer",
 ]

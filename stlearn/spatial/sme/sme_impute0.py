@@ -3,7 +3,7 @@ import pandas as pd
 from anndata import AnnData
 from scipy.sparse import csr_matrix
 
-from stlearn.spatial.SME._weighting_matrix import (
+from stlearn.spatial.sme._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
     impute_neighbour,
@@ -11,7 +11,7 @@ from stlearn.spatial.SME._weighting_matrix import (
 )
 
 
-def SME_impute0(
+def sme_impute0(
     adata: AnnData,
     use_data: str = "raw",
     weights: _WEIGHTING_MATRIX = "weights_matrix_all",
@@ -61,11 +61,9 @@ def SME_impute0(
         elif isinstance(adata.X, pd.Dataframe):
             count_embed = adata.X.values
         else:
-            raise ValueError(
-                f"""\
+            raise ValueError(f"""\
                     {type(adata.X)} is not a valid type.
-                    """
-            )
+                    """)
     else:
         count_embed = adata.obsm[use_data]
 

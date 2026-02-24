@@ -12,7 +12,7 @@ from stlearn.utils import _read_graph
 def pseudotime_plot(
     adata: AnnData,
     library_id: str | None = None,
-    use_label: str = "louvain",
+    use_label: str = "leiden",
     pseudotime_key: str = "dpt_pseudotime",
     list_clusters: str | list[str] | None = None,
     cell_alpha: float = 1.0,

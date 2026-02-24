@@ -4,7 +4,7 @@ from stlearn.pl.utils import get_node
 from stlearn.utils import _read_graph
 
 
-def shortest_path_spatial_PAGA(
+def shortest_path_spatial_paga(
     adata,
     use_label,
     key="dpt_pseudotime",

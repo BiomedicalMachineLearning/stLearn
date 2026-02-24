@@ -1,7 +1,7 @@
 # stlearn/pl/trajectory/__init__.py
 
 from .check_trajectory import check_trajectory
-from .DE_transition_plot import DE_transition_plot
+from .de_transition_plot import de_transition_plot
 from .local_plot import local_plot
 from .pseudotime_plot import pseudotime_plot
 from .transition_markers_plot import transition_markers_plot
@@ -13,7 +13,7 @@ __all__ = [
     "local_plot",
     "tree_plot",
     "transition_markers_plot",
-    "DE_transition_plot",
+    "de_transition_plot",
     "tree_plot_simple",
     "check_trajectory",
 ]

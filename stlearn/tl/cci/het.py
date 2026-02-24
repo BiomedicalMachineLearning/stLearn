@@ -203,7 +203,7 @@ def count_interactions(
     return int_matrix if trans_dir else int_matrix.transpose()
 
 
-@jit(parallel=True, nopython=False)
+@jit(parallel=True)
 def get_interaction_pvals(
     int_matrix,
     n_perms,
@@ -494,7 +494,7 @@ def count_grid(
     return adata
 
 
-@jit(parallel=True, forceobj=True, nopython=False)
+@jit(parallel=True, forceobj=True)
 def grid_parallel(
     grid_coords: np.ndarray,
     xedges: np.array,

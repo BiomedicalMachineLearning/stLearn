@@ -1,8 +1,9 @@
 from collections.abc import Sequence
+from typing import Literal
 
 import scanpy
 from anndata import AnnData
-from louvain.VertexPartition import MutableVertexPartition
+from leidenalg.VertexPartition import MutableVertexPartition
 from numpy.random.mtrand import RandomState
 from scipy.sparse import spmatrix
 
@@ -14,11 +15,13 @@ def leiden(
     restrict_to: tuple[str, Sequence[str]] | None = None,
     key_added: str = "leiden",
     adjacency: spmatrix | None = None,
-    directed: bool = True,
+    directed: bool = False,
     use_weights: bool = False,
     partition_type: type[MutableVertexPartition] | None = None,
     obsp: str | None = None,
     copy: bool = False,
+    flavor: Literal["leidenalg", "igraph"] = "igraph",
+    n_iterations: int = 2,
 ) -> AnnData | None:
     """\
     Wrap function scanpy.tl.leiden
@@ -60,6 +63,10 @@ def leiden(
         `obsp` and `neighbors_key` at the same time.
     copy:
         Copy adata or modify it inplace.
+    flavor:
+        Which package's implementation to use.
+    n_iterations:
+        How many iterations of the Leiden clustering algorithm to perform.
 
     Returns
     -------
@@ -72,6 +79,12 @@ def leiden(
 
         When ``copy=True`` is set, a copy of ``adata`` with those fields is returned.
     """
+
+    if flavor == "igraph" and directed:
+        raise ValueError(
+            "directed=True is not supported with flavor='igraph'. "
+            "Either set directed=False or use flavor='leidenalg'."
+        )
 
     print("Applying Leiden cluster ...")
     adata = scanpy.tl.leiden(
@@ -86,10 +99,10 @@ def leiden(
         partition_type=partition_type,
         obsp=obsp,
         copy=copy,
+        flavor=flavor,
+        n_iterations=n_iterations,
     )
 
-    print(
-        "Leiden cluster is done! The labels are stored in adata.obs['%s']" % key_added
-    )
+    print(f"Leiden cluster is done! The labels are stored in adata.obs['{key_added}']")
 
     return adata
