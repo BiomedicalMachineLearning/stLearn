@@ -13,7 +13,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "BSD license" }
 requires-python = ">=3.12"
 dependencies = [
-    "anndata>=0.10.0,<0.12",
+    "anndata>=0.12.0",
     "bokeh>=3.7.0,<4.0",
     "click>=8.2.0,<9.0",
     "igraph>=1.0.0",
@@ -21,7 +21,7 @@ dependencies = [
     "numba>=0.58.1",
     "numpy>=1.26.0",
     "pillow>=11.0.0,<12.0",
-    "scanpy>=1.11.0,<2.0",
+    "scanpy>=1.11.0",
     "scikit-image>=0.22.0",
     "tensorflow>=2.14.1",
     "keras>=2.14.0",
@@ -29,8 +29,10 @@ dependencies = [
     "imageio>=2.37.0,<3.0",
     "scipy>=1.11.0,<2.0",
     "scikit-learn>=1.7.0,<2.0",
-    "spatialdata>=0.2.5,<0.3",
-    "spatialdata-io>=0.1.5,<0.2",
+    "zarr>=3.0",
+    "dask>=2024.11.2",
+    "spatialdata>=0.7.0",
+    "spatialdata-io>=0.2.0",
     "geopandas>=1.0.0,<2.0",
     "shapely>=2.0.0,<3.0",
 ]
