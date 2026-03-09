@@ -7,6 +7,8 @@ from .adds.labels import labels
 from .adds.lr import lr
 from .adds.parsing import parsing
 from .adds.positions import positions
+from .adds.row_annotations import row_annotations
+from .adds.polygon_annotations import polygon_annotations
 
 __all__ = [
     "image",
@@ -19,4 +21,6 @@ __all__ = [
     "add_mask",
     "apply_mask",
     "add_loupe_clusters",
+    "row_annotations",
+    "polygon_annotations"
 ]
