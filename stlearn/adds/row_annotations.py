@@ -60,16 +60,9 @@ def row_annotations(
         annotations = annotations[columns]
 
     merged = annotations.reindex(adata.obs_names)
-
-    n_matched = merged.notna().any(axis=1).sum()
     added_cols = list(merged.columns)
 
     for col in added_cols:
         adata.obs[col] = merged[col].values
-
-    print(
-        f"Added {len(added_cols)} column(s) to adata.obs: {added_cols}. "
-        f"{n_matched}/{adata.n_obs} cells/spots matched."
-    )
 
     return adata if copy else None

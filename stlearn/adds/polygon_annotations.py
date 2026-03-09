@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import spatialdata.models as models
 import geopandas as gpd
 
 from stlearn._compat import get_adata, is_spatial_data
@@ -46,18 +46,11 @@ def polygon_annotations(
 
     # If SpatialData, also store the polygons as a shapes element
     if is_spatial_data(data):
-        import spatialdata.models as models
-
         parsed = models.ShapesModel.parse(annotations)
         data.shapes[obs_key] = parsed
         data.tables[table_key] = adata
 
-    n_annotated = adata.obs[obs_key].notna().sum()
-    print(
-        f"Added polygon annotations to adata.obs['{obs_key}']: "
-        f"{n_annotated}/{adata.n_obs} cells/spots annotated"
-    )
-
     if is_spatial_data(data):
         return data
-    return adata if copy else None
+    else:
+        return adata if copy else None
