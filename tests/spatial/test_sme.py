@@ -9,8 +9,8 @@ from pathlib import Path
 import scanpy as sc
 
 import stlearn as st
-
 from tests.utils import read_test_data
+
 
 class TestSME(unittest.TestCase):
     """Tests for `stlearn` package."""

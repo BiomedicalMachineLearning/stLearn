@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 
 import stlearn as st
-
 from tests.utils import read_test_data
+
 
 class TestPSTS(unittest.TestCase):
     """Tests for `stlearn` package."""

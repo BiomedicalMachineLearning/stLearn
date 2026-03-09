@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 
 from stlearn.pl.classes import ClusterPlot
-
 from tests.utils import read_test_data
+
 
 class TestClusterPlot(unittest.TestCase):
     """Tests for ClusterPlot."""
