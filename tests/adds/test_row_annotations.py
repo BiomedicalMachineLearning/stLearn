@@ -19,27 +19,27 @@ class TestRowAnnotations(unittest.TestCase):
         )
 
 
-def setUp(self):
-    """Set up test data with known clusters."""
-    self.adata = self.__class__._base_adata.copy()
+    def setUp(self):
+        """Set up test data with known clusters."""
+        self.adata = self.__class__._base_adata.copy()
 
 
-def test_add_row_annotations(self):
-    row_annotations.row_annotations(self.adata, self.__class__.annotations_path, "ID")
+    def test_add_row_annotations(self):
+        row_annotations.row_annotations(self.adata, self.__class__.annotations_path, "ID")
 
-    assert "annot_type" in self.adata.obs.columns
-    assert "fine_annot_type" in self.adata.obs.columns
+        assert "annot_type" in self.adata.obs.columns
+        assert "fine_annot_type" in self.adata.obs.columns
 
-    # Check annotated the same number
-    annotated = self.adata.obs["annot_type"].dropna()
-    fine_annotated = self.adata.obs["fine_annot_type"].dropna()
-    assert len(fine_annotated) == len(annotated)
+        # Check annotated the same number
+        annotated = self.adata.obs["annot_type"].dropna()
+        fine_annotated = self.adata.obs["fine_annot_type"].dropna()
+        assert len(fine_annotated) == len(annotated)
 
 
-def test_add_row_annotations_with_missing_column(self):
-    with self.assertRaises(ValueError):
-        row_annotations.row_annotations(
-            self.adata,
-            self.__class__.annotations_path,
-            join_column="nonexistent_column",
-        )
+    def test_add_row_annotations_with_missing_column(self):
+        with self.assertRaises(ValueError):
+            row_annotations.row_annotations(
+                self.adata,
+                self.__class__.annotations_path,
+                join_column="nonexistent_column",
+            )
