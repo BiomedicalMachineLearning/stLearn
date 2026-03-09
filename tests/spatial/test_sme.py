@@ -10,8 +10,7 @@ import scanpy as sc
 
 import stlearn as st
 
-from .utils import read_test_data
-
+from tests.utils import read_test_data
 
 class TestSME(unittest.TestCase):
     """Tests for `stlearn` package."""

@@ -13,12 +13,13 @@ readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "BSD license" }
 requires-python = ">=3.12"
 dependencies = [
+    "anndata>=0.10.0,<0.12",
     "bokeh>=3.7.0,<4.0",
     "click>=8.2.0,<9.0",
     "igraph>=1.0.0",
     "leidenalg>=0.11.0",
     "numba>=0.58.1",
-    "numpy>=1.26.0,<2.0",
+    "numpy>=1.26.0",
     "pillow>=11.0.0,<12.0",
     "scanpy>=1.11.0,<2.0",
     "scikit-image>=0.22.0",
@@ -28,6 +29,10 @@ dependencies = [
     "imageio>=2.37.0,<3.0",
     "scipy>=1.11.0,<2.0",
     "scikit-learn>=1.7.0,<2.0",
+    "spatialdata>=0.2.5,<0.3",
+    "spatialdata-io>=0.1.5,<0.2",
+    "geopandas>=1.0.0,<2.0",
+    "shapely>=2.0.0,<3.0",
 ]
 keywords = ["stlearn"]
 classifiers = [
@@ -85,9 +90,6 @@ include = ["stlearn", "stlearn.*"]
 
 [tool.setuptools.package-data]
 "*" = ["*"]
-
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
 
 [tool.ruff]
 target-version = "py311"

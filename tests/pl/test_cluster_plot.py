@@ -11,8 +11,7 @@ import pandas as pd
 
 from stlearn.pl.classes import ClusterPlot
 
-from .utils import read_test_data
-
+from tests.utils import read_test_data
 
 class TestClusterPlot(unittest.TestCase):
     """Tests for ClusterPlot."""

@@ -9,8 +9,7 @@ import numpy as np
 import scanpy as sc
 
 import stlearn as st
-
-from .utils import read_test_data
+from tests.utils import read_test_data
 
 global adata
 adata = read_test_data()
