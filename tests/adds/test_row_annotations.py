@@ -5,7 +5,7 @@
 import unittest
 
 from stlearn.adds import row_annotations
-from tests.utils import read_test_data, test_data_path
+from tests.utils import read_test_data, path_for_test_data
 
 
 class TestRowAnnotations(unittest.TestCase):
@@ -15,10 +15,11 @@ class TestRowAnnotations(unittest.TestCase):
     def setUpClass(cls):
         cls._base_adata = read_test_data()
         cls.annotations_path = (
-            f"{test_data_path()}/" + "v1_human_breast_cancer_block_a_section_1.csv"
+            f"{path_for_test_data()}/" + "v1_human_breast_cancer_block_a_section_1.csv"
         )
         cls.proportions_path = (
-            f"{test_data_path()}/" + "v1_human_breast_cancer_block_a_section_1_proportions.csv"
+            f"{path_for_test_data()}/"
+            + "v1_human_breast_cancer_block_a_section_1_proportions.csv"
         )
 
     def setUp(self):
@@ -26,8 +27,9 @@ class TestRowAnnotations(unittest.TestCase):
         self.adata = self.__class__._base_adata.copy()
 
     def test_add_row_annotations(self):
-        row_annotations.row_annotations(self.adata, self.__class__.annotations_path,
-                                        "ID")
+        row_annotations.row_annotations(
+            self.adata, self.__class__.annotations_path, "ID"
+        )
 
         assert "annot_type" in self.adata.obs.columns
         assert "fine_annot_type" in self.adata.obs.columns
@@ -46,8 +48,9 @@ class TestRowAnnotations(unittest.TestCase):
             )
 
     def test_add_row_proportions(self):
-        row_annotations.row_annotations_proportions(self.adata,
-                                                    self.__class__.proportions_path)
+        row_annotations.row_annotations_proportions(
+            self.adata, self.__class__.proportions_path
+        )
 
         assert "cell_type" in self.adata.obs.columns
 

@@ -93,16 +93,18 @@ def row_annotations_proportions(
     adata = adata.copy() if copy else adata
 
     annotations = _read_annotations(annotations, columns, join_column)
-    annotations = annotations.astype('float64')
+    annotations = annotations.astype("float64")
     labels = annotations.idxmax(axis=1)
     adata.obs[proportion_column_name] = labels
 
     return adata if copy else None
 
 
-def _read_annotations(annotations: DataFrame | str | Path,
-                      columns: list[str] | None,
-                      join_column: str | None) -> DataFrame:
+def _read_annotations(
+    annotations: DataFrame | str | Path,
+    columns: list[str] | None,
+    join_column: str | None,
+) -> DataFrame:
     if isinstance(annotations, (str, Path)):
         path = Path(annotations)
         sep = "\t" if path.suffix in (".tsv", ".txt") else ","

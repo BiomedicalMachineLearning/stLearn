@@ -16,7 +16,7 @@ def adjust(
     copy: bool = False,
 ) -> AnnData | None:
     """\
-    SME normalisation: Using spot location information and tissue morphological
+    sme normalisation: Using spot location information and tissue morphological
     features to correct spot gene expression
 
     Parameters
@@ -41,7 +41,7 @@ def adjust(
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
     **[use_data]_morphology** : `adata.obsm` field
-        Add SME normalised gene expression matrix
+        Add sme normalised gene expression matrix
     """
     adata = adata.copy() if copy else adata
 

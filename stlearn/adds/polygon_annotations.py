@@ -1,18 +1,19 @@
 from pathlib import Path
-import spatialdata.models as models
+
 import geopandas as gpd
+import spatialdata.models as models
 
 from stlearn._compat import get_adata, is_spatial_data
 
 
 def polygon_annotations(
-    data,
-    annotations,
-    label_column="label",
-    obs_key="region",
-    spatial_key="spatial",
-    table_key="table",
-    copy=False,
+        data,
+        annotations,
+        label_column="label",
+        obs_key="region",
+        spatial_key="spatial",
+        table_key="table",
+        copy=False,
 ):
     """
     Annotate cells/spots by spatial overlap with polygon regions.

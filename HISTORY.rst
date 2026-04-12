@@ -2,6 +2,10 @@
 History
 =======
 
+1.4.0 (2026-04-12)
+------------------
+* Removed tensorflow and keras and replaced with torch and torchvision.
+
 1.3.0 (2026-02-24)
 ------------------
 * Removed interactive stLearn/embedded web application.

@@ -20,7 +20,7 @@ def sme_normalize(
 ) -> AnnData | None:
     """\
     Reduce technical noise by spatially smoothing all expression values using
-     spatial, morphological, and expression (SME) information.
+     spatial, morphological, and expression (sme) information.
 
     This function modified ALL expression values by averaging each spot's expression
     with weighted contributions from similar neighbors. It modifies ALL expression
@@ -61,9 +61,11 @@ def sme_normalize(
         elif isinstance(adata.X, pd.Dataframe):
             count_embed = adata.X.values
         else:
-            raise ValueError(f"""\
+            raise ValueError(
+                f"""\
                     {type(adata.X)} is not a valid type.
-                    """)
+                    """
+            )
     else:
         count_embed = adata.obsm[use_data]
 
@@ -78,6 +80,6 @@ def sme_normalize(
     key_added = use_data + "_SME_normalized"
     adata.obsm[key_added] = adjusted_count_matrix
 
-    print("The data adjusted by SME is added to adata.obsm['" + key_added + "']")
+    print("The data adjusted by sme is added to adata.obsm['" + key_added + "']")
 
     return adata if copy else None
