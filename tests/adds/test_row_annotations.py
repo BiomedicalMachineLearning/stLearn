@@ -5,7 +5,7 @@
 import unittest
 
 from stlearn.adds import row_annotations
-from tests.utils import read_test_data, path_for_test_data
+from tests.utils import path_for_test_data, read_test_data
 
 
 class TestRowAnnotations(unittest.TestCase):
