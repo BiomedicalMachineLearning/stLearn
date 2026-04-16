@@ -204,23 +204,24 @@ def count_interactions(
 
 @njit(parallel=True)
 def get_interaction_pvals(
-    int_matrix, 
-    n_perms, 
-    cell_data, 
-    neighbourhood_bcs, 
-    neighbourhood_indices, 
-    all_set, 
-    sig_bool, 
-    L_bool, 
-    R_bool, 
-    cell_prop_cutoff
+    int_matrix,
+    n_perms,
+    cell_data,
+    neighbourhood_bcs,
+    neighbourhood_indices,
+    all_set,
+    sig_bool,
+    L_bool,
+    R_bool,
+    cell_prop_cutoff,
 ):
     """Gets the p-values for the interaction counts."""
 
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
     greater_counts = np.zeros(shape_, dtype=np.int64)
     indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
-    for i in range(cell_data.shape[0]): indices[i] = i
+    for i in range(cell_data.shape[0]):
+        indices[i] = i
 
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
     for i in prange(n_perms):
@@ -233,10 +234,20 @@ def get_interaction_pvals(
             rand_indices = np.random.choice(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
-        perm_matrix = get_interaction_matrix(perm_data, neighbourhood_indices, all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff)
+        perm_matrix = get_interaction_matrix(
+            perm_data,
+            neighbourhood_indices,
+            all_set,
+            sig_bool,
+            L_bool,
+            R_bool,
+            cell_prop_cutoff,
+        )
         for row in range(int_matrix.shape[0]):
             for col in range(int_matrix.shape[1]):
-                greater_counts[i, row, col] = perm_matrix[row, col] >= int_matrix[row, col]
+                greater_counts[i, row, col] = (
+                    perm_matrix[row, col] >= int_matrix[row, col]
+                )
 
     # Numba parallel sums axis 0 efficiently
     out = np.zeros((int_matrix.shape[0], int_matrix.shape[1]), dtype=np.float64)
@@ -250,33 +261,33 @@ def get_interaction_pvals(
 
 @njit
 def get_interaction_matrix(
-    cell_data, 
-    neighbourhood_indices, 
-    all_set, 
-    sig_bool, 
-    L_bool, 
-    R_bool, 
-    cell_prop_cutoff
+    cell_data,
+    neighbourhood_indices,
+    all_set,
+    sig_bool,
+    L_bool,
+    R_bool,
+    cell_prop_cutoff,
 ):
     """Gets the interaction matrix for a given cell data matrix."""
 
     n_spots = cell_data.shape[0]
     n_types = all_set.shape[0]
     int_matrix = np.zeros((n_types, n_types), dtype=np.int64)
-    
+
     for t1 in range(n_types):
         for t2 in range(n_types):
             s = {np.int64(-1)}
             s.clear()
-            
+
             for i in range(n_spots):
                 if not sig_bool[i]:
                     continue
                 if cell_data[i, t1] <= cell_prop_cutoff:
                     continue
-                    
+
                 neighs = neighbourhood_indices[i][1]
-                
+
                 for k in range(len(neighs)):
                     n_idx = neighs[k]
                     if cell_data[n_idx, t2] > cell_prop_cutoff:
@@ -285,7 +296,7 @@ def get_interaction_matrix(
                             valid = True
                         if R_bool[i] and L_bool[n_idx]:
                             valid = True
-                            
+
                         if valid:
                             u = np.int64(i)
                             v = np.int64(n_idx)
@@ -294,9 +305,9 @@ def get_interaction_matrix(
                                 u = v
                                 v = tmp
                             s.add((u << 32) | v)
-            
+
             int_matrix[t1, t2] = len(s)
-            
+
     return int_matrix
 
 
