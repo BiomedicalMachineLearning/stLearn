@@ -8,7 +8,6 @@ from numba import jit, njit, prange
 from numba.typed import List
 
 from stlearn.tl.cci.het_helpers import (
-    add_unique_edges,
     edge_core,
     get_between_spot_edge_array,
     get_data_for_counting,
@@ -204,7 +203,20 @@ def count_interactions(
 
 
 @njit(parallel=True)
-def get_interaction_pvals(int_matrix, n_perms, cell_data, neighbourhood_bcs, neighbourhood_indices, all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff):
+def get_interaction_pvals(
+    int_matrix, 
+    n_perms, 
+    cell_data, 
+    neighbourhood_bcs, 
+    neighbourhood_indices, 
+    all_set, 
+    sig_bool, 
+    L_bool, 
+    R_bool, 
+    cell_prop_cutoff
+):
+    """Gets the p-values for the interaction counts."""
+
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
     greater_counts = np.zeros(shape_, dtype=np.int64)
     indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
@@ -221,7 +233,7 @@ def get_interaction_pvals(int_matrix, n_perms, cell_data, neighbourhood_bcs, nei
             rand_indices = np.random.choice(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
-        perm_matrix = get_interaction_matrix(perm_data, neighbourhood_bcs, neighbourhood_indices, all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff)
+        perm_matrix = get_interaction_matrix(perm_data, neighbourhood_indices, all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff)
         for row in range(int_matrix.shape[0]):
             for col in range(int_matrix.shape[1]):
                 greater_counts[i, row, col] = perm_matrix[row, col] >= int_matrix[row, col]
@@ -237,7 +249,17 @@ def get_interaction_pvals(int_matrix, n_perms, cell_data, neighbourhood_bcs, nei
 
 
 @njit
-def get_interaction_matrix(cell_data, neighbourhood_bcs, neighbourhood_indices, all_set, sig_bool, L_bool, R_bool, cell_prop_cutoff):
+def get_interaction_matrix(
+    cell_data, 
+    neighbourhood_indices, 
+    all_set, 
+    sig_bool, 
+    L_bool, 
+    R_bool, 
+    cell_prop_cutoff
+):
+    """Gets the interaction matrix for a given cell data matrix."""
+
     n_spots = cell_data.shape[0]
     n_types = all_set.shape[0]
     int_matrix = np.zeros((n_types, n_types), dtype=np.int64)
