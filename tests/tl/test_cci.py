@@ -279,7 +279,6 @@ class TestCCI(unittest.TestCase):
         # Get interaction matrix
         int_matrix = het.get_interaction_matrix(
             cell_data,
-            self.neighbourhood_bcs,
             self.neighbourhood_indices,
             CELL_TYPE_LABELS,
             sig_bool,

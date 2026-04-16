@@ -710,7 +710,6 @@ def run_cci(
 
             int_matrix = get_interaction_matrix(
                 cell_data,
-                neighbourhood_bcs,
                 neighbourhood_indices,
                 all_set,
                 sig_bool,

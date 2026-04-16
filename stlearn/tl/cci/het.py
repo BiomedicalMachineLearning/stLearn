@@ -8,7 +8,6 @@ from numba import jit, njit, prange
 from numba.typed import List
 
 from stlearn.tl.cci.het_helpers import (
-    add_unique_edges,
     edge_core,
     get_between_spot_edge_array,
     get_data_for_counting,
@@ -203,7 +202,7 @@ def count_interactions(
     return int_matrix if trans_dir else int_matrix.transpose()
 
 
-@jit(parallel=True)
+@njit(parallel=True)
 def get_interaction_pvals(
     int_matrix,
     n_perms,
@@ -216,24 +215,16 @@ def get_interaction_pvals(
     R_bool,
     cell_prop_cutoff,
 ):
-    """ Perturbs the cell labels to get background count frequency to estimate \
-        p-values.
-    """
+    """Gets the p-values for the interaction counts."""
 
-    # Counting how many times permutation of spots cell data creates interaction
-    # counts greater than that observed, in order to calculate p-values.
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
-    # Storing the instances where the count is greater randomly for each perm.
-    # Allows for embarassing parallelisation.
     greater_counts = np.zeros(shape_, dtype=np.int64)
     indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
     for i in range(cell_data.shape[0]):
         indices[i] = i
 
-    # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
     for i in prange(n_perms):
-        # Permuting the cell data by swapping between spots for each column #
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
@@ -243,10 +234,8 @@ def get_interaction_pvals(
             rand_indices = np.random.choice(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
-        # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(
             perm_data,
-            neighbourhood_bcs,
             neighbourhood_indices,
             all_set,
             sig_bool,
@@ -254,20 +243,25 @@ def get_interaction_pvals(
             R_bool,
             cell_prop_cutoff,
         )
-        # perm_greater = (perm_matrix >= int_matrix).astype(int)
-        perm_greater = perm_matrix >= int_matrix
-        greater_counts[i, :, :] = perm_greater
+        for row in range(int_matrix.shape[0]):
+            for col in range(int_matrix.shape[1]):
+                greater_counts[i, row, col] = (
+                    perm_matrix[row, col] >= int_matrix[row, col]
+                )
 
-    # Calculating the pvalues #
-    total_greater_counts = greater_counts.sum(axis=0)  # cts * ct counts
-    int_pvals = total_greater_counts / n_perms
+    # Numba parallel sums axis 0 efficiently
+    out = np.zeros((int_matrix.shape[0], int_matrix.shape[1]), dtype=np.float64)
+    for i in range(n_perms):
+        for row in range(int_matrix.shape[0]):
+            for col in range(int_matrix.shape[1]):
+                out[row, col] += greater_counts[i, row, col]
+    int_pvals = out / n_perms
     return int_pvals
 
 
 @njit
 def get_interaction_matrix(
     cell_data,
-    neighbourhood_bcs,
     neighbourhood_indices,
     all_set,
     sig_bool,
@@ -275,63 +269,44 @@ def get_interaction_matrix(
     R_bool,
     cell_prop_cutoff,
 ):
-    """Gets the interaction count matrix."""
-    # Now counting the interactions under 3 situations:
-    # 1) sig spot with ligand, only neighbours with receptor relevant
-    # 2) sig spot with receptor, only neighbours with ligand relevant
-    # NOTE, A<->B is double counted, but on different side of matrix.
-    # (if bidirectional interaction between two spots, counts as two seperate
-    # interactions).
-    LR_edges = get_interactions(
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-        all_set,
-        sig_bool,
-        L_bool,
-        R_bool,
-        cell_prop_cutoff=cell_prop_cutoff,
-        # sig ligand->receptor mode
-    )
-    RL_edges = get_interactions(
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-        all_set,
-        sig_bool,
-        R_bool,
-        L_bool,
-        cell_prop_cutoff=cell_prop_cutoff,
-        # sig receptor->ligand mode
-    )
+    """Gets the interaction matrix for a given cell data matrix."""
 
-    # Counting the number of unique interacting edges
-    # between different cell type via indicate LR
-    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]), dtype=np.int64)
-    edge_i = 0
-    for i in range(all_set.shape[0]):
-        for j in range(all_set.shape[0]):
-            RL_Atrans_Bedges = LR_edges[edge_i]
-            LR_Atrans_Bedges = RL_edges[edge_i]
-            edge_i += 1
-            max_len = max([len(RL_Atrans_Bedges), len(LR_Atrans_Bedges)])
-            if max_len == 0:  # Nothing to count #
-                continue
+    n_spots = cell_data.shape[0]
+    n_types = all_set.shape[0]
+    int_matrix = np.zeros((n_types, n_types), dtype=np.int64)
 
-            edge_starts = List()
-            edge_ends = List()
-            for k in range(max_len):
-                if k < len(RL_Atrans_Bedges):
-                    edge_starts.append(RL_Atrans_Bedges[k][0])
-                    edge_ends.append(RL_Atrans_Bedges[k][1])
-                if k < len(LR_Atrans_Bedges):
-                    edge_starts.append(LR_Atrans_Bedges[k][0])
-                    edge_ends.append(LR_Atrans_Bedges[k][1])
-            Atrans_Bedges = List()
-            Atrans_Bedges.append((edge_starts[0], edge_ends[0]))  # for typing
-            add_unique_edges(Atrans_Bedges, edge_starts, edge_ends)
-            # Atrans_Bedges = np.unique(RL_Atrans_Bedges + LR_Atrans_Bedges)
-            int_matrix[i, j] = len(Atrans_Bedges) - 1  # since added edge for type
+    for t1 in range(n_types):
+        for t2 in range(n_types):
+            s = {np.int64(-1)}
+            s.clear()
+
+            for i in range(n_spots):
+                if not sig_bool[i]:
+                    continue
+                if cell_data[i, t1] <= cell_prop_cutoff:
+                    continue
+
+                neighs = neighbourhood_indices[i][1]
+
+                for k in range(len(neighs)):
+                    n_idx = neighs[k]
+                    if cell_data[n_idx, t2] > cell_prop_cutoff:
+                        valid = False
+                        if L_bool[i] and R_bool[n_idx]:
+                            valid = True
+                        if R_bool[i] and L_bool[n_idx]:
+                            valid = True
+
+                        if valid:
+                            u = np.int64(i)
+                            v = np.int64(n_idx)
+                            if u > v:
+                                tmp = u
+                                u = v
+                                v = tmp
+                            s.add((u << 32) | v)
+
+            int_matrix[t1, t2] = len(s)
 
     return int_matrix
 
