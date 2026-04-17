@@ -3,7 +3,6 @@ the inputted data / state of the anndata object.
 """
 
 import os
-import os as os
 
 import numba
 import numpy as np
@@ -40,7 +39,7 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndar
         Format of the LR genes, either 'human' or 'mouse'.
     Returns
     -------
-    lrs: np.array
+    lrs: np.ndarray
        lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
     if names is None:
@@ -270,7 +269,6 @@ def run(
             per spot.
     """
     # Setting threads for parallelisation
-    # Setting threads for paralellisation #
     if n_cpus is not None:
         numba.set_num_threads(n_cpus)
     else:
@@ -467,7 +465,7 @@ def run_lr_go(
     r_path: str
         Path to R, must have clusterProfiler, org.Mm.eg.db, and org.Hs.eg.db
         installed.
-    bg_genes: np.array
+    bg_genes: np.ndarray
         Genes to be used as the background. If None, defaults to all genes in
         lr database: 'connectomeDB2020_put'.
     n_top: int
@@ -662,12 +660,12 @@ def run_cci(
     if verbose:
         print("Getting cached neighbourhood information...")
     # Getting the neighbourhoods #
-    _, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     if verbose:
         print("Getting information for CCI counting...")
 
-    spot_bcs, cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
 
     lr_summary = adata.uns["lr_summary"]
     col_i = 1 if sig_spots else 0
@@ -723,7 +721,6 @@ def run_cci(
                     int_matrix,
                     n_perms,
                     cell_data,
-                    neighbourhood_bcs,
                     neighbourhood_indices,
                     all_set,
                     sig_bool,

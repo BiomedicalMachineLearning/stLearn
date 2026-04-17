@@ -13,10 +13,10 @@ def edge_core(
     cell_type_index: int,
     neighbourhood_bcs: List,
     neighbourhood_indices: List,
-    spot_indices: np.array = None,
-    neigh_bool: np.array = None,
+    spot_indices: np.ndarray = None,
+    neigh_bool: np.ndarray = None,
     cutoff: float = 0.2,
-) -> np.array:
+) -> np.ndarray:
     """Gets the edges which connect inputted spots to neighbours of a given cell type.
 
         Parameters
@@ -40,11 +40,11 @@ def edge_core(
                                         of the spot, and second is array of \
                                         neighbour indices.
 
-        spot_indices: np.array          Array of indices indicating which spots \
+        spot_indices: np.ndarray          Array of indices indicating which spots \
                                         we want edges associated with. Can be \
                                         used to subset to significant spots.
 
-        neigh_bool: np.array            Array of booleans of length n-spots, \
+        neigh_bool: np.ndarray            Array of booleans of length n-spots, \
                                         True indicates the spot is an allowed \
                                         neighbour. This is useful where we only \
                                         want edges to neighbours which express \
@@ -60,7 +60,7 @@ def edge_core(
         -------
         edges: List   List of 2-tuples containing spot barcodes, indicating \
                         an edge between a spot in spot_indices and a neighbour \
-                        where neigh_bool is True, and either the
+                        where neigh_bool is True.
     """
 
     # Subsetting to relevant cell types #
@@ -115,13 +115,9 @@ def init_edge_list(neighbourhood_bcs):
     # Initialising the edge list #
     edge_list = List()
     # This ensures consistent typing #
-    # spots_have_neighbours = False
-    # first_spot = -1
     for i in range(len(neighbourhood_bcs)):
         if len(neighbourhood_bcs[i][1]) > 0:
             edge_list.append((neighbourhood_bcs[i][0], neighbourhood_bcs[i][1][0]))
-            # spots_have_neighbours = True
-            # first_spot = i
             break
     return edge_list
 
@@ -131,8 +127,8 @@ def get_between_spot_edge_array(
     edge_list: List,
     neighbourhood_bcs: List,
     neighbourhood_indices: List,
-    neigh_bool: np.array,
-    cell_data: np.array,
+    neigh_bool: np.ndarray,
+    cell_data: np.ndarray,
     cutoff: float = 0,
 ):
     """ Populates edge_list with edges linking spots with a valid neighbour \
@@ -198,10 +194,6 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
     else:
         obs_key, uns_key = use_label, use_label
 
-    # Getting the neighbourhoods #
-    # neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(
-    #                                                                      adata)
-
     # Getting the cell type information; if not mixtures then populate
     # matrix with one's indicating pure spots.
     if mix_mode:
@@ -219,45 +211,37 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
                 (cell_labels == cell_type).astype(np.int32).astype(np.float64)
             )
 
-    spot_bcs = adata.obs_names.values.astype(str)
-    return (
-        spot_bcs,
-        cell_data,
-    )  # neighbourhood_bcs, neighbourhood_indices
+    return cell_data
 
 
 def get_neighbourhoods_fast(
-    spot_bcs: np.array,
+    spot_bcs: np.ndarray,
     spot_neigh_bcs: np.ndarray,
-    n_spots: int,
     str_dtype: str,
-    neigh_indices: np.array,
-    neigh_bcs: np.array,
 ):
     """Gets the neighbourhood information, njit compiled."""
 
     # Determining the neighbour spots used for significance testing #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = [], [], []
+    neighbourhood_bcs, neighbourhood_indices = [], []
+    spot_bc_to_index = {bc: i for i, bc in enumerate(spot_bcs)}
 
     for i in range(spot_neigh_bcs.shape[0]):
         neigh_bcs = np.array(spot_neigh_bcs[i, :][0].split(","))
         neigh_bcs = neigh_bcs[neigh_bcs != ""]
 
         neigh_bcs_array, neigh_indices = [], []
-        for j, neigh_bc in enumerate(neigh_bcs):
-            bc_indices = np.where(spot_bcs == neigh_bc)[0]
-            if len(bc_indices) > 0:
+        for neigh_bc in neigh_bcs:
+            if neigh_bc in spot_bc_to_index:
                 neigh_bcs_array.append(neigh_bc)
-                neigh_indices.append(bc_indices[0])
+                neigh_indices.append(spot_bc_to_index[neigh_bc])
 
         neigh_bcs_array = np.array(neigh_bcs_array, dtype=str_dtype)
         neigh_indices = np.array(neigh_indices, dtype=np.int64)
 
-        neighbours.append(neigh_indices)
         neighbourhood_indices.append((i, neigh_indices))
         neighbourhood_bcs.append((spot_bcs[i], neigh_bcs_array))
 
-    return List(neighbours), List(neighbourhood_bcs), List(neighbourhood_indices)
+    return List(neighbourhood_bcs), List(neighbourhood_indices)
 
 
 def get_neighbourhoods(adata):
@@ -271,9 +255,6 @@ def get_neighbourhoods(adata):
         for i in range(adata.obsm["spot_neighbours"].shape[0]):
             neighs = np.array(adata.obsm["spot_neighbours"].values[i, :][0].split(","))
             neighs = neighs[neighs != ""].astype(int)
-            # DONE: store neigh_bcs to get below to work reliably
-            #       after subsetting anndata #
-            # neighs = neighs[neighs<adata.shape[0]] # Removing subsetted spots..
             neighbours.append(neighs)
 
         # Getting the neighbourhood information #
@@ -283,6 +264,8 @@ def get_neighbourhoods(adata):
         for spot_i in range(len(spot_bcs)):
             neighbourhood_indices.append((spot_i, neighbours[spot_i]))
             neighbourhood_bcs.append((spot_bcs[spot_i], spot_bcs[neighbours[spot_i]]))
+
+        return neighbourhood_bcs, neighbourhood_indices
     else:  # Newer version
         spot_bcs = adata.obs_names.values.astype(str)
         spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].values.astype(str)
@@ -294,36 +277,4 @@ def get_neighbourhoods(adata):
 
         str_dtype = f"<U{max_len}"  # ensures correct typing
 
-        n_spots = len(spot_bcs)
-        neigh_indices = np.zeros((n_spots), dtype=np.int64)
-        neigh_bcs = np.empty((n_spots), dtype=str_dtype)
-
-        return get_neighbourhoods_fast(
-            spot_bcs, spot_neigh_bcs, n_spots, str_dtype, neigh_indices, neigh_bcs
-        )
-
-        # Slow version
-        # Determining the neighbour spots used for significance testing #
-        # neighbours = List()
-        # neighbourhood_bcs = List()
-        # neighbourhood_indices = List()
-        # spot_bcs = adata.obs_names.values.astype(str)
-        # str_dtype = f"<U{max([len(bc) for bc in spot_bcs])}"  # ensures correct typing
-        # for i in range(adata.shape[0]):
-        #     neigh_bcs = np.array(
-        #         adata.obsm["spot_neigh_bcs"].values[i, :][0].split(",")
-        #     )
-        #     neigh_bcs = neigh_bcs[neigh_bcs != ""]
-        #     neigh_bcs = np.array(
-        #         [neigh_bc for neigh_bc in neigh_bcs if neigh_bc in spot_bcs],
-        #         dtype=str_dtype,
-        #     )
-        #     neigh_indices = np.array(
-        #         [np.where(spot_bcs == neigh_bc)[0][0] for neigh_bc in neigh_bcs],
-        #         dtype=np.int64,
-        #     )
-        #     neighbours.append(neigh_indices)
-        #     neighbourhood_indices.append((i, neigh_indices))
-        #     neighbourhood_bcs.append((spot_bcs[i], neigh_bcs))
-
-    return neighbours, neighbourhood_bcs, neighbourhood_indices
+        return get_neighbourhoods_fast(spot_bcs, spot_neigh_bcs, str_dtype)
