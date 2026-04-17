@@ -95,7 +95,9 @@ def count(
     return adata
 
 
-def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.array):
+def get_edges(
+    adata: AnnData, L_bool: np.ndarray, R_bool: np.ndarray, sig_bool: np.ndarray
+):
     """Gets a list edges representing significant interactions.
 
     Parameters
@@ -116,14 +118,14 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.a
                         interactions between spots.
     """
     # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # Getting the edges to draw in-between #
     L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
     R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
 
     # To keep the get_between_spot_edge_array function happy #
-    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float_)
+    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float64)
 
     # Retrieving the edges #
     gene_bools = [R_bool, L_bool]
@@ -162,12 +164,8 @@ def count_interactions(
 ):
     """Counts the interactions."""
     # Getting minimal information necessary for the counting #
-    (
-        spot_bcs,
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-    ) = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
     int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
@@ -186,7 +184,7 @@ def count_interactions(
         A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
 
         for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
-            cellA_cellB_counts = len(
+            cell_a_cell_b_counts = len(
                 edge_core(
                     cell_data,
                     j,
@@ -197,7 +195,7 @@ def count_interactions(
                     cutoff=cell_prop_cutoff,
                 )
             )
-            int_matrix[i, j] = cellA_cellB_counts
+            int_matrix[i, j] = cell_a_cell_b_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
@@ -207,7 +205,6 @@ def get_interaction_pvals(
     int_matrix,
     n_perms,
     cell_data,
-    neighbourhood_bcs,
     neighbourhood_indices,
     all_set,
     sig_bool,
@@ -217,14 +214,20 @@ def get_interaction_pvals(
 ):
     """Gets the p-values for the interaction counts."""
 
+    # Counting how many times permutation of spots cell data creates interaction
+    # counts greater than that observed, in order to calculate p-values.
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
+    # Storing the instances where the count is greater randomly for each perm.
+    # Allows for embarassing parallelisation.
     greater_counts = np.zeros(shape_, dtype=np.int64)
     indices = np.zeros((cell_data.shape[0]), dtype=np.int64)
     for i in range(cell_data.shape[0]):
         indices[i] = i
 
+    # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
     for i in prange(n_perms):
+        # Permuting the cell data by swapping between spots for each column #
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
@@ -234,6 +237,7 @@ def get_interaction_pvals(
             rand_indices = np.random.choice(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
+        # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(
             perm_data,
             neighbourhood_indices,
@@ -309,57 +313,6 @@ def get_interaction_matrix(
             int_matrix[t1, t2] = len(s)
 
     return int_matrix
-
-
-@njit
-def get_interactions(
-    cell_data,
-    neighbourhood_bcs,
-    neighbourhood_indices,
-    all_set,
-    sig_bool,
-    gene1_bool,
-    gene2_bool,
-    cell_prop_cutoff=None,
-):
-    """ Gets spot edges between cell types where the first cell type fits \
-        criteria of gene1_bool, & second second cell type of gene2_bool.
-    """
-
-    # Creating list of lists to store edges for respective cell types #
-    interaction_edges = List()
-
-    # Now retrieving the interaction edges #
-    for i in range(all_set.shape[0]):
-        # Determining which spots have cell type A #
-        A_bool_2 = cell_data[:, i] > cell_prop_cutoff
-        A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)
-
-        A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
-        n_true = A_gene1_sig_bool.sum()
-        A_gene1_sig_indices = np.zeros((1, n_true), dtype=np.int32)[
-            0, :
-        ]  # np.where(A_gene1_sig_bool)[0]
-        index = 0
-        for k in range(A_gene1_sig_bool.shape[0]):
-            if A_gene1_sig_bool[k]:
-                A_gene1_sig_indices[index] = k
-                index += 1
-
-        for j in range(all_set.shape[0]):
-            edge_list = edge_core(
-                cell_data,
-                j,
-                neighbourhood_bcs,
-                neighbourhood_indices,
-                spot_indices=A_gene1_sig_indices,
-                neigh_bool=gene2_bool,
-                cutoff=cell_prop_cutoff,
-            )
-
-            interaction_edges.append(edge_list)
-
-    return interaction_edges
 
 
 def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
@@ -472,20 +425,20 @@ def count_grid(
 @jit(parallel=True, forceobj=True)
 def grid_parallel(
     grid_coords: np.ndarray,
-    xedges: np.array,
-    yedges: np.array,
+    xedges: np.ndarray,
+    yedges: np.ndarray,
     n_row: int,
     n_col: int,
-    xs: np.array,
-    ys: np.array,
-    cell_bcs: np.array,
-    grid_cell_counts: np.array,
+    xs: np.ndarray,
+    ys: np.ndarray,
+    cell_bcs: np.ndarray,
+    grid_cell_counts: np.ndarray,
     grid_expr: np.ndarray,
     cell_expr: np.ndarray,
     use_label_bool: bool,
-    cell_labels: np.array,
+    cell_labels: np.ndarray,
     cell_info: np.ndarray,
-    cell_set: np.array,
+    cell_set: np.ndarray,
 ):
     """Grids the gene expression information."""
     # generate grids from top to bottom and left to right
