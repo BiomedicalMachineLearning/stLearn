@@ -8,7 +8,6 @@ from numba import jit, njit, prange
 from numba.typed import List
 
 from stlearn.tl.cci.het_helpers import (
-    add_unique_edges,
     edge_core,
     get_between_spot_edge_array,
     get_data_for_counting,
@@ -96,7 +95,9 @@ def count(
     return adata
 
 
-def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.array):
+def get_edges(
+    adata: AnnData, L_bool: np.ndarray, R_bool: np.ndarray, sig_bool: np.ndarray
+):
     """Gets a list edges representing significant interactions.
 
     Parameters
@@ -117,14 +118,14 @@ def get_edges(adata: AnnData, L_bool: np.array, R_bool: np.array, sig_bool: np.a
                         interactions between spots.
     """
     # Getting the neighbourhoods #
-    neighbours, neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # Getting the edges to draw in-between #
     L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
     R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
 
     # To keep the get_between_spot_edge_array function happy #
-    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float_)
+    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float64)
 
     # Retrieving the edges #
     gene_bools = [R_bool, L_bool]
@@ -163,12 +164,8 @@ def count_interactions(
 ):
     """Counts the interactions."""
     # Getting minimal information necessary for the counting #
-    (
-        spot_bcs,
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-    ) = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
+    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
     int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
@@ -187,7 +184,7 @@ def count_interactions(
         A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
 
         for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
-            cellA_cellB_counts = len(
+            cell_a_cell_b_counts = len(
                 edge_core(
                     cell_data,
                     j,
@@ -198,17 +195,16 @@ def count_interactions(
                     cutoff=cell_prop_cutoff,
                 )
             )
-            int_matrix[i, j] = cellA_cellB_counts
+            int_matrix[i, j] = cell_a_cell_b_counts
 
     return int_matrix if trans_dir else int_matrix.transpose()
 
 
-@jit(parallel=True)
+@njit(parallel=True)
 def get_interaction_pvals(
     int_matrix,
     n_perms,
     cell_data,
-    neighbourhood_bcs,
     neighbourhood_indices,
     all_set,
     sig_bool,
@@ -216,9 +212,7 @@ def get_interaction_pvals(
     R_bool,
     cell_prop_cutoff,
 ):
-    """ Perturbs the cell labels to get background count frequency to estimate \
-        p-values.
-    """
+    """Gets the p-values for the interaction counts."""
 
     # Counting how many times permutation of spots cell data creates interaction
     # counts greater than that observed, in order to calculate p-values.
@@ -246,7 +240,6 @@ def get_interaction_pvals(
         # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(
             perm_data,
-            neighbourhood_bcs,
             neighbourhood_indices,
             all_set,
             sig_bool,
@@ -254,20 +247,25 @@ def get_interaction_pvals(
             R_bool,
             cell_prop_cutoff,
         )
-        # perm_greater = (perm_matrix >= int_matrix).astype(int)
-        perm_greater = perm_matrix >= int_matrix
-        greater_counts[i, :, :] = perm_greater
+        for row in range(int_matrix.shape[0]):
+            for col in range(int_matrix.shape[1]):
+                greater_counts[i, row, col] = (
+                    perm_matrix[row, col] >= int_matrix[row, col]
+                )
 
-    # Calculating the pvalues #
-    total_greater_counts = greater_counts.sum(axis=0)  # cts * ct counts
-    int_pvals = total_greater_counts / n_perms
+    # Numba parallel sums axis 0 efficiently
+    out = np.zeros((int_matrix.shape[0], int_matrix.shape[1]), dtype=np.float64)
+    for i in range(n_perms):
+        for row in range(int_matrix.shape[0]):
+            for col in range(int_matrix.shape[1]):
+                out[row, col] += greater_counts[i, row, col]
+    int_pvals = out / n_perms
     return int_pvals
 
 
 @njit
 def get_interaction_matrix(
     cell_data,
-    neighbourhood_bcs,
     neighbourhood_indices,
     all_set,
     sig_bool,
@@ -275,116 +273,46 @@ def get_interaction_matrix(
     R_bool,
     cell_prop_cutoff,
 ):
-    """Gets the interaction count matrix."""
-    # Now counting the interactions under 3 situations:
-    # 1) sig spot with ligand, only neighbours with receptor relevant
-    # 2) sig spot with receptor, only neighbours with ligand relevant
-    # NOTE, A<->B is double counted, but on different side of matrix.
-    # (if bidirectional interaction between two spots, counts as two seperate
-    # interactions).
-    LR_edges = get_interactions(
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-        all_set,
-        sig_bool,
-        L_bool,
-        R_bool,
-        cell_prop_cutoff=cell_prop_cutoff,
-        # sig ligand->receptor mode
-    )
-    RL_edges = get_interactions(
-        cell_data,
-        neighbourhood_bcs,
-        neighbourhood_indices,
-        all_set,
-        sig_bool,
-        R_bool,
-        L_bool,
-        cell_prop_cutoff=cell_prop_cutoff,
-        # sig receptor->ligand mode
-    )
+    """Gets the interaction matrix for a given cell data matrix."""
 
-    # Counting the number of unique interacting edges
-    # between different cell type via indicate LR
-    int_matrix = np.zeros((all_set.shape[0], all_set.shape[0]), dtype=np.int64)
-    edge_i = 0
-    for i in range(all_set.shape[0]):
-        for j in range(all_set.shape[0]):
-            RL_Atrans_Bedges = LR_edges[edge_i]
-            LR_Atrans_Bedges = RL_edges[edge_i]
-            edge_i += 1
-            max_len = max([len(RL_Atrans_Bedges), len(LR_Atrans_Bedges)])
-            if max_len == 0:  # Nothing to count #
-                continue
+    n_spots = cell_data.shape[0]
+    n_types = all_set.shape[0]
+    int_matrix = np.zeros((n_types, n_types), dtype=np.int64)
 
-            edge_starts = List()
-            edge_ends = List()
-            for k in range(max_len):
-                if k < len(RL_Atrans_Bedges):
-                    edge_starts.append(RL_Atrans_Bedges[k][0])
-                    edge_ends.append(RL_Atrans_Bedges[k][1])
-                if k < len(LR_Atrans_Bedges):
-                    edge_starts.append(LR_Atrans_Bedges[k][0])
-                    edge_ends.append(LR_Atrans_Bedges[k][1])
-            Atrans_Bedges = List()
-            Atrans_Bedges.append((edge_starts[0], edge_ends[0]))  # for typing
-            add_unique_edges(Atrans_Bedges, edge_starts, edge_ends)
-            # Atrans_Bedges = np.unique(RL_Atrans_Bedges + LR_Atrans_Bedges)
-            int_matrix[i, j] = len(Atrans_Bedges) - 1  # since added edge for type
+    for t1 in range(n_types):
+        for t2 in range(n_types):
+            s = {np.int64(-1)}
+            s.clear()
+
+            for i in range(n_spots):
+                if not sig_bool[i]:
+                    continue
+                if cell_data[i, t1] <= cell_prop_cutoff:
+                    continue
+
+                neighs = neighbourhood_indices[i][1]
+
+                for k in range(len(neighs)):
+                    n_idx = neighs[k]
+                    if cell_data[n_idx, t2] > cell_prop_cutoff:
+                        valid = False
+                        if L_bool[i] and R_bool[n_idx]:
+                            valid = True
+                        if R_bool[i] and L_bool[n_idx]:
+                            valid = True
+
+                        if valid:
+                            u = np.int64(i)
+                            v = np.int64(n_idx)
+                            if u > v:
+                                tmp = u
+                                u = v
+                                v = tmp
+                            s.add((u << 32) | v)
+
+            int_matrix[t1, t2] = len(s)
 
     return int_matrix
-
-
-@njit
-def get_interactions(
-    cell_data,
-    neighbourhood_bcs,
-    neighbourhood_indices,
-    all_set,
-    sig_bool,
-    gene1_bool,
-    gene2_bool,
-    cell_prop_cutoff=None,
-):
-    """ Gets spot edges between cell types where the first cell type fits \
-        criteria of gene1_bool, & second second cell type of gene2_bool.
-    """
-
-    # Creating list of lists to store edges for respective cell types #
-    interaction_edges = List()
-
-    # Now retrieving the interaction edges #
-    for i in range(all_set.shape[0]):
-        # Determining which spots have cell type A #
-        A_bool_2 = cell_data[:, i] > cell_prop_cutoff
-        A_gene1_bool = np.logical_and(A_bool_2, gene1_bool)
-
-        A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
-        n_true = A_gene1_sig_bool.sum()
-        A_gene1_sig_indices = np.zeros((1, n_true), dtype=np.int32)[
-            0, :
-        ]  # np.where(A_gene1_sig_bool)[0]
-        index = 0
-        for k in range(A_gene1_sig_bool.shape[0]):
-            if A_gene1_sig_bool[k]:
-                A_gene1_sig_indices[index] = k
-                index += 1
-
-        for j in range(all_set.shape[0]):
-            edge_list = edge_core(
-                cell_data,
-                j,
-                neighbourhood_bcs,
-                neighbourhood_indices,
-                spot_indices=A_gene1_sig_indices,
-                neigh_bool=gene2_bool,
-                cutoff=cell_prop_cutoff,
-            )
-
-            interaction_edges.append(edge_list)
-
-    return interaction_edges
 
 
 def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
@@ -497,20 +425,20 @@ def count_grid(
 @jit(parallel=True, forceobj=True)
 def grid_parallel(
     grid_coords: np.ndarray,
-    xedges: np.array,
-    yedges: np.array,
+    xedges: np.ndarray,
+    yedges: np.ndarray,
     n_row: int,
     n_col: int,
-    xs: np.array,
-    ys: np.array,
-    cell_bcs: np.array,
-    grid_cell_counts: np.array,
+    xs: np.ndarray,
+    ys: np.ndarray,
+    cell_bcs: np.ndarray,
+    grid_cell_counts: np.ndarray,
     grid_expr: np.ndarray,
     cell_expr: np.ndarray,
     use_label_bool: bool,
-    cell_labels: np.array,
+    cell_labels: np.ndarray,
     cell_info: np.ndarray,
-    cell_set: np.array,
+    cell_set: np.ndarray,
 ):
     """Grids the gene expression information."""
     # generate grids from top to bottom and left to right

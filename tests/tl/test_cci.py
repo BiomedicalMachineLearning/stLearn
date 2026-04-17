@@ -205,62 +205,6 @@ class TestCCI(unittest.TestCase):
             )
         )
 
-    def test_get_interactions(self):
-        """Basic test of capability to get interactions betwen cell types when \
-            considering spots of a particular cell type expressing a ligand, \
-            and spots of another cell type expressing the receptor.
-        """
-
-        # Case 1
-        """ Middle spot only spot of interest.
-            Cell type 1, 2, or 3.
-            Middle spot expresses ligand.
-            3 neighbours express receptor:
-                * One is cell type 1, two are cell type 2.
-        """
-
-        # Create 0 matrix using the above annotations to create position.
-        # i.e. CT1 = 0.
-        cell_data = TestCCI.create_cci(CELL_TYPE_ANNOTATIONS, CELL_TYPE_LABELS)
-
-        # Create middle ligand interacting with 3 neighbour receptors.
-        sig_bool = np.array([True] + ([False] * (len(CELL_TYPE_ANNOTATIONS) - 1)))
-        ligand_boolean = sig_bool.copy()
-
-        receptor_boolean = np.array([False] * len(CELL_TYPE_ANNOTATIONS))
-        receptor_boolean[[3, 4, 6]] = True
-
-        # NOTE that format of output is an edge list for each celltype-celltype
-        # interaction, where edge list represents interactions between:
-        #   1-1, 1-2, 1-3, 2-1, 2-2, 2-3, 3-1, 3-2, 3-3
-        n_ccis_comp = 3 * 3
-        # one interaction between cell type one and itself,
-        # two interactions between cell type one and 2, rest no interactions.
-        expected_edges = [[("A", "E")], [("A", "D"), ("A", "G")]]
-        [expected_edges.append([]) for i in range(n_ccis_comp - 2)]
-
-        interaction_edges = het.get_interactions(
-            cell_data,
-            self.neighbourhood_bcs,
-            self.neighbourhood_indices,
-            CELL_TYPE_LABELS,
-            sig_bool,
-            ligand_boolean,
-            receptor_boolean,
-            0,
-        )
-
-        self.assertEqual(len(interaction_edges), len(expected_edges))
-        for i in range(len(expected_edges)):
-            expect_edgesi = expected_edges[i]
-            observed_edgesi = interaction_edges[i]
-            match_bool = [
-                edge in observed_edgesi or edge[::-1] in observed_edgesi
-                for edge in expect_edgesi
-            ]
-            self.assertEqual(len(observed_edgesi), len(expect_edgesi))
-            self.assertTrue(np.all(match_bool))
-
     def test_get_interaction_matrix(self):
         """Test getting the interaction matrix for cell type pairs."""
 
@@ -279,7 +223,6 @@ class TestCCI(unittest.TestCase):
         # Get interaction matrix
         int_matrix = het.get_interaction_matrix(
             cell_data,
-            self.neighbourhood_bcs,
             self.neighbourhood_indices,
             CELL_TYPE_LABELS,
             sig_bool,
