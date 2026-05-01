@@ -169,7 +169,7 @@ def pseudotime(
     # Create centroid dict for subclusters
     clf = NearestCentroid()
     clf.fit(adata.obs[["imagecol", "imagerow"]].values, adata.obs["sub_cluster_labels"])
-    centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_))
+    centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_, strict=True))
 
     def closest_node(node, nodes):
         nodes = np.asarray(nodes)
@@ -203,7 +203,7 @@ def replace_with_dict(ar, dic):
     v = np.array(list(dic.values()), dtype=object)
 
     out = np.zeros_like(ar)
-    for key, val in zip(k, v):
+    for key, val in zip(k, v, strict=True):
         out[ar == key] = val
     return out
 

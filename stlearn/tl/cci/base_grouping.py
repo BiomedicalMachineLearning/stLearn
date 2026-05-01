@@ -155,7 +155,7 @@ def hotspot_core(
         quant_lrs = np.array(
             [lrs[lr_mean_scores == quant] for quant in lr_quant_values]
         )
-        fig, axes = plt.subplots(6, 4, figsize=(20, 15))
+        _, axes = plt.subplots(6, 4, figsize=(20, 15))
 
     # Determining the cutoffs for hotspots #
     with tqdm(

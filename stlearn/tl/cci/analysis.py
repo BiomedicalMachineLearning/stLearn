@@ -316,7 +316,7 @@ def run(
         )
 
     # Conduct with cell heterogeneity info if label_transfer provided #
-    cell_het = use_label is not None and use_label in adata.uns.keys()
+    cell_het = use_label is not None and use_label in adata.uns
     if cell_het:
         if verbose:
             print("Calculating cell heterogeneity...")
@@ -660,7 +660,7 @@ def run_cci(
     if verbose:
         print("Getting cached neighbourhood information...")
     # Getting the neighbourhoods #
-    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    _, neighbourhood_indices = get_neighbourhoods(adata)
 
     if verbose:
         print("Getting information for CCI counting...")

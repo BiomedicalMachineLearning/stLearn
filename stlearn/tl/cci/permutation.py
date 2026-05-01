@@ -334,7 +334,8 @@ def get_rand_pairs(
     adata.uns["selected"] = selected
     # form gene pairs from selected randomly
     random.shuffle(selected)
-    pairs = [i + "_" + j for i, j in zip(selected[:n_pairs], selected[-n_pairs:])]
+    pairs = [i + "_" + j for i, j in
+             zip(selected[:n_pairs], selected[-n_pairs:], strict=True)]
 
     return pairs
 

@@ -133,12 +133,12 @@ def weight_optimizing_local(
         desc="Screening",
         bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
-        for i in range(0, int(1 / step + 1)):
+        for _i in range(0, int(1 / step + 1)):
             matrix = local_level(
                 adata,
                 use_label=use_label,
                 cluster=cluster,
-                w=round(j, 2),
+                w=j,
                 verbose=False,
                 return_matrix=True,
             )

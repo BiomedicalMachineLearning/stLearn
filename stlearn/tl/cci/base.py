@@ -90,7 +90,7 @@ def calc_distance(adata: AnnData, distance: float | None) -> float:
     if not distance and distance != 0:
         # for arranged-spots
         scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
         distance = (
             scalefactors["spot_diameter_fullres"]
             * scalefactors[
@@ -350,7 +350,7 @@ def lr_pandas(
     try:
         nb_lr2.shape[1]
     except:
-        raise ValueError("No neighbours found within given distance.")
+        raise ValueError("No neighbours found within given distance.") from None
 
     # keep value of nb_lr2 only when lr1 is also expressed on the spots
     spot_lr = pd.DataFrame(

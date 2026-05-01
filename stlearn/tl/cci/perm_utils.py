@@ -269,13 +269,13 @@ def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int):
     """Generates random pairs of genes."""
 
     rand_pairs = List()
-    for j in range(0, n_pairs):
-        l_rand = np.random.choice(genes1, 1)[0]
-        r_rand = np.random.choice(genes2, 1)[0]
+    for _j in range(0, n_pairs):
+        l_rand = np.random.Generator(genes1, 1)[0]
+        r_rand = np.random.Generator(genes2, 1)[0]
         rand_pair = "_".join([l_rand, r_rand])
         while rand_pair in rand_pairs or l_rand == r_rand:
-            l_rand = np.random.choice(genes1, 1)[0]
-            r_rand = np.random.choice(genes2, 1)[0]
+            l_rand = np.random.Generator(genes1, 1)[0]
+            r_rand = np.random.Generator(genes2, 1)[0]
             rand_pair = "_".join([l_rand, r_rand])
 
         rand_pairs.append(rand_pair)
@@ -295,15 +295,15 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
         r_indices.extend(np.where(lr_expr.columns.values == r_)[0])
 
     # The nonzero median when quantiles=.5 #
-    lr_quants, l_quants, r_quants = get_lr_quants(
+    lr_quants, _, _ = get_lr_quants(
         lr_expr, l_indices, r_indices, quantiles, quant_method="quantiles"
     )
 
     # Calculating the zero proportions, for grouping based on median/zeros #
-    lr_props, l_props, r_props = get_lr_zeroprops(lr_expr, l_indices, r_indices)
+    lr_props, _, _ = get_lr_zeroprops(lr_expr, l_indices, r_indices)
 
     # Getting lr features for later diagnostics
-    lr_meds, l_meds, r_meds = get_lr_quants(
+    lr_meds, _, _ = get_lr_quants(
         lr_expr, l_indices, r_indices, quantiles=np.array([0.5]), quant_method=""
     )
     lr_median_means = lr_meds.mean(axis=1)

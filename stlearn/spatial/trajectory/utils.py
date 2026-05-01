@@ -1,3 +1,4 @@
+import contextlib
 import warnings
 
 import networkx as nx
@@ -153,10 +154,8 @@ def _eigs(M, which="SR", k=None):
     if issparse(M) and k < n - 1:
         evals, evecs = sparse_spla.eigs(M, k=k, which=which)
     else:
-        try:
+        with contextlib.suppress(AttributeError):
             M = M.todense()
-        except:
-            pass
         evals, evecs = la.eig(M)
         # sort dem eigenvalues
         inds = np.argsort(evals)
@@ -204,7 +203,7 @@ def normalized_laplacian_eig(A, k=None):
     nx.laplacian_matrix
     nx.normalized_laplacian_matrix
     """
-    n, m = A.shape
+    n, _ = A.shape
     # TODO: implement checks on the adjacency matrix
     degs = _flat(A.sum(axis=1))
     # the below will break if
@@ -268,7 +267,7 @@ def degree_matrix(A):
     D : SciPy sparse matrix
         Diagonal matrix of degrees.
     """
-    n, m = A.shape
+    n, _ = A.shape
     degs = _flat(A.sum(axis=1))
     D = sps.spdiags(degs, [0], n, n, format="csr")
     return D
@@ -287,7 +286,7 @@ def laplacian_matrix(A, normalized=False):
     L : SciPy sparse matrix
         Combinatorial laplacian matrix.
     """
-    n, m = A.shape
+    n, _ = A.shape
     D = degree_matrix(A)
     L = D - A
     if normalized:
@@ -351,7 +350,7 @@ def resistance_matrix(A, check_connected=True):
        Effective graph resistance.
        Linear Algebra and its Applications, 435 (2011)
     """
-    n, m = A.shape
+    n, _ = A.shape
     # check if graph is connected
     if check_connected:
         if issparse(A):
@@ -363,10 +362,8 @@ def resistance_matrix(A, check_connected=True):
                 "Graph is not connected. Resistance matrix is undefined."
             )
     L = laplacian_matrix(A)
-    try:
+    with contextlib.suppress(AttributeError):
         L = L.todense()
-    except:
-        pass
     M = la.pinv(L)
     # calculate R in terms of M
     d = np.reshape(np.diag(M), (n, 1))

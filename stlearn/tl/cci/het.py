@@ -43,7 +43,7 @@ def count(
         adata.uns['het']
     """
 
-    library_id = list(adata.uns["spatial"].keys())[0]
+    library_id = next(iter(adata.uns["spatial"].keys()))
     # between spot
     if distance != 0:
         # automatically calculate distance if not given, won't overwrite distance=0
@@ -174,16 +174,16 @@ def count_interactions(
         if not mix_mode:
             A_bool = tissue_types == cell_A
         else:
-            col_A = [
+            col_A = next(
                 col for i, col in enumerate(cell_type_props.columns) if cell_A in col
-            ][0]
+            )
             A_bool = cell_type_props.loc[:, col_A].values > cell_prop_cutoff
 
         A_gene1_bool = np.logical_and(A_bool, gene1_bool)
         A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
         A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
 
-        for j, cell_B in enumerate(all_set):  # receiver if trans_dir else transmitter
+        for j, _ in enumerate(all_set):  # receiver if trans_dir else transmitter
             cell_a_cell_b_counts = len(
                 edge_core(
                     cell_data,
@@ -231,10 +231,10 @@ def get_interaction_pvals(
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
-                rand_indices = np.random.choice(indices, cell_data.shape[0], False)
+                rand_indices = np.random.Generator(indices, cell_data.shape[0], False)
                 perm_data[:, j] = cell_data[rand_indices, j]
         else:
-            rand_indices = np.random.choice(indices, cell_data.shape[0], False)
+            rand_indices = np.random.Generator(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
         # Calculating interactions for permuted labels #
@@ -400,7 +400,7 @@ def count_grid(
     """
 
     coor = adata.obs[["imagerow", "imagecol"]]
-    grids, width, height, neighbours = create_grids(adata, num_row, num_col, radius)
+    grids, width, height, _ = create_grids(adata, num_row, num_col, radius)
     counts = pd.DataFrame(0, range(len(grids)), ["CT"])
     for n, grid in enumerate(grids):
         spots = coor[

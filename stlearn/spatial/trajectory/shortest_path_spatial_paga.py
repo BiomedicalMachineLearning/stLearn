@@ -39,7 +39,7 @@ def shortest_path_spatial_paga(
     for source in H.nodes:
         for target in H.nodes:
             paths = nx.all_simple_paths(H, source=source, target=target)
-            for i, path in enumerate(paths):
+            for _i, path in enumerate(paths):
                 j += 1
                 all_paths[j] = path
 
