@@ -20,7 +20,7 @@ def sme_impute0(
 ) -> AnnData | None:
     """\
     Fill missing/zero expression values using spatial, morphological,
-    and expression (SME) information when you what to correct for technical noise
+    and expression (sme) information when you what to correct for technical noise
     (dropouts) without altering existing biological signals.
 
     This function replaces only zero/missing values with spatially-informed
@@ -81,6 +81,6 @@ def sme_impute0(
     key_added = use_data + "_SME_imputed"
     adata.obsm[key_added] = adjusted_count_matrix
 
-    print("The data adjusted by SME is added to adata.obsm['" + key_added + "']")
+    print("The data adjusted by sme is added to adata.obsm['" + key_added + "']")
 
     return adata if copy else None

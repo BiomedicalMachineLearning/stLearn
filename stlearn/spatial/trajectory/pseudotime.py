@@ -49,7 +49,7 @@ def pseudotime(
     method:
         method to adjust the data.
     use_sme:
-        Use adjusted feature by SME normalization or not
+        Use adjusted feature by sme normalization or not
     reverse:
         Reverse the pseudotime score
     pseudotime_key:

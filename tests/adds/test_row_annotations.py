@@ -5,7 +5,7 @@
 import unittest
 
 from stlearn.adds import row_annotations
-from tests.utils import read_test_data, test_data_path
+from tests.utils import path_for_test_data, read_test_data
 
 
 class TestRowAnnotations(unittest.TestCase):
@@ -15,7 +15,11 @@ class TestRowAnnotations(unittest.TestCase):
     def setUpClass(cls):
         cls._base_adata = read_test_data()
         cls.annotations_path = (
-            f"{test_data_path()}/" + "v1_human_breast_cancer_block_a_section_1.csv"
+            f"{path_for_test_data()}/" + "v1_human_breast_cancer_block_a_section_1.csv"
+        )
+        cls.proportions_path = (
+            f"{path_for_test_data()}/"
+            + "v1_human_breast_cancer_block_a_section_1_proportions.csv"
         )
 
     def setUp(self):
@@ -42,3 +46,14 @@ class TestRowAnnotations(unittest.TestCase):
                 self.__class__.annotations_path,
                 join_column="nonexistent_column",
             )
+
+    def test_add_row_proportions(self):
+        row_annotations.row_annotations_proportions(
+            self.adata, self.__class__.proportions_path
+        )
+
+        assert "cell_type" in self.adata.obs.columns
+
+        # Check annotated is correct
+        print(len(self.adata.obs["cell_type"]))
+        assert self.adata.obs["cell_type"]["AAGCTCTTTCATGGTG-1"] == "Plasmablasts"
