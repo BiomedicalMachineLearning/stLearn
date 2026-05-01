@@ -27,7 +27,7 @@ class TestClusterPlot(unittest.TestCase):
 
         # Create test clustering data
         n_spots = len(self.adata.obs)
-        cluster_labels = np.random.choice(
+        cluster_labels = np.random.Generator(
             ["Cluster_0", "Cluster_1", "Cluster_2"], n_spots
         )
         self.adata.obs["test_clusters"] = pd.Categorical(cluster_labels)

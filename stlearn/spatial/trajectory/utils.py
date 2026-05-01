@@ -640,9 +640,9 @@ def _np_apply_along_axis(func1d, axis: int, arr: np.ndarray) -> np.ndarray:
     return result
 
 
-def np_mean(array: np.ndarray, axis: int) -> np.ndarray:  # noqa
+def np_mean(array: np.ndarray, axis: int) -> np.ndarray:
     return _np_apply_along_axis(np.mean, axis, array)
 
 
-def np_std(array: np.ndarray, axis: int) -> np.ndarray:  # noqa
+def np_std(array: np.ndarray, axis: int) -> np.ndarray:
     return _np_apply_along_axis(np.std, axis, array)

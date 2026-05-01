@@ -4,7 +4,7 @@ from . import cache, cci, clustering, label
 
 __all__ = [
     "cache",
-    "clustering",
     "cci",
+    "clustering",
     "label",
 ]

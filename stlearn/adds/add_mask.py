@@ -148,9 +148,7 @@ def apply_mask(
             Please load mask {mask} images first and try again
             """)
 
-        if select == "black":
-            mask_image = np.where(mask_image > 155, 0, 1)
-        elif select == "white":
+        if select == "black" or select == "white":
             mask_image = np.where(mask_image > 155, 0, 1)
         else:
             raise ValueError("""\

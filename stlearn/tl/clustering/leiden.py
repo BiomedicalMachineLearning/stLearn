@@ -38,7 +38,7 @@ def leiden(
         A parameter value controlling the coarseness of the clustering.
         Higher values lead to more clusters.
         Set to `None` if overriding `partition_type`
-        to one that doesn’t accept a `resolution_parameter`.
+        to one that doesn't accept a `resolution_parameter`.
     random_state:
         Change the initialization of the optimization.
     restrict_to:

@@ -95,13 +95,37 @@ include = ["stlearn", "stlearn.*"]
 "*" = ["*"]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 88
+exclude = [".git", "__pycache__", "build", "dist", "docs/_build"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP"]
-ignore = ["E722", "F811", "N803", "N806", "N818"]
-exclude = [".git", "__pycache__", "build", "dist"]
+select = [
+    "E", "F", "W",      # pycodestyle + pyflakes
+    "I",                # isort
+    "N",                # pep8-naming
+    "UP",               # pyupgrade
+    "NPY",              # numpy-specific (NPY001, NPY002, NPY003, NPY201)
+    "PD",               # pandas-vet
+    "B",                # flake8-bugbear (catches real bugs)
+    "SIM",              # flake8-simplify
+    "RUF",              # ruff-specific rules
+]
+ignore = [
+    "E722",             # bare except — you've already accepted these
+    "F811",             # redefinition — accepted
+    "N803", "N806",     # naming: lowercase args/vars — too invasive to fix
+    "N818",             # exception naming
+    "PD901",            # "df" is a fine variable name in this domain
+    "PD011",            # .values vs .to_numpy() — too noisy, mostly false positives
+    "B008",             # function calls in default args — used by typer/click
+    "SIM108",           # ternary suggestions can hurt readability
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B", "N"]                 # tests can be loose
+"docs/conf.py" = ["E", "F", "UP"]      # generated/config file
+"**/__init__.py" = ["F401"]            # re-exports
 
 [tool.ruff.format]
 quote-style = "double"

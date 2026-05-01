@@ -11,16 +11,16 @@ from .adds.positions import positions
 from .adds.row_annotations import row_annotations
 
 __all__ = [
-    "image",
-    "positions",
-    "parsing",
-    "lr",
-    "annotation",
-    "labels",
     "add_deconvolution",
-    "add_mask",
-    "apply_mask",
     "add_loupe_clusters",
-    "row_annotations",
+    "add_mask",
+    "annotation",
+    "apply_mask",
+    "image",
+    "labels",
+    "lr",
+    "parsing",
     "polygon_annotations",
+    "positions",
+    "row_annotations",
 ]

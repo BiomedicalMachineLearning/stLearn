@@ -126,8 +126,8 @@ def read_10x(
                 adata.uns["spatial"][library_id]["images"][res] = imread(
                     str(files[f"{res}_image"])
                 )
-            except Exception:
-                raise OSError(f"Could not find '{res}_image'")
+            except Exception as err:
+                raise OSError(f"Could not find '{res}_image'") from err
 
         # read json scalefactors
         adata.uns["spatial"][library_id]["scalefactors"] = json.loads(
@@ -159,10 +159,9 @@ def read_10x(
             .to_numpy()
             .astype(float)
         )
-        adata.obs.drop(
-            columns=["barcode", "pxl_row_in_fullres", "pxl_col_in_fullres"],
-            inplace=True,
-        )
+        for col in ["barcode", "pxl_row_in_fullres", "pxl_col_in_fullres"]:
+            if col in adata.obs.columns:
+                del adata.obs[col]
 
         if quality == "fulres":
             # put image path in uns

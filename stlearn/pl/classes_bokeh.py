@@ -1392,7 +1392,7 @@ class Annotate(Spatial):
         def change_click():
             self.adata[0].uns["annotation"] = self.s2.to_df()
             empty_array = np.empty(len(self.adata[0]))
-            empty_array[:] = np.NaN
+            empty_array[:] = np.nan
             empty_array = empty_array.astype(object)
             for i in range(0, len(self.adata[0].uns["annotation"])):
                 empty_array[[np.array(self.adata[0].uns["annotation"]["spot"][i])]] = (

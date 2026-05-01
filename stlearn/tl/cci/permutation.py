@@ -1,6 +1,4 @@
-import os
 import random
-import sys
 from typing import Any
 
 import numpy as np
@@ -9,23 +7,19 @@ import scipy
 import statsmodels.api as sm
 from anndata import AnnData
 from numba.typed import List
-from sklearn.cluster import AgglomerativeClustering
 from statsmodels.stats.multitest import multipletests
 from tqdm import tqdm
 
-from .base import calc_neighbours, get_lrs_scores, get_scores, get_spot_lrs, lr
-from .merge import merge
 from .perm_utils import get_lr_bg, get_lr_features
 
 
-# Newest method #
 def perform_spot_testing(
     adata: AnnData,
     lr_scores: np.ndarray,
-    lrs: np.array,
+    lrs: np.ndarray,
     n_pairs: int,
     neighbours: List,
-    het_vals: np.array,
+    het_vals: np.ndarray,
     min_expr: float,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
@@ -68,7 +62,7 @@ def perform_spot_testing(
         lrs, [col for col in lr_feats.columns if "R_" in col]
     ].values
     candidate_quants = np.apply_along_axis(
-        np.quantile, 0, candidate_expr, q=quantiles, interpolation="nearest"
+        np.quantile, 0, candidate_expr, q=quantiles, method="nearest"
     )
     # Ensuring consistent typing to prevent numba errors #
     l_quants = l_quants.astype("<f4")
@@ -142,8 +136,8 @@ def perform_spot_testing(
                 # First multiple to get minimum value to be one before rounding #
                 bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
                 bg_1 = np.round(bg_1)
-                lr_j_scores_1 = bg_1[0 : len(lr_j_scores)]
-                bg_1 = bg_1[len(lr_j_scores) : len(bg_1)]
+                lr_j_scores_1 = bg_1[0: len(lr_j_scores)]
+                bg_1 = bg_1[len(lr_j_scores): len(bg_1)]
 
                 # Getting the pvalue from negative binomial approach
                 round_pvals, _, _, _ = get_stats(
@@ -210,273 +204,9 @@ def perform_spot_testing(
         print("Summary of LR results in adata.uns['lr_summary'].")
 
 
-# Version 2, no longer in use, see above for newest method #
-def perform_perm_testing(
-    adata: AnnData,
-    lr_scores: np.ndarray,
-    n_pairs: int,
-    lrs: np.ndarray,
-    lr_mid_dist: int,
-    verbose: float,
-    neighbours: List,
-    het_vals: np.ndarray,
-    min_expr: float,
-    neg_binom: bool,
-    adj_method: str,
-    pval_adj_cutoff: float,
-):
-    """Performs the grouped permutation testing when taking the stats approach."""
-    if n_pairs != 0:  # Perform permutation testing
-        # Grouping spots with similar mean expression point #
-        genes = get_valid_genes(adata, n_pairs)
-        means_ordered, genes_ordered = get_ordered(adata, genes)
-        ims = np.array(
-            [
-                get_median_index(
-                    lr_.split("_")[0],
-                    lr_.split("_")[1],
-                    means_ordered.values,
-                    genes_ordered,
-                )
-                for lr_ in lrs
-            ]
-        ).reshape(-1, 1)
-
-        if len(lrs) > 1:  # Multi-LR pair mode, group LRs to generate backgrounds
-            clusterer = AgglomerativeClustering(
-                n_clusters=None,
-                distance_threshold=lr_mid_dist,
-                affinity="manhattan",
-                linkage="single",
-            )
-            lr_groups = clusterer.fit_predict(ims)
-            lr_group_set = np.unique(lr_groups)
-            if verbose:
-                print(f"{len(lr_group_set)} lr groups with similar expression levels.")
-
-        else:  # Single LR pair mode, generate background for the LR.
-            lr_groups = np.array([0])
-            lr_group_set = lr_groups
-
-        res_info = ["lr_scores", "p_val", "p_adj", "-log10(p_adj)", "lr_sig_scores"]
-        n_, n_sigs = np.array([0] * len(lrs)), np.array([0] * len(lrs))
-        per_lr_results = {}
-        with tqdm(
-            total=len(lr_group_set),
-            desc="Generating background distributions for the LR pair groups..",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-        ) as pbar:
-            for group in lr_group_set:
-                # Determining common mid-point for each group #
-                group_bool = lr_groups == group
-                group_im = int(np.median(ims[group_bool, 0]))
-
-                # Calculating the background #
-                rand_pairs = get_rand_pairs(adata, genes, n_pairs, lrs=lrs, im=group_im)
-                background, _ = get_lrs_scores(
-                    adata,
-                    rand_pairs,
-                    neighbours,
-                    het_vals,
-                    min_expr,
-                    filter_pairs=False,
-                ).ravel()
-                total_bg = len(background)
-                background = background[background != 0]  # Filtering for increase speed
-
-                # Getting stats for each lr in group #
-                group_lr_indices = np.where(group_bool)[0]
-                for lr_i in group_lr_indices:
-                    lr_ = lrs[lr_i]
-                    lr_results = pd.DataFrame(index=adata.obs_names, columns=res_info)
-                    scores = lr_scores[:, lr_i]
-                    stats = get_stats(
-                        scores,
-                        background,
-                        total_bg,
-                        neg_binom,
-                        adj_method,
-                        pval_adj_cutoff=pval_adj_cutoff,
-                    )
-                    full_stats = [scores] + list(stats)
-                    for vals, colname in zip(full_stats, res_info):
-                        lr_results[colname] = vals
-
-                    n_[lr_i] = len(np.where(scores > 0)[0])
-                    n_sigs[lr_i] = len(
-                        np.where(lr_results["p_adj"].values < pval_adj_cutoff)[0]
-                    )
-                    if n_sigs[lr_i] > 0:
-                        per_lr_results[lr_] = lr_results
-                pbar.update(1)
-
-        print(f"{len(per_lr_results)} LR pairs with significant interactions.")
-
-        lr_summary = pd.DataFrame(index=lrs, columns=["n_spots", "n_spots_sig"])
-        lr_summary["n_spots"] = n_
-        lr_summary["n_spots_sig"] = n_sigs
-        lr_summary = lr_summary.iloc[np.argsort(-n_sigs)]
-
-    else:  # Simply store the scores
-        per_lr_results = {}
-        lr_summary = pd.DataFrame(index=lrs, columns=["n_spots"])
-        for i, lr_ in enumerate(lrs):
-            lr_results = pd.DataFrame(index=adata.obs_names, columns=["lr_scores"])
-            lr_results["lr_scores"] = lr_scores[:, i]
-            per_lr_results[lr_] = lr_results
-            lr_summary.loc[lr_, "n_spots"] = len(np.where(lr_scores[:, i] > 0)[0])
-        lr_summary = lr_summary.iloc[np.argsort(-lr_summary.values[:, 0]), :]
-
-    adata.uns["lr_summary"] = lr_summary
-    adata.uns["per_lr_results"] = per_lr_results
-    if verbose:
-        print(
-            "Summary of significant spots for each lr pair in adata.uns['lr_summary']."
-        )
-        print(
-            "Spot enrichment statistics of LR interactions in "
-            + "adata.uns['per_lr_results']"
-        )
-
-
-# No longer in use #
-def permutation(
-    adata: AnnData,
-    n_pairs: int = 200,
-    distance: int = 30,
-    use_lr: str = "cci_lr",
-    use_het: str | None = None,
-    neg_binom: bool = False,
-    adj_method: str = "fdr",
-    neighbours: list | None = None,
-    run_fast: bool = True,
-    bg_pairs: list | None = None,
-    background: np.array = None,
-    **kwargs,
-) -> AnnData:
-    """Permutation test for merged result
-    Parameters
-    ----------
-    adata: AnnData          The data object including the cell types to count
-    n_pairs: int            Number of gene pairs to run permutation test (default: 1000)
-    distance: int           Distance between spots (default: 30)
-    use_lr: str             LR cluster used for permutation test
-                            (default: 'lr_neighbours_leiden_max')
-    use_het: str            cell type diversity counts used for permutation test
-                            (default 'het')
-    neg_binom: bool         Whether to fit neg binomial parameters to bg distribution
-                            for p-val est.
-    adj_method: str         Method used by statsmodels.stats.multitest.multipletests
-                            for MHT correction.
-    neighbours: list        List of the neighbours for each spot, if None then
-                            computed. Useful for speeding up function.
-    **kwargs:               Extra arguments parsed to lr.
-    Returns
-    -------
-    adata: AnnData          Data Frame of p-values from permutation test for each
-                            window stored in adata.uns['merged_pvalues']
-                            Final significant merged scores stored in
-                            adata.uns['merged_sign']
-    """
-
-    # blockPrint()
-
-    #  select n_pair*2 closely expressed genes from the data
-    genes = get_valid_genes(adata, n_pairs)
-    if len(adata.uns["lr"]) > 1:
-        raise ValueError("Permutation test only supported for one LR pair scenario.")
-    elif bg_pairs is None:
-        pairs = get_rand_pairs(adata, genes, n_pairs, lrs=adata.uns["lr"])
-    else:
-        pairs = bg_pairs
-
-    """
-    # generate random pairs
-    lr1 = adata.uns['lr'][0].split('_')[0]
-    lr2 = adata.uns['lr'][0].split('_')[1]
-    genes = [item for item in adata.var_names.tolist() if not
-            (item.startswith('MT-') or item.startswith('MT_') or
-            item==lr1 or item==lr2)]
-    random.shuffle(genes)
-    pairs = [i + '_' + j for i, j in zip(genes[:n_pairs], genes[-n_pairs:])]
-    """
-    if use_het is not None:
-        scores = adata.obsm["merged"]
-    else:
-        scores = adata.obsm[use_lr]
-
-    # for each randomly selected pair, run through cci_rank analysis and keep the scores
-    query_pair = adata.uns["lr"]
-
-    # If neighbours not inputted, then compute #
-    if neighbours is None:
-        neighbours = calc_neighbours(adata, distance, index=run_fast)
-
-    if not run_fast and background is None:
-        # Run original way if 'fast'=False argument inputted.
-        background = []
-        for item in pairs:
-            adata.uns["lr"] = [item]
-            lr(
-                adata,
-                use_lr=use_lr,
-                distance=distance,
-                verbose=False,
-                neighbours=neighbours,
-                **kwargs,
-            )
-            if use_het is not None:
-                merge(adata, use_lr=use_lr, use_het=use_het, verbose=False)
-                background += adata.obsm["merged"].tolist()
-            else:
-                background += adata.obsm[use_lr].tolist()
-        background = np.array(background)
-
-    elif background is None:  # Run fast if background not inputted
-        spot_lr1s = get_spot_lrs(adata, pairs, lr_order=True, filter_pairs=False)
-        spot_lr2s = get_spot_lrs(adata, pairs, lr_order=False, filter_pairs=False)
-
-        het_vals = (
-            np.array([1] * len(adata)) if use_het is None else adata.obsm[use_het]
-        )
-        background = get_scores(
-            spot_lr1s.values, spot_lr2s.values, neighbours, het_vals
-        ).ravel()
-
-    # log back the original query
-    adata.uns["lr"] = query_pair
-
-    # Negative Binomial fit
-    pvals, pvals_adj, log10_pvals, lr_sign = get_stats(
-        scores, background, neg_binom, adj_method=adj_method
-    )
-
-    if use_het is not None:
-        adata.obsm["merged"] = scores
-        adata.obsm["merged_pvalues"] = log10_pvals
-        adata.obsm["merged_sign"] = lr_sign
-
-        # enablePrint()
-        print(
-            "Results of permutation test has been kept in adata.obsm['merged_pvalues']"
-        )
-        print("Significant merged result has been kept in adata.obsm['merged_sign']")
-    else:
-        adata.obsm[use_lr] = scores
-        adata.obsm["lr_pvalues"] = log10_pvals
-        adata.obsm["lr_sign"] = lr_sign  # scores for spots with pval_adj < 0.05
-
-        # enablePrint()
-        print("Results of permutation test has been kept in adata.obsm['lr_pvalues']")
-        print("Significant merged result has been kept in adata.obsm['lr_sign']")
-
-    # return adata
-    return background
-
-
 def get_stats(
-    scores: np.array,
-    background: np.array,
+    scores: np.ndarray,
+    background: np.ndarray,
     total_bg: int,
     neg_binom: bool = False,
     adj_method: str = "fdr_bh",
@@ -486,8 +216,8 @@ def get_stats(
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
     ----------
-    scores: np.array        Per spot scores for a particular LR pair.
-    background: np.array    Background distribution for non-zero scores.
+    scores: np.ndarray        Per spot scores for a particular LR pair.
+    background: np.ndarray    Background distribution for non-zero scores.
     total_bg: int           Total number of background values calculated.
     neg_binom: bool         Whether to use neg-binomial distribution to estimate
                             p-values, NOT appropriate with log1p data, alternative is
@@ -513,7 +243,7 @@ def get_stats(
         mu = np.exp(res.params[0])
         alpha = res.params[1]
         Q = 0
-        size = 1.0 / alpha * mu**Q
+        size = 1.0 / alpha * mu ** Q
         prob = size / (size + mu)
 
         if return_negbinom_params:  # For testing purposes #
@@ -524,7 +254,7 @@ def get_stats(
 
     else:
         # Using the actual values to estimate p-values
-        pvals = np.zeros((1, len(scores)), dtype=np.float)[0, :]
+        pvals = np.zeros((1, len(scores)), dtype=np.float64)[0, :]
         nonzero_score_bool = scores > 0
         nonzero_score_indices = np.where(nonzero_score_bool)[0]
         zero_score_indices = np.where(~nonzero_score_bool)[0]
@@ -540,16 +270,7 @@ def get_stats(
     return pvals, pvals_adj, log10_pvals_adj, lr_sign
 
 
-# @njit(parallel=True)
-# def perm_pvals(scores, background):
-#     """Determines the p-values based on the actual observed frequency of the \
-#         indicated score or greater in the background.
-#     """
-#     pvals = np.zeros((1, len(scores)), np.float64)[0,:]
-#     for i in prange(len(pvals)):
-
-
-def get_valid_genes(adata: AnnData, n_pairs: int) -> np.array:
+def get_valid_genes(adata: AnnData, n_pairs: int) -> np.ndarray:
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
     ----------
@@ -557,7 +278,7 @@ def get_valid_genes(adata: AnnData, n_pairs: int) -> np.array:
     n_pairs: int            The number of random pairs will generate elsewhere.
     Returns
     -------
-    genes: np.array          List of genes which could be valid pairs.
+    genes: np.ndarray          List of genes which could be valid pairs.
     """
     genes = np.array(
         [
@@ -575,7 +296,7 @@ def get_valid_genes(adata: AnnData, n_pairs: int) -> np.array:
 
 def get_rand_pairs(
     adata: AnnData,
-    genes: np.array,
+    genes: np.ndarray,
     n_pairs: int,
     lrs: list,
     im: int | None = None,
@@ -609,7 +330,7 @@ def get_rand_pairs(
         .drop(lr_genes)[: n_pairs * 2]
         .index.tolist()
     )
-    selected = selected[0 : n_pairs * 2]
+    selected = selected[0: n_pairs * 2]
     adata.uns["selected"] = selected
     # form gene pairs from selected randomly
     random.shuffle(selected)
@@ -659,13 +380,3 @@ def get_median_index(ligand, receptor, means_ordered, genes_ordered):
     #
     # # get the position of the median of the means between the two genes
     # im = np.argmin(abs(means.values - means.iloc[i1:i2]))
-
-
-# Disable printing
-def block_print():
-    sys.stdout = open(os.devnull, "w")
-
-
-# Restore printing
-def enable_print():
-    sys.stdout = sys.__stdout__

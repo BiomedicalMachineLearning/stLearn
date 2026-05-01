@@ -7,7 +7,7 @@ def convert_scanpy(
 ) -> AnnData | None:
     adata.var_names_make_unique()
 
-    library_id = list(adata.uns["spatial"].keys())[0]
+    library_id = next(iter(adata.uns["spatial"].keys()))
 
     if use_quality == "fulres":
         image_coor = adata.obsm["spatial"]

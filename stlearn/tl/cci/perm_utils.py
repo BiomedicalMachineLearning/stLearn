@@ -8,10 +8,10 @@ from sklearn.preprocessing import MinMaxScaler
 from .base import get_lrs_scores
 
 
-def nonzero_quantile(expr, q, interpolation):
+def nonzero_quantile(expr, q, method):
     """Calculating the non-zero quantiles."""
     nonzero_expr = expr[expr > 0]
-    quants = np.quantile(nonzero_expr, q=q, interpolation=interpolation)
+    quants = np.quantile(nonzero_expr, q=q, method=method)
     if not isinstance(quants, np.ndarray) or quants.ndim == 0:
         quants = np.array([quants])
     return quants
@@ -29,8 +29,8 @@ def get_lr_quants(
     lr_expr: pd.DataFrame,
     l_indices: list,
     r_indices: list,
-    quantiles: np.array,
-    method="",
+    quantiles: np.ndarray,
+    quant_method="",
 ):
     """Gets the quantiles per gene in the LR pair, & then concatenates.
     Returns
@@ -40,11 +40,11 @@ def get_lr_quants(
                                                 column is an LR pair.
     """
 
-    quant_func = nonzero_quantile if method != "quantiles" else np.quantile
+    quant_func = nonzero_quantile if quant_method != "quantiles" else np.quantile
 
     # First getting the quantiles of gene expression #
     gene_quants = np.apply_along_axis(
-        quant_func, 0, lr_expr.values, q=quantiles, interpolation="nearest"
+        quant_func, 0, lr_expr.values, q=quantiles, method="nearest"
     )
 
     l_quants = gene_quants[:, l_indices]
@@ -75,7 +75,7 @@ def get_lr_zeroprops(lr_expr: pd.DataFrame, l_indices: list, r_indices: list):
     return lr_props, l_props, r_props
 
 
-def get_lr_bounds(lr_value: float, bin_bounds: np.array):
+def get_lr_bounds(lr_value: float, bin_bounds: np.ndarray):
     """For the given lr_value, returns the bin where it belongs.
     Returns
     -------
@@ -98,19 +98,19 @@ def get_lr_bounds(lr_value: float, bin_bounds: np.array):
 
 
 def get_similar_genes(
-    ref_quants: np.array,
-    ref_props: np.array,
+    ref_quants: np.ndarray,
+    ref_props: np.ndarray,
     n_genes: int,
     candidate_expr: np.ndarray,
-    candidate_genes: np.array,
+    candidate_genes: np.ndarray,
     quantiles=(0.5),  # (.5, .75, .85, .9, .95, .97, .98, .99, 1)
 ):
     """Gets genes with a similar expression distribution as the inputted gene,
         by measuring distance between the gene expression quantiles.
     Parameters
     ----------
-    ref_quants: np.array        The pre-calculated quantiles.
-    ref_props: np.array         The query zero proportions.
+    ref_quants: np.ndarray        The pre-calculated quantiles.
+    ref_props: np.ndarray         The query zero proportions.
     n_genes: int                Number of equivalent genes to select.
     candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
     candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
@@ -126,7 +126,7 @@ def get_similar_genes(
 
     # Query quants #
     query_quants = np.apply_along_axis(
-        nonzero_quantile, 0, candidate_expr, q=quantiles, interpolation="nearest"
+        nonzero_quantile, 0, candidate_expr, q=quantiles, method="nearest"
     )
 
     # Need to min-max normalise so can take distance with the proportion #
@@ -162,10 +162,10 @@ def get_similar_genes(
 
 
 def get_similar_genes_quantiles(
-    gene_expr: np.array,
+    gene_expr: np.ndarray,
     n_genes: int,
     candidate_quants: np.ndarray,
-    candidate_genes: np.array,
+    candidate_genes: np.ndarray,
     quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 1),
 ):
     """Gets genes with a similar expression distribution as the inputted gene,
@@ -193,8 +193,7 @@ def get_similar_genes_quantiles(
 
     # Getting the quantiles for the gene #
     if len(gene_expr) != len(quantiles):
-        # ref_quants = np.quantile(gene_expr, q=quantiles, interpolation='nearest')
-        ref_quants = nonzero_quantile(gene_expr, q=quantiles, interpolation="nearest")
+        ref_quants = nonzero_quantile(gene_expr, q=quantiles, method="nearest")
     else:
         ref_quants = gene_expr
 
@@ -223,7 +222,7 @@ def get_similar_genes_quantiles(
 
 @njit(parallel=True)
 def get_similar_genes_fast(
-    ref_quants: np.array,
+    ref_quants: np.ndarray,
     n_genes: int,
     candidate_quants: np.ndarray,
     candidate_genes: np.ndarray,
@@ -266,7 +265,7 @@ def get_similar_genes_fast(
 
 
 @njit
-def gen_rand_pairs(genes1: np.array, genes2: np.array, n_pairs: int):
+def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int):
     """Generates random pairs of genes."""
 
     rand_pairs = List()
@@ -297,7 +296,7 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
 
     # The nonzero median when quantiles=.5 #
     lr_quants, l_quants, r_quants = get_lr_quants(
-        lr_expr, l_indices, r_indices, quantiles, method="quantiles"
+        lr_expr, l_indices, r_indices, quantiles, quant_method="quantiles"
     )
 
     # Calculating the zero proportions, for grouping based on median/zeros #
@@ -305,7 +304,7 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
 
     # Getting lr features for later diagnostics
     lr_meds, l_meds, r_meds = get_lr_quants(
-        lr_expr, l_indices, r_indices, quantiles=np.array([0.5]), method=""
+        lr_expr, l_indices, r_indices, quantiles=np.array([0.5]), quant_method=""
     )
     lr_median_means = lr_meds.mean(axis=1)
     lr_prop_means = lr_props.mean(axis=1)

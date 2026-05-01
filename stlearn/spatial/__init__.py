@@ -4,8 +4,8 @@ from . import clustering, morphology, sme, smooth, trajectory
 
 __all__ = [
     "clustering",
-    "smooth",
-    "trajectory",
     "morphology",
     "sme",
+    "smooth",
+    "trajectory",
 ]

@@ -5,4 +5,4 @@ _METHOD = Literal["mean", "median", "sum"]
 _QUALITY = Literal["fulres", "hires", "lowres"]
 _BACKGROUND = Literal["black", "white"]
 
-__all__ = ["_SIMILARITY_MATRIX", "_METHOD", "_QUALITY", "_BACKGROUND"]
+__all__ = ["_BACKGROUND", "_METHOD", "_QUALITY", "_SIMILARITY_MATRIX"]

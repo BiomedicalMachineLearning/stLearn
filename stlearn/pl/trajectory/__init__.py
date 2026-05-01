@@ -9,11 +9,11 @@ from .tree_plot import tree_plot
 from .tree_plot_simple import tree_plot_simple
 
 __all__ = [
-    "pseudotime_plot",
-    "local_plot",
-    "tree_plot",
-    "transition_markers_plot",
-    "de_transition_plot",
-    "tree_plot_simple",
     "check_trajectory",
+    "de_transition_plot",
+    "local_plot",
+    "pseudotime_plot",
+    "transition_markers_plot",
+    "tree_plot",
+    "tree_plot_simple",
 ]

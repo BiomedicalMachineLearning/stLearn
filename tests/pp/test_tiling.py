@@ -34,8 +34,8 @@ class TestTiling(unittest.TestCase):
         if "imagerow" not in self.test_data.obs:
             # Create synthetic coordinates for testing
             n_spots = len(self.test_data)
-            self.test_data.obs["imagerow"] = np.random.randint(50, 450, n_spots)
-            self.test_data.obs["imagecol"] = np.random.randint(50, 450, n_spots)
+            self.test_data.obs["imagerow"] = np.random.Generator(50, 450, n_spots)
+            self.test_data.obs["imagecol"] = np.random.Generator(50, 450, n_spots)
 
     def tearDown(self):
         """Clean up test fixtures."""
