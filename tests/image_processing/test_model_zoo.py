@@ -21,7 +21,7 @@ class TestModelZoo(unittest.TestCase):
 
     def test_resnet50_v2_output_shape(self):
         model = Model(base="resnet50", weights="v2", batch_size=4)
-        out = model.predict((self._make_input()))
+        out = model.predict(self._make_input())
         self.assertEqual(out.shape, (5, 2048))
 
     def test_batching_works(self):
