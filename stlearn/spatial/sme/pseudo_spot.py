@@ -30,7 +30,7 @@ def pseudo_spot(
 ) -> AnnData | None:
     """\
     Improve spatial resolution by imputing (creating) new spots from existing ones
-    using spatial, morphological, and expression (sme) information.
+    using spatial, morphological, and expression (SME) information.
 
     Parameters
     ----------

@@ -20,7 +20,7 @@ def sme_normalize(
 ) -> AnnData | None:
     """\
     Reduce technical noise by spatially smoothing all expression values using
-     spatial, morphological, and expression (sme) information.
+     spatial, morphological, and expression (SME) information.
 
     This function modified ALL expression values by averaging each spot's expression
     with weighted contributions from similar neighbors. It modifies ALL expression
@@ -80,6 +80,6 @@ def sme_normalize(
     key_added = use_data + "_SME_normalized"
     adata.obsm[key_added] = adjusted_count_matrix
 
-    print("The data adjusted by sme is added to adata.obsm['" + key_added + "']")
+    print("The data adjusted by SME is added to adata.obsm['" + key_added + "']")
 
     return adata if copy else None

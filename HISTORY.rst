@@ -2,9 +2,14 @@
 History
 =======
 
-1.4.0 (2026-04-12)
+1.4.0 (2026-05-01)
 ------------------
 * Removed tensorflow and keras and replaced with torch and torchvision.
+* Refactor of CCI implementation to removed string comparison for LR pairs lists and replaced with one set of two
+  packed 32 bit integers. Removed deduplication pass m^2 pass with a hash lookup.
+
+API and Bug Fixes:
+* Added row and polygon annotations.
 
 1.3.0 (2026-02-24)
 ------------------
