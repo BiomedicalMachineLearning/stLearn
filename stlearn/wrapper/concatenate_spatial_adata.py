@@ -70,7 +70,8 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
     break_out_flag = False
     keys = next(iter(use_adata_list[0].uns["spatial"].keys()))
     scale = use_adata_list[0].uns["spatial"][keys]["scalefactors"][
-        "tissue_hires_scalef"]
+        "tissue_hires_scalef"
+    ]
     for _i in range(0, nrows):
         for j in range(0, ncols):
             obs_spatial = use_adata_list[n].obs[["imagerow", "imagecol"]].values
@@ -111,7 +112,7 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
 
     img_rows = []
     for min_id in range(0, len(use_adata_list), ncols):
-        img_row = np.hstack(imgs[min_id: min_id + ncols])
+        img_row = np.hstack(imgs[min_id : min_id + ncols])
         img_rows.append(img_row)
     imgs_comb = np.vstack(img_rows)
 
@@ -119,8 +120,6 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
     adata_concat.uns["spatial"] = use_adata_list[0].uns["spatial"]
 
     keys = next(iter(adata_concat.uns["spatial"].keys()))
-    adata_concat.uns["spatial"][keys]["images"][
-        "hires"
-    ] = imgs_comb
+    adata_concat.uns["spatial"][keys]["images"]["hires"] = imgs_comb
 
     return adata_concat

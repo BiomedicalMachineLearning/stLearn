@@ -7,13 +7,13 @@ from stlearn.types import _METHOD, _SIMILARITY_MATRIX
 
 
 def adjust(
-    adata: AnnData,
-    use_data: str = "X_pca",
-    radius: float = 50.0,
-    rates: int = 1,
-    method: _METHOD = "mean",
-    similarity_matrix: _SIMILARITY_MATRIX = "cosine",
-    copy: bool = False,
+        adata: AnnData,
+        use_data: str = "X_pca",
+        radius: float = 50.0,
+        rates: int = 1,
+        method: _METHOD = "mean",
+        similarity_matrix: _SIMILARITY_MATRIX = "cosine",
+        copy: bool = False,
 ) -> AnnData | None:
     """\
     SME normalisation: Using spot location information and tissue morphological
@@ -56,13 +56,13 @@ def adjust(
     img_embed = adata.obsm["X_morphology"]
     lag_coor = []
     with tqdm(
-        total=len(adata),
-        desc="Adjusting data",
-        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+            total=len(adata),
+            desc="Adjusting data",
+            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ) as pbar:
         for i in range(len(coor)):
             current_neightbor = point_tree.query_ball_point(
-                coor.values[i], radius
+                coor.values[i], radius,
             )  # Spatial weight
             current_neightbor.remove(i)
             if len(current_neightbor) > 0:
@@ -92,26 +92,26 @@ def adjust(
                         from scipy.stats import pearsonr
 
                         pearson_corr = abs(
-                            pearsonr(main_img.reshape(-1), i.reshape(-1))[0]
+                            pearsonr(main_img.reshape(-1), i.reshape(-1))[0],
                         )
                         similarity.append(pearson_corr)
                     elif similarity_matrix == "spearman":
                         from scipy.stats import spearmanr
 
                         spearmanr_corr = abs(
-                            spearmanr(main_img.reshape(-1), i.reshape(-1))[0]
+                            spearmanr(main_img.reshape(-1), i.reshape(-1))[0],
                         )
                         similarity.append(spearmanr_corr)
 
                 similarity = np.array(similarity).reshape((-1, 1))
                 surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
 
-                for i in range(0, rates):
+                for _ in range(0, rates):
                     if method == "median":
                         main_count = np.append(
                             main_count,
                             np.median(surrounding_count_adjusted, axis=0).reshape(
-                                1, -1
+                                1, -1,
                             ),
                             axis=0,
                         )
@@ -128,7 +128,9 @@ def adjust(
                             axis=0,
                         )
                     else:
-                        raise ValueError("Only 'median' and 'mean' are aceptable")
+                        raise ValueError(
+                            "Only 'median', 'sum', and 'mean' are aceptable",
+                        )
                 lag_coor.append(list(np.sum(main_count, axis=0)))
                 pbar.update(1)
             else:

@@ -13,42 +13,47 @@ def disk(
 ) -> AnnData | None:
     adata = adata.copy() if copy else adata
 
-    coor = adata.obs[["imagecol", "imagerow"]]
+    coords = adata.obs[["imagecol", "imagerow"]]
     count_embed = adata.obsm[use_data]
-    point_tree = spatial.cKDTree(coor)
+    point_tree = spatial.cKDTree(coords)
 
-    lag_coor = []
-    tmp = []
+    # Preallocate result
+    n_points = len(coords)
+    n_features = count_embed.shape[1]
+    lag_coords = np.empty((n_points, n_features), dtype=count_embed.dtype)
 
-    for i in range(len(coor)):
-        current_neightbor = point_tree.query_ball_point(
-            coor.values[i], radius
-        )  # Spatial weight
-        # print(coor.values[i])
-        tmp.append(current_neightbor)
-        # print(coor.values[current_neightbor])
-        main = count_embed[current_neightbor]
-        current_neightbor.remove(i)
-        addition = count_embed[current_neightbor]
+    # Validate method first
+    if method == "mean":
+        reducer = np.mean
+    elif method == "median":
+        reducer = np.median
+    else:
+        raise ValueError("Only 'median' and 'mean' are acceptable")
 
-        for i in range(0, rates):
-            main = np.append(main, addition, axis=0)
-        if method == "mean":
-            # New umap based on SW
-            lag_coor.append(list(np.mean(main, axis=0)))
-        elif method == "median":
-            # New umap based on SW
-            lag_coor.append(list(np.median(main, axis=0)))
-        else:
-            raise ValueError("Only 'median' and 'mean' are aceptable")
+    for i in range(len(coords)):
+        # Spatial weight
+        current_neighbor = point_tree.query_ball_point(
+            coords.values[i], radius
+        )
+        main = count_embed[current_neighbor]
+        current_neighbor.remove(i)
+        addition = count_embed[current_neighbor]
+
+        # Replicate `addition` `rates` times and append in one allocation.
+        # Faster than append.
+        repeated = np.tile(addition, (rates, 1))
+        main = np.concatenate([main, repeated], axis=0)
+
+        # Smoothed feature vector: column-wise mean/median over self + neighbours.
+        lag_coords[i] = reducer(main, axis=0)
 
     new_embed = use_data + "_disk"
 
-    adata.obsm[new_embed] = np.array(lag_coor)
+    adata.obsm[new_embed] = lag_coords
 
     print(
-        "Disk smoothing function is applied! The new data are stored in "
-        + 'adata.obsm["X_diffmap_disk"]'
+        f"Disk smoothing function is applied! The new data are stored in "
+        f'adata.obsm["{new_embed}"]'
     )
 
     return adata if copy else None

@@ -136,8 +136,8 @@ def perform_spot_testing(
                 # First multiple to get minimum value to be one before rounding #
                 bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
                 bg_1 = np.round(bg_1)
-                lr_j_scores_1 = bg_1[0: len(lr_j_scores)]
-                bg_1 = bg_1[len(lr_j_scores): len(bg_1)]
+                lr_j_scores_1 = bg_1[0 : len(lr_j_scores)]
+                bg_1 = bg_1[len(lr_j_scores) : len(bg_1)]
 
                 # Getting the pvalue from negative binomial approach
                 round_pvals, _, _, _ = get_stats(
@@ -243,7 +243,7 @@ def get_stats(
         mu = np.exp(res.params[0])
         alpha = res.params[1]
         Q = 0
-        size = 1.0 / alpha * mu ** Q
+        size = 1.0 / alpha * mu**Q
         prob = size / (size + mu)
 
         if return_negbinom_params:  # For testing purposes #
@@ -330,12 +330,14 @@ def get_rand_pairs(
         .drop(lr_genes)[: n_pairs * 2]
         .index.tolist()
     )
-    selected = selected[0: n_pairs * 2]
+    selected = selected[0 : n_pairs * 2]
     adata.uns["selected"] = selected
     # form gene pairs from selected randomly
     random.shuffle(selected)
-    pairs = [i + "_" + j for i, j in
-             zip(selected[:n_pairs], selected[-n_pairs:], strict=True)]
+    pairs = [
+        i + "_" + j
+        for i, j in zip(selected[:n_pairs], selected[-n_pairs:], strict=True)
+    ]
 
     return pairs
 

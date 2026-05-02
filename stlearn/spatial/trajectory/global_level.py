@@ -8,14 +8,14 @@ from stlearn.utils import _read_graph
 
 
 def global_level(
-    adata: AnnData,
-    list_clusters: list[str],
-    w: float,
-    use_label: str = "leiden",
-    use_rep: str = "X_pca",
-    n_dims: int = 40,
-    return_graph: bool = False,
-    verbose: bool = True,
+        adata: AnnData,
+        list_clusters: list[str],
+        w: float,
+        use_label: str = "leiden",
+        use_rep: str = "X_pca",
+        n_dims: int = 40,
+        return_graph: bool = False,
+        verbose: bool = True,
 ) -> networkx.Graph | None:
     """\
     Perform global sptial trajectory inference.
@@ -62,20 +62,19 @@ def global_level(
     if verbose:
         print(
             "Start to construct the trajectory: "
-            + " -> ".join(np.array(query_nodes).astype(str))
+            + " -> ".join(np.array(query_nodes).astype(str)),
         )
 
     query_dict = {}
     order_dict = {}
 
     for i in query_nodes:
-        order = 0
-        for j in adata.obs[adata.obs[use_label] == str(inds_cat[i])][
-            "sub_cluster_labels"
-        ].unique():
+        for order, j in enumerate(
+                adata.obs[adata.obs[use_label] == str(inds_cat[i])][
+                    "sub_cluster_labels"].unique(),
+        ):
             query_dict[int(j)] = int(i)
             order_dict[int(j)] = int(order)
-            order += 1
     dm_list = []
     sdm_list = []
     order_big_dict = {}
@@ -99,7 +98,7 @@ def global_level(
                 use_label=use_label,
                 use_rep=use_rep,
                 n_dims=n_dims,
-            )
+            ),
         )
         # Calculate Spatial distance matrix
         sdm_list.append(
@@ -108,7 +107,7 @@ def global_level(
                 inds_cat[query_nodes[i]],
                 inds_cat[query_nodes[i + 1]],
                 use_label=use_label,
-            )
+            ),
         )
 
     # Get centroid dictionary
@@ -119,7 +118,7 @@ def global_level(
     if not nx.is_connected(H_sub.to_undirected()):
         raise ValueError(
             "The chosen clusters are not available to construct the spatial "
-            + "trajectory! Please choose other path."
+            + "trajectory! Please choose other path.",
         )
     H_sub = nx.DiGraph(H_sub)
     prepare_root = []
@@ -172,7 +171,7 @@ def global_level(
     H_nodes = list(range(len(H_sub.nodes)))
 
     node_convert = {}
-    for pair in zip(list(H_sub.nodes), H_nodes):
+    for pair in zip(list(H_sub.nodes), H_nodes, strict=True):
         node_convert[pair[1]] = pair[0]
 
     adata.uns["PTS_graph"] = {}
@@ -197,7 +196,7 @@ def ordering_nodes(node_list, use_label, adata):
     mean_dpt = []
     for node in node_list:
         mean_dpt.append(
-            adata.obs[adata.obs[use_label] == str(node)]["dpt_pseudotime"].median()
+            adata.obs[adata.obs[use_label] == str(node)]["dpt_pseudotime"].median(),
         )
 
     return list(np.array(node_list)[np.argsort(mean_dpt)])
@@ -247,8 +246,8 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
             np.array(
                 chosen_adata1[chosen_adata1.obs["sub_cluster_labels"].isin([i])].obsm[
                     use_rep
-                ][:, :n_dims]
-            )
+                ][:, :n_dims],
+            ),
         )
 
     sub_coord2 = []
@@ -258,8 +257,8 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
             np.array(
                 chosen_aadata[chosen_aadata.obs["sub_cluster_labels"].isin([i])].obsm[
                     use_rep
-                ][:, :n_dims]
-            )
+                ][:, :n_dims],
+            ),
         )
 
     results = []
@@ -273,7 +272,6 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
     scale_sdm = results / np.max(results)
 
     return scale_sdm
-
 
 # def _density_normalize(other: Union[np.ndarray, spmatrix]
 #     ) -> Union[np.ndarray, spmatrix]:

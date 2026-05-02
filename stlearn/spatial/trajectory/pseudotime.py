@@ -159,7 +159,7 @@ def pseudotime(
     G_nodes = list(range(len(G.nodes)))
 
     node_convert = {}
-    for pair in zip(list(G.nodes), G_nodes):
+    for pair in zip(list(G.nodes), G_nodes, strict=True):
         node_convert[pair[1]] = pair[0]
 
     adata.uns["global_graph"] = {}
