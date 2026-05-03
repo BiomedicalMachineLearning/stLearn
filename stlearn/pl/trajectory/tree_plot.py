@@ -9,22 +9,22 @@ from stlearn.utils import _read_graph
 
 
 def tree_plot(
-    adata: AnnData,
-    library_id: str | None = None,
-    figsize: tuple[float, float] = (10, 4),
-    data_alpha: float = 1.0,
-    use_label: str = "leiden",
-    spot_size: float | int = 50,
-    fontsize: int = 6,
-    piesize: float = 0.15,
-    zoom: float = 0.1,
-    name: str | None = None,
-    output: str | None = None,
-    dpi: int = 180,
-    show_all: bool = False,
-    show_plot: bool = True,
-    ncols: int = 4,
-    copy: bool = False,
+        adata: AnnData,
+        library_id: str | None = None,
+        figsize: tuple[float, float] = (10, 4),
+        data_alpha: float = 1.0,
+        use_label: str = "leiden",
+        spot_size: float | int = 50,
+        fontsize: int = 6,
+        piesize: float = 0.15,
+        zoom: float = 0.1,
+        name: str | None = None,
+        output: str | None = None,
+        dpi: int = 180,
+        show_all: bool = False,
+        show_plot: bool = True,
+        ncols: int = 4,
+        copy: bool = False,
 ) -> AnnData | None:
     """\
     Hierarchical tree plot represent for the global spatial trajectory inference.
@@ -63,7 +63,7 @@ def tree_plot(
     G = _read_graph(adata, "PTS_graph")
 
     if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        next(iter(adata.uns["spatial"].keys()))
 
     G.remove_node(9999)
 
@@ -82,23 +82,24 @@ def tree_plot(
 
     nrows = math.ceil(len(start_nodes) / ncols)
 
-    superfig, axs = plt.subplots(nrows, ncols, figsize=figsize)
+    superfig, axs = plt.subplots(nrows, ncols, figsize=figsize, squeeze=False)
     axs = axs.ravel()
 
-    for idx in range(0, nrows * ncols):
-        try:
+    for idx in range(nrows * ncols):
+        if idx < len(start_nodes):
             generate_tree_viz(
-                adata, use_label, G, axs[idx], starter_node=start_nodes[idx]
+                adata, library_id, use_label, G, axs[idx],
+                starter_node=start_nodes[idx],
             )
-        except:
-            axs[idx] = axs[idx].axis("off")
+        else:
+            axs[idx].axis("off")
 
     if name is None:
         name = use_label
 
     if output is not None:
         superfig.savefig(
-            output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0
+            output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0,
         )
 
     if show_plot:
@@ -140,13 +141,14 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
     if root is None:
         if isinstance(G, nx.DiGraph):
             root = next(
-                iter(nx.topological_sort(G))
+                iter(nx.topological_sort(G)),
             )  # allows back compatibility with nx version 1.11
         else:
             root = random.choice(list(G.nodes))
 
     def _hierarchy_pos(
-        G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None, parent=None
+            G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None,
+            parent=None,
     ):
         """
         see hierarchy_pos docstring for most arguments
@@ -183,7 +185,7 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
 
 
-def generate_tree_viz(adata, use_label, G, axis, starter_node):
+def generate_tree_viz(adata, library_id, use_label, G, axis, starter_node):
     tmp_edges = []
     for edge in G.edges():
         if starter_node == edge[0]:
@@ -193,12 +195,21 @@ def generate_tree_viz(adata, use_label, G, axis, starter_node):
 
     pos = hierarchy_pos(tmp_D)
     a = axis
-
     a.axis("off")
+
+    # Restrict to the requested library so multi-library AnnData behaves correctly
+    obs = adata.obs
+    if library_id is not None and "library_id" in obs.columns:
+        obs = obs[obs["library_id"] == library_id]
+
     colors = []
     for n in tmp_D:
-        subset = adata.obs[adata.obs["sub_cluster_labels"] == str(n)]
-        colors.append(adata.uns[use_label + "_colors"][int(subset[use_label][0])])
+        subset = obs[obs["sub_cluster_labels"] == str(n)]
+        if subset.empty:
+            colors.append("#CCCCCC")
+            continue
+        cluster_idx = int(subset[use_label].iloc[0])
+        colors.append(adata.uns[f"{use_label}_colors"][cluster_idx])
 
     nx.draw_networkx_edges(
         tmp_D,

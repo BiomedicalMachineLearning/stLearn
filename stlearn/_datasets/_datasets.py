@@ -8,11 +8,11 @@ from .._settings import settings
 
 # TODO - Add scanpy and covert this over.
 def visium_sge(
-    sample_id="V1_Breast_Cancer_Block_A_Section_1",
-    *,
-    include_hires_tiff: bool = False,
+        sample_id="V1_Breast_Cancer_Block_A_Section_1",
+        *,
+        include_hires_tiff: bool = False,
 ) -> AnnData:
-    """Processed Visium Spatial Gene Expression data from 10x Genomics’ database.
+    """Processed Visium Spatial Gene Expression data from 10x Genomics' database.
 
     The database_ can be browsed online to find the ``sample_id`` you want.
 
@@ -21,7 +21,7 @@ def visium_sge(
     Parameters
     ----------
     sample_id
-        The ID of the data sample in 10x’s spatial database.
+        The ID of the data sample in 10x's spatial database.
     include_hires_tiff
         Download and include the high-resolution tissue image (tiff) in
         `adata.uns["spatial"][sample_id]["metadata"]["source_image_path"]`.
@@ -35,12 +35,12 @@ def visium_sge(
 
 
 def xenium_sge(
-    base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
-    image_filename="he_image.ome.tif",
-    alignment_filename="he_imagealignment.csv",
-    zip_filename="outs.zip",
-    library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
-    include_hires_tiff: bool = False,
+        base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
+        image_filename="he_image.ome.tif",
+        alignment_filename="he_imagealignment.csv",
+        zip_filename="outs.zip",
+        library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+        include_hires_tiff: bool = False,
 ):
     """
     Download and extract Xenium SGE data files. Unlike scanpy this current does not
@@ -67,8 +67,8 @@ def xenium_sge(
     if not all_sge_files_exist:
         download_filenames.append(zip_filename)
     if include_hires_tiff and (
-        not (library_dir / alignment_filename).exists()
-        or not (library_dir / image_filename).exists()
+            not (library_dir / alignment_filename).exists()
+            or not (library_dir / image_filename).exists()
     ):
         download_filenames += [alignment_filename, image_filename]
 
@@ -85,5 +85,5 @@ def xenium_sge(
                 for zip_filename in files_to_extract:
                     with open(library_dir / zip_filename, "wb") as file_name:
                         file_name.write(zip_ref.read(f"outs/{zip_filename}"))
-        except zf.BadZipFile:
-            raise ValueError(f"Invalid zip file: {library_dir / zip_filename}")
+        except zf.BadZipFile as b:
+            raise ValueError(f"Invalid zip file: {library_dir / zip_filename}") from b

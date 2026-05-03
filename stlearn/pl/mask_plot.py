@@ -98,7 +98,7 @@ def plot_mask(
     plt.ylim([y_max + add_y, y_min - add_y])
     key = "mask_annotation"
     if show_spot:
-        for i, cluster in enumerate(adata.obs.groupby(key)):
+        for _, cluster in enumerate(adata.obs.groupby(key)):
             if cluster[1][key + "_code"][0] == -1:
                 # Plot scatter plot based on pixel of spots
                 _ = a.scatter(
@@ -126,7 +126,7 @@ def plot_mask(
         from matplotlib.patches import Patch
 
         legend_elements = []
-        for index, row in adata.obs.groupby(key).first().reset_index().iterrows():
+        for _, row in adata.obs.groupby(key).first().reset_index().iterrows():
             if row[key + "_code"] == -1:
                 legend_elements.append(
                     Patch(color=(1.0, 1.0, 1.0, 1.0), label=row[key])
@@ -147,7 +147,7 @@ def plot_mask(
         )
 
     if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
 
     image = adata.uns["spatial"][library_id]["images"][
         adata.uns["spatial"][library_id]["use_quality"]

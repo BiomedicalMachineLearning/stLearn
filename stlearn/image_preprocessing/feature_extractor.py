@@ -102,4 +102,4 @@ def _read_and_predict(path, model, verbose=False):
         tile = tile[np.newaxis, ...]
         return model.predict(tile).ravel()
     except Exception as e:
-        raise ValueError(f"Failed to process image: {path}. Error: {e!s}")
+        raise ValueError(f"Failed to process image: {path}. Error: {e!s}") from e

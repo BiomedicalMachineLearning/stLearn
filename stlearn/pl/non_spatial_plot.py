@@ -28,7 +28,7 @@ def non_spatial_plot(
 
     # plt.rcParams['figure.dpi'] = dpi
 
-    if "paga" in adata.uns.keys():
+    if "paga" in adata.uns:
         # adata.uns[use_label+"_colors"] = adata.uns["tmp_color"]
 
         print("PAGA plot:")

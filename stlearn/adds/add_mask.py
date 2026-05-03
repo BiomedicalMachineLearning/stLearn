@@ -35,14 +35,14 @@ def add_mask(
     adata = adata.copy() if copy else adata
 
     try:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
-    except:
+    except Exception as e:
         raise KeyError(
             """\
         Please read ST data first and try again
         """
-        )
+        ) from e
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
@@ -60,12 +60,12 @@ def add_mask(
 
             adata.uns["mask_image"][library_id][key][quality] = img
             print("Added tissue mask to the object!")
-        except:
+        except Exception as e:
             raise ValueError(
                 f"""\
             {imgpath!r} does not end on a valid extension.
             """
-            )
+            ) from e
     else:
         raise ValueError(
             f"""\
@@ -131,14 +131,14 @@ def apply_mask(
     cmap_ = plt.cm.get_cmap(cmaps)
 
     try:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
-    except:
+    except Exception as e:
         raise KeyError(
             """\
         Please read ST data first and try again
         """
-        )
+        ) from e
 
     if masks == "all":
         masks = list(adata.uns["mask_image"][library_id].keys())
@@ -151,12 +151,12 @@ def apply_mask(
     for i, mask in enumerate(masks):
         try:
             mask_image = adata.uns["mask_image"][library_id][mask][quality]
-        except:
+        except Exception as e:
             raise KeyError(
                 f"""\
             Please load mask {mask} images first and try again
             """
-            )
+            ) from e
 
         if select == "black" or select == "white":
             mask_image = np.where(mask_image > 155, 0, 1)
@@ -168,9 +168,9 @@ def apply_mask(
             )
         mask_image_2d = mask_image.mean(axis=2)
 
-        def apply_spot_mask(x):
-            if mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1:
-                return [i, mask]
+        def apply_spot_mask(x, _mask=mask, _i=i, _mask_image_2d=mask_image_2d):
+            if _mask_image_2d[int(x["imagerow"]), int(x["imagecol"])] == 1:
+                return [_i, _mask]
             else:
                 return [x[key + "_code"], x[key]]
 

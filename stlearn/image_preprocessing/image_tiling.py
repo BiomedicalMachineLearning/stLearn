@@ -58,7 +58,7 @@ def tiling(
     library_id = _get_library_id(adata, library_id)
     img_pillow = _load_and_prepare_image(adata, library_id)
 
-    coordinates = list(zip(adata.obs["imagerow"], adata.obs["imagecol"]))
+    coordinates = list(zip(adata.obs["imagerow"], adata.obs["imagecol"], strict=True))
 
     tile_names = []
 
@@ -122,9 +122,9 @@ def _validate_inputs(
 def _get_library_id(adata: AnnData, library_id: str | None) -> str:
     if library_id is None:
         try:
-            library_id = list(adata.uns["spatial"].keys())[0]
-        except (KeyError, IndexError):
-            raise ValueError("No spatial data found in adata.uns['spatial']")
+            library_id = next(iter(adata.uns["spatial"].keys()))
+        except (KeyError, IndexError) as e:
+            raise ValueError("No spatial data found in adata.uns['spatial']") from e
 
     if library_id not in adata.uns["spatial"]:
         raise ValueError(f"Library '{library_id}' not found in spatial data")
@@ -140,7 +140,7 @@ def _load_and_prepare_image(adata: AnnData, library_id: str) -> Image.Image:
     except KeyError as e:
         raise ValueError(
             f"Could not find image data in adata.uns['spatial']['{library_id}']: {e}"
-        )
+        ) from e
 
     if image.dtype in (np.float32, np.float64):
         image = np.clip(image, 0, 1)

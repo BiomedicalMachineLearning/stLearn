@@ -34,10 +34,9 @@ from .trajectory import (
     pseudotime_plot,
     transition_markers_plot,
     tree_plot,
-    tree_plot_simple,
 )
 
-__all__ = [
+__all__ = [   # noqa: RUF022
     # CCI plot functions
     "cci_check",
     "cci_map",
@@ -72,6 +71,5 @@ __all__ = [
     "tree_plot",
     "transition_markers_plot",
     "de_transition_plot",
-    "tree_plot_simple",
     "check_trajectory",
 ]

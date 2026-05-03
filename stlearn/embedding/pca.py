@@ -28,7 +28,7 @@ def run_pca(
     Parameters
     ----------
     data
-        The (annotated) data matrix of shape `n_obs` × `n_vars`.
+        The (annotated) data matrix of shape `n_obs` x `n_vars`.
         Rows correspond to cells and columns to genes.
     n_comps
         Number of principal components to compute.

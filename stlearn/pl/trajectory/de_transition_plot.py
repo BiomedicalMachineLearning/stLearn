@@ -67,16 +67,16 @@ def de_transition_plot(
     x4 = list(pos_2["score"])
 
     if len(x1) < top_genes:
-        for i in range(len(x1), top_genes):
+        for _ in range(len(x1), top_genes):
             x1.append(0)
     if len(x2) < top_genes:
-        for i in range(len(x2), top_genes):
+        for _ in range(len(x2), top_genes):
             x2.append(0)
     if len(x3) < top_genes:
-        for i in range(len(x3), top_genes):
+        for _ in range(len(x3), top_genes):
             x3.append(0)
     if len(x4) < top_genes:
-        for i in range(len(x4), top_genes):
+        for _ in range(len(x4), top_genes):
             x4.append(0)
 
     fig, axes = plt.subplots(ncols=2, nrows=2, sharey=True)
@@ -236,8 +236,7 @@ def de_transition_plot(
         va="center",
     )
     plt.show()
-    if output is not None:
-        if name is not None:
-            plt.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
+    if output is not None and name is not None:
+        plt.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
     return adata

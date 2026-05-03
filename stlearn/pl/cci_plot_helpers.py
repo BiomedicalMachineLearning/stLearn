@@ -19,21 +19,21 @@ from stlearn.tl.cci.het import get_edges
 
 
 def lr_scatter(
-    data,
-    feature,
-    highlight_lrs=None,
-    show_text=True,
-    n_top=50,
-    color="gold",
-    alpha=0.5,
-    lr_text_fp=None,
-    axis_text_fp=None,
-    ax=None,
-    show=True,
-    max_text=100,
-    highlight_color="red",
-    figsize: tuple | None = None,
-    show_all: bool = False,
+        data,
+        feature,
+        highlight_lrs=None,
+        show_text=True,
+        n_top=50,
+        color="gold",
+        alpha=0.5,
+        lr_text_fp=None,
+        axis_text_fp=None,
+        ax=None,
+        show=True,
+        max_text=100,
+        highlight_color="red",
+        figsize: tuple | None = None,
+        show_all: bool = False,
 ):
     lr_df = data.uns["lr_summary"]
 
@@ -47,7 +47,7 @@ def lr_scatter(
         if missing_lrs:
             raise ValueError(
                 "The following highlight_lrs are not found in lr_summary index: "
-                + ",".join(missing_lrs)
+                + ",".join(missing_lrs),
             )
         highlight_lrs = highlight_lrs[0:max_text]
 
@@ -83,28 +83,28 @@ def lr_scatter(
 
 
 def rank_scatter(
-    items,
-    y,
-    y_label: str = "",
-    x_label: str = "",
-    highlight_items=None,
-    show_text=True,
-    color="gold",
-    alpha=0.5,
-    lr_text_fp=None,
-    axis_text_fp=None,
-    ax=None,
-    show=True,
-    highlight_color="red",
-    rot: float = 90,
-    point_sizes: np.array = None,
-    pad=0.2,
-    figsize=None,
-    width_ratio=7.5 / 50,
-    height=4,
-    point_size_name="Sizes",
-    point_size_exp=2,
-    show_all: bool = False,
+        items,
+        y,
+        y_label: str = "",
+        x_label: str = "",
+        highlight_items=None,
+        show_text=True,
+        color="gold",
+        alpha=0.5,
+        lr_text_fp=None,
+        axis_text_fp=None,
+        ax=None,
+        show=True,
+        highlight_color="red",
+        rot: float = 90,
+        point_sizes: np.array = None,
+        pad=0.2,
+        figsize=None,
+        width_ratio=7.5 / 50,
+        height=4,
+        point_size_name="Sizes",
+        point_size_exp=2,
+        show_all: bool = False,
 ):
     """General plotting function for showing ranked list of items."""
     ranks = np.array(list(range(len(items))))
@@ -121,7 +121,7 @@ def rank_scatter(
             if width > 20:
                 width = 20
             figsize = (width, height)
-        fig, ax = plt.subplots(figsize=figsize)
+        _, ax = plt.subplots(figsize=figsize)
 
     # Plotting the points #
     scatter = ax.scatter(
@@ -129,7 +129,7 @@ def rank_scatter(
         y,
         alpha=alpha,
         c=color,
-        s=None if point_sizes is None else point_sizes**point_size_exp,
+        s=None if point_sizes is None else point_sizes ** point_size_exp,
         edgecolors="none",
     )
     y_min, y_max = ax.get_ylim()
@@ -142,12 +142,12 @@ def rank_scatter(
         starts = [label.find("{") for label in labels]
         ends = [label.find("}") + 1 for label in labels]
         sizes = [
-            float(label[(starts[i] + 1) : (ends[i] - 1)])
+            float(label[(starts[i] + 1): (ends[i] - 1)])
             for i, label in enumerate(labels)
         ]
         counts = [int(size ** (1 / point_size_exp)) for size in sizes]
         labels2 = [
-            label.replace(label[(starts[i]) : (ends[i])], "{" + str(counts[i]) + "}")
+            label.replace(label[(starts[i]): (ends[i])], "{" + str(counts[i]) + "}")
             for i, label in enumerate(labels)
         ]
         ax.legend(
@@ -195,19 +195,19 @@ def rank_scatter(
 
 
 def add_arrows(
-    adata: AnnData,
-    l_expr: np.ndarray,
-    r_expr: np.ndarray,
-    min_expr: float,
-    sig_bool: np.ndarray,
-    fig,
-    ax: Axes,
-    use_label: str | None,
-    int_df: pd.DataFrame | None,
-    head_width: float = 4,
-    width: float = 0.001,
-    arrow_cmap: str | None = None,
-    arrow_vmax: float | None = None,
+        adata: AnnData,
+        l_expr: np.ndarray,
+        r_expr: np.ndarray,
+        min_expr: float,
+        sig_bool: np.ndarray,
+        fig,
+        ax: Axes,
+        use_label: str | None,
+        int_df: pd.DataFrame | None,
+        head_width: float = 4,
+        width: float = 0.001,
+        arrow_cmap: str | None = None,
+        arrow_vmax: float | None = None,
 ):
     """ Adds arrows to the current plot for significant spots to neighbours \
         which is interacting with.
@@ -222,7 +222,7 @@ def add_arrows(
                       an edge, only returns unique edges.
     """
 
-    library_id = list(adata.uns["spatial"].keys())[0]
+    library_id = next(iter(adata.uns["spatial"].keys()))
     res = adata.uns["spatial"][library_id]["use_quality"]
     scale_factor = adata.uns["spatial"][library_id]["scalefactors"][
         f"tissue_{res}_scalef"
@@ -252,7 +252,7 @@ def add_arrows(
         # ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
         # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
-            for j, edge in enumerate(edges):
+            for _, edge in enumerate(edges):
                 k_ = [0, 1] if i == 0 else [1, 0]
                 celltype0 = np.where(label_set == spot_labels[spot_bcs == edge[k_[0]]])[
                     0
@@ -277,7 +277,7 @@ def add_arrows(
         edges_means: list[list[float]] = [[], []]
         all_means = []
         for i, edges in enumerate([forward_edges, reverse_edges]):
-            for j, edge in enumerate(edges):
+            for _, edge in enumerate(edges):
                 edge0_bool = spot_bcs == edge[0]
                 edge1_bool = spot_bcs == edge[1]
                 l_expr0 = l_expr[edge0_bool]
@@ -297,7 +297,7 @@ def add_arrows(
         # Determining the edge colors #
         edges_colors: list[list[tuple[float, float, float, float]]] = [[], []]
         for i, edges in enumerate([forward_edges, reverse_edges]):
-            for j, edge in enumerate(edges):
+            for j, _ in enumerate(edges):
                 color_val = scalar_map.to_rgba(edges_means[i][j])
                 edges_colors[i].append(color_val)
 
@@ -338,20 +338,20 @@ def add_arrows(
     # Adding the color map #
     if arrow_cmap is not None:
         matplotlib.colorbar.ColorbarBase(
-            axc, cmap=cmap, norm=c_norm, orientation="horizontal"
+            axc, cmap=cmap, norm=c_norm, orientation="horizontal",
         )
 
 
 def add_arrows_by_edges(
-    ax,
-    adata,
-    edges,
-    scale_factor,
-    head_width,
-    width,
-    forward=True,
-    edge_colors=None,
-    axc=None,
+        ax,
+        adata,
+        edges,
+        scale_factor,
+        head_width,
+        width,
+        forward=True,
+        edge_colors=None,
+        axc=None,
 ):
     if edge_colors is None:
         edge_colors = []
@@ -430,7 +430,7 @@ def _box_map(x, y, size, ax=None, figsize=(6.48, 4.8), cmap=None, square_scaler=
     if cmap is None:
         cmap = "Spectral_r"
     if ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
+        _, ax = plt.subplots(figsize=figsize)
 
     # Mapping from column names to integer coordinates
     x_labels = list(x.values)  # [v for v in sorted(x.unique())]
@@ -475,11 +475,11 @@ def polar2xy(r, theta):
 
 
 def hex2rgb(c):
-    return tuple(int(c[i : i + 2], 16) / 256.0 for i in (1, 3, 5))
+    return tuple(int(c[i: i + 2], 16) / 256.0 for i in (1, 3, 5))
 
 
 def ideogram_arc(
-    start=0, end=60, radius=1.0, width=0.2, ax=None, color=(1, 0, 0), curve_steps=1
+        start=0, end=60, radius=1.0, width=0.2, ax=None, color=(1, 0, 0), curve_steps=1,
 ):
     # start, end should be in [0, 360)
     if start > end:
@@ -519,22 +519,22 @@ def ideogram_arc(
         for i in range(1, curve_steps + 1)
     ]
     verts_inner = (
-        verts_inner_start
-        + verts_inner_curve
-        + [polar2xy(inner, start), polar2xy(radius, start)]
+            verts_inner_start
+            + verts_inner_curve
+            + [polar2xy(inner, start), polar2xy(radius, start)]
     )
 
     verts = verts_upper + verts_inner
 
     codes = (
-        [Path.MOVETO]
-        + [Path.CURVE4] * curve_steps * 2
-        + [Path.CURVE4, Path.LINETO]
-        + [Path.CURVE4] * curve_steps * 2
-        + [
-            Path.CURVE4,
-            Path.CLOSEPOLY,
-        ]
+            [Path.MOVETO]
+            + [Path.CURVE4] * curve_steps * 2
+            + [Path.CURVE4, Path.LINETO]
+            + [Path.CURVE4] * curve_steps * 2
+            + [
+                Path.CURVE4,
+                Path.CLOSEPOLY,
+            ]
     )
 
     if ax is None:
@@ -542,20 +542,20 @@ def ideogram_arc(
     else:
         path = Path(verts, codes)
         patch = patches.PathPatch(
-            path, facecolor=color + (0.5,), edgecolor=color + (0.4,), lw=LW
+            path, facecolor=(*color, 0.5), edgecolor=(*color, 0.4), lw=LW,
         )
         ax.add_patch(patch)
 
 
 def chord_arc(
-    start1=0,
-    end1=60,
-    start2=180,
-    end2=240,
-    radius=1.0,
-    chordwidth=0.7,
-    ax=None,
-    color=(1, 0, 0),
+        start1=0,
+        end1=60,
+        start2=180,
+        end2=240,
+        radius=1.0,
+        chordwidth=0.7,
+        ax=None,
+        color=(1, 0, 0),
 ):
     # start, end should be in [0, 360)
     if start1 > end1:
@@ -606,13 +606,13 @@ def chord_arc(
     else:
         path = Path(verts, codes)
         patch = patches.PathPatch(
-            path, facecolor=color + (0.5,), edgecolor=color + (0.4,), lw=LW
+            path, facecolor=(*color, 0.5), edgecolor=(*color, 0.4), lw=LW,
         )
         ax.add_patch(patch)
 
 
 def self_chord_arc(
-    start=0, end=60, radius=1.0, chordwidth=0.7, ax=None, color=(1, 0, 0)
+        start=0, end=60, radius=1.0, chordwidth=0.7, ax=None, color=(1, 0, 0),
 ):
     # start, end should be in [0, 360)
     if start > end:
@@ -646,7 +646,7 @@ def self_chord_arc(
     else:
         path = Path(verts, codes)
         patch = patches.PathPatch(
-            path, facecolor=color + (0.5,), edgecolor=color + (0.4,), lw=LW
+            path, facecolor=(*color, 0.5), edgecolor=(*color, 0.4), lw=LW,
         )
         ax.add_patch(patch)
 
@@ -693,7 +693,7 @@ def chord_diagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1)
         if len(x) > 10:
             print("x is too large! Use x smaller than 10")
     if isinstance(colors[0], str):
-        colors = [hex2rgb(colors[i]) for i in range(len(x))]
+        colors = [hex2rgb(c) for c in colors]
 
     # find position for each start and end
     y = x / np.sum(x).astype(float) * (360 - pad * len(x))
@@ -711,12 +711,10 @@ def chord_diagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1)
             angle -= 90
         else:
             angle -= 270
-        nodePos.append(
-            tuple(
-                polar2xy((diam / 2) + diam * 0.05, 0.5 * (start + end) * np.pi / 180.0)
-            )
-            + (angle,)
-        )
+        node = (
+            *polar2xy((diam / 2) + diam * 0.05, 0.5 * (start + end) * np.pi / 180.0),
+            angle)
+        nodePos.append(node)
         z = (X[i, :] / x[i].astype(float)) * (end - start)
         ids = np.argsort(z)
         z0 = start

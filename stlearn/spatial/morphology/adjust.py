@@ -1,9 +1,48 @@
 import numpy as np
+import scipy.sparse as sp
 import scipy.spatial as spatial
 from anndata import AnnData
+from scipy.stats import pearsonr, spearmanr
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from tqdm import tqdm
 
 from stlearn.types import _METHOD, _SIMILARITY_MATRIX
+
+
+def _make_similarity_fn(name):
+    if name == "cosine":
+        def fn(ref, neighbours):
+            sims = cosine_similarity(ref, neighbours)[0]
+            return np.clip(sims, 0, None)  # max(sim, 0)
+
+        return fn
+    if name == "euclidean":
+        def fn(ref, neighbours):
+            d = euclidean_distances(ref, neighbours)[0]
+            return 1 / (1 + d)
+
+        return fn
+    if name == "pearson":
+        def fn(ref, neighbours):
+            ref_flat = ref.reshape(-1)
+            return np.array([abs(pearsonr(ref_flat, n)[0]) for n in neighbours])
+
+        return fn
+    if name == "spearman":
+        def fn(ref, neighbours):
+            ref_flat = ref.reshape(-1)
+            return np.array([abs(spearmanr(ref_flat, n)[0]) for n in neighbours])
+
+        return fn
+    raise ValueError(f"Unknown similarity_matrix: {name!r}")
+
+
+def _row_as_dense(matrix, idx):
+    """Extract row(s) as a dense 2D ndarray, regardless of sparse/dense input."""
+    row = matrix[idx]
+    if sp.issparse(row):
+        row = row.toarray()
+    return np.atleast_2d(row)
 
 
 def adjust(
@@ -47,97 +86,67 @@ def adjust(
 
     if "X_morphology" not in adata.obsm:
         raise ValueError("Please run the function stlearn.pp.extract_feature")
-    coor = adata.obs[["imagecol", "imagerow"]]
+
+    if method == "mean":
+        reducer = np.mean
+    elif method == "median":
+        reducer = np.median
+    elif method == "sum":
+        reducer = np.sum
+    else:
+        raise ValueError("Only 'median', 'sum', and 'mean' are acceptable")
+
+    similarity_fn = _make_similarity_fn(similarity_matrix)
+
+    coords = adata.obs[["imagecol", "imagerow"]]
     if use_data == "raw":
         count_embed = adata.X
     else:
         count_embed = adata.obsm[use_data]
-    point_tree = spatial.cKDTree(coor)
+    is_sparse = sp.issparse(count_embed)
+    # Convert to CSR once if sparse — fast row indexing
+    if is_sparse and not sp.isspmatrix_csr(count_embed):
+        count_embed = count_embed.tocsr()
+
+    point_tree = spatial.cKDTree(coords)
     img_embed = adata.obsm["X_morphology"]
-    lag_coor = []
-    with tqdm(
-            total=len(adata),
+
+    n_points = len(coords)
+    n_features = count_embed.shape[1]
+    out_dtype = count_embed.dtype if not is_sparse else np.float64
+    lag_coords = np.empty((n_points, n_features), dtype=out_dtype)
+
+    for i in tqdm(
+            range(n_points),
             desc="Adjusting data",
             bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-    ) as pbar:
-        for i in range(len(coor)):
-            current_neightbor = point_tree.query_ball_point(
-                coor.values[i], radius,
-            )  # Spatial weight
-            current_neightbor.remove(i)
-            if len(current_neightbor) > 0:
-                main_count = count_embed[i].reshape(1, -1)
-                main_img = img_embed[i].reshape(1, -1)
-                surrounding_count = count_embed[current_neightbor]
-                surrounding_img = img_embed[current_neightbor]
+    ):
+        neighbours = point_tree.query_ball_point(coords.values[i], radius)
+        neighbours.remove(i)
 
-                similarity = []
+        main_count = _row_as_dense(count_embed, i)
 
-                for i in surrounding_img:
-                    i = i.reshape(1, -1)  # reshape feature to (1, n_feature)
+        if not neighbours:
+            lag_coords[i] = main_count.sum(axis=0)
+            continue
 
-                    if similarity_matrix == "cosine":
-                        from sklearn.metrics.pairwise import cosine_similarity
+        main_img = img_embed[i].reshape(1, -1)
+        surrounding_count = _row_as_dense(count_embed, neighbours)
+        surrounding_img = img_embed[neighbours]
 
-                        cosine = cosine_similarity(main_img, i)[0][0]
-                        cosine = (abs(cosine) + cosine) / 2
-                        similarity.append(cosine)
-                    elif similarity_matrix == "euclidean":
-                        from sklearn.metrics.pairwise import euclidean_distances
+        similarity = similarity_fn(main_img, surrounding_img).reshape(-1, 1)
+        surrounding_count_adjusted = surrounding_count * similarity
 
-                        eculidean = euclidean_distances(main_img, i)[0][0]
-                        eculidean = 1 / (1 + eculidean)
-                        similarity.append(eculidean)
-                    elif similarity_matrix == "pearson":
-                        from scipy.stats import pearsonr
+        # Aggregate neighbour contribution and replicate `rates` times
+        aggregated = reducer(surrounding_count_adjusted, axis=0).reshape(1, -1)
+        stacked = np.concatenate(
+            [main_count, np.tile(aggregated, (rates, 1))],
+            axis=0,
+        )
+        lag_coords[i] = stacked.sum(axis=0)
 
-                        pearson_corr = abs(
-                            pearsonr(main_img.reshape(-1), i.reshape(-1))[0],
-                        )
-                        similarity.append(pearson_corr)
-                    elif similarity_matrix == "spearman":
-                        from scipy.stats import spearmanr
-
-                        spearmanr_corr = abs(
-                            spearmanr(main_img.reshape(-1), i.reshape(-1))[0],
-                        )
-                        similarity.append(spearmanr_corr)
-
-                similarity = np.array(similarity).reshape((-1, 1))
-                surrounding_count_adjusted = np.multiply(surrounding_count, similarity)
-
-                for _ in range(0, rates):
-                    if method == "median":
-                        main_count = np.append(
-                            main_count,
-                            np.median(surrounding_count_adjusted, axis=0).reshape(
-                                1, -1,
-                            ),
-                            axis=0,
-                        )
-                    elif method == "mean":
-                        main_count = np.append(
-                            main_count,
-                            np.mean(surrounding_count_adjusted, axis=0).reshape(1, -1),
-                            axis=0,
-                        )
-                    elif method == "sum":
-                        main_count = np.append(
-                            main_count,
-                            np.sum(surrounding_count_adjusted, axis=0).reshape(1, -1),
-                            axis=0,
-                        )
-                    else:
-                        raise ValueError(
-                            "Only 'median', 'sum', and 'mean' are aceptable",
-                        )
-                lag_coor.append(list(np.sum(main_count, axis=0)))
-                pbar.update(1)
-            else:
-                lag_coor.append(list(np.sum(main_count, axis=0)))
-                pbar.update(1)
     key_added = use_data + "_morphology"
-    adata.obsm[key_added] = np.array(lag_coor)
+    adata.obsm[key_added] = lag_coords
 
     print("The data adjusted by morphology is added to adata.obsm['" + key_added + "']")
 

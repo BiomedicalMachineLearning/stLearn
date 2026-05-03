@@ -1,3 +1,4 @@
+import builtins
 import inspect
 import sys
 from collections.abc import Iterable, Iterator
@@ -56,7 +57,7 @@ def _type_check(var: Any, varname: str, types: type | tuple[type, ...]):
     else:
         type_names = [t.__name__ for t in types]
         possible_types_str = "{} or {}".format(
-            ", ".join(type_names[:-1]), type_names[-1]
+            ", ".join(type_names[:-1]), type_names[-1],
         )
     raise TypeError(f"{varname} must be of type {possible_types_str}")
 
@@ -71,26 +72,26 @@ class stLearnConfig:  # noqa N801
     _verbosity: Verbosity
 
     def __init__(
-        self,
-        *,
-        verbosity: str = "warning",
-        plot_suffix: str = "",
-        file_format_data: str = "h5ad",
-        file_format_figs: str = "pdf",
-        autosave: bool = False,
-        autoshow: bool = True,
-        writedir: str | Path = "./write/",
-        cachedir: str | Path = "./cache/",
-        datasetdir: str | Path = "./data/",
-        figdir: str | Path = "./figures/",
-        cache_compression: str | None = "lzf",
-        max_memory=15,
-        n_jobs=1,
-        logfile: str | Path | None = None,
-        categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
-        _frameon: bool = True,
-        _vector_friendly: bool = False,
-        _low_resolution_warning: bool = True,
+            self,
+            *,
+            verbosity: str = "warning",
+            plot_suffix: str = "",
+            file_format_data: str = "h5ad",
+            file_format_figs: str = "pdf",
+            autosave: bool = False,
+            autoshow: bool = True,
+            writedir: str | Path = "./write/",
+            cachedir: str | Path = "./cache/",
+            datasetdir: str | Path = "./data/",
+            figdir: str | Path = "./figures/",
+            cache_compression: str | None = "lzf",
+            max_memory=15,
+            n_jobs=1,
+            logfile: str | Path | None = None,
+            categories_to_ignore: Iterable[str] = ("N/A", "dontknow", "no_gate", "?"),
+            _frameon: bool = True,
+            _vector_friendly: bool = False,
+            _low_resolution_warning: bool = True,
     ):
         # logging
         self._root_logger = _RootLogger(logging.INFO)  # level will be replaced
@@ -155,7 +156,7 @@ class stLearnConfig:  # noqa N801
             if verbosity not in verbosity_str_options:
                 raise ValueError(
                     f"Cannot set verbosity to {verbosity}. "
-                    f"Accepted string values are: {verbosity_str_options}"
+                    f"Accepted string values are: {verbosity_str_options}",
                 )
             else:
                 new_verbosity = Verbosity(verbosity_str_options.index(verbosity))
@@ -188,7 +189,7 @@ class stLearnConfig:  # noqa N801
         if file_format not in file_format_options:
             raise ValueError(
                 f"Cannot set file_format_data to {file_format}. "
-                f"Must be one of {file_format_options}"
+                f"Must be one of {file_format_options}",
             )
         self._file_format_data = file_format
 
@@ -297,7 +298,7 @@ class stLearnConfig:  # noqa N801
         if cache_compression not in {"lzf", "gzip", None}:
             raise ValueError(
                 f"`cache_compression` ({cache_compression}) "
-                "must be in {'lzf', 'gzip', None}"
+                "must be in {'lzf', 'gzip', None}",
             )
         self._cache_compression = cache_compression
 
@@ -341,7 +342,7 @@ class stLearnConfig:  # noqa N801
         else:
             _type_check(logpath, "logpath", (str, Path))
             # set via “file object” branch of logfile.setter
-            self.logfile = Path(logpath).open("a")
+            self.logfile = Path(logpath).open("a")  # noqa: SIM115
             self._logpath = Path(logpath)
 
     @property
@@ -407,16 +408,16 @@ class stLearnConfig:  # noqa N801
     ]
 
     def set_figure_params(
-        self,
-        dpi: int = 80,
-        dpi_save: int = 150,
-        frameon: bool = True,
-        vector_friendly: bool = True,
-        fontsize: int = 14,
-        color_map: str | None = None,
-        format: _Format = "pdf",
-        transparent: bool = False,
-        ipython_format: str = "png2x",
+            self,
+            dpi: int = 80,
+            dpi_save: int = 150,
+            frameon: bool = True,
+            vector_friendly: bool = True,
+            fontsize: int = 14,
+            color_map: str | None = None,
+            format: _Format = "pdf",
+            transparent: bool = False,
+            ipython_format: str = "png2x",
     ):
         """\
         Set resolution/size, styling and format of figures.
@@ -424,7 +425,7 @@ class stLearnConfig:  # noqa N801
         Parameters
         ----------
         dpi
-            Resolution of rendered figures – this influences the size of figures
+            Resolution of rendered figures - this influences the size of figures
             in notebooks.
         dpi_save
             Resolution of saved figures. This should typically be higher to achieve
@@ -472,17 +473,13 @@ class stLearnConfig:  # noqa N801
 
         Only affects progress bars.
         """
-        try:
-            __IPYTHON__
-            return True
-        except NameError:
-            return False
+        return getattr(builtins, "__IPYTHON__", False)
 
     def __str__(self) -> str:
         return "\n".join(
             f"{k} = {v!r}"
             for k, v in inspect.getmembers(self)
-            if not k.startswith("_") and not k == "getdoc"
+            if not k.startswith("_") and k != "getdoc"
         )
 
 

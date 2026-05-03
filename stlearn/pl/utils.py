@@ -107,7 +107,7 @@ def get_colors(adata, obs_key, cmap="default", label_set=None):
         colors_ordered = adata.uns[col_key]
     else:  # Colors not already present
         check_cmap(cmap)
-        cmap, cmap_n = get_cmap(cmap)
+        cmap, _ = get_cmap(cmap)
 
         if not hasattr(adata.obs[obs_key], "cat"):  # Ensure categorical
             adata.obs[obs_key] = adata.obs[obs_key].astype("category")

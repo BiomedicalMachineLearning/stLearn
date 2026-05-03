@@ -129,7 +129,7 @@ def qc_plot(
     if not show_axis:
         a.axis("off")
     if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
 
     image = adata.uns["spatial"][library_id]["images"][
         adata.uns["spatial"][library_id]["use_quality"]

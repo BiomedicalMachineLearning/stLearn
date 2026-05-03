@@ -31,11 +31,11 @@ def check_trajectory(
         "Please run the " + basis + "before you check the trajectory!"
     )
     if library_id is None:
-        library_id = list(adata.uns["spatial"].keys())[0]
+        library_id = next(iter(adata.uns["spatial"].keys()))
 
     adata.obsm["X_spatial"] = adata.obs[["imagecol", "imagerow"]].values
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+    _, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
 
     ax1 = sc.pl.umap(adata, size=size_umap, show=False, ax=ax1)
     sc.pl.umap(

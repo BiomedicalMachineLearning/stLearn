@@ -104,9 +104,8 @@ class BokehGenePlot(Spatial):
         self.menu = []
 
         for col in adata.obs.columns:
-            if adata.obs[col].dtype.name == "category":
-                if col != "sub_cluster_labels":
-                    self.menu.append(col)
+            if adata.obs[col].dtype.name == "category" and col != "sub_cluster_labels":
+                self.menu.append(col)
         if len(self.menu) != 0:
             self.use_label = Select(
                 title="Select use_label:", value=self.menu[0], options=self.menu
@@ -350,9 +349,8 @@ class BokehClusterPlot(Spatial):
         menu = []
 
         for col in adata.obs.columns:
-            if adata.obs[col].dtype.name == "category":
-                if col != "sub_cluster_labels":
-                    menu.append(col)
+            if adata.obs[col].dtype.name == "category" and col != "sub_cluster_labels":
+                menu.append(col)
 
         self.use_label = Select(title="Select use_label:", value=menu[0], options=menu)
 
@@ -567,7 +565,7 @@ class BokehClusterPlot(Spatial):
 
         category_items = self.adata[0].obs[self.use_label.value].cat.categories
         palette = self.adata[0].uns[self.use_label.value + "_colors"]
-        colormap = dict(zip(category_items, palette))
+        colormap = dict(zip(category_items, palette, strict=True))
         color = list(tmp[self.use_label.value].map(colormap))
         cluster = list(tmp[self.use_label.value])
 
@@ -991,7 +989,7 @@ class BokehSpatialCciPlot(Spatial):
         # Getting the annnotations for which CCI has been performed.. #
         annots = [
             opt.replace("lr_cci_", "")
-            for opt in adata.uns.keys()
+            for opt in adata.uns
             if opt.startswith("lr_cci_") and "raw" not in opt
         ]
         self.annot_select = Select(
@@ -1082,7 +1080,7 @@ class BokehSpatialCciPlot(Spatial):
 
         category_items = self.adata[0].obs[selected].cat.categories
         palette = self.adata[0].uns[selected + "_colors"]
-        colormap = dict(zip(category_items, palette))
+        colormap = dict(zip(category_items, palette, strict=True))
         color = list(tmp[selected].map(colormap))
         cluster = list(tmp[selected])
 
@@ -1173,7 +1171,7 @@ class BokehSpatialCciPlot(Spatial):
         edges_sub = [[], []]  # forward, reverse
         # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
-            for j, edge in enumerate(edges):
+            for _, edge in enumerate(edges):
                 k_ = [0, 1] if i == 0 else [1, 0]
                 celltype0 = np.where(label_set == spot_labels[spot_bcs == edge[k_[0]]])[
                     0
@@ -1190,7 +1188,7 @@ class BokehSpatialCciPlot(Spatial):
     @staticmethod
     def _add_edges(fig, adata, edges, arrow_size, forward=True, scale_factor=1):
         """Gets edges for input."""
-        for i, edge in enumerate(edges):
+        for _, edge in enumerate(edges):
             cols = ["imagecol", "imagerow"]
             if forward:
                 edge0, edge1 = edge

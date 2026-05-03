@@ -80,7 +80,7 @@ def neighbors(
         Use 'umap' [McInnes18]_ or 'gauss' (Gauss kernel following [Coifman05]_
         with adaptive width [Haghverdi16]_) for computing connectivities.
     metric:
-        A known metric’s name or a callable that returns a distance.
+        A known metric's name or a callable that returns a distance.
     metric_kwds:
         Options for the metric.
     copy:

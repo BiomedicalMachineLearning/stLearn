@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -5,7 +7,7 @@ from torchvision import models, transforms
 
 
 class Model:
-    _WEIGHTS = {
+    _WEIGHTS: ClassVar[dict] = {
         ("resnet50", "v1"): models.ResNet50_Weights.IMAGENET1K_V1,
         ("resnet50", "v2"): models.ResNet50_Weights.IMAGENET1K_V2,
         ("vgg16", "v1"): models.VGG16_Weights.IMAGENET1K_V1,

@@ -337,7 +337,8 @@ class GenePlot(SpatialBasePlot):
                 if gene not in self.query_adata.var.index:
                     self.gene_symbols.remove(gene)
                     warnings.warn(
-                        "We removed " + gene + " because they not exist in the data"
+                        "We removed " + gene + " because they not exist in the data",
+                        stacklevel=2
                     )
                 if len(self.gene_symbols) == 0:
                     raise ValueError("All provided genes are not exist in the data")
@@ -689,7 +690,7 @@ class ClusterPlot(SpatialBasePlot):
     def _add_cluster_colors(self):
         self.adata[0].uns[self.use_label + "_colors"] = []
 
-        for i, cluster in enumerate(
+        for i, _ in enumerate(
             self.adata[0].obs.groupby(self.use_label, observed=True)
         ):
             self.adata[0].uns[self.use_label + "_colors"].append(
@@ -1025,7 +1026,7 @@ class SubClusterPlot(SpatialBasePlot):
 
         keys = list(np.sort(colors.unique()))
         self.vals = np.arange(len(keys))
-        self.mapping = dict(zip(keys, self.vals))
+        self.mapping = dict(zip(keys, self.vals, strict=True))
 
         colors = colors.replace(self.mapping)
 

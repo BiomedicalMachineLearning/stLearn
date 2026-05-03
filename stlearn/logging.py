@@ -180,7 +180,7 @@ def _set_log_file(settings):
     if len(root.handlers) == 1:
         root.removeHandler(root.handlers[0])
     elif len(root.handlers) > 1:
-        raise RuntimeError("Scanpy’s root logger somehow got more than one handler")
+        raise RuntimeError("Scanpy's root logger somehow got more than one handler")
     root.addHandler(h)
 
 
@@ -265,7 +265,7 @@ def print_versions():
     """
     from ._settings import settings
 
-    modules = ["scanpy"] + _DEPENDENCIES_NUMERICS
+    modules = ["scanpy", *_DEPENDENCIES_NUMERICS]
     print(
         " ".join(f"{mod}=={ver}" for mod, ver in _versions_dependencies(modules)),
         file=settings.logfile,

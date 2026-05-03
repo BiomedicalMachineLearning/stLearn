@@ -26,7 +26,7 @@ def filter_genes(
     Parameters
     ----------
     adata
-        An annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
+        An annotated data matrix of shape `n_obs` x `n_vars`. Rows correspond
         to cells and columns to genes.
     min_counts
         Minimum number of counts required for a gene to pass filtering.

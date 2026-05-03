@@ -22,7 +22,7 @@ def log1p(
     Parameters
     ----------
     data:
-        The (annotated) data matrix of shape `n_obs` × `n_vars`.
+        The (annotated) data matrix of shape `n_obs` x `n_vars`.
         Rows correspond to cells and columns to genes.
     copy:
         If an :class:`~anndata.AnnData` is passed, determines whether a copy
@@ -66,7 +66,7 @@ def scale(
     Parameters
     ----------
     data:
-        The (annotated) data matrix of shape `n_obs` × `n_vars`.
+        The (annotated) data matrix of shape `n_obs` x `n_vars`.
         Rows correspond to cells and columns to genes.
     zero_center
         If `False`, omit zero-centering variables, which allows to handle sparse

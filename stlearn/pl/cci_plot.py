@@ -709,7 +709,7 @@ def lr_plot(
         )
     elif (
         use_label is not None
-        and use_label not in adata.obs.keys()
+        and use_label not in adata.obs
         and use_label not in lr_use_labels
     ):
         raise Exception(
@@ -1033,7 +1033,7 @@ def ccinet_plot(
         Dictionary of positions where the nodes are draw if return_pos is True,
         useful for consistent layouts.
     """
-    cmap, cmap_n = get_cmap(cmap)
+    cmap, _ = get_cmap(cmap)
     # Making sure adata in correct state that this function should run #
     if f"lr_cci_{use_label}" not in adata.uns:
         raise Exception(
@@ -1083,7 +1083,7 @@ def ccinet_plot(
 
     edges = list(graph.edges.items())
     e_totals = []
-    for i, edge in enumerate(edges):
+    for _, edge in enumerate(edges):
         trans_i = np.where(all_set == edge[0][0])[0][0]
         receive_i = np.where(all_set == edge[0][1])[0][0]
         e_total = (
@@ -1301,7 +1301,7 @@ def lr_cci_map(
         n_top_lrs = len(lrs)
 
     # Creating a new int_df with lrs as rows & cell-cell as column #
-    cell_types = list(lr_int_dfs.values())[0].index.values.astype(str)
+    cell_types = next(iter(lr_int_dfs.values())).index.values.astype(str)
     n_ints = len(cell_types) ** 2
     new_ints = np.zeros((len(lrs), n_ints))
     for lr_i, lr in enumerate(lrs):
@@ -1523,7 +1523,7 @@ def grid_plot(
         Axes where the heatmap was drawn on if show=False.
     """
     xs, ys = adata.obs["imagecol"].values, adata.obs["imagerow"].values
-    grid_counts, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
+    _, xedges, yedges = np.histogram2d(xs, ys, bins=[n_col, n_row])
     xmin, xmax = min(xedges), max(xedges)
     ymin, ymax = min(yedges), max(yedges)
 

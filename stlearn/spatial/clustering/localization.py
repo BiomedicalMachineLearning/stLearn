@@ -62,8 +62,7 @@ def localization(
     subclusters = pd.concat(subclusters_list)
     pd.reset_option("mode.chained_assignment")
 
-    adata.obs = pd.merge(
-        adata.obs,
+    adata.obs = adata.obs.merge(
         pd.DataFrame({"sub_cluster_labels": subclusters}),
         left_index=True,
         right_index=True,

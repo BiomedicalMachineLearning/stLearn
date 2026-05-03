@@ -58,10 +58,10 @@ def transition_markers_plot(
     neg = neg[::-1]
 
     if len(x1) < top_genes:
-        for i in range(len(x1), top_genes):
+        for _ in range(len(x1), top_genes):
             x1.append(0)
     if len(x2) < top_genes:
-        for i in range(len(x2), top_genes):
+        for _ in range(len(x2), top_genes):
             x2.append(0)
 
     fig, axes = plt.subplots(ncols=2, sharey=True)
