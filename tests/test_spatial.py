@@ -10,7 +10,6 @@ from stlearn.classes import Spatial
 
 from .utils import read_test_data
 
-global adata
 adata = read_test_data()
 
 

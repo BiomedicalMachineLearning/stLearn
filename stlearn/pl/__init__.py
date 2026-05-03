@@ -36,7 +36,7 @@ from .trajectory import (
     tree_plot,
 )
 
-__all__ = [   # noqa: RUF022
+__all__ = [  # noqa: RUF022
     # CCI plot functions
     "cci_check",
     "cci_map",

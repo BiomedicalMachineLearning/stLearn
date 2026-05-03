@@ -3,14 +3,14 @@ from anndata import AnnData
 
 
 def stack_3d_plot(
-        adata: AnnData,
-        slides,
-        height,
-        width,
-        cmap="viridis",
-        slide_col="sample_id",
-        use_label=None,
-        gene_symbol=None,
+    adata: AnnData,
+    slides,
+    height,
+    width,
+    cmap="viridis",
+    slide_col="sample_id",
+    use_label=None,
+    gene_symbol=None,
 ) -> None:
     """\
     Clustering plot for spatial transcriptomics data. Also, it has a function to
@@ -46,7 +46,7 @@ def stack_3d_plot(
         ) from err
 
     assert (
-            slide_col in adata.obs.columns
+        slide_col in adata.obs.columns
     ), "Please provide the right column for slide_id!"
 
     list_df = []

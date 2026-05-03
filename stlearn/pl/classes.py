@@ -338,7 +338,7 @@ class GenePlot(SpatialBasePlot):
                     self.gene_symbols.remove(gene)
                     warnings.warn(
                         "We removed " + gene + " because they not exist in the data",
-                        stacklevel=2
+                        stacklevel=2,
                     )
                 if len(self.gene_symbols) == 0:
                     raise ValueError("All provided genes are not exist in the data")
@@ -690,9 +690,7 @@ class ClusterPlot(SpatialBasePlot):
     def _add_cluster_colors(self):
         self.adata[0].uns[self.use_label + "_colors"] = []
 
-        for i, _ in enumerate(
-            self.adata[0].obs.groupby(self.use_label, observed=True)
-        ):
+        for i, _ in enumerate(self.adata[0].obs.groupby(self.use_label, observed=True)):
             self.adata[0].uns[self.use_label + "_colors"].append(
                 matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
             )

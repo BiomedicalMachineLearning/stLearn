@@ -8,14 +8,14 @@ from stlearn.utils import _read_graph
 
 
 def global_level(
-        adata: AnnData,
-        list_clusters: list[str],
-        w: float,
-        use_label: str = "leiden",
-        use_rep: str = "X_pca",
-        n_dims: int = 40,
-        return_graph: bool = False,
-        verbose: bool = True,
+    adata: AnnData,
+    list_clusters: list[str],
+    w: float,
+    use_label: str = "leiden",
+    use_rep: str = "X_pca",
+    n_dims: int = 40,
+    return_graph: bool = False,
+    verbose: bool = True,
 ) -> networkx.Graph | None:
     """\
     Perform global sptial trajectory inference.
@@ -70,8 +70,9 @@ def global_level(
 
     for i in query_nodes:
         for order, j in enumerate(
-                adata.obs[adata.obs[use_label] == str(inds_cat[i])][
-                    "sub_cluster_labels"].unique(),
+            adata.obs[adata.obs[use_label] == str(inds_cat[i])][
+                "sub_cluster_labels"
+            ].unique(),
         ):
             query_dict[int(j)] = int(i)
             order_dict[int(j)] = int(order)
@@ -272,6 +273,7 @@ def ge_distance_matrix(adata, cluster1, cluster2, use_label, use_rep, n_dims):
     scale_sdm = results / np.max(results)
 
     return scale_sdm
+
 
 # def _density_normalize(other: Union[np.ndarray, spmatrix]
 #     ) -> Union[np.ndarray, spmatrix]:

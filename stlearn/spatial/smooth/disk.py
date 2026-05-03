@@ -32,9 +32,7 @@ def disk(
 
     for i in range(len(coords)):
         # Spatial weight
-        current_neighbor = point_tree.query_ball_point(
-            coords.values[i], radius
-        )
+        current_neighbor = point_tree.query_ball_point(coords.values[i], radius)
         main = count_embed[current_neighbor]
         current_neighbor.remove(i)
         addition = count_embed[current_neighbor]

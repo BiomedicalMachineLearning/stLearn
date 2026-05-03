@@ -70,7 +70,7 @@ def count(
         for spot in adata.obs_names:
             n_index = point_tree.query_ball_point(
                 np.array(
-                    [adata.obs["imagerow"].loc[spot], adata.obs["imagecol"].loc[spot]]
+                    [adata.obs["imagerow"].loc[spot], adata.obs["imagecol"].loc[spot]],
                 ),
                 distance,
             )
@@ -89,14 +89,17 @@ def count(
         print(
             "Counts for cluster (cell type) diversity stored into adata.uns['"
             + use_het
-            + "']"
+            + "']",
         )
 
     return adata
 
 
 def get_edges(
-    adata: AnnData, L_bool: np.ndarray, R_bool: np.ndarray, sig_bool: np.ndarray
+    adata: AnnData,
+    L_bool: np.ndarray,
+    R_bool: np.ndarray,
+    sig_bool: np.ndarray,
 ):
     """Gets a list edges representing significant interactions.
 
@@ -142,7 +145,11 @@ def get_edges(
         edges = init_edge_list(neighbourhood_bcs)  # Note this has 1 pseudo edge
         if len(spot_indices) != 0:
             get_between_spot_edge_array(
-                edges, neigh_bcs, neigh_indices, gene_bools[i], cell_data
+                edges,
+                neigh_bcs,
+                neigh_indices,
+                gene_bools[i],
+                cell_data,
             )
         edge_list.append(edges[1:])
 
@@ -175,7 +182,7 @@ def count_interactions(
             A_bool = tissue_types == cell_A
         else:
             col_A = next(
-                col for i, col in enumerate(cell_type_props.columns) if cell_A in col
+                (col for i, col in enumerate(cell_type_props.columns) if cell_A in col)
             )
             A_bool = cell_type_props.loc[:, col_A].values > cell_prop_cutoff
 
@@ -193,7 +200,7 @@ def count_interactions(
                     spot_indices=A_gene1_sig_indices,
                     neigh_bool=gene2_bool,
                     cutoff=cell_prop_cutoff,
-                )
+                ),
             )
             int_matrix[i, j] = cell_a_cell_b_counts
 
@@ -231,10 +238,12 @@ def get_interaction_pvals(
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
-                rand_indices = np.random.Generator(indices, cell_data.shape[0], False)
+                rng = np.random.default_rng()
+                rand_indices = rng.choice(indices, cell_data.shape[0], False)
                 perm_data[:, j] = cell_data[rand_indices, j]
         else:
-            rand_indices = np.random.Generator(indices, cell_data.shape[0], False)
+            rng = np.random.default_rng()
+            rand_indices = rng.choice(indices, cell_data.shape[0], False)
             perm_data = cell_data[rand_indices, :]
 
         # Calculating interactions for permuted labels #
@@ -367,7 +376,7 @@ def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
                 grid
                 for grid in neighbour
                 if not (grid == n and radius > 0) and grid != -1
-            ]
+            ],
         )
 
     return grids, width, height, neighbours
@@ -416,7 +425,7 @@ def count_grid(
         print(
             "Counts for cluster (cell type) diversity stored into data.uns['"
             + use_het
-            + "']"
+            + "']",
         )
 
     return adata

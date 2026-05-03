@@ -11,7 +11,8 @@ from stlearn.image_preprocessing.model_zoo import Model
 
 class TestModelZoo(unittest.TestCase):
     def _make_input(self, n=5, size=224):
-        return np.random.Generator(0, 256, size=(n, size, size, 3), dtype=np.uint8)
+        rng = np.random.default_rng(seed=42)
+        return rng.integers(0, 256, size=(n, size, size, 3), dtype=np.uint8)
 
     def test_resnet50_v1_output_shape(self):
         model = Model(base="resnet50", batch_size=4)

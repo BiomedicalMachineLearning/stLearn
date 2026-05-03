@@ -9,22 +9,22 @@ from stlearn.utils import _read_graph
 
 
 def tree_plot(
-        adata: AnnData,
-        library_id: str | None = None,
-        figsize: tuple[float, float] = (10, 4),
-        data_alpha: float = 1.0,
-        use_label: str = "leiden",
-        spot_size: float | int = 50,
-        fontsize: int = 6,
-        piesize: float = 0.15,
-        zoom: float = 0.1,
-        name: str | None = None,
-        output: str | None = None,
-        dpi: int = 180,
-        show_all: bool = False,
-        show_plot: bool = True,
-        ncols: int = 4,
-        copy: bool = False,
+    adata: AnnData,
+    library_id: str | None = None,
+    figsize: tuple[float, float] = (10, 4),
+    data_alpha: float = 1.0,
+    use_label: str = "leiden",
+    spot_size: float | int = 50,
+    fontsize: int = 6,
+    piesize: float = 0.15,
+    zoom: float = 0.1,
+    name: str | None = None,
+    output: str | None = None,
+    dpi: int = 180,
+    show_all: bool = False,
+    show_plot: bool = True,
+    ncols: int = 4,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Hierarchical tree plot represent for the global spatial trajectory inference.
@@ -88,7 +88,11 @@ def tree_plot(
     for idx in range(nrows * ncols):
         if idx < len(start_nodes):
             generate_tree_viz(
-                adata, library_id, use_label, G, axs[idx],
+                adata,
+                library_id,
+                use_label,
+                G,
+                axs[idx],
                 starter_node=start_nodes[idx],
             )
         else:
@@ -99,7 +103,10 @@ def tree_plot(
 
     if output is not None:
         superfig.savefig(
-            output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0,
+            output + "/" + name,
+            dpi=dpi,
+            bbox_inches="tight",
+            pad_inches=0,
         )
 
     if show_plot:
@@ -147,8 +154,14 @@ def hierarchy_pos(G, root=None, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5
             root = random.choice(list(G.nodes))
 
     def _hierarchy_pos(
-            G, root, width=1.0, vert_gap=0.2, vert_loc=0, xcenter=0.5, pos=None,
-            parent=None,
+        G,
+        root,
+        width=1.0,
+        vert_gap=0.2,
+        vert_loc=0,
+        xcenter=0.5,
+        pos=None,
+        parent=None,
     ):
         """
         see hierarchy_pos docstring for most arguments

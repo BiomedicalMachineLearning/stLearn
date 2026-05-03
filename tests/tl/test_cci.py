@@ -18,7 +18,6 @@ CELL_TYPE_ANNOTATIONS = ["CT1", "CT2", "CT3", "CT2", "CT1", "CT3", "CT2"]
 # 3 cell types: A,E -> CT1, B,G -> CT2, C,F -> CT3
 CELL_TYPE_LABELS = np.array(["CT1", "CT2", "CT3"])
 
-global adata
 adata = read_test_data()
 
 

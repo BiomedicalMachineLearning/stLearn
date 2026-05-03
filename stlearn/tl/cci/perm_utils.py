@@ -270,12 +270,12 @@ def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int):
 
     rand_pairs = List()
     for _j in range(0, n_pairs):
-        l_rand = np.random.Generator(genes1, 1)[0]
-        r_rand = np.random.Generator(genes2, 1)[0]
+        l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
+        r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
         rand_pair = "_".join([l_rand, r_rand])
         while rand_pair in rand_pairs or l_rand == r_rand:
-            l_rand = np.random.Generator(genes1, 1)[0]
-            r_rand = np.random.Generator(genes2, 1)[0]
+            l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
+            r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
             rand_pair = "_".join([l_rand, r_rand])
 
         rand_pairs.append(rand_pair)

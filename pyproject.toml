@@ -116,7 +116,6 @@ ignore = [
     "F811",             # redefinition — accepted
     "N803", "N806",     # naming: lowercase args/vars — too invasive to fix
     "N818",             # exception naming
-    "PD901",            # "df" is a fine variable name in this domain
     "PD011",            # .values vs .to_numpy() — too noisy, mostly false positives
     "B008",             # function calls in default args — used by typer/click
     "SIM108",           # ternary suggestions can hurt readability

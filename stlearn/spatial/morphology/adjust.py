@@ -11,24 +11,28 @@ from stlearn.types import _METHOD, _SIMILARITY_MATRIX
 
 def _make_similarity_fn(name):
     if name == "cosine":
+
         def fn(ref, neighbours):
             sims = cosine_similarity(ref, neighbours)[0]
             return np.clip(sims, 0, None)  # max(sim, 0)
 
         return fn
     if name == "euclidean":
+
         def fn(ref, neighbours):
             d = euclidean_distances(ref, neighbours)[0]
             return 1 / (1 + d)
 
         return fn
     if name == "pearson":
+
         def fn(ref, neighbours):
             ref_flat = ref.reshape(-1)
             return np.array([abs(pearsonr(ref_flat, n)[0]) for n in neighbours])
 
         return fn
     if name == "spearman":
+
         def fn(ref, neighbours):
             ref_flat = ref.reshape(-1)
             return np.array([abs(spearmanr(ref_flat, n)[0]) for n in neighbours])
@@ -46,13 +50,13 @@ def _row_as_dense(matrix, idx):
 
 
 def adjust(
-        adata: AnnData,
-        use_data: str = "X_pca",
-        radius: float = 50.0,
-        rates: int = 1,
-        method: _METHOD = "mean",
-        similarity_matrix: _SIMILARITY_MATRIX = "cosine",
-        copy: bool = False,
+    adata: AnnData,
+    use_data: str = "X_pca",
+    radius: float = 50.0,
+    rates: int = 1,
+    method: _METHOD = "mean",
+    similarity_matrix: _SIMILARITY_MATRIX = "cosine",
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     SME normalisation: Using spot location information and tissue morphological
@@ -117,9 +121,9 @@ def adjust(
     lag_coords = np.empty((n_points, n_features), dtype=out_dtype)
 
     for i in tqdm(
-            range(n_points),
-            desc="Adjusting data",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        range(n_points),
+        desc="Adjusting data",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
     ):
         neighbours = point_tree.query_ball_point(coords.values[i], radius)
         neighbours.remove(i)
