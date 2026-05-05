@@ -38,16 +38,22 @@ def setup(app):
             download_tutorials(TUTORIALS_URL, zip_path)
         with zipfile.ZipFile(zip_path) as z:
             members = z.namelist()
-            # Find the top-level directory (e.g. "stLearn-tutorials-1.4.0/")
             top_level = members[0].split("/")[0] + "/"
             os.makedirs("tutorials", exist_ok=True)
             for member in members:
-                if member == top_level or member.endswith("/"):
+                if member.endswith("/"):
                     continue
-                # Strip the top-level prefix
+                # Strip "stLearn-tutorials-1.4.0/" prefix
                 relative = member[len(top_level):]
+                # Only keep things under notebooks/, and strip that prefix too
+                if not relative.startswith("notebooks/"):
+                    continue
+                relative = relative[len("notebooks/"):]
+                # Skip the todo/ folder (work-in-progress notebooks)
+                if relative.startswith("todo/"):
+                    continue
                 target = os.path.join("tutorials", relative)
-                os.makedirs(os.path.dirname(target), exist_ok=True)
+                os.makedirs(os.path.dirname(target) or "tutorials", exist_ok=True)
                 with z.open(member) as src, open(target, "wb") as dst:
                     dst.write(src.read())
     return
