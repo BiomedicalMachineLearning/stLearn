@@ -21,7 +21,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 TUTORIALS_URL = (
-    "https://github.com/GenomicsMachineLearning/stLearn-tutorials/archive/refs/tags/V1.4.0.zip"
+    "https://github.com/GenomicsMachineLearning/stLearn-tutorials/releases/download/V1.4.0/tutorials.zip"
 )
 
 
@@ -37,25 +37,7 @@ def setup(app):
         if not os.path.exists(zip_path):
             download_tutorials(TUTORIALS_URL, zip_path)
         with zipfile.ZipFile(zip_path) as z:
-            members = z.namelist()
-            top_level = members[0].split("/")[0] + "/"
-            os.makedirs("tutorials", exist_ok=True)
-            for member in members:
-                if member.endswith("/"):
-                    continue
-                # Strip "stLearn-tutorials-1.4.0/" prefix
-                relative = member[len(top_level):]
-                # Only keep things under notebooks/, and strip that prefix too
-                if not relative.startswith("notebooks/"):
-                    continue
-                relative = relative[len("notebooks/"):]
-                # Skip the todo/ folder (work-in-progress notebooks)
-                if relative.startswith("todo/"):
-                    continue
-                target = os.path.join("tutorials", relative)
-                os.makedirs(os.path.dirname(target) or "tutorials", exist_ok=True)
-                with z.open(member) as src, open(target, "wb") as dst:
-                    dst.write(src.read())
+            z.extractall(".")
     return
 
 
