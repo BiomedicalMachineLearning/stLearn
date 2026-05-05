@@ -265,9 +265,10 @@ def get_similar_genes_fast(
 
 
 @njit
-def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int):
+def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int, seed: int):
     """Generates random pairs of genes."""
 
+    np.random.seed(seed)  # noqa: NPY002 (numba requires legacy API)
     rand_pairs = List()
     for _j in range(0, n_pairs):
         l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
@@ -351,6 +352,7 @@ def get_lr_bg(
     gene_bg_genes,
     n_genes,
     n_pairs,
+    seed: int,
 ):
     """Gets the LR-specific background & bg spot indices."""
     l_, r_ = lr_.split("_")
@@ -376,7 +378,7 @@ def get_lr_bg(
     else:
         r_genes = gene_bg_genes[r_]
 
-    rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs)
+    rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs, seed)
     spot_indices = np.where(lr_score > 0)[0]
 
     background, _ = get_lrs_scores(

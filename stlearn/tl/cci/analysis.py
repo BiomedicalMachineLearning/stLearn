@@ -206,6 +206,7 @@ def run(
     min_expr: float = 0,
     save_bg: bool = False,
     neg_binom: bool = False,
+    random_state: int = 0,
     verbose: bool = True,
 ):
     """Performs stLearn LR analysis.
@@ -247,6 +248,8 @@ def run(
         Whether to fit a negative binomial distribution for all background
         scores generated across spots per LR after discretising the random
         scores. Can be extremely slow.
+    random_state:
+        A random seed for reproducibility.
     verbose: bool
         Whether print dialogue to user during run-time.
     Returns
@@ -358,6 +361,7 @@ def run(
         verbose,
         save_bg=save_bg,
         neg_binom=neg_binom,
+        random_state=random_state,
     )
 
 
@@ -531,6 +535,7 @@ def run_cci(
     p_cutoff: float = 0.05,
     n_perms: int = 100,
     n_cpus: int | None = None,
+    random_state: int = 0,
     verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data
@@ -567,6 +572,8 @@ def run_cci(
         significant interactions to false.
     n_cpus: int | None
         cpu resources to use.
+    random_state:
+        A random seed for reproducibility.
     verbose: bool
         True if print dialogue to user during run-time.
     Returns
@@ -727,6 +734,7 @@ def run_cci(
                     L_bool,
                     R_bool,
                     cell_prop_cutoff,
+                    random_state + i,
                 )
             else:
                 int_pvals = np.ones(int_matrix.shape)

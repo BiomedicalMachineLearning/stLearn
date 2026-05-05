@@ -27,6 +27,7 @@ def perform_spot_testing(
     save_bg=False,
     neg_binom=False,
     quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1),
+    random_state: int = 0,
 ):
     """Calls significant spots by creating random gene pairs with similar
     expression to given LR pair; only generate background for spots
@@ -111,6 +112,7 @@ def perform_spot_testing(
                 gene_bg_genes,
                 n_genes,
                 n_pairs,
+                random_state + lr_j,
             )
 
             if save_bg:

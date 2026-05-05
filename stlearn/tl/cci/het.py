@@ -57,7 +57,7 @@ def count(
                     "tissue_"
                     + adata.uns["spatial"][library_id]["use_quality"]
                     + "_scalef"
-                ]
+                    ]
                 * 2
             )
 
@@ -218,9 +218,12 @@ def get_interaction_pvals(
     L_bool,
     R_bool,
     cell_prop_cutoff,
+    seed,
 ):
     """Gets the p-values for the interaction counts."""
 
+    # Set random seed (part of numba)
+    np.random.seed(seed)  # noqa: NPY002 (numba requires legacy API)
     # Counting how many times permutation of spots cell data creates interaction
     # counts greater than that observed, in order to calculate p-values.
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
@@ -419,7 +422,7 @@ def count_grid(
             & (coor["imagecol"] < grid[0] + width)
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
-        ]
+            ]
         counts.loc[n] = (adata.obsm[use_label].loc[spots.index] > 0.2).sum().sum()
     adata.obsm[use_het] = (counts / counts.max())["CT"]
 
