@@ -1,6 +1,6 @@
 import os
-import sys
 import zipfile
+import urllib.request
 
 # -- Project information -----------------------------------------------------
 project = 'stLearn'
@@ -20,24 +20,38 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+TUTORIALS_URL = (
+    "https://github.com/GenomicsMachineLearning/stLearn-tutorials/archive/refs/tags/V1.4.0.zip"
+)
 
-def download_gdrive_file(file_id, filename):
-    """Download a file from Google Drive using gdown."""
-    import gdown
-    gdown.download(id=file_id, output=filename, quiet=False)
+
+def download_tutorials(url, filename):
+    """Download tutorials zip from GitHub Releases."""
+    print(f"Downloading {url} -> {filename}")
+    urllib.request.urlretrieve(url, filename)
 
 
 def setup(app):
     if not os.path.isdir("./tutorials"):
         zip_path = "tutorials.zip"
         if not os.path.exists(zip_path):
-            download_gdrive_file(
-                "1DZ57n1S9_LYTyG10F6VXmo5lQ58wxvOC",
-                zip_path,
-            )
+            download_tutorials(TUTORIALS_URL, zip_path)
         with zipfile.ZipFile(zip_path) as z:
-            z.extractall(".")
+            members = z.namelist()
+            # Find the top-level directory (e.g. "stLearn-tutorials-1.4.0/")
+            top_level = members[0].split("/")[0] + "/"
+            os.makedirs("tutorials", exist_ok=True)
+            for member in members:
+                if member == top_level or member.endswith("/"):
+                    continue
+                # Strip the top-level prefix
+                relative = member[len(top_level):]
+                target = os.path.join("tutorials", relative)
+                os.makedirs(os.path.dirname(target), exist_ok=True)
+                with z.open(member) as src, open(target, "wb") as dst:
+                    dst.write(src.read())
     return
+
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'furo'
