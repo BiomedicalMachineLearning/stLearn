@@ -38,11 +38,9 @@ def add_mask(
         library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except Exception as e:
-        raise KeyError(
-            """\
+        raise KeyError("""\
         Please read ST data first and try again
-        """
-        ) from e
+        """) from e
 
     if imgpath is not None and os.path.isfile(imgpath):
         try:
@@ -61,17 +59,13 @@ def add_mask(
             adata.uns["mask_image"][library_id][key][quality] = img
             print("Added tissue mask to the object!")
         except Exception as e:
-            raise ValueError(
-                f"""\
+            raise ValueError(f"""\
             {imgpath!r} does not end on a valid extension.
-            """
-            ) from e
+            """) from e
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
         {imgpath!r} does not end on a valid extension.
-        """
-        )
+        """)
     return adata if copy else None
 
 
@@ -134,11 +128,9 @@ def apply_mask(
         library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except Exception as e:
-        raise KeyError(
-            """\
+        raise KeyError("""\
         Please read ST data first and try again
-        """
-        ) from e
+        """) from e
 
     if masks == "all":
         masks = list(adata.uns["mask_image"][library_id].keys())
@@ -152,20 +144,16 @@ def apply_mask(
         try:
             mask_image = adata.uns["mask_image"][library_id][mask][quality]
         except Exception as e:
-            raise KeyError(
-                f"""\
+            raise KeyError(f"""\
             Please load mask {mask} images first and try again
-            """
-            ) from e
+            """) from e
 
         if select == "black" or select == "white":
             mask_image = np.where(mask_image > 155, 0, 1)
         else:
-            raise ValueError(
-                """\
+            raise ValueError("""\
             Only support black and white mask yet.
-            """
-            )
+            """)
         mask_image_2d = mask_image.mean(axis=2)
 
         def apply_spot_mask(x, _mask=mask, _i=i, _mask_image_2d=mask_image_2d):

@@ -36,11 +36,9 @@ def row_col_by_platform(
         array_col = adata.obs_names.map(lambda x: x.split("x")[0])
         rate = 1.5
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
     regression = LinearRegression()
     reg_row: LinearRegression = regression.fit(array_row.values.reshape(-1, 1), img_row)  # type: ignore
     reg_col: LinearRegression = regression.fit(array_col.values.reshape(-1, 1), img_col)  # type: ignore

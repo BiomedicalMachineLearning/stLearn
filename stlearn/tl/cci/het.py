@@ -238,12 +238,14 @@ def get_interaction_pvals(
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
-                rng = np.random.default_rng()
-                rand_indices = rng.choice(indices, cell_data.shape[0], False)
+                rand_indices = np.random.choice(
+                    indices, cell_data.shape[0], False
+                )  # noqa: NPY002
                 perm_data[:, j] = cell_data[rand_indices, j]
         else:
-            rng = np.random.default_rng()
-            rand_indices = rng.choice(indices, cell_data.shape[0], False)
+            rand_indices = np.random.choice(
+                indices, cell_data.shape[0], False
+            )  # noqa: NPY002
             perm_data = cell_data[rand_indices, :]
 
         # Calculating interactions for permuted labels #
