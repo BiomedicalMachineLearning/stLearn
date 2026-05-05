@@ -1,46 +1,14 @@
 import os
 import sys
-import re
-import requests
-
-def download_gdrive_file(file_id, filename):
-    session = requests.Session()
-    url = f"https://docs.google.com/uc?export=download&id={file_id}"
-    response = session.get(url)
-
-    form_action_match = re.search(r'action="([^"]+)"', response.text)
-    if not form_action_match:
-        raise Exception("Could not find form action URL")
-    download_url = form_action_match.group(1)
-
-    params = {}
-    hidden_inputs = re.findall(
-        r'<input type="hidden" name="([^"]+)" value="([^"]*)"', response.text)
-    for name, value in hidden_inputs:
-        params[name] = value
-
-    response = session.get(download_url, params=params, stream=True)
-    with open(filename, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                file.write(chunk)
-
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+import zipfile
 
 # -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 project = 'stLearn'
 copyright = '2022-2026, Genomics and Machine Learning Lab'
 author = 'Genomics and Machine Learning Lab'
 html_logo = "images/logo.png"
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -52,19 +20,29 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+def download_gdrive_file(file_id, filename):
+    """Download a file from Google Drive using gdown."""
+    import gdown
+    gdown.download(id=file_id, output=filename, quiet=False)
+
+
 def setup(app):
     if not os.path.isdir("./tutorials"):
-        download_gdrive_file("1DZ57n1S9_LYTyG10F6VXmo5lQ58wxvOC", "tutorials.zip")
-        os.system("unzip tutorials.zip")
+        zip_path = "tutorials.zip"
+        if not os.path.exists(zip_path):
+            download_gdrive_file(
+                "1DZ57n1S9_LYTyG10F6VXmo5lQ58wxvOC",
+                zip_path,
+            )
+        with zipfile.ZipFile(zip_path) as z:
+            z.extractall(".")
     return
 
+# -- Options for HTML output -------------------------------------------------
 html_theme = 'furo'
 html_static_path = ['_static']
-html_css_files = [
-    'css/custom.css',
-]
+html_css_files = ['css/custom.css']
 html_theme_options = {
     "source_repository": "https://github.com/BiomedicalMachineLearning/stLearn/",
     "source_branch": "master",
@@ -83,9 +61,9 @@ html_theme_options = {
     ],
 }
 
-# Configure nbsphinx
-nbsphinx_execute = 'never'  # Don't re-execute notebooks
-nbsphinx_allow_errors = True  # Allow notebooks with errors
+# nbsphinx
+nbsphinx_execute = 'never'
+nbsphinx_allow_errors = True
 
 nbsphinx_thumbnails = {
     "tutorials/working_with_scanpy": "_static/images/scanpy.png",
@@ -94,6 +72,4 @@ nbsphinx_thumbnails = {
 # Autosummary
 autosummary_generate = True
 autosummary_imported_members = True
-
-# Output directory for autosummary
 autosummary_generate_overwrite = True
