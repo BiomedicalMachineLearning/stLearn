@@ -26,9 +26,11 @@ def polygon_annotations(
         GeoDataFrame or path to GeoJSON/shapefile.
     ...
     """
-    adata = get_adata(data, table_key)
+    is_sd = is_spatial_data(data)
+
     if copy:
-        adata = adata.copy()
+        data = data.copy()
+    adata = get_adata(data, table_key)
 
     if isinstance(annotations, (str, Path)):
         annotations = gpd.read_file(annotations)
@@ -46,12 +48,10 @@ def polygon_annotations(
     )
 
     # If SpatialData, also store the polygons as a shapes element
-    if is_spatial_data(data):
+    if is_sd:
         parsed = models.ShapesModel.parse(annotations)
         data.shapes[obs_key] = parsed
         data.tables[table_key] = adata
-
-    if is_spatial_data(data):
-        return data
+        return data if copy else None
     else:
         return adata if copy else None

@@ -64,9 +64,11 @@ class Model:
 
         elif self.base == "inception_v3":
             weights = self._resolve_weights()
+            # Load the pretrained weights
             net = models.inception_v3(weights=weights, aux_logits=True)
+            # Disable the aux branch at forward time - lowercase
+            net.aux_logits = False
             net.fc = nn.Identity()
-            net.AuxLogits = None  # disable aux head
             weight_transforms = weights.transforms()
 
         elif self.base in (

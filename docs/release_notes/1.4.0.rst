@@ -4,9 +4,11 @@
 .. rubric:: Features
 
 * Removed tensorflow and keras and replaced with torch and torchvision.
+* The CCI implementation removed string comparisons for LR pairs lists and replaced it with one set of two
+  packed 32 bit integers. Removed deduplication pass (m^2) with a hash lookup (O(n)).
 * Added row and polygon annotations.
+* Upgrade libraries: numpy >=2.4.0, scanpy >= 1.12.0, scipy >= 1.17.0, added spatialdata, shapely, geopandas.
 
 .. rubric:: Bugs
 
-* Refactor of CCI implementation to removed string comparison for LR pairs lists and replaced with one set of two
-  packed 32 bit integers. Removed deduplication pass m^2 pass with a hash lookup.
+* Fixed exception handling to catch previous exceptions when rethrown.

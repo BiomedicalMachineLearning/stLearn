@@ -148,8 +148,14 @@ def apply_mask(
             Please load mask {mask} images first and try again
             """) from e
 
-        if select == "black" or select == "white":
-            mask_image = np.where(mask_image > 155, 0, 1)
+        # Normalise to uint8 if the image is float in [0, 1]
+        if mask_image.dtype.kind == "f" and mask_image.max() <= 1.0:
+            mask_image = (mask_image * 255).astype(np.uint8)
+
+        if select == "black":
+            mask_image = np.where(mask_image < 155, 1, 0)
+        elif select == "white":
+            mask_image = np.where(mask_image >= 155, 1, 0)
         else:
             raise ValueError("""\
             Only support black and white mask yet.

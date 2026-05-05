@@ -8,9 +8,7 @@ from numba import jit, njit, prange
 from numba.typed import List
 
 from stlearn.tl.cci.het_helpers import (
-    edge_core,
     get_between_spot_edge_array,
-    get_data_for_counting,
     get_neighbourhoods,
     init_edge_list,
 )
@@ -57,7 +55,7 @@ def count(
                     "tissue_"
                     + adata.uns["spatial"][library_id]["use_quality"]
                     + "_scalef"
-                    ]
+                ]
                 * 2
             )
 
@@ -154,57 +152,6 @@ def get_edges(
         edge_list.append(edges[1:])
 
     return edge_list
-
-
-def count_interactions(
-    adata,
-    all_set,
-    mix_mode,
-    use_label,
-    sig_bool,
-    gene1_bool,
-    gene2_bool,
-    tissue_types=None,
-    cell_type_props=None,
-    cell_prop_cutoff=0.2,
-    trans_dir=True,
-):
-    """Counts the interactions."""
-    # Getting minimal information necessary for the counting #
-    cell_data = get_data_for_counting(adata, use_label, mix_mode, all_set)
-    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
-
-    # if trans_dir, rows are transmitter cell, cols receiver, otherwise reverse.
-    int_matrix = np.zeros((len(all_set), len(all_set)), dtype=int)
-    for i, cell_A in enumerate(all_set):  # transmitter if trans_dir else reciever
-        # Determining which spots have cell type A #
-        if not mix_mode:
-            A_bool = tissue_types == cell_A
-        else:
-            col_A = next(
-                (col for i, col in enumerate(cell_type_props.columns) if cell_A in col)
-            )
-            A_bool = cell_type_props.loc[:, col_A].values > cell_prop_cutoff
-
-        A_gene1_bool = np.logical_and(A_bool, gene1_bool)
-        A_gene1_sig_bool = np.logical_and(A_gene1_bool, sig_bool)
-        A_gene1_sig_indices = np.where(A_gene1_sig_bool)[0]
-
-        for j, _ in enumerate(all_set):  # receiver if trans_dir else transmitter
-            cell_a_cell_b_counts = len(
-                edge_core(
-                    cell_data,
-                    j,
-                    neighbourhood_bcs,
-                    neighbourhood_indices,
-                    spot_indices=A_gene1_sig_indices,
-                    neigh_bool=gene2_bool,
-                    cutoff=cell_prop_cutoff,
-                ),
-            )
-            int_matrix[i, j] = cell_a_cell_b_counts
-
-    return int_matrix if trans_dir else int_matrix.transpose()
 
 
 @njit(parallel=True)
@@ -422,7 +369,7 @@ def count_grid(
             & (coor["imagecol"] < grid[0] + width)
             & (coor["imagerow"] < grid[1])
             & (coor["imagerow"] > grid[1] - height)
-            ]
+        ]
         counts.loc[n] = (adata.obsm[use_label].loc[spots.index] > 0.2).sum().sum()
     adata.obsm[use_het] = (counts / counts.max())["CT"]
 

@@ -15,12 +15,12 @@ from .base import calc_distance, calc_neighbours, get_lrs_scores
 from .go import run_go
 from .het import (
     count,
-    get_data_for_counting,
     get_interaction_matrix,
     get_interaction_pvals,
     get_neighbourhoods,
     grid_parallel,
 )
+from .het_helpers import get_data_for_counting
 from .permutation import perform_spot_testing
 
 
@@ -616,7 +616,7 @@ def run_cci(
 
     ran_lr = "lr_summary" in adata.uns
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
-    if not ran_lr and not ran_sig:
+    if not ran_lr or not ran_sig:
         raise Exception(
             "No LR results testing results found, please run st.tl.cci.run first"
         )

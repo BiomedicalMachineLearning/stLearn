@@ -1,5 +1,8 @@
+import math
+
 import anndata
 import numpy as np
+from PIL import Image
 from skimage.transform import resize
 
 
@@ -53,8 +56,6 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
     for adata in adata_list:
         use_adata_list.append(adata.copy())
 
-    import math
-
     # check valid
     n_adata = len(use_adata_list)
     nrows = math.ceil(n_adata / ncols)
@@ -103,8 +104,6 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
         keys = next(iter(adata.uns["spatial"].keys()))
         imgs.append(adata.uns["spatial"][keys]["images"]["hires"])
 
-    from PIL import Image
-
     if (nrows * ncols - len(use_adata_list)) > 0:
         for _i in range(0, (nrows * ncols - len(use_adata_list))):
             image = Image.new("RGB", fixed_size, (255, 255, 255, 255))
@@ -112,11 +111,11 @@ def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
 
     img_rows = []
     for min_id in range(0, len(use_adata_list), ncols):
-        img_row = np.hstack(imgs[min_id : min_id + ncols])
+        img_row = np.hstack(imgs[min_id: min_id + ncols])
         img_rows.append(img_row)
     imgs_comb = np.vstack(img_rows)
 
-    adata_concat = anndata.concat(use_adata_list)
+    adata_concat = anndata.concat(use_adata_list, label="batch", index_unique="-")
     adata_concat.uns["spatial"] = use_adata_list[0].uns["spatial"]
 
     keys = next(iter(adata_concat.uns["spatial"].keys()))

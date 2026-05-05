@@ -5,11 +5,13 @@ History
 1.4.0 (2026-05-01)
 ------------------
 * Removed tensorflow and keras and replaced with torch and torchvision.
-* Refactor of CCI implementation to removed string comparison for LR pairs lists and replaced with one set of two
-  packed 32 bit integers. Removed deduplication pass m^2 pass with a hash lookup.
+* The CCI implementation removed string comparisons for LR pairs lists and replaced it with one set of two
+  packed 32 bit integers. Removed deduplication pass (m^2) with a hash lookup (O(n)).
+* Upgrade libraries: numpy >=2.4.0, scanpy >= 1.12.0, scipy >= 1.17.0, added spatialdata, shapely, geopandas.
 
 API and Bug Fixes:
 * Added row and polygon annotations.
+* Fixed exception handling to catch previous exceptions when rethrown.
 
 1.3.0 (2026-02-24)
 ------------------
@@ -28,7 +30,6 @@ API and Bug Fixes:
 * Added more CCI tests.
 
 API and Bug Fixes:
-
 * Fixed copy-paste error in louvain.py file.
 
 1.1.5 (2025-09-17)

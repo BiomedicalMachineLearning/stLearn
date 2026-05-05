@@ -63,7 +63,7 @@ def tree_plot(
     G = _read_graph(adata, "PTS_graph")
 
     if library_id is None:
-        next(iter(adata.uns["spatial"].keys()))
+        library_id = next(iter(adata.uns["spatial"].keys()))
 
     G.remove_node(9999)
 
