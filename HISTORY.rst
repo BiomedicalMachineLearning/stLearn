@@ -2,6 +2,13 @@
 History
 =======
 
+1.4.1 (2026-06-16)
+------------------
+
+API and Bug Fixes:
+* Fixed up docstring and types for various CCI methods.
+* Fixes for issues #350 and #300 with incorrect types.
+
 1.4.0 (2026-05-01)
 ------------------
 * Removed tensorflow and keras and replaced with torch and torchvision.
