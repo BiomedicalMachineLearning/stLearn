@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import scipy as sc
 import scipy.spatial as spatial
@@ -7,7 +8,6 @@ from numba import njit, prange
 from numba.typed import List
 
 from .het import create_grids
-import numpy.typing as npt
 
 
 def calc_distance(adata: AnnData, distance: float | None) -> float:

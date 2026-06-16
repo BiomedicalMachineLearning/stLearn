@@ -15,14 +15,14 @@ from stlearn.pl import het_plot
 
 
 def get_hotspots(
-        adata: AnnData,
-        lr_scores: np.ndarray,
-        lrs: npt.NDArray[np.str_],
-        eps: float,
-        quantile=0.05,
-        verbose=True,
-        plot_diagnostics: bool = False,
-        show_plot: bool = False,
+    adata: AnnData,
+    lr_scores: np.ndarray,
+    lrs: npt.NDArray[np.str_],
+    eps: float,
+    quantile=0.05,
+    verbose=True,
+    plot_diagnostics: bool = False,
+    show_plot: bool = False,
 ):
     """Determines the hotspots for the inputted scores by progressively setting
     more stringent cutoffs & cluster in space, chooses point which maximises number
@@ -49,7 +49,13 @@ def get_hotspots(
     """
     coors = adata.obs[["imagerow", "imagecol"]].values
     lr_summary, lr_hot_scores = hotspot_core(
-        lr_scores, lrs, coors, eps, quantile, plot_diagnostics, adata,
+        lr_scores,
+        lrs,
+        coors,
+        eps,
+        quantile,
+        plot_diagnostics,
+        adata,
     )
 
     if plot_diagnostics and show_plot:  # Showing the diagnostic plotting #
@@ -60,7 +66,10 @@ def get_hotspots(
     # Clustering the LR pairs to obtain a set of clusters so to order within
     # each cluster
     clusterer = AgglomerativeClustering(
-        metric="euclidean", linkage="ward", distance_threshold=10, n_clusters=None,
+        metric="euclidean",
+        linkage="ward",
+        distance_threshold=10,
+        n_clusters=None,
     )
     clusterer.fit(lr_hot_scores > 0)
     dist_cutoff = np.quantile(clusterer.distances_, 0.98)
@@ -129,15 +138,15 @@ def get_hotspots(
 
 
 def hotspot_core(
-        lr_scores,
-        lrs,
-        coors,
-        eps,
-        quantile,
-        plot_diagnostics=False,
-        adata=None,
-        verbose=True,
-        max_score=False,
+    lr_scores,
+    lrs,
+    coors,
+    eps,
+    quantile,
+    plot_diagnostics=False,
+    adata=None,
+    verbose=True,
+    max_score=False,
 ):
     """Made code for getting the hotspot information."""
     score_copy = lr_scores.copy()
@@ -160,10 +169,10 @@ def hotspot_core(
 
     # Determining the cutoffs for hotspots #
     with tqdm(
-            total=len(lrs),
-            desc="Removing background lr scores...",
-            bar_format="{l_bar}{bar}",
-            disable=not verbose,
+        total=len(lrs),
+        desc="Removing background lr scores...",
+        bar_format="{l_bar}{bar}",
+        disable=not verbose,
     ) as pbar:
         for i, lr_ in enumerate(lrs):
             lr_score_ = score_copy[i, :]
@@ -179,7 +188,9 @@ def hotspot_core(
 
                 coor_ = coors[spot_bool, :]
                 clusters = DBSCAN(
-                    min_samples=2, eps=eps, metric="manhattan",
+                    min_samples=2,
+                    eps=eps,
+                    metric="manhattan",
                 ).fit_predict(coor_)
                 score = len(np.unique(clusters)) * (np.mean(lr_score_[spot_bool])) ** 2
                 cutoff_scores.append(score)
@@ -222,17 +233,17 @@ def non_zero_mean(vals):
 
 
 def add_diagnostic_plots(
-        adata,
-        i,
-        lr_,
-        quant_lrs,
-        lr_quantiles,
-        lr_scores,
-        lr_hot_scores,
-        axes,
-        cutoffs,
-        n_clusters,
-        best_cutoff,
+    adata,
+    i,
+    lr_,
+    quant_lrs,
+    lr_quantiles,
+    lr_scores,
+    lr_hot_scores,
+    axes,
+    cutoffs,
+    n_clusters,
+    best_cutoff,
 ):
     """Adds diagnostic plots for the quantile LR pair to a figure to illustrate \
         how the cutoff is functioning.
