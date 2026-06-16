@@ -42,13 +42,13 @@ def calc_distance(adata: AnnData, distance: float | None) -> float:
 
 def get_lrs_scores(
     adata: AnnData,
-    lrs: np.ndarray,
+    lrs: npt.NDArray[np.str_],
     neighbours: np.ndarray,
     het_vals: np.ndarray,
     min_expr: float,
     filter_pairs: bool = True,
     spot_indices: npt.NDArray[np.int32] | None = None,
-):
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.str_]]:
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
     ----------
@@ -69,7 +69,12 @@ def get_lrs_scores(
         Subset of spots to score, given as their integer row positions.
     Returns
     -------
-    lrs: np.ndarray   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    lr_scores: npt.NDArray[np.float64]
+        Shape (n_scored_spots, n_pairs). LR score for each scored spot (rows in
+        the order of spot_indices) and each ligand-receptor pair (columns).
+    new_lrs: npt.NDArray[np.str_]
+        Shape (n_pairs,). Ligand-receptor pair labels in 'L_R' format
+        (e.g. 'L1_R1'), column-aligned with lr_scores.
     """
     if spot_indices is None:
         spot_indices = np.arange(len(adata), dtype=np.int32)

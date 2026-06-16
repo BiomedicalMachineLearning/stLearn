@@ -259,7 +259,7 @@ def run(
         Whether print dialogue to user during run-time.
     Returns
     --------
-    adata: None
+    None
     Relevant information stored:
         adata.uns['lr_summary']
             Summary of significant spots detected per LR,
@@ -398,7 +398,7 @@ def adj_pvals(
     -------
     adata: AnnData
         Adjusts all of the LR results; warning, does not adjust
-        celltype-celltype results from running ran st.tl.run_cci downstream.
+        celltype-celltype results from running st.tl.run_cci downstream.
     """
     if "lr_summary" not in adata.uns:
         raise Exception("Need to run st.tl.cci.run first.")

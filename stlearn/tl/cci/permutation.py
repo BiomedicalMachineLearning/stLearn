@@ -13,7 +13,7 @@ from .perm_utils import get_lr_bg, get_lr_features
 
 def perform_spot_testing(
     adata: AnnData,
-    lr_scores: np.ndarray,
+    lr_scores: npt.NDArray[np.float64],
     lrs: npt.NDArray[np.str_],
     n_pairs: int,
     neighbours: List,
@@ -145,14 +145,15 @@ def perform_spot_testing(
             else:  # Fitting NB per LR
                 lr_j_scores = lr_scores[spot_indices, lr_j]
                 bg_ = background.ravel()
-                bg_wScore = np.array(list(lr_j_scores) + list(bg_))
+                bg_w_score = np.array(list(lr_j_scores) + list(bg_))
 
                 # 1) rounding discretisation
                 # First multiple to get minimum value to be one before rounding #
-                bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
-                bg_1 = np.round(bg_1)
-                lr_j_scores_1 = bg_1[0 : len(lr_j_scores)]
-                bg_1 = bg_1[len(lr_j_scores) : len(bg_1)]
+                scale = 1.0 / min(bg_w_score[bg_w_score != 0])
+                scaled = np.round(bg_w_score * scale)
+                n_obs = len(lr_j_scores)
+                lr_j_scores_1 = scaled[:n_obs]
+                bg_1 = scaled[n_obs:]
 
                 # Getting the pvalue from negative binomial approach
                 round_pvals, _, _, _ = get_stats(
