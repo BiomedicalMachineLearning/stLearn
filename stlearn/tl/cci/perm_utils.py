@@ -1,12 +1,11 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from numba import njit, prange
-from numba.typed import List
+from numba.core import types
+from numba.typed import Dict, List
 from scipy.spatial.distance import canberra
 from sklearn.preprocessing import MinMaxScaler
-from numba.core import types
-import numpy.typing as npt
-from numba.typed import Dict, List
 
 from .base import get_lrs_scores
 
@@ -295,7 +294,7 @@ def gen_rand_pairs(
     if n_pairs > n_possible:
         raise ValueError(
             f"Requested {n_pairs} unique pairs but only {n_possible} are "
-            f"possible from {len(genes1)}×{len(genes2)} genes."
+            f"possible from {len(genes1)}x{len(genes2)} genes."
         )
     return np.array(list(_gen_rand_pairs(genes1, genes2, n_pairs, seed)))
 
@@ -309,7 +308,7 @@ def _gen_rand_pairs(genes1, genes2, n_pairs, seed):
         l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
         r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
         rand_pair = "_".join([l_rand, r_rand])
-        while rand_pair in seen or l_rand == r_rand:        # was: in rand_pairs
+        while rand_pair in seen or l_rand == r_rand:  # was: in rand_pairs
             l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
             r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
             rand_pair = "_".join([l_rand, r_rand])

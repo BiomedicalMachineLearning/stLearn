@@ -2,8 +2,8 @@
 
 import unittest
 
-from numba.typed import List
 import numpy as np
+from numba.typed import List
 
 from stlearn.tl.cci.base import lr_core
 
