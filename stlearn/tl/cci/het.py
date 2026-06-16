@@ -30,7 +30,7 @@ def count(
         The cell type results to use in counting
     use_het:
         The storage place for result
-    distance: int
+    distance: float
         Distance to determine the neighbours (default is the nearest neighbour),
         distance=0 means within spot
 

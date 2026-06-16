@@ -208,7 +208,7 @@ def run(
     use_label: str | None = None,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
-    min_expr: float = 0,
+    min_expr: float = 0.0,
     save_bg: bool = False,
     neg_binom: bool = False,
     random_state: int = 0,
@@ -225,7 +225,7 @@ def run(
     min_spots: int
         Minimum number of spots with an LR score for an LR to be considered for
         further testing.
-    distance: int
+    distance: float
         Distance to determine the neighbours (default [None] is immediately
         adjacent neighbours if using Visium), distance=0 means within spot
         (only for non-single-cell spatial data).

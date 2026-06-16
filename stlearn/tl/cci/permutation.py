@@ -88,7 +88,7 @@ def perform_spot_testing(
     # Background per LR, but only for spots where LR has a score
     # Determine the indices of the spots where each LR has a score #
     cols = ["n_spots", "n_spots_sig", "n_spots_sig_pval"]
-    lr_summary = np.zeros((lr_scores.shape[1], 3), np.int32)
+    lr_summary = np.zeros((lr_scores.shape[1], 3), np.int64)
     pvals = np.ones(lr_scores.shape, dtype=np.float64)
     pvals_adj = np.ones(lr_scores.shape, dtype=np.float64)
     log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)

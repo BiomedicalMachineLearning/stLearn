@@ -47,7 +47,7 @@ def get_lrs_scores(
     het_vals: np.ndarray,
     min_expr: float,
     filter_pairs: bool = True,
-    spot_indices: np.ndarray | None = None,
+    spot_indices: npt.NDArray[np.int32] | None = None,
 ):
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
@@ -65,14 +65,14 @@ def get_lrs_scores(
         have reasonable score.
     filter_pairs: bool
         Whether to filter to valid pairs or not.
-    spot_indices: np.ndarray
-        Array of integers speci
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
     lrs: np.ndarray   lr pairs from the database in format ['L1_R1', 'LN_RN']
     """
     if spot_indices is None:
-        spot_indices = np.array(list(range(len(adata))), dtype=np.int32)
+        spot_indices = np.arange(len(adata), dtype=np.int32)
 
     spot_lr1s = get_spot_lrs(
         adata, lr_pairs=lrs, lr_order=True, filter_pairs=filter_pairs
@@ -208,7 +208,7 @@ def calc_neighbours(
     return typed_neighs
 
 
-@njit
+@njit(cache=True)
 def lr_core(
     spot_lr1: npt.NDArray[np.float64],
     spot_lr2: npt.NDArray[np.float64],
@@ -216,39 +216,47 @@ def lr_core(
     min_expr: float,
     spot_indices: npt.NDArray[np.int32],
 ) -> npt.NDArray[np.float64]:
-    """Calculate the lr scores for each spot.
+    """Calculate the mean of lr scores for each spot.
     Parameters
     ----------
-    spot_lr1: np.ndarray
-        Spots*Ligands
-    spot_lr2: np.ndarray
-        Spots*Receptors
-    neighbours: numba.typed.List
+    spot_lr1: npt.NDArray[np.float64]
+        Spots x 2 block for one LR pair, columns in (ligand, receptor) order.
+        Column j is the gene whose expression is taken at the spot itself.
+    spot_lr2: npt.NDArray[np.float64]
+        Spots x 2 block for the same pair in reversed (receptor, ligand) order.
+        Column j is the partner gene whose expression is averaged over neighbours.
+    neighbours: List
         List of np.array's indicating neighbours by indices for each spot.
     min_expr: float
         Minimum expression for gene to be considered expressed.
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
-    lr_scores: numpy.ndarray
-        Cells*LR-scores.
+    lr_scores: npt.NDArray[np.float64]
+        1-D, one score per spot in spot_indices (forward/reverse directions averaged).
     """
-    # Calculating mean of lr2 expressions from neighbours of each spot
-    nb_lr2 = np.zeros((len(spot_indices), spot_lr2.shape[1]), np.float64)
-    for i in range(len(spot_indices)):
-        spot_i = spot_indices[i]
-        nb_expr = spot_lr2[neighbours[spot_i], :]
-        if nb_expr.shape[0] != 0:  # Accounting for no neighbours
-            nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
-        else:
-            nb_expr_mean = nb_expr.sum(axis=0)
-        nb_lr2[i, :] = nb_expr_mean
-
-    scores = (
-        spot_lr1[spot_indices, :] * (nb_lr2 > min_expr)
-        + (spot_lr1[spot_indices, :] > min_expr) * nb_lr2
-    )
-    spot_lr = scores.sum(axis=1)
-    return spot_lr / 2
+    n_rows = len(spot_indices)
+    n_cols = spot_lr2.shape[1]
+    spot_lr = np.zeros(n_rows, np.float64)
+    # For each spot (each spot is independent)
+    for i in range(n_rows):
+        si = spot_indices[i]
+        spot_neighbour = neighbours[si]
+        n_spot_neighbours = len(spot_neighbour)
+        total = 0.0
+        # For each LR pair.
+        for j in range(n_cols):
+            mean_lr2 = 0.0
+            if n_spot_neighbours > 0:
+                s = 0.0
+                for k in range(n_spot_neighbours):
+                    s += spot_lr2[spot_neighbour[k], j]
+                mean_lr2 = s / n_spot_neighbours
+            l1 = spot_lr1[si, j]
+            total += l1 * (mean_lr2 > min_expr) + (l1 > min_expr) * mean_lr2
+        spot_lr[i] = total / 2.0
+    return spot_lr
 
 
 @njit(parallel=True)
@@ -258,7 +266,7 @@ def get_scores(
     neighbours: List,
     het_vals: np.ndarray,
     min_expr: float,
-    spot_indices: np.ndarray,
+    spot_indices: npt.NDArray[np.int32],
 ) -> npt.NDArray[np.float64]:
     """Calculates the scores.
     Parameters
@@ -269,10 +277,12 @@ def get_scores(
         Spots*GeneOrder2, in format r1, l1, ... rn, ln
     het_vals:  np.ndarray
         Spots*Het counts
-    neighbours: numba.typed.List
+    neighbours: List
         List of np.array's indicating neighbours by indices for each spot.
     min_expr: float
         Minimum expression for gene to be considered expressed.
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
     spot_scores: np.ndarray
