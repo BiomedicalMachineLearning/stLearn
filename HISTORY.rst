@@ -8,6 +8,7 @@ History
 API and Bug Fixes:
 * Fixed up docstring and types for various CCI methods.
 * Fixes for issues #350 and #300 with incorrect types.
+* Upgrade libraries: pillow>=12.0.0,<13.0
 
 1.4.0 (2026-05-01)
 ------------------

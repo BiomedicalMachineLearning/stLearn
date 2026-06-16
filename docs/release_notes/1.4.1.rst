@@ -5,3 +5,4 @@
 
 * Fixed up docstring and types for various CCI methods.
 * Fixes for issues #350 and #300 with incorrect types.
+* Upgrade libraries: pillow>=12.0.0,<13.0
