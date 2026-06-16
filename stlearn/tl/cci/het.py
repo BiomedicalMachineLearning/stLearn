@@ -95,8 +95,8 @@ def count(
 
 def get_edges(
     adata: AnnData,
-    L_bool: np.ndarray,
-    R_bool: np.ndarray,
+    l_bool: np.ndarray,
+    r_bool: np.ndarray,
     sig_bool: np.ndarray,
 ):
     """Gets a list edges representing significant interactions.
@@ -105,9 +105,9 @@ def get_edges(
     ----------
     adata : AnnData
         Annotated data object containing spatial transcriptomics data.
-    L_bool : np.ndarray of bool, shape (n_spots,)
+    l_bool : np.ndarray of bool, shape (n_spots,)
         Boolean array indicating spots where the ligand is expressed.
-    R_bool : np.ndarray of bool, shape (n_spots,)
+    r_bool : np.ndarray of bool, shape (n_spots,)
         Boolean array indicating spots where the receptor is expressed.
     sig_bool : np.ndarray of bool, shape (n_spots,)
         Boolean array indicating spots with significant ligand-receptor interactions.
@@ -122,16 +122,16 @@ def get_edges(
     neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
 
     # Getting the edges to draw in-between #
-    L_spot_indices = np.where(np.logical_and(L_bool, sig_bool))[0]
-    R_spot_indices = np.where(np.logical_and(R_bool, sig_bool))[0]
+    l_spot_indices = np.where(np.logical_and(l_bool, sig_bool))[0]
+    r_spot_indices = np.where(np.logical_and(r_bool, sig_bool))[0]
 
     # To keep the get_between_spot_edge_array function happy #
     cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float64)
 
     # Retrieving the edges #
-    gene_bools = [R_bool, L_bool]
+    gene_bools = [r_bool, l_bool]
     edge_list = []
-    for i, spot_indices in enumerate([L_spot_indices, R_spot_indices]):
+    for i, spot_indices in enumerate([l_spot_indices, r_spot_indices]):
         # Subsetting to the relevant neighbourhoods #
         neigh_bcs = List()
         neigh_indices = List()
