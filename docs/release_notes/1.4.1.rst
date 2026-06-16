@@ -1,6 +1,9 @@
 1.4.1 `2026-06-16`
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. rubric:: Features
+* Improved speed of random spot generation used in permutation testing.
+
 .. rubric:: Bugs
 
 * Fixed up docstring and types for various CCI methods.

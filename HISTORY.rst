@@ -4,6 +4,7 @@ History
 
 1.4.1 (2026-06-16)
 ------------------
+* Improved speed of random spot generation used in permutation testing.
 
 API and Bug Fixes:
 * Fixed up docstring and types for various CCI methods.
