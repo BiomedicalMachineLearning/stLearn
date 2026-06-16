@@ -1,6 +1,5 @@
-from typing import Any
-
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import scipy
 import statsmodels.api as sm
@@ -14,8 +13,8 @@ from .perm_utils import get_lr_bg, get_lr_features
 
 def perform_spot_testing(
     adata: AnnData,
-    lr_scores: np.ndarray,
-    lrs: np.ndarray,
+    lr_scores: npt.NDArray[np.float64],
+    lrs: npt.NDArray[np.str_],
     n_pairs: int,
     neighbours: List,
     het_vals: np.ndarray,
@@ -23,11 +22,24 @@ def perform_spot_testing(
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
     verbose: bool = True,
-    save_bg=False,
-    neg_binom=False,
-    quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1),
+    save_bg: bool = False,
+    neg_binom: bool = False,
+    quantiles: tuple[float, ...] = (
+        0.5,
+        0.75,
+        0.85,
+        0.9,
+        0.95,
+        0.97,
+        0.98,
+        0.99,
+        0.995,
+        0.9975,
+        0.999,
+        1,
+    ),
     random_state: int = 0,
-):
+) -> None:
     """Calls significant spots by creating random gene pairs with similar
     expression to given LR pair; only generate background for spots
     which have score for given LR.
@@ -41,14 +53,14 @@ def perform_spot_testing(
     n_genes = round(np.sqrt(n_pairs) * 2)
     if len(genes) < n_genes:
         print(
-            f"Exiting since need atleast {n_genes} genes to generate {n_pairs} pairs."
+            f"Exiting since need atleast {n_genes} genes to generate {n_pairs} pairs.",
         )
         return
 
     if n_pairs < 100:
         print(
             "Exiting since n_pairs<100, need much larger number of pairs to "
-            "get accurate backgrounds (e.g. 1000)."
+            "get accurate backgrounds (e.g. 1000).",
         )
         return
 
@@ -62,7 +74,11 @@ def perform_spot_testing(
         lrs, [col for col in lr_feats.columns if "R_" in col]
     ].values
     candidate_quants = np.apply_along_axis(
-        np.quantile, 0, candidate_expr, q=quantiles, method="nearest"
+        np.quantile,
+        0,
+        candidate_expr,
+        q=quantiles,
+        method="nearest",
     )
     # Ensuring consistent typing to prevent numba errors #
     l_quants = l_quants.astype("<f4")
@@ -72,7 +88,7 @@ def perform_spot_testing(
     # Background per LR, but only for spots where LR has a score
     # Determine the indices of the spots where each LR has a score #
     cols = ["n_spots", "n_spots_sig", "n_spots_sig_pval"]
-    lr_summary = np.zeros((lr_scores.shape[1], 3), np.int32)
+    lr_summary = np.zeros((lr_scores.shape[1], 3), np.int64)
     pvals = np.ones(lr_scores.shape, dtype=np.float64)
     pvals_adj = np.ones(lr_scores.shape, dtype=np.float64)
     log10pvals_adj = np.zeros(lr_scores.shape, dtype=np.float64)
@@ -91,12 +107,10 @@ def perform_spot_testing(
     ) as pbar:
         # Keep track of genes which can be used to gen. rand-pairs.
         gene_bg_genes: dict[str, np.ndarray] = {}
-        spot_lr_indices: List[List[Any]] = [
-            [] for i in range(lr_scores.shape[0])
-        ]  # tracks the lrs tested in a given spot for MHT !!!!
+        # tracks the lrs tested in a given spot for MHT !!!!
+        spot_lr_indices: list[list[int]] = [[] for i in range(lr_scores.shape[0])]
         for lr_j in range(lr_scores.shape[1]):
             lr_ = lrs[lr_j]
-
             background, spot_indices = get_lr_bg(
                 adata,
                 neighbours,
@@ -123,7 +137,7 @@ def perform_spot_testing(
                     n_greater = len(
                         np.where(background[spot_i, :] >= lr_scores[spot_index, lr_j])[
                             0
-                        ]
+                        ],
                     )
                     n_greater = n_greater if n_greater != 0 else 1  # pseudocount
                     pvals[spot_index, lr_j] = n_greater / background.shape[1]
@@ -131,14 +145,15 @@ def perform_spot_testing(
             else:  # Fitting NB per LR
                 lr_j_scores = lr_scores[spot_indices, lr_j]
                 bg_ = background.ravel()
-                bg_wScore = np.array(list(lr_j_scores) + list(bg_))
+                bg_w_score = np.array(list(lr_j_scores) + list(bg_))
 
                 # 1) rounding discretisation
                 # First multiple to get minimum value to be one before rounding #
-                bg_1 = bg_wScore * (1 / min(bg_wScore[bg_wScore != 0]))
-                bg_1 = np.round(bg_1)
-                lr_j_scores_1 = bg_1[0 : len(lr_j_scores)]
-                bg_1 = bg_1[len(lr_j_scores) : len(bg_1)]
+                scale = 1.0 / min(bg_w_score[bg_w_score != 0])
+                scaled = np.round(bg_w_score * scale)
+                n_obs = len(lr_j_scores)
+                lr_j_scores_1 = scaled[:n_obs]
+                bg_1 = scaled[n_obs:]
 
                 # Getting the pvalue from negative binomial approach
                 round_pvals, _, _, _ = get_stats(
@@ -146,7 +161,6 @@ def perform_spot_testing(
                     bg_1,
                     len(bg_1),
                     neg_binom=True,
-                    return_negbinom_params=False,
                 )
                 pvals[spot_indices, lr_j] = round_pvals
                 for spot_index in spot_indices:
@@ -159,7 +173,8 @@ def perform_spot_testing(
             lr_indices = spot_lr_indices[spot_i]
             if len(lr_indices) != 0:
                 pvals_adj[spot_i, lr_indices] = multipletests(
-                    pvals[spot_i, lr_indices], method=adj_method
+                    pvals[spot_i, lr_indices],
+                    method=adj_method,
                 )[1]
 
             log10pvals_adj[spot_i, :] = -np.log10(pvals_adj[spot_i, :])
@@ -200,7 +215,7 @@ def perform_spot_testing(
     if verbose:
         print(
             "\nPer-spot results in adata.obsm have columns in same order as "
-            "rows in adata.uns['lr_summary']."
+            "rows in adata.uns['lr_summary'].",
         )
         print("Summary of LR results in adata.uns['lr_summary'].")
 
@@ -212,8 +227,12 @@ def get_stats(
     neg_binom: bool = False,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.01,
-    return_negbinom_params: bool = False,
-):
+) -> tuple[
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+]:
     """Retrieves valid candidate genes to be used for random gene pairs.
     Parameters
     ----------
@@ -226,6 +245,8 @@ def get_stats(
                             number of n_pairs for this).
     adj_method: str         Parsed to statsmodels.stats.multitest.multipletests for
                             multiple hypothesis testing correction.
+    pval_adj_cutoff: float  Significance cutoff.
+
     Returns
     -------
     stats: tuple            Per spot pvalues, pvals_adj, log10_pvals_adj, lr_sign
@@ -238,7 +259,9 @@ def get_stats(
         pmin = min(background)
         background2 = [item - pmin for item in background]
         res = sm.NegativeBinomial(
-            background2, np.ones(len(background2)), loglike_method="nb2"
+            background2,
+            np.ones(len(background2)),
+            loglike_method="nb2",
         ).fit(start_params=[0.1, 0.3], disp=0)
         mu = res.predict()  # use if not constant
         mu = np.exp(res.params[0])
@@ -246,10 +269,6 @@ def get_stats(
         Q = 0
         size = 1.0 / alpha * mu**Q
         prob = size / (size + mu)
-
-        if return_negbinom_params:  # For testing purposes #
-            return size, prob
-
         # Calculate probability for all spots
         pvals = 1 - scipy.stats.nbinom.cdf(scores - pmin, size, prob)
 

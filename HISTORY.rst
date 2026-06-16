@@ -2,6 +2,15 @@
 History
 =======
 
+1.4.1 (2026-06-16)
+------------------
+* Improved speed of random spot generation used in permutation testing.
+
+API and Bug Fixes:
+* Fixed up docstring and types for various CCI methods.
+* Fixes for issues #350 and #300 with incorrect types.
+* Upgrade libraries: pillow>=12.0.0,<13.0
+
 1.4.0 (2026-05-01)
 ------------------
 * Removed tensorflow and keras and replaced with torch and torchvision.

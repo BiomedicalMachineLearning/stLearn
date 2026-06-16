@@ -4,6 +4,7 @@ similar tissues.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import seaborn as sb
 from anndata import AnnData
@@ -16,7 +17,7 @@ from stlearn.pl import het_plot
 def get_hotspots(
     adata: AnnData,
     lr_scores: np.ndarray,
-    lrs: np.array,
+    lrs: npt.NDArray[np.str_],
     eps: float,
     quantile=0.05,
     verbose=True,
@@ -32,7 +33,7 @@ def get_hotspots(
         The data object
     lr_scores: np.ndarray
         LR_pair*Spots containing the LR scores.
-    lrs: np.array
+    lrs: npt.NDArray[np.str_]
         The LR_pairs, in-line with the rows of scores.
     eps: float
         The eps parameter used in DBScan to get the number of clusters.
@@ -48,7 +49,13 @@ def get_hotspots(
     """
     coors = adata.obs[["imagerow", "imagecol"]].values
     lr_summary, lr_hot_scores = hotspot_core(
-        lr_scores, lrs, coors, eps, quantile, plot_diagnostics, adata
+        lr_scores,
+        lrs,
+        coors,
+        eps,
+        quantile,
+        plot_diagnostics,
+        adata,
     )
 
     if plot_diagnostics and show_plot:  # Showing the diagnostic plotting #
@@ -59,12 +66,15 @@ def get_hotspots(
     # Clustering the LR pairs to obtain a set of clusters so to order within
     # each cluster
     clusterer = AgglomerativeClustering(
-        affinity="euclidean", linkage="ward", distance_threshold=10, n_clusters=None
+        metric="euclidean",
+        linkage="ward",
+        distance_threshold=10,
+        n_clusters=None,
     )
     clusterer.fit(lr_hot_scores > 0)
     dist_cutoff = np.quantile(clusterer.distances_, 0.98)
     clusterer = AgglomerativeClustering(
-        affinity="euclidean",
+        metric="euclidean",
         linkage="ward",
         distance_threshold=dist_cutoff,
         n_clusters=None,
@@ -121,7 +131,7 @@ def get_hotspots(
         print("\tSummary values of lrs in adata.uns['lr_summary'].")
         print(
             "\tMatrix of lr scores in same order as the summary in "
-            + "adata.obsm['lr_scores']."
+            + "adata.obsm['lr_scores'].",
         )
         print("\tMatrix of the hotspot scores in adata.obsm['lr_hot_scores'].")
         print("\tMatrix of the mean LR cluster scores in adata.obsm['cluster_scores'].")
@@ -153,7 +163,7 @@ def hotspot_core(
         lr_mean_scores = np.apply_along_axis(non_zero_mean, 1, score_copy)
         lr_quant_values = np.quantile(lr_mean_scores, lr_quantiles)
         quant_lrs = np.array(
-            [lrs[lr_mean_scores == quant] for quant in lr_quant_values]
+            [lrs[lr_mean_scores == quant] for quant in lr_quant_values],
         )
         _, axes = plt.subplots(6, 4, figsize=(20, 15))
 
@@ -178,7 +188,9 @@ def hotspot_core(
 
                 coor_ = coors[spot_bool, :]
                 clusters = DBSCAN(
-                    min_samples=2, eps=eps, metric="manhattan"
+                    min_samples=2,
+                    eps=eps,
+                    metric="manhattan",
                 ).fit_predict(coor_)
                 score = len(np.unique(clusters)) * (np.mean(lr_score_[spot_bool])) ** 2
                 cutoff_scores.append(score)

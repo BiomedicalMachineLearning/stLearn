@@ -71,11 +71,15 @@ def image(
 
             print("Added tissue image to the object!")
         except Exception as e:
-            raise ValueError(f"""\
+            raise ValueError(
+                f"""\
             {imgpath!r} does not end on a valid extension.
-            """) from e
+            """
+            ) from e
     else:
-        raise ValueError(f"""\
+        raise ValueError(
+            f"""\
         {imgpath!r} does not end on a valid extension.
-        """)
+        """
+        )
     return adata if copy else None

@@ -6,6 +6,7 @@ import os
 
 import numba
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from anndata import AnnData
 from statsmodels.stats.multitest import multipletests
@@ -25,7 +26,9 @@ from .permutation import perform_spot_testing
 
 
 # Functions related to Ligand-Receptor interactions
-def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndarray:
+def load_lrs(
+    names: str | list | None = None, species: str = "human"
+) -> npt.NDArray[np.str_]:
     """Loads inputted LR database, & concatenates into consistent database set of
     pairs without duplicates. If None loads 'connectomeDB2020_lit'.
 
@@ -66,20 +69,20 @@ def load_lrs(names: str | list | None = None, species: str = "human") -> np.ndar
                 + genes2[i][0]
                 + genes2[i][1:].lower()
                 for i in range(len(lrs_full))
-            ]
+            ],
         )
 
     return lrs_full_arr
 
 
 def grid(
-    adata,
+    adata: AnnData,
     n_row: int = 10,
     n_col: int = 10,
     use_label: str | None = None,
     n_cpus: int | None = None,
     verbose: bool = True,
-):
+) -> AnnData:
     """Creates a new anndata representing a gridded version of the data; can be
         used upstream of CCI pipeline. NOTE: intended use is for single cell
         spatial data, not Visium or other lower resolution tech.
@@ -170,13 +173,15 @@ def grid(
 
     if use_label is not None and cell_info is not None and cell_set is not None:
         grid_data.uns[use_label] = pd.DataFrame(
-            cell_info, index=grid_data.obs_names.values.astype(str), columns=cell_set
+            cell_info,
+            index=grid_data.obs_names.values.astype(str),
+            columns=cell_set,
         )
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)
         grid_data.obs[use_label] = [cell_set[index] for index in max_indices]
         grid_data.obs[use_label] = grid_data.obs[use_label].astype("category")
         grid_data.obs[use_label] = grid_data.obs[use_label].cat.set_categories(
-            adata.obs[use_label].cat.categories
+            adata.obs[use_label].cat.categories,
         )
         if f"{use_label}_colors" in adata.uns:
             grid_data.uns[f"{use_label}_colors"] = adata.uns[f"{use_label}_colors"]
@@ -195,7 +200,7 @@ def grid(
 
 def run(
     adata: AnnData,
-    lrs: np.ndarray,
+    lrs: npt.NDArray[np.str_],
     min_spots: int = 10,
     distance: float | None = None,
     n_pairs: int = 1000,
@@ -203,12 +208,12 @@ def run(
     use_label: str | None = None,
     adj_method: str = "fdr_bh",
     pval_adj_cutoff: float = 0.05,
-    min_expr: float = 0,
+    min_expr: float = 0.0,
     save_bg: bool = False,
     neg_binom: bool = False,
     random_state: int = 0,
     verbose: bool = True,
-):
+) -> None:
     """Performs stLearn LR analysis.
 
     Parameters
@@ -220,7 +225,7 @@ def run(
     min_spots: int
         Minimum number of spots with an LR score for an LR to be considered for
         further testing.
-    distance: int
+    distance: float
         Distance to determine the neighbours (default [None] is immediately
         adjacent neighbours if using Visium), distance=0 means within spot
         (only for non-single-cell spatial data).
@@ -254,7 +259,7 @@ def run(
         Whether print dialogue to user during run-time.
     Returns
     --------
-    adata: AnnData
+    None
     Relevant information stored:
         adata.uns['lr_summary']
             Summary of significant spots detected per LR,
@@ -285,7 +290,7 @@ def run(
             "Detected '_' within some gene names, which breaks "
             + "internal string handling for the lrs in format 'L_R'.\n"
             + "Recommend to rename adata.var_names or remove these "
-            + f"genes from adata:\n {prob_genes}"
+            + f"genes from adata:\n {prob_genes}",
         )
 
     # Calculating neighbour & storing #
@@ -307,7 +312,9 @@ def run(
         neigh_bcs = [adata.obs_names[index] for index in neigh_indices]
         spot_neigh_bcs.append(",".join(neigh_bcs))
     spot_neigh_bcs_df = pd.DataFrame(
-        spot_neigh_bcs, index=spot_neighs_df.index, columns=["neighbour_bcs"]
+        spot_neigh_bcs,
+        index=spot_neighs_df.index,
+        columns=["neighbour_bcs"],
     )
     # Important to store barcodes in-case adata subsetted #
     adata.obsm["spot_neigh_bcs"] = spot_neigh_bcs_df
@@ -315,7 +322,7 @@ def run(
     if verbose:
         print(
             "Spot neighbour indices stored in adata.obsm['spot_neighbours'] "
-            "& adata.obsm['spot_neigh_bcs']."
+            "& adata.obsm['spot_neigh_bcs'].",
         )
 
     # Conduct with cell heterogeneity info if label_transfer provided #
@@ -391,18 +398,18 @@ def adj_pvals(
     -------
     adata: AnnData
         Adjusts all of the LR results; warning, does not adjust
-        celltype-celltype results from running ran st.tl.run_cci downstream.
+        celltype-celltype results from running st.tl.run_cci downstream.
     """
     if "lr_summary" not in adata.uns:
         raise Exception("Need to run st.tl.cci.run first.")
 
-    scores = adata.obsm["lr_scores"]
-    sig_scores = scores.copy()
+    lr_scores = adata.obsm["lr_scores"]
+    sig_scores = lr_scores.copy()
     ps = adata.obsm["p_vals"]
     padjs = np.ones(ps.shape)
     if correct_axis == "spot":
         for spot_i in range(ps.shape[0]):
-            lr_indices = np.where(scores[spot_i, :] > 0)[0]
+            lr_indices = np.where(lr_scores[spot_i, :] > 0)[0]
             if len(lr_indices) > 0:
                 spot_ps = ps[spot_i, lr_indices]
                 spot_padjs = multipletests(spot_ps, method=adj_method)[1]
@@ -410,7 +417,7 @@ def adj_pvals(
                 sig_scores[spot_i, lr_indices[spot_padjs >= pval_adj_cutoff]] = 0
     elif correct_axis == "LR":
         for lr_i in range(ps.shape[1]):
-            spot_indices = np.where(scores[:, lr_i] > 0)[0]
+            spot_indices = np.where(lr_scores[:, lr_i] > 0)[0]
             if len(spot_indices) > 0:
                 lr_ps = ps[spot_indices, lr_i]
                 spot_padjs = multipletests(lr_ps, method=adj_method)[1]
@@ -421,7 +428,7 @@ def adj_pvals(
         sig_scores[padjs >= pval_adj_cutoff] = 0
     else:
         raise Exception(
-            "Invalid correct_axis input, must be one of: 'LR', 'spot', or None"
+            "Invalid correct_axis input, must be one of: 'LR', 'spot', or None",
         )
 
     # Counting spots significant per lr #
@@ -434,7 +441,7 @@ def adj_pvals(
     new_order = np.argsort(-adata.uns["lr_summary"].loc[:, "n_spots_sig"].values)
     adata.uns["lr_summary"] = adata.uns["lr_summary"].iloc[new_order, :]
     print("Updated adata.uns[lr_summary]")
-    scores_ordered = scores[:, new_order]
+    scores_ordered = lr_scores[:, new_order]
     sig_scores_ordered = sig_scores[:, new_order]
     ps_ordered = ps[:, new_order]
     padjs_ordered = padjs[:, new_order]
@@ -618,7 +625,7 @@ def run_cci(
     ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
     if not ran_lr or not ran_sig:
         raise Exception(
-            "No LR results testing results found, please run st.tl.cci.run first"
+            "No LR results testing results found, please run st.tl.cci.run first",
         )
 
     # Ensuring compatibility with current way of adding label_transfer to object
@@ -630,7 +637,7 @@ def run_cci(
     # Getting the cell/tissue types that we are actually testing #
     if obs_key not in adata.obs:
         raise Exception(
-            f"Missing {obs_key} from adata.obs, need this even if using mixture mode."
+            f"Missing {obs_key} from adata.obs, need this even if using mixture mode.",
         )
     tissue_types = adata.obs[obs_key].values.astype(str)
     all_set = np.unique(tissue_types)
@@ -640,11 +647,11 @@ def run_cci(
     if not mix_mode and spot_mixtures:
         print(
             f"Warning: specified spot_mixtures but no deconvolution data in "
-            f"adata.uns['{uns_key}'].\nFalling back to discrete mode."
+            f"adata.uns['{uns_key}'].\nFalling back to discrete mode.",
         )
     if mix_mode:  # Checking the deconvolution results stored correctly.
         cols_present = np.all(
-            [cell_type in adata.uns[uns_key] for cell_type in all_set]
+            [cell_type in adata.uns[uns_key] for cell_type in all_set],
         )
         rows_present = np.all(adata.uns[uns_key].index.values == adata.obs_names.values)
         msg = f"Cell type scores misformatted in adata.uns[{uns_key}]:\n"
@@ -684,7 +691,7 @@ def run_cci(
         raise Exception(
             "No LR pairs returned with current filtering params; \n"
             "may need to adjust min_spots, sig_spots parameters, "
-            "or re-run st.tl.cci.run with more relaxed parameters."
+            "or re-run st.tl.cci.run with more relaxed parameters.",
         )
     lr_expr = adata[:, lr_genes].to_df()
 
@@ -764,10 +771,14 @@ def run_cci(
     adata.uns["lr_summary"][f"n-spot_cci_{use_label}"] = lr_n_spot_cci
     adata.uns["lr_summary"][f"n-spot_cci_sig_{use_label}"] = lr_n_spot_cci_sig
     adata.uns[f"lr_cci_{use_label}"] = pd.DataFrame(
-        all_matrix, index=all_set, columns=all_set
+        all_matrix,
+        index=all_set,
+        columns=all_set,
     )
     adata.uns[f"lr_cci_raw_{use_label}"] = pd.DataFrame(
-        raw_matrix, index=all_set, columns=all_set
+        raw_matrix,
+        index=all_set,
+        columns=all_set,
     )
     adata.uns[f"per_lr_cci_{use_label}"] = per_lr_cci
     adata.uns[f"per_lr_cci_pvals_{use_label}"] = per_lr_cci_pvals
@@ -775,9 +786,9 @@ def run_cci(
     if verbose:
         print(
             f"Significant counts of cci_rank interactions for all LR pairs in "
-            f"{f'data.uns[lr_cci_{use_label}]'}"
+            f"{f'data.uns[lr_cci_{use_label}]'}",
         )
         print(
             f"Significant counts of cci_rank interactions for each LR pair "
-            f"stored in dictionary {f'data.uns[per_lr_cci_{use_label}]'}"
+            f"stored in dictionary {f'data.uns[per_lr_cci_{use_label}]'}",
         )

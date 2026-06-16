@@ -38,6 +38,8 @@ undissociated tissue sample.
 Latest Additions
 ----------------
 
+.. include:: release_notes/1.4.1.rst
+
 .. include:: release_notes/1.4.0.rst
 
 .. include:: release_notes/1.3.0.rst

@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import scipy as sc
 import scipy.spatial as spatial
@@ -7,68 +8,6 @@ from numba import njit, prange
 from numba.typed import List
 
 from .het import create_grids
-
-
-def lr(
-    adata: AnnData,
-    use_lr: str = "cci_lr",
-    distance: float | None = None,
-    verbose: bool = True,
-    neighbours: list | None = None,
-    fast: bool = True,
-) -> AnnData:
-    """Calculate the proportion of known ligand-receptor co-expression among the
-    neighbouring spots or within spots
-    Parameters
-    ----------
-    adata: AnnData
-        The data object to scan
-    use_lr: str
-        object to keep the result (default: adata.uns['cci_lr'])
-    distance: float
-        Distance to determine the neighbours (default: closest), distance=0 means
-        within spot. If distance is None gets it from adata.uns["spatial"]
-    neighbours: list
-        List of the neighbours for each spot, if None then computed. Useful for
-        speeding up function.
-    fast: bool
-        Whether to use the fast implementation or not.
-
-    Returns
-    -------
-    adata: AnnData
-        The data object including the results
-    """
-
-    # automatically calculate distance if not given, won't overwrite distance=0
-    # which is within-spot
-    distance = calc_distance(adata, distance)
-
-    # # expand the LR pairs list by swapping ligand-receptor positions
-    lr_pairs = adata.uns["lr"].copy()
-    spot_lr1 = get_spot_lrs(adata, lr_pairs=lr_pairs, lr_order=True)
-    spot_lr2 = get_spot_lrs(adata, lr_pairs=lr_pairs, lr_order=False)
-    if verbose:
-        print("Altogether " + str(spot_lr1.shape[1]) + " valid L-R pairs")
-
-    # get neighbour spots for each spot according to the specified distance
-    if neighbours is None:
-        neighbours = calc_neighbours(adata, distance, index=fast)
-
-    # Calculating the scores, can have either the fast or the pandas version #
-    if fast:
-        adata.obsm[use_lr] = lr_core(spot_lr1.values, spot_lr2.values, neighbours, 0)
-    else:
-        adata.obsm[use_lr] = lr_pandas(spot_lr1, spot_lr2, neighbours)
-
-    if verbose:
-        print(
-            "L-R interactions with neighbours are counted and stored into adata.obsm['"
-            + use_lr
-            + "']"
-        )
-
-    # return adata
 
 
 def calc_distance(adata: AnnData, distance: float | None) -> float:
@@ -103,13 +42,13 @@ def calc_distance(adata: AnnData, distance: float | None) -> float:
 
 def get_lrs_scores(
     adata: AnnData,
-    lrs: np.ndarray,
+    lrs: npt.NDArray[np.str_],
     neighbours: np.ndarray,
     het_vals: np.ndarray,
     min_expr: float,
     filter_pairs: bool = True,
-    spot_indices: np.ndarray | None = None,
-):
+    spot_indices: npt.NDArray[np.int32] | None = None,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.str_]]:
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
     Parameters
     ----------
@@ -126,14 +65,19 @@ def get_lrs_scores(
         have reasonable score.
     filter_pairs: bool
         Whether to filter to valid pairs or not.
-    spot_indices: np.ndarray
-        Array of integers speci
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
-    lrs: np.ndarray   lr pairs from the database in format ['L1_R1', 'LN_RN']
+    lr_scores: npt.NDArray[np.float64]
+        Shape (n_scored_spots, n_pairs). LR score for each scored spot (rows in
+        the order of spot_indices) and each ligand-receptor pair (columns).
+    new_lrs: npt.NDArray[np.str_]
+        Shape (n_pairs,). Ligand-receptor pair labels in 'L_R' format
+        (e.g. 'L1_R1'), column-aligned with lr_scores.
     """
     if spot_indices is None:
-        spot_indices = np.array(list(range(len(adata))), dtype=np.int32)
+        spot_indices = np.arange(len(adata), dtype=np.int32)
 
     spot_lr1s = get_spot_lrs(
         adata, lr_pairs=lrs, lr_order=True, filter_pairs=filter_pairs
@@ -269,94 +213,55 @@ def calc_neighbours(
     return typed_neighs
 
 
-@njit
+@njit(cache=True)
 def lr_core(
-    spot_lr1: np.ndarray,
-    spot_lr2: np.ndarray,
+    spot_lr1: npt.NDArray[np.float64],
+    spot_lr2: npt.NDArray[np.float64],
     neighbours: List,
     min_expr: float,
-    spot_indices: np.array,
-) -> np.ndarray:
-    """Calculate the lr scores for each spot.
+    spot_indices: npt.NDArray[np.int32],
+) -> npt.NDArray[np.float64]:
+    """Calculate the mean of lr scores for each spot.
     Parameters
     ----------
-    spot_lr1: np.ndarray
-        Spots*Ligands
-    spot_lr2: np.ndarray
-        Spots*Receptors
-    neighbours: numba.typed.List
+    spot_lr1: npt.NDArray[np.float64]
+        Spots x 2 block for one LR pair, columns in (ligand, receptor) order.
+        Column j is the gene whose expression is taken at the spot itself.
+    spot_lr2: npt.NDArray[np.float64]
+        Spots x 2 block for the same pair in reversed (receptor, ligand) order.
+        Column j is the partner gene whose expression is averaged over neighbours.
+    neighbours: List
         List of np.array's indicating neighbours by indices for each spot.
     min_expr: float
         Minimum expression for gene to be considered expressed.
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
-    lr_scores: numpy.ndarray
-        Cells*LR-scores.
+    lr_scores: npt.NDArray[np.float64]
+        1-D, one score per spot in spot_indices (forward/reverse directions averaged).
     """
-    # Calculating mean of lr2 expressions from neighbours of each spot
-    nb_lr2 = np.zeros((len(spot_indices), spot_lr2.shape[1]), np.float64)
-    for i in range(len(spot_indices)):
-        spot_i = spot_indices[i]
-        nb_expr = spot_lr2[neighbours[spot_i], :]
-        if nb_expr.shape[0] != 0:  # Accounting for no neighbours
-            nb_expr_mean = nb_expr.sum(axis=0) / nb_expr.shape[0]
-        else:
-            nb_expr_mean = nb_expr.sum(axis=0)
-        nb_lr2[i, :] = nb_expr_mean
-
-    scores = (
-        spot_lr1[spot_indices, :] * (nb_lr2 > min_expr)
-        + (spot_lr1[spot_indices, :] > min_expr) * nb_lr2
-    )
-    spot_lr = scores.sum(axis=1)
-    return spot_lr / 2
-
-
-def lr_pandas(
-    spot_lr1: np.ndarray,
-    spot_lr2: np.ndarray,
-    neighbours: list,
-) -> np.ndarray:
-    """Calculate the lr scores for each spot.
-    Parameters
-    ----------
-    spot_lr1 (pd.DataFrame):
-        Cells*Ligands
-    spot_lr2 (pd.DataFrame):
-        Cells*Receptors
-    neighbours (list):
-        List of neighbours by indices for each spot.
-    Returns
-    -------
-    lr_scores (numpy.ndarray):
-        Cells*LR-scores.
-    """
-
-    # function to calculate mean of lr2 expression between neighbours or within
-    # spot (distance==0) for each spot
-    def mean_lr2(x):
-        # get lr2 expressions from the neighbour(s)
-        n_spots = neighbours[spot_lr2.index.tolist().index(x.name)]
-        nbs = spot_lr2.loc[n_spots, :]
-        if nbs.shape[0] > 0:  # if neighbour exists
-            return nbs.sum() / nbs.shape[0]
-        else:
-            return 0
-
-    # mean of lr2 expressions from neighbours of each spot
-    nb_lr2 = spot_lr2.apply(mean_lr2, axis=1)
-
-    # check whether neighbours exist
-    try:
-        nb_lr2.shape[1]
-    except:
-        raise ValueError("No neighbours found within given distance.") from None
-
-    # keep value of nb_lr2 only when lr1 is also expressed on the spots
-    spot_lr = pd.DataFrame(
-        spot_lr1.values * (nb_lr2.values > 0) + (spot_lr1.values > 0) * nb_lr2.values,
-    ).sum(axis=1)
-    return spot_lr.values / 2
+    n_rows = len(spot_indices)
+    n_cols = spot_lr2.shape[1]
+    spot_lr = np.zeros(n_rows, np.float64)
+    # For each spot (each spot is independent)
+    for i in range(n_rows):
+        si = spot_indices[i]
+        spot_neighbour = neighbours[si]
+        n_spot_neighbours = len(spot_neighbour)
+        total = 0.0
+        # For each LR pair.
+        for j in range(n_cols):
+            mean_lr2 = 0.0
+            if n_spot_neighbours > 0:
+                s = 0.0
+                for k in range(n_spot_neighbours):
+                    s += spot_lr2[spot_neighbour[k], j]
+                mean_lr2 = s / n_spot_neighbours
+            l1 = spot_lr1[si, j]
+            total += l1 * (mean_lr2 > min_expr) + (l1 > min_expr) * mean_lr2
+        spot_lr[i] = total / 2.0
+    return spot_lr
 
 
 @njit(parallel=True)
@@ -366,8 +271,8 @@ def get_scores(
     neighbours: List,
     het_vals: np.ndarray,
     min_expr: float,
-    spot_indices: np.ndarray,
-) -> np.ndarray:
+    spot_indices: npt.NDArray[np.int32],
+) -> npt.NDArray[np.float64]:
     """Calculates the scores.
     Parameters
     ----------
@@ -377,10 +282,12 @@ def get_scores(
         Spots*GeneOrder2, in format r1, l1, ... rn, ln
     het_vals:  np.ndarray
         Spots*Het counts
-    neighbours: numba.typed.List
+    neighbours: List
         List of np.array's indicating neighbours by indices for each spot.
     min_expr: float
         Minimum expression for gene to be considered expressed.
+    spot_indices: npt.NDArray[np.int32]
+        Subset of spots to score, given as their integer row positions.
     Returns
     -------
     spot_scores: np.ndarray

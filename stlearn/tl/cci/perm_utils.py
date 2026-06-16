@@ -1,7 +1,9 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from numba import njit, prange
-from numba.typed import List
+from numba.core import types
+from numba.typed import Dict, List
 from scipy.spatial.distance import canberra
 from sklearn.preprocessing import MinMaxScaler
 
@@ -264,23 +266,54 @@ def get_similar_genes_fast(
     return similar_genes
 
 
-@njit
-def gen_rand_pairs(genes1: np.ndarray, genes2: np.ndarray, n_pairs: int, seed: int):
-    """Generates random pairs of genes."""
+def gen_rand_pairs(
+    genes1: npt.NDArray[np.str_],
+    genes2: npt.NDArray[np.str_],
+    n_pairs: int,
+    seed: int,
+) -> npt.NDArray[np.str_]:
+    """Generate unique random gene pairs for building background LR scores.
 
+    Each pair is formed by drawing one gene from genes1 and one from genes2,
+    formatted as 'gene1_gene2'. Self-pairs (the same gene on both sides) and
+    duplicate pairs are rejected, so every returned pair is unique and its two
+    genes are distinct.
+
+    Parameters
+    ----------
+    genes1: npt.NDArray[np.str_]
+        Candidate genes for the first (ligand) position of each pair.
+    genes2: npt.NDArray[np.str_]
+        Candidate genes for the second (receptor) position of each pair.
+    n_pairs: int
+        Number of unique pairs to generate.
+    seed: int
+        Seed for the random generator, for reproducible pair selection.
+    """
+    n_possible = len(genes1) * len(genes2) - np.intersect1d(genes1, genes2).size
+    if n_pairs > n_possible:
+        raise ValueError(
+            f"Requested {n_pairs} unique pairs but only {n_possible} are "
+            f"possible from {len(genes1)}x{len(genes2)} genes."
+        )
+    return np.array(list(_gen_rand_pairs(genes1, genes2, n_pairs, seed)))
+
+
+@njit
+def _gen_rand_pairs(genes1, genes2, n_pairs, seed):
     np.random.seed(seed)  # noqa: NPY002 (numba requires legacy API)
     rand_pairs = List()
+    seen = Dict.empty(types.unicode_type, types.boolean)  # O(1) membership
     for _j in range(0, n_pairs):
         l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
         r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
         rand_pair = "_".join([l_rand, r_rand])
-        while rand_pair in rand_pairs or l_rand == r_rand:
+        while rand_pair in seen or l_rand == r_rand:  # was: in rand_pairs
             l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
             r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
             rand_pair = "_".join([l_rand, r_rand])
-
         rand_pairs.append(rand_pair)
-
+        seen[rand_pair] = True
     return rand_pairs
 
 

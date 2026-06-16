@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stlearn"
-version = "1.4.0"
+version = "1.4.1"
 authors = [
     { name = "Genomics and Machine Learning Lab", email = "andrew.newman@uq.edu.au" },
 ]
@@ -20,7 +20,7 @@ dependencies = [
     "leidenalg>=0.11.0",
     "numba>=0.58.1",
     "numpy>=2.4.0",
-    "pillow>=11.0.0,<12.0",
+    "pillow>=12.0.0,<13.0",
     "scanpy>=1.12.0",
     "scikit-image>=0.22.0",
     "pandas>=2.3.0",
