@@ -21,7 +21,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 TUTORIALS_URL = (
-    "https://github.com/GenomicsMachineLearning/stLearn-tutorials/releases/download/V1.4.0/tutorials.zip"
+    "https://github.com/GenomicsMachineLearning/stLearn-tutorials/releases/download/V1.4.1/tutorials.zip"
 )
 
 
