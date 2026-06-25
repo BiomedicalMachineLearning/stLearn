@@ -3,33 +3,30 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
+from networkx import Graph
 from sklearn.neighbors import NearestCentroid
 
-from stlearn.pp import neighbors
 from stlearn.spatial.clustering import localization
 from stlearn.spatial.morphology import adjust
 from stlearn.types import _METHOD
 
 
 def pseudotime(
-    adata: AnnData,
-    use_label: str = "leiden",
-    eps: float = 20,
-    n_neighbors: int = 25,
-    use_rep: str = "X_pca",
-    threshold: float = 0.01,
-    radius: int = 50,
-    method: _METHOD = "mean",
-    threshold_spots: int = 5,
-    use_sme: bool = False,
-    reverse: bool = False,
-    pseudotime_key: str = "dpt_pseudotime",
-    max_nodes: int = 4,
-    run_knn: bool = False,
-    copy: bool = False,
+        adata: AnnData,
+        use_label: str = "leiden",
+        eps: float = 20,
+        threshold: float = 0.01,
+        radius: int = 50,
+        method: _METHOD = "mean",
+        threshold_spots: int = 5,
+        use_sme: bool = False,
+        reverse: bool = False,
+        pseudotime_key: str = "dpt_pseudotime",
+        max_nodes: int = 4,
+        copy: bool = False,
 ) -> AnnData | None:
     """\
-    Perform pseudotime analysis.
+    Perform pseudotime analysis. Requires having run knn neighbours beforehand.
 
     Parameters
     ----------
@@ -71,6 +68,12 @@ def pseudotime(
 
     """
 
+    if "neighbors" not in adata.uns and "connectivities" not in adata.obsp:
+        raise ValueError(
+            "A neighbor graph is required - none found in uns or obsp. "
+            "Subsetting data requires re-running."
+        )
+
     keys_obsm = ["X_diffmap", "X_draw_graph_fr", "X_diffmap_morphology"]
     keys_uns = [
         "split_node",
@@ -90,10 +93,6 @@ def pseudotime(
             del adata.obs[key]
 
     localization(adata, use_label=use_label, eps=eps)
-
-    # Running knn
-    if run_knn:
-        neighbors(adata, n_neighbors=n_neighbors, use_rep=use_rep, random_state=0)
 
     # Running paga
     sc.tl.paga(adata, groups=use_label)
@@ -121,8 +120,8 @@ def pseudotime(
             "sub_cluster_labels"
         ].unique():
             if (
-                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                > threshold_spots
+                    len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                    > threshold_spots
             ):
                 meaningful_sub.append(i)
 
@@ -138,7 +137,7 @@ def pseudotime(
     replicate_list = np.array([])
     for i in range(0, len(cnt_matrix)):
         replicate_list = np.concatenate(
-            [replicate_list, np.array([i] * len(split_node[i]))]
+            [replicate_list, np.array([i] * len(split_node[i]))],
         )
 
     # Connection matrix for subcluster
@@ -155,15 +154,15 @@ def pseudotime(
     ]
 
     # Create a connection graph of subclusters
-    G = nx.from_pandas_adjacency(cnt_matrix)
-    G_nodes = list(range(len(G.nodes)))
+    graph = nx.from_pandas_adjacency(cnt_matrix)
+    graph_nodes = list(range(len(graph.nodes)))
 
     node_convert = {}
-    for pair in zip(list(G.nodes), G_nodes, strict=True):
+    for pair in zip(list(graph.nodes), graph_nodes, strict=True):
         node_convert[pair[1]] = pair[0]
 
     adata.uns["global_graph"] = {}
-    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_array(G)
+    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_array(graph)
     adata.uns["global_graph"]["node_dict"] = node_convert
 
     # Create centroid dict for subclusters
@@ -216,34 +215,25 @@ def selection_sort(x):
 
 
 def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key):
-    # Read original PAGA graph
-    G = nx.from_numpy_array(adata.uns["paga"]["connectivities"].toarray())
-    edge_weights = nx.get_edge_attributes(G, "weight")
-    G.remove_edges_from((e for e, w in edge_weights.items() if w < threshold))
-
-    H = G.to_directed()
+    # Recreate original PAGA graph.
+    graph = nx.from_numpy_array(adata.uns["paga"]["connectivities"].toarray())
+    edge_weights = nx.get_edge_attributes(graph, "weight")
+    graph.remove_edges_from((e for e, w in edge_weights.items() if w < threshold))
 
     # Calculate pseudotime for each node
-    node_pseudotime = {}
+    node_pseudotime = node_pseudotime_summary(adata, graph, pseudotime_key, use_label)
 
-    for node in H.nodes:
-        node_pseudotime[node] = adata.obs.query(use_label + " == '" + str(node) + "'")[
-            pseudotime_key
-        ].max()
-
-    # Force original PAGA to directed PAGA based on pseudotime
-    edge_to_remove = []
-    for edge in H.edges:
-        if node_pseudotime[edge[0]] - node_pseudotime[edge[1]] > 0:
-            edge_to_remove.append(edge)
-    H.remove_edges_from(edge_to_remove)
+    # Convert undirected graph to directed graph by pseudotime.
+    directed_graph = orient_by_pseudotime(graph, node_pseudotime)
 
     # Extract all available paths
     all_paths = {}
 
-    for source in H.nodes:
-        for target in H.nodes:
-            paths = nx.all_simple_paths(H, source=source, target=target)
+    for source in directed_graph.nodes:
+        for target in directed_graph.nodes:
+            paths = nx.all_simple_paths(
+                directed_graph, source=source, target=target,
+            )
             for i, path in enumerate(paths):
                 if len(path) < max_nodes:
                     all_paths[str(i) + "_" + str(source) + "_" + str(target)] = path
@@ -253,5 +243,36 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
         "All available trajectory paths are stored in adata.uns['available_paths'] "
         + "with length < "
         + str(max_nodes)
-        + " nodes"
+        + " nodes",
     )
+
+
+def node_pseudotime_summary(adata, graph: Graph, pseudotime_key, use_label):
+    summary = {}
+    for node in graph.nodes:
+        s = adata.obs.query(f"{use_label} == '{node}'")[pseudotime_key]
+        finite = s[np.isfinite(s)]
+        summary[node] = float(finite.median()) if len(finite) else np.nan
+    return summary
+
+def orient_by_pseudotime(graph, node_pseudotime):
+    """Orient an undirected PAGA graph into a DAG using per-node pseudotime.
+
+    Each undirected edge becomes a single arc pointing from lower to higher
+    pseudotime. Edges touching a node with NaN pseudotime (a cluster
+    unreachable from the root) cannot be ordered and are dropped. Ties are
+    broken deterministically by node id so no 2-cycle can survive.
+    """
+    directed_graph = nx.DiGraph()
+    directed_graph.add_nodes_from(graph.nodes)
+    for u, v in graph.edges:
+        pu, pv = node_pseudotime[u], node_pseudotime[v]
+        if not (np.isfinite(pu) and np.isfinite(pv)):
+            continue
+        if pu < pv:
+            directed_graph.add_edge(u, v)
+        elif pv < pu:
+            directed_graph.add_edge(v, u)
+        else:
+            directed_graph.add_edge(min(u, v), max(u, v))
+    return directed_graph
