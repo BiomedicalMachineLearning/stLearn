@@ -12,18 +12,18 @@ from stlearn.types import _METHOD
 
 
 def pseudotime(
-        adata: AnnData,
-        use_label: str = "leiden",
-        eps: float = 20,
-        threshold: float = 0.01,
-        radius: int = 50,
-        method: _METHOD = "mean",
-        threshold_spots: int = 5,
-        use_sme: bool = False,
-        reverse: bool = False,
-        pseudotime_key: str = "dpt_pseudotime",
-        max_nodes: int = 4,
-        copy: bool = False,
+    adata: AnnData,
+    use_label: str = "leiden",
+    eps: float = 20,
+    threshold: float = 0.01,
+    radius: int = 50,
+    method: _METHOD = "mean",
+    threshold_spots: int = 5,
+    use_sme: bool = False,
+    reverse: bool = False,
+    pseudotime_key: str = "dpt_pseudotime",
+    max_nodes: int = 4,
+    copy: bool = False,
 ) -> AnnData | None:
     """\
     Perform pseudotime analysis. Requires having run knn neighbours beforehand.
@@ -120,8 +120,8 @@ def pseudotime(
             "sub_cluster_labels"
         ].unique():
             if (
-                    len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                    > threshold_spots
+                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+                > threshold_spots
             ):
                 meaningful_sub.append(i)
 
@@ -232,7 +232,9 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
     for source in directed_graph.nodes:
         for target in directed_graph.nodes:
             paths = nx.all_simple_paths(
-                directed_graph, source=source, target=target,
+                directed_graph,
+                source=source,
+                target=target,
             )
             for i, path in enumerate(paths):
                 if len(path) < max_nodes:
@@ -254,6 +256,7 @@ def node_pseudotime_summary(adata, graph: Graph, pseudotime_key, use_label):
         finite = s[np.isfinite(s)]
         summary[node] = float(finite.median()) if len(finite) else np.nan
     return summary
+
 
 def orient_by_pseudotime(graph, node_pseudotime):
     """Orient an undirected PAGA graph into a DAG using per-node pseudotime.

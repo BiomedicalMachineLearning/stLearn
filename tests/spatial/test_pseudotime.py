@@ -67,7 +67,8 @@ class TestPseudotime(unittest.TestCase):
             graph = networkx.from_numpy_array(random_node)
             vals = rng.choice([0.0, 0.0, 0.5, 1.0, float("nan")], size=n)
             directed_graph = orient_by_pseudotime(
-                graph, {i: float(vals[i]) for i in range(n)},
+                graph,
+                {i: float(vals[i]) for i in range(n)},
             )
             assert networkx.is_directed_acyclic_graph(directed_graph)
 
