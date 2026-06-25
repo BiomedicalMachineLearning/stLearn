@@ -49,7 +49,7 @@ class TestLrCore(unittest.TestCase):
             got = lr_core(
                 spot_lr1,
                 spot_lr2,
-                neighbour_lists,
+                List(neighbour_lists),
                 min_expr,
                 spot_indices,
             )
