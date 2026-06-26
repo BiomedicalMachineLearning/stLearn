@@ -6,7 +6,6 @@ from anndata import AnnData
 from .._settings import settings
 
 
-# TODO - Add scanpy and covert this over.
 def visium_sge(
     sample_id="V1_Breast_Cancer_Block_A_Section_1",
     *,
@@ -35,11 +34,11 @@ def visium_sge(
 
 
 def xenium_sge(
-    base_url="https://cf.10xgenomics.com/samples/xenium/1.0.1",
-    image_filename="he_image.ome.tif",
-    alignment_filename="he_imagealignment.csv",
-    zip_filename="outs.zip",
-    library_id="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    base_url: str="https://cf.10xgenomics.com/samples/xenium/1.0.1",
+    library_id: str="Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    zip_filename: str="outs.zip",
+    image_filename: str="he_image.ome.tif",
+    alignment_filename: str="he_imagealignment.csv",
     include_hires_tiff: bool = False,
 ):
     """
@@ -48,17 +47,25 @@ def xenium_sge(
 
     Args:
         base_url: Base URL for downloads
+        library_id: Identifier for the library
+        zip_filename: Name of the zip file to download
         image_filename: Name of the image file to download
         alignment_filename: Name of the affine transformation file to download
-        zip_filename: Name of the zip file to download
-        library_id: Identifier for the library
         include_hires_tiff: Whether to download the high-res TIFF image
     """
     sc.settings.datasetdir = settings.datasetdir
     library_dir = settings.datasetdir / library_id
     library_dir.mkdir(parents=True, exist_ok=True)
 
-    files_to_extract = ["cell_feature_matrix.h5", "cells.csv.gz", "experiment.xenium"]
+    if "xe_outs.zip" in zip_filename:
+        files_to_extract = [
+            "cell_feature_matrix.zarr.zip", "cells.zarr.zip", "experiment.xenium"
+        ]
+    else:
+        files_to_extract = [
+            "cell_feature_matrix.h5", "cells.csv.gz", "experiment.xenium"
+        ]
+
     all_sge_files_exist = all(
         (library_dir / sge_file).exists() for sge_file in files_to_extract
     )
@@ -79,11 +86,11 @@ def xenium_sge(
             sc.readwrite._download(url=url, path=file_path)
 
     if not all_sge_files_exist:
+        zip_file_path = library_dir / zip_filename
         try:
-            zip_file_path = library_dir / zip_filename
             with zf.ZipFile(zip_file_path, "r") as zip_ref:
-                for zip_filename in files_to_extract:
-                    with open(library_dir / zip_filename, "wb") as file_name:
-                        file_name.write(zip_ref.read(f"outs/{zip_filename}"))
+                members = {m.rsplit("/", 1)[-1]: m for m in zip_ref.namelist()}
+                for name in files_to_extract:
+                    (library_dir / name).write_bytes(zip_ref.read(members[name]))
         except zf.BadZipFile as b:
-            raise ValueError(f"Invalid zip file: {library_dir / zip_filename}") from b
+            raise ValueError(f"Invalid zip file: {zip_file_path}") from b
