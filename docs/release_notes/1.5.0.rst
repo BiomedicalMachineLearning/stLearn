@@ -1,0 +1,8 @@
+1.5.0 `2026-06-16`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. rubric:: Bugs
+
+* Search within Xenium zip for matching filenames for cell x features, cells, and project files.
+* Removed kNN call from pseudotime.
+* Improved node pruning for pseudotime graph - remove trajectories with NaN or Infinite nodes.

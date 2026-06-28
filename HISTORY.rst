@@ -2,6 +2,14 @@
 History
 =======
 
+1.5.0 (2026-06-28)
+------------------
+
+API and Bug Fixes:
+* Search within Xenium zip for matching filenames for cell x features, cells, and project files.
+* Removed kNN call from pseudotime.
+* Improved node pruning for pseudotime graph - remove trajectories with NaN or Infinite nodes.
+
 1.4.1 (2026-06-16)
 ------------------
 * Improved speed of random spot generation used in permutation testing.
