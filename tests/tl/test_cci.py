@@ -81,6 +81,10 @@ class TestCCI(unittest.TestCase):
         self.assertTrue(np.all([gene[0].isupper() for gene in genes2]))
         self.assertTrue(np.all([gene[1:] == gene[1:].lower() for gene in genes2]))
 
+        # Should not have duplicates.
+        self.assertEqual(len(lrs), len(set(lrs)))
+        self.assertLessEqual(len(lrs), sizes[1])
+
     # Important, granular tests related to LR scoring
 
     # Important, granular tests related to CCI counting
