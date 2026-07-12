@@ -11,6 +11,8 @@ from typing import (  # Special
 )
 
 import matplotlib
+import matplotlib.axes
+import matplotlib.figure
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -20,7 +22,14 @@ from scipy.interpolate import griddata
 
 from ..classes import Spatial
 from ..utils import Axes, _AxesSubplot, _read_graph
-from .utils import centroidpython, check_sublist, get_cluster, get_cmap, get_node
+from .utils import (
+    centroidpython,
+    check_sublist,
+    get_cluster,
+    get_cmap,
+    get_colors,
+    get_node,
+)
 
 
 class SpatialBasePlot(Spatial):
@@ -656,7 +665,7 @@ class ClusterPlot(SpatialBasePlot):
 
         self.cmap_ = self._get_cmap(self.cmap)
 
-        self._add_cluster_colors()
+        self.colors = get_colors(self.adata[0], self.use_label, cmap=self.cmap)
 
         self._plot_clusters()
 
@@ -687,18 +696,10 @@ class ClusterPlot(SpatialBasePlot):
         if fname is not None:
             self._save_output()
 
-    def _add_cluster_colors(self):
-        self.adata[0].uns[self.use_label + "_colors"] = []
-
-        for i, _ in enumerate(self.adata[0].obs.groupby(self.use_label, observed=True)):
-            self.adata[0].uns[self.use_label + "_colors"].append(
-                matplotlib.colors.to_hex(self.cmap_(i / (self.cmap_n - 1)))
-            )
-
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
-        for i, cluster in enumerate(
+        for _, cluster in enumerate(
             self.query_adata.obs.groupby(self.use_label, observed=True)
         ):
             # Plot scatter plot based on pixel of spots
@@ -706,12 +707,9 @@ class ClusterPlot(SpatialBasePlot):
                 check_sublist(list(self.query_adata.obs.index), list(cluster[1].index))
             ]
 
-            if self.use_label + "_colors" in self.adata[0].uns:
-                label_set = self.adata[0].obs[self.use_label].cat.categories.values
-                col_index = np.where(label_set == cluster[0])[0][0]
-                color = self.adata[0].uns[self.use_label + "_colors"][col_index]
-            else:
-                color = self.cmap_(self.query_indexes[i] / (self.cmap_n - 1))
+            label_set = self.adata[0].obs[self.use_label].cat.categories.values
+            col_index = np.where(label_set == cluster[0])[0][0]
+            color = self.colors[col_index]
 
             imgcol_new = subset_spatial[:, 0] * self.scale_factor
             imgrow_new = subset_spatial[:, 1] * self.scale_factor
@@ -767,7 +765,7 @@ class ClusterPlot(SpatialBasePlot):
                 x = 100
                 y = -50
 
-            colors = self.adata[0].uns[self.use_label + "_colors"]
+            colors = self.colors
             index = self.query_indexes[i]
             self.ax.text(
                 centroids[0][0] + x,
@@ -844,7 +842,7 @@ class ClusterPlot(SpatialBasePlot):
                     else:
                         x = 100
                         y = -50
-                    colors = self.adata[0].uns[self.use_label + "_colors"]
+                    colors = self.colors
                     index = self.query_indexes[i]
 
                     self.ax.text(
@@ -863,7 +861,7 @@ class ClusterPlot(SpatialBasePlot):
                     )
 
     def _add_trajectories(self):
-        used_colors = self.adata[0].uns[self.use_label + "_colors"]
+        used_colors = self.colors
         cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
 
         cmap = plt.get_cmap(cmaps)

@@ -101,9 +101,34 @@ class TestClusterPlot(unittest.TestCase):
             self.assertEqual(len(colors1), len(colors2))
             self.assertEqual(colors1, colors2)
 
+    def test_existing_colors_preserved(self):
+        """User-supplied colors must not be overwritten (issue: lr_plot ignores
+        adata.uns[f'{use_label}_colors'])."""
+        label_name = "test_clusters"
+        existing_colors = ["#FF0000", "#00FF00", "#0000FF"]
+        self.adata.uns[f"{label_name}_colors"] = existing_colors.copy()
+
+        with (
+            patch("matplotlib.pyplot.subplots") as mock_subplots,
+            patch.object(ClusterPlot, "_plot_clusters"),
+            patch.object(ClusterPlot, "_add_image"),
+        ):
+            mock_subplots.return_value = (MagicMock(), MagicMock())
+
+            plot = ClusterPlot(
+                adata=self.adata,
+                use_label=label_name,
+                show_image=False,
+                show_color_bar=False,
+            )
+
+            self.assertEqual(
+                list(plot.adata[0].uns[f"{label_name}_colors"]), existing_colors
+            )
+
     def test_insufficient_existing_colors_extended(self):
-        """Test that insufficient existing colors are extended."""
-        # Pre-populate adata with insufficient colors (only 2 colors for 3 clusters)
+        """Test that insufficient existing colours are extended."""
+        # Pre-populate adata with insufficient colors (only 2 colours for 3 clusters)
         existing_colors = ["#FF0000", "#00FF00"]
         label_name = "test_clusters"
         self.adata.uns[f"{label_name}_colors"] = existing_colors
@@ -123,10 +148,10 @@ class TestClusterPlot(unittest.TestCase):
                 show_color_bar=False,
             )
 
-            # Should extend existing colors
+            # Should extend existing colours - keep the user's existing colours set.
             colors = plot.adata[0].uns[f"{label_name}_colors"]
             self.assertEqual(len(colors), 3)
-            self.assertNotEqual(colors[:2], existing_colors)
+            self.assertEqual(colors[:2], existing_colors)
 
     def tearDown(self):
         key = f"{self.__class__._label_name}_colors"

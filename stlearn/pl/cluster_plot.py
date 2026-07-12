@@ -2,7 +2,8 @@ from typing import (
     Optional,  # Special
 )
 
-import matplotlib
+import matplotlib.axes
+import matplotlib.figure
 from anndata import AnnData
 from bokeh.io import output_notebook
 from bokeh.plotting import show

@@ -98,23 +98,23 @@ def check_cmap(cmap):
 
 def get_colors(adata, obs_key, cmap="default", label_set=None):
     """Retrieves colors if present in adata.uns, if not present then will set
-    them as per scanpy & return in order requested.
+    them as per scanpy & return in order requested. If fewer colors are present
+    than there are categories, the existing colors are kept and the remainder
+    are generated.
     """
-    # Checking if colors are already set #
     col_key = f"{obs_key}_colors"
-    if col_key in adata.uns:
-        labels_ordered = adata.obs[obs_key].cat.categories
-        colors_ordered = adata.uns[col_key]
-    else:  # Colors not already present
+
+    if not hasattr(adata.obs[obs_key], "cat"):  # Ensure categorical
+        adata.obs[obs_key] = adata.obs[obs_key].astype("category")
+    labels_ordered = adata.obs[obs_key].cat.categories
+
+    colors_ordered = list(adata.uns.get(col_key, []))
+    if len(colors_ordered) < len(labels_ordered):
         check_cmap(cmap)
         cmap, _ = get_cmap(cmap)
-
-        if not hasattr(adata.obs[obs_key], "cat"):  # Ensure categorical
-            adata.obs[obs_key] = adata.obs[obs_key].astype("category")
-        labels_ordered = adata.obs[obs_key].cat.categories
-        colors_ordered = [
-            matplotlib.colors.rgb2hex(cmap(i / (len(labels_ordered) - 1)))
-            for i in range(len(labels_ordered))
+        colors_ordered += [
+            matplotlib.colors.rgb2hex(cmap(i / max(len(labels_ordered) - 1, 1)))
+            for i in range(len(colors_ordered), len(labels_ordered))
         ]
         adata.uns[col_key] = colors_ordered
 

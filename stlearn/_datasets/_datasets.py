@@ -34,11 +34,11 @@ def visium_sge(
 
 
 def xenium_sge(
-    base_url: str="https://cf.10xgenomics.com/samples/xenium/1.0.1",
-    library_id: str="Xenium_FFPE_Human_Breast_Cancer_Rep1",
-    zip_filename: str="outs.zip",
-    image_filename: str="he_image.ome.tif",
-    alignment_filename: str="he_imagealignment.csv",
+    base_url: str = "https://cf.10xgenomics.com/samples/xenium/1.0.1",
+    library_id: str = "Xenium_FFPE_Human_Breast_Cancer_Rep1",
+    zip_filename: str = "outs.zip",
+    image_filename: str = "he_image.ome.tif",
+    alignment_filename: str = "he_imagealignment.csv",
     include_hires_tiff: bool = False,
 ):
     """
@@ -59,11 +59,15 @@ def xenium_sge(
 
     if "xe_outs.zip" in zip_filename:
         files_to_extract = [
-            "cell_feature_matrix.zarr.zip", "cells.zarr.zip", "experiment.xenium"
+            "cell_feature_matrix.zarr.zip",
+            "cells.zarr.zip",
+            "experiment.xenium",
         ]
     else:
         files_to_extract = [
-            "cell_feature_matrix.h5", "cells.csv.gz", "experiment.xenium"
+            "cell_feature_matrix.h5",
+            "cells.csv.gz",
+            "experiment.xenium",
         ]
 
     all_sge_files_exist = all(
