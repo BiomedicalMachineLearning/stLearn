@@ -22,7 +22,14 @@ from scipy.interpolate import griddata
 
 from ..classes import Spatial
 from ..utils import Axes, _AxesSubplot, _read_graph
-from .utils import centroidpython, check_sublist, get_cluster, get_cmap, get_colors, get_node
+from .utils import (
+    centroidpython,
+    check_sublist,
+    get_cluster,
+    get_cmap,
+    get_colors,
+    get_node,
+)
 
 
 class SpatialBasePlot(Spatial):
@@ -692,7 +699,7 @@ class ClusterPlot(SpatialBasePlot):
     def _plot_clusters(self):
         # Plot scatter plot based on pixel of spots
 
-        for i, cluster in enumerate(
+        for _, cluster in enumerate(
             self.query_adata.obs.groupby(self.use_label, observed=True)
         ):
             # Plot scatter plot based on pixel of spots
