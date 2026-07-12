@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +10,8 @@ authors = [
 ]
 description = "A downstream analysis toolkit for Spatial Transcriptomic data"
 readme = { file = "README.md", content-type = "text/markdown" }
-license = { text = "BSD license" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "anndata>=0.12.0",
@@ -44,7 +45,6 @@ classifiers = [
     "Framework :: Jupyter",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -85,14 +85,11 @@ jupyter = [
 Homepage = "https://github.com/BiomedicalMachineLearning/stLearn"
 Repository = "https://github.com/BiomedicalMachineLearning/stLearn"
 
-[project.scripts]
-stlearn = "stlearn.app.cli:main"
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["stlearn", "stlearn.*"]
-
-[tool.setuptools.package-data]
-"*" = ["*"]
 
 [tool.ruff]
 target-version = "py312"
