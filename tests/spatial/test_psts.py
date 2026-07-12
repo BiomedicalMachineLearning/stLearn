@@ -27,7 +27,7 @@ class TestPSTS(unittest.TestCase):
         print("Done leiden!")
         self.adata.uns["iroot"] = np.flatnonzero(self.adata.obs["leiden"] == "0")[0]
         st.spatial.trajectory.pseudotime(
-            self.adata, eps=100, use_rep="X_pca", use_sme=False, use_label="leiden"
+            self.adata, eps=100, use_sme=False, use_label="leiden"
         )
         st.spatial.trajectory.pseudotimespace_global(
             self.adata, use_label="leiden", list_clusters=[0, 1]
