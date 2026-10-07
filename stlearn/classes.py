@@ -24,7 +24,6 @@ class Spatial:
     def __init__(
         self,
         adata: AnnData,
-        basis: str = "spatial",
         img: np.ndarray | None = None,
         img_key: str | None | Empty = _empty,
         library_id: str | None | Empty = _empty,
