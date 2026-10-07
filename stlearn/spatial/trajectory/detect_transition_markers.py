@@ -11,7 +11,7 @@ def detect_transition_markers_clades(
     clade: int,
     cutoff_spearman: float = 0.4,
     cutoff_pvalue: float = 0.05,
-    screening_genes: None | list[str] = None,
+    screening_genes: list[str] | None = None,
     use_raw_count: bool = False,
 ) -> None:
     """\
@@ -90,7 +90,7 @@ def detect_transition_markers_branches(
     branch: list[int],
     cutoff_spearman: float = 0.4,
     cutoff_pvalue: float = 0.05,
-    screening_genes: None | list[str] = None,
+    screening_genes: list[str] | None = None,
     use_raw_count: bool = False,
 ) -> None:
     """\

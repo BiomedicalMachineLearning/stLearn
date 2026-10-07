@@ -10,7 +10,7 @@ def filter_genes(
     max_counts: int | None = None,
     max_cells: int | None = None,
     inplace: bool = True,
-) -> AnnData | None | tuple[np.ndarray, np.ndarray]:
+) -> AnnData | tuple[np.ndarray, np.ndarray] | None:
     """\
     Wrap function scanpy.pp.filter_genes
 
