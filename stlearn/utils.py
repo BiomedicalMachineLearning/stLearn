@@ -53,7 +53,7 @@ def _check_scale_factor(
 
 def _check_spatial_data(
     uns: Mapping, library_id: str | Empty | None
-) -> tuple[str | None, Mapping | Empty | None]:
+) -> tuple[str | Empty | None, Mapping | None]:
     """
     Given a mapping, try and extract a library id/ mapping with spatial data.
     Assumes this is `.uns` from how we parse visium data.
