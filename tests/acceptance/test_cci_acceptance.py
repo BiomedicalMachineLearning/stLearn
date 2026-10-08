@@ -32,6 +32,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import anndata
 import numpy as np
@@ -105,7 +106,7 @@ def sample(request: pytest.FixtureRequest, tmp_path_factory) -> Path:
 @pytest.fixture(scope="session")
 def report(request: pytest.FixtureRequest):
     """Collects each scenario's row; writes benchmark.json and a summary at the end."""
-    rows = []
+    rows: list[dict[str, Any]] = []
     yield rows
     if not rows:
         return

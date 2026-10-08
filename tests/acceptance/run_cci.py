@@ -21,6 +21,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import numpy as np
 
@@ -58,7 +60,7 @@ class PhaseTimer:
 
     def __init__(self) -> None:
         self.totals = dict(map(lambda name: (name, [0.0, 0.0, 0]), PHASES))
-        self._originals = []
+        self._originals: list[tuple[ModuleType, str, Any]] = []
 
     def __enter__(self) -> "PhaseTimer":
         for name, (module_name, attribute) in PHASES.items():

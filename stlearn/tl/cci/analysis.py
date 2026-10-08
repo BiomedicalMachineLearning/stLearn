@@ -28,7 +28,8 @@ from .permutation import perform_spot_testing
 
 # Functions related to Ligand-Receptor interactions
 def load_lrs(
-        names: str | list[str] | None = None, species: str = "human",
+    names: str | list[str] | None = None,
+    species: str = "human",
 ) -> npt.NDArray[np.str_]:
     """Loads inputted LR database, & concatenates into consistent database set of
     pairs without duplicates. If None loads 'connectomeDB2020_lit'.
@@ -56,9 +57,7 @@ def load_lrs(
     for name in names:
         with (db_dir / f"{name}.txt").open("rb") as fh:
             db = pd.read_csv(fh, sep="\t")
-        lrs.update(
-            f"{ligand}_{receptor}" for ligand, receptor in db.iloc[:, :2].values
-        )
+        lrs.update(f"{ligand}_{receptor}" for ligand, receptor in db.iloc[:, :2].values)
     # If dealing with mouse, need to reformat #
     if species == "mouse":
         lrs = {
@@ -69,12 +68,12 @@ def load_lrs(
 
 
 def grid(
-        adata: AnnData,
-        n_row: int = 10,
-        n_col: int = 10,
-        use_label: str | None = None,
-        n_cpus: int | None = None,
-        verbose: bool = True,
+    adata: AnnData,
+    n_row: int = 10,
+    n_col: int = 10,
+    use_label: str | None = None,
+    n_cpus: int | None = None,
+    verbose: bool = True,
 ) -> AnnData:
     """Creates a new anndata representing a gridded version of the data; can be
         used upstream of CCI pipeline. NOTE: intended use is for single cell
@@ -192,20 +191,20 @@ def grid(
 
 
 def run(
-        adata: AnnData,
-        lrs: npt.NDArray[np.str_],
-        min_spots: int = 10,
-        distance: float | None = None,
-        n_pairs: int = 1000,
-        n_cpus: int | None = None,
-        use_label: str | None = None,
-        adj_method: str = "fdr_bh",
-        pval_adj_cutoff: float = 0.05,
-        min_expr: float = 0.0,
-        save_bg: bool = False,
-        neg_binom: bool = False,
-        random_state: int = 0,
-        verbose: bool = True,
+    adata: AnnData,
+    lrs: npt.NDArray[np.str_],
+    min_spots: int = 10,
+    distance: float | None = None,
+    n_pairs: int = 1000,
+    n_cpus: int | None = None,
+    use_label: str | None = None,
+    adj_method: str = "fdr_bh",
+    pval_adj_cutoff: float = 0.05,
+    min_expr: float = 0.0,
+    save_bg: bool = False,
+    neg_binom: bool = False,
+    random_state: int = 0,
+    verbose: bool = True,
 ) -> None:
     """Performs stLearn LR analysis.
 
@@ -366,10 +365,10 @@ def run(
 
 
 def adj_pvals(
-        adata,
-        pval_adj_cutoff: float = 0.05,
-        correct_axis: str = "spot",
-        adj_method: str = "fdr_bh",
+    adata,
+    pval_adj_cutoff: float = 0.05,
+    correct_axis: str = "spot",
+    adj_method: str = "fdr_bh",
 ):
     """Performs p-value adjustment and determination of significant spots.
         Default settings of this function are already run in st.tl.cci.run.
@@ -448,16 +447,16 @@ def adj_pvals(
 
 
 def run_lr_go(
-        adata: AnnData,
-        r_path: str,
-        n_top: int = 100,
-        bg_genes: np.ndarray | None = None,
-        min_sig_spots: int = 1,
-        species: str = "human",
-        p_cutoff: float = 0.01,
-        q_cutoff: float = 0.5,
-        onts: str = "BP",
-        verbose: bool = True,
+    adata: AnnData,
+    r_path: str,
+    n_top: int = 100,
+    bg_genes: np.ndarray | None = None,
+    min_sig_spots: int = 1,
+    species: str = "human",
+    p_cutoff: float = 0.01,
+    q_cutoff: float = 0.5,
+    onts: str = "BP",
+    verbose: bool = True,
 ):
     """Runs a basic GO analysis on the genes in the top ranked LR pairs.
         Only supported for human and mouse species.
@@ -526,17 +525,17 @@ def run_lr_go(
 
 # Functions for calling Celltype-Celltype interactions
 def run_cci(
-        adata: AnnData,
-        use_label: str,
-        spot_mixtures: bool = False,
-        min_spots: int = 3,
-        sig_spots: bool = True,
-        cell_prop_cutoff: float = 0.2,
-        p_cutoff: float = 0.05,
-        n_perms: int = 100,
-        n_cpus: int | None = None,
-        random_state: int = 0,
-        verbose: bool = True,
+    adata: AnnData,
+    use_label: str,
+    spot_mixtures: bool = False,
+    min_spots: int = 3,
+    sig_spots: bool = True,
+    cell_prop_cutoff: float = 0.2,
+    p_cutoff: float = 0.05,
+    n_perms: int = 100,
+    n_cpus: int | None = None,
+    random_state: int = 0,
+    verbose: bool = True,
 ):
     """Calls significant celltype-celltype interactions based on cell-type data
     randomisation.
@@ -651,8 +650,8 @@ def run_cci(
         if not cols_present or not rows_present:
             if not cols_present:
                 msg = (
-                        msg + f"Cell types missing from adata.uns[{uns_key}] columns:\n"
-                              f"{[cell for cell in all_set if cell not in adata.uns[uns_key]]}\n"
+                    msg + f"Cell types missing from adata.uns[{uns_key}] columns:\n"
+                    f"{[cell for cell in all_set if cell not in adata.uns[uns_key]]}\n"
                 )
             elif not rows_present:
                 msg = msg + "Rows do not correspond to adata.obs_names.\n"
@@ -699,11 +698,11 @@ def run_cci(
     lr_n_spot_cci_sig = np.zeros(lr_summary.shape[0])
     lr_n_cci_sig = np.zeros(lr_summary.shape[0])
     with tqdm(
-            total=len(best_lrs),
-            desc="Counting celltype-celltype interactions per LR and permuting "
-                 + f"{n_perms} times.",
-            bar_format="{l_bar}{bar} [ time left: {remaining} ]",
-            disable=not verbose,
+        total=len(best_lrs),
+        desc="Counting celltype-celltype interactions per LR and permuting "
+        + f"{n_perms} times.",
+        bar_format="{l_bar}{bar} [ time left: {remaining} ]",
+        disable=not verbose,
     ) as pbar:
         for i, best_lr in enumerate(best_lrs):
             ligand, receptor = best_lr.split("_")
