@@ -329,7 +329,6 @@ def run(
     else:
         het_vals = np.array([1] * len(adata))
 
-
     """ 1. Filter any LRs without stored expression.
     """
     # Calculating the lr_scores across spots for the inputted lrs #
