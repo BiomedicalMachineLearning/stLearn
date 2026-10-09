@@ -172,11 +172,9 @@ def pseudo_spot(
         ).reset_index()
         obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
 
     reg_row = LinearRegression().fit(array_row.values.reshape(-1, 1), img_row)
 

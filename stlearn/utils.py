@@ -52,7 +52,7 @@ def _check_scale_factor(
 
 
 def _check_spatial_data(
-    uns: Mapping, library_id: Empty | None | str
+    uns: Mapping, library_id: str | Empty | None
 ) -> tuple[str | Empty | None, Mapping | None]:
     """
     Given a mapping, try and extract a library id/ mapping with spatial data.
@@ -84,7 +84,7 @@ def _check_spatial_data(
 def _check_img(
     spatial_data: Mapping | None,
     img: np.ndarray | None,
-    img_key: None | str | Empty,
+    img_key: str | Empty | None,
     bw: bool = False,
 ) -> tuple[np.ndarray | None, str | None]:
     """

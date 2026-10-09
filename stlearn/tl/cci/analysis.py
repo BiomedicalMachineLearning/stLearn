@@ -3,6 +3,7 @@ the inputted data / state of the anndata object.
 """
 
 import os
+from importlib.resources import files
 
 import numba
 import numpy as np
@@ -27,7 +28,8 @@ from .permutation import perform_spot_testing
 
 # Functions related to Ligand-Receptor interactions
 def load_lrs(
-    names: str | list | None = None, species: str = "human"
+    names: str | list[str] | None = None,
+    species: str = "human",
 ) -> npt.NDArray[np.str_]:
     """Loads inputted LR database, & concatenates into consistent database set of
     pairs without duplicates. If None loads 'connectomeDB2020_lit'.
@@ -50,29 +52,19 @@ def load_lrs(
     if isinstance(names, str):
         names = [names]
 
-    path = os.path.dirname(os.path.realpath(__file__))
-    dbs = [pd.read_csv(f"{path}/databases/{name}.txt", sep="\t") for name in names]
-    lrs_full = []
-    for db in dbs:
-        lrs = [f"{db.values[i, 0]}_{db.values[i, 1]}" for i in range(db.shape[0])]
-        lrs_full.extend(lrs)
-    lrs_full_arr = np.unique(np.array(lrs_full))
+    db_dir = files("stlearn.tl.cci") / "databases"
+    lrs: set[str] = set()
+    for name in names:
+        with (db_dir / f"{name}.txt").open("rb") as fh:
+            db = pd.read_csv(fh, sep="\t")
+        lrs.update(f"{ligand}_{receptor}" for ligand, receptor in db.iloc[:, :2].values)
     # If dealing with mouse, need to reformat #
     if species == "mouse":
-        genes1 = [lr_.split("_")[0] for lr_ in lrs_full]
-        genes2 = [lr_.split("_")[1] for lr_ in lrs_full]
-        lrs_full_arr = np.array(
-            [
-                genes1[i][0]
-                + genes1[i][1:].lower()
-                + "_"
-                + genes2[i][0]
-                + genes2[i][1:].lower()
-                for i in range(len(lrs_full))
-            ],
-        )
-
-    return lrs_full_arr
+        lrs = {
+            f"{ligand[0]}{ligand[1:].lower()}_{receptor[0]}{receptor[1:].lower()}"
+            for ligand, receptor in (lr_.split("_") for lr_ in lrs)
+        }
+    return np.array(sorted(lrs), dtype=np.str_)
 
 
 def grid(
