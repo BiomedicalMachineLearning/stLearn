@@ -1,7 +1,7 @@
 """Options shared by the test suite.
 
-Tests marked `acceptance` take minutes, so `pytest` skips them; select them with
-`pytest -m acceptance`.
+Tests marked `acceptance` take minutes, so pyproject.toml deselects them by
+default; select them with `pytest -m acceptance`.
 """
 
 import pytest
@@ -14,13 +14,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         choices=["compare", "write"],
         default="compare",
         help="compare results with the stored baselines (default), or write new "
-        "baselines, e.g. from master with --acceptance-stlearn",
-    )
-    group.addoption(
-        "--acceptance-stlearn",
-        metavar="PATH",
-        help="stLearn source tree to test, e.g. a git worktree of master "
-        "(default: this checkout)",
+        "baselines from this checkout's code",
     )
     group.addoption(
         "--acceptance-results",
@@ -41,29 +35,15 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="largest difference allowed from the baseline (default 0: identical)",
     )
     group.addoption(
-        "--acceptance-max-time-ratio",
+        "--acceptance-max-minutes",
         type=float,
-        help="fail if the run takes longer than this times the baseline's",
+        default=30.0,
+        help="stop a scenario still running after this many minutes (default 30)",
     )
     group.addoption(
-        "--acceptance-max-memory-ratio",
+        "--acceptance-max-memory-gb",
         type=float,
-        help="fail if the peak memory is more than this times the baseline's",
+        default=16.0,
+        help="stop a scenario whose memory goes over this many GB (default: 16.0GB "
+        "limit)",
     )
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    config.addinivalue_line(
-        "markers", "acceptance: takes minutes; run with pytest -m acceptance"
-    )
-
-
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
-) -> None:
-    if "acceptance" in (config.option.markexpr or ""):
-        return
-    skip = pytest.mark.skip(reason="takes minutes; run with pytest -m acceptance")
-    for item in items:
-        if "acceptance" in item.keywords:
-            item.add_marker(skip)

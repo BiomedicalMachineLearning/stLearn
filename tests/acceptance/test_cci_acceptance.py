@@ -1,42 +1,41 @@
 """Acceptance test of st.tl.cci.run on a synthetic Visium HD sample.
 
 Checks the results match a stored baseline, and records time and memory so
-they can be followed over time. It takes minutes, so `pytest` skips it:
+they can be followed over time. It takes minutes, so pytest deselects it by default:
 
-    # Baselines from master's code, using a git worktree of master:
-    pytest -m acceptance --acceptance-baseline=write --acceptance-stlearn .
+    # Baselines from the code checked out, e.g. master:
+    pytest -m acceptance --acceptance-baseline=write
 
     # This checkout against the baselines, with a JUnit report:
-    pytest -m acceptance --junitxml=acceptance-results/junit.xml
+    pytest -m acceptance --junitxml=tests/acceptance-results/junit.xml
 
 Each scenario runs st.tl.cci.run in a fresh process (run_cci.py), so its peak
 memory is its own. Run on an otherwise idle machine, and compare runs from the
 same machine: times and memory depend on it.
 
-Written to --acceptance-results (default acceptance-results/):
+Written to --acceptance-results (default tests/acceptance-results/):
 - <scenario>.h5ad: this run's results and measurements (uns["metrics"]).
 - history.csv: one row per scenario per run, appended, to follow time and
   memory over time.
 - benchmark.json: this run's times and memory in github-action-benchmark's
   "customSmallerIsBetter" format.
 The JUnit report gets the same measurements as test suite properties.
-
-Baselines are tests/acceptance/baselines/<scenario>.h5ad, the same format.
 """
 
 import csv
 import datetime
 import json
-import os
 import shlex
 import shutil
 import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import anndata
 import numpy as np
+import psutil
 import pytest
 
 from stlearn.tl.cci.analysis import load_lrs
@@ -105,7 +104,7 @@ def report(request: pytest.FixtureRequest):
         terminal.write_sep("=", "CCI acceptance")
         terminal.write_line(
             f"{'scenario':12s}{'outcome':>18s}{'time (s)':>11s}{'vs base':>9s}"
-            f"{'vs last':>9s}{'memory (GB)':>13s}{'vs base':>9s}{'vs last':>9s}"
+            f"{'vs last':>9s}{'memory (GB)':>13s}{'vs base':>9s}{'vs last':>9s}",
         )
         for row in rows:
             terminal.write_line(
@@ -113,7 +112,7 @@ def report(request: pytest.FixtureRequest):
                 f"{row['wall_seconds']:11.1f}{_times(row['time_vs_baseline']):>9s}"
                 f"{_times(row['time_vs_last']):>9s}{row['peak_memory_gb']:13.2f}"
                 f"{_times(row['memory_vs_baseline']):>9s}"
-                f"{_times(row['memory_vs_last']):>9s}"
+                f"{_times(row['memory_vs_last']):>9s}",
             )
         terminal.write_line(f"History: {folder / 'history.csv'}")
 
@@ -132,30 +131,60 @@ def _ratio(value: float, earlier: float | str | None) -> float | None:
     return None if earlier in (None, "") else value / float(earlier)
 
 
-def run_scenario(sample: Path, result: Path, arguments: list[str], stlearn):
-    """Runs run_cci.py in a fresh process; its results, measurements included."""
+def run_scenario(sample, result, arguments, max_minutes, max_memory_gb):
+    """Runs run_cci.py in a fresh process, stopping it if it goes over a limit."""
     command = [sys.executable, "-m", "tests.acceptance.run_cci", str(sample)]
     command += [str(result), *arguments]
-    if stlearn:
-        command += ["--stlearn", str(Path(stlearn).resolve())]
-    path = os.pathsep.join(filter(None, [str(ROOT), os.environ.get("PYTHONPATH")]))
-    finished = subprocess.run(
+    process = subprocess.Popen(
         command,
         cwd=ROOT,
-        env={**os.environ, "PYTHONPATH": path},
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
         errors="replace",
     )
-    if finished.returncode != 0:
-        pytest.fail(_failure_message(command, finished), pytrace=False)
+    child, started, stopped = psutil.Process(process.pid), time.monotonic(), None
+    while True:
+        try:  # waits up to a second; retrying keeps the output read so far
+            stdout, stderr = process.communicate(timeout=1)
+            break
+        except subprocess.TimeoutExpired:
+            pass
+        minutes = (time.monotonic() - started) / 60
+        try:
+            memory_gb = child.memory_info().rss / GB
+        except psutil.NoSuchProcess:  # it has just finished
+            continue
+        if max_minutes is not None and minutes > max_minutes:
+            stopped = (
+                f"stopped after {minutes:.0f} minutes, "
+                f"over the {max_minutes:g} minute limit"
+            )
+        elif max_memory_gb is not None and memory_gb > max_memory_gb:
+            stopped = (
+                f"stopped at {memory_gb:.1f} GB, "
+                f"over the {max_memory_gb:g} GB limit"
+            )
+        if stopped:
+            process.kill()
+            stdout, stderr = process.communicate()
+            break
+    finished = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+    if stopped or finished.returncode != 0:
+        pytest.fail(_failure_message(command, finished, stopped), pytrace=False)
     return anndata.read_h5ad(result)
 
 
-def _failure_message(command: list[str], finished: subprocess.CompletedProcess) -> str:
+def _failure_message(
+    command: list[str],
+    finished: subprocess.CompletedProcess,
+    stopped: str | None = None,
+) -> str:
     """How run_cci.py ended, how to rerun it, and what it printed."""
     code = finished.returncode
-    if code >= 0:
+    if stopped:
+        lines = [f"run_cci.py was {stopped}"]
+    elif code >= 0:
         lines = [f"run_cci.py exited with code {code}"]
     else:
         try:
@@ -166,9 +195,9 @@ def _failure_message(command: list[str], finished: subprocess.CompletedProcess) 
         if how in ("SIGSEGV", "SIGBUS", "SIGABRT"):
             lines.append(
                 "A crash in compiled code. For a readable traceback, rerun with "
-                "NUMBA_NUM_THREADS=1 NUMBA_BOUNDSCHECK=1"
+                "NUMBA_NUM_THREADS=1 NUMBA_BOUNDSCHECK=1",
             )
-    rerun = f"cd {shlex.quote(str(ROOT))} && PYTHONPATH=. {shlex.join(command)}"
+    rerun = f"cd {shlex.quote(str(ROOT))} && {shlex.join(command)}"
     lines.append(f"Rerun: {rerun}")
     for stream, text in [("stdout", finished.stdout), ("stderr", finished.stderr)]:
         text = text.strip()
@@ -227,9 +256,6 @@ def history_row(scenario: str, outcome: str, metrics: dict, baseline: dict | Non
         "timestamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
         "scenario": scenario,
         "outcome": outcome,
-        "commit": metrics["commit"],
-        "branch": metrics["branch"],
-        "uncommitted_changes": metrics["uncommitted_changes"],
         "wall_seconds": seconds,
         "cpu_seconds": metrics["cpu_seconds"],
         "cores_busy": metrics["cpu_seconds"] / seconds,
@@ -255,7 +281,6 @@ def history_row(scenario: str, outcome: str, metrics: dict, baseline: dict | Non
         "python": machine["python"],
         "numpy": machine["versions"]["numpy"],
         "numba": machine["versions"]["numba"],
-        "stlearn": metrics["stlearn"],
     }
 
 
@@ -292,7 +317,11 @@ def test_cci_run(scenario, sample, report, request, record_testsuite_property):
     baseline_path = BASELINES / f"{scenario}.h5ad"
 
     current = run_scenario(
-        sample, result_path, SCENARIOS[scenario], option("--acceptance-stlearn")
+        sample,
+        result_path,
+        SCENARIOS[scenario],
+        option("--acceptance-max-minutes"),
+        option("--acceptance-max-memory-gb"),
     )
     metrics = _metrics(current)
 
@@ -304,8 +333,7 @@ def test_cci_run(scenario, sample, report, request, record_testsuite_property):
     elif not baseline_path.exists():
         outcome = "no baseline"
         problems.append(
-            f"no baseline {baseline_path}: write one, e.g. from master, with "
-            "--acceptance-baseline=write --acceptance-stlearn PATH"
+            f"no baseline {baseline_path}: write one with --acceptance-baseline=write",
         )
     else:
         baseline = anndata.read_h5ad(baseline_path)
@@ -320,11 +348,9 @@ def test_cci_run(scenario, sample, report, request, record_testsuite_property):
     report.append(row)
     for key in ["wall_seconds", "cpu_seconds", "peak_memory_gb", "lr_pairs_tested"]:
         record_testsuite_property(f"{scenario}.{key}", row[key])
-
-    for ratio, limit in [
-        ("time_vs_baseline", option("--acceptance-max-time-ratio")),
-        ("memory_vs_baseline", option("--acceptance-max-memory-ratio")),
-    ]:
-        if None not in (limit, row[ratio]) and row[ratio] > limit:
-            problems.append(f"{ratio} is {row[ratio]:.2f}, over the limit {limit}")
+    limit = option("--acceptance-max-memory-gb")
+    if limit is not None and row["peak_memory_gb"] > limit:
+        problems.append(
+            f"peak memory {row['peak_memory_gb']:.1f} GB, over the {limit:g} GB limit",
+        )
     assert not problems, "\n".join(problems)

@@ -15,16 +15,21 @@ import contextlib
 import importlib
 import json
 import os
+import pathlib
 import platform
 import resource
-import subprocess
 import sys
 import time
-from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-import numpy as np
+import anndata
+import numba
+import numpy
+import pandas
+import scipy
+
+import stlearn
 
 # Each result, and the value most spots have.
 RESULTS = {
@@ -88,35 +93,16 @@ class PhaseTimer:
         return wrapper
 
 
-def git(path: Path, *args: str) -> str | None:
-    with contextlib.suppress(OSError, subprocess.CalledProcessError):
-        return subprocess.run(
-            ["git", "-C", str(path), *args], capture_output=True, text=True, check=True
-        ).stdout.strip()
-    return None
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("sample")
     parser.add_argument("result")
-    parser.add_argument("--stlearn", help="stLearn source tree to import")
     parser.add_argument("--use-label", action="store_true")
     parser.add_argument("--n-pairs", type=int, default=1000)
     parser.add_argument("--min-spots", type=int, default=20)
     parser.add_argument("--n-cpus", type=int)
     args = parser.parse_args()
 
-    if args.stlearn:
-        sys.path.insert(0, str(Path(args.stlearn).resolve()))
-    import anndata
-    import numba
-    import pandas as pd
-    from scipy import sparse
-
-    import stlearn
-
-    source = Path(stlearn.__file__).resolve().parent.parent
     adata = anndata.read_h5ad(args.sample)
     lrs = stlearn.tl.cci.load_lrs(["connectomeDB2020_lit"], species="human")
     settings = dict(
@@ -150,10 +136,6 @@ def main() -> None:
     with contextlib.suppress(ValueError):  # known only once numba has run
         threading_layer = numba.threading_layer()
     metrics = {
-        "stlearn": str(source),
-        "commit": git(source, "rev-parse", "--short", "HEAD"),
-        "branch": git(source, "rev-parse", "--abbrev-ref", "HEAD"),
-        "uncommitted_changes": bool(git(source, "status", "--porcelain", "stlearn")),
         "bins": adata.n_obs,
         "genes": adata.n_vars,
         "lr_pairs_requested": len(lrs),
@@ -183,17 +165,19 @@ def main() -> None:
         },
     }
 
-    result = anndata.AnnData(obs=pd.DataFrame(index=adata.obs_names))
+    result = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names))
     for key, usual in RESULTS.items():
-        result.obsm[key] = sparse.csr_matrix(np.asarray(adata.obsm[key]) - usual)
+        result.obsm[key] = scipy.sparse.csr_matrix(
+            numpy.asarray(adata.obsm[key]) - usual,
+        )
     for key in NEIGHBOURS:
         result.obs[key] = adata.obsm[key].iloc[:, 0].to_numpy()
     if args.use_label:
-        result.obs["cci_het"] = np.asarray(adata.obsm["cci_het"]).ravel()
+        result.obs["cci_het"] = numpy.asarray(adata.obsm["cci_het"]).ravel()
     result.uns["lr_summary"] = adata.uns["lr_summary"]
     result.uns["lrfeatures"] = adata.uns["lrfeatures"]
     result.uns["metrics"] = json.dumps(metrics)
-    Path(args.result).parent.mkdir(parents=True, exist_ok=True)
+    pathlib.Path(args.result).parent.mkdir(parents=True, exist_ok=True)
     result.write_h5ad(args.result, compression="gzip")
 
 

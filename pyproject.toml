@@ -70,6 +70,7 @@ dev = [
 ]
 test = [
     "pytest",
+    "psutil",
     "pytest-cov",
 ]
 jupyter = [
@@ -91,6 +92,12 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["stlearn", "stlearn.*"]
 
+[tool.pytest.ini_options]
+addopts = "--strict-markers -m 'not acceptance'"
+markers = [
+    "acceptance: takes minutes; deselected by default, run with pytest -m acceptance",
+]
+
 [tool.ruff]
 target-version = "py312"
 line-length = 88
@@ -98,24 +105,24 @@ exclude = [".git", "__pycache__", "build", "dist", "docs/_build"]
 
 [tool.ruff.lint]
 select = [
-    "E", "F", "W",      # pycodestyle + pyflakes
-    "I",                # isort
-    "N",                # pep8-naming
-    "UP",               # pyupgrade
-    "NPY",              # numpy-specific (NPY001, NPY002, NPY003, NPY201)
-    "PD",               # pandas-vet
-    "B",                # flake8-bugbear (catches real bugs)
-    "SIM",              # flake8-simplify
-    "RUF",              # ruff-specific rules
+    "E", "F", "W", # pycodestyle + pyflakes
+    "I", # isort
+    "N", # pep8-naming
+    "UP", # pyupgrade
+    "NPY", # numpy-specific (NPY001, NPY002, NPY003, NPY201)
+    "PD", # pandas-vet
+    "B", # flake8-bugbear (catches real bugs)
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
 ]
 ignore = [
-    "E722",             # bare except — you've already accepted these
-    "F811",             # redefinition — accepted
-    "N803", "N806",     # naming: lowercase args/vars — too invasive to fix
-    "N818",             # exception naming
-    "PD011",            # .values vs .to_numpy() — too noisy, mostly false positives
-    "B008",             # function calls in default args — used by typer/click
-    "SIM108",           # ternary suggestions can hurt readability
+    "E722", # bare except — you've already accepted these
+    "F811", # redefinition — accepted
+    "N803", "N806", # naming: lowercase args/vars — too invasive to fix
+    "N818", # exception naming
+    "PD011", # .values vs .to_numpy() — too noisy, mostly false positives
+    "B008", # function calls in default args — used by typer/click
+    "SIM108", # ternary suggestions can hurt readability
 ]
 
 [tool.ruff.lint.per-file-ignores]
