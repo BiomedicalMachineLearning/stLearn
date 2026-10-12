@@ -324,13 +324,10 @@ def run(
             print("Calculating cell heterogeneity...")
 
         # Calculating cell heterogeneity #
-        count(adata, distance=distance, use_label=use_label)
-
-    het_vals = (
-        np.array([1] * len(adata))
-        if use_label not in adata.obsm
-        else adata.obsm[use_label]
-    )
+        count(adata, distance=distance, use_label=use_label, verbose=verbose)
+        het_vals = adata.obsm["cci_het"].ravel()
+    else:
+        het_vals = np.array([1] * len(adata))
 
     """ 1. Filter any LRs without stored expression.
     """
