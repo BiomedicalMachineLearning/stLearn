@@ -25,7 +25,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group.addoption(
         "--acceptance-results",
         metavar="DIR",
-        default="acceptance-results",
+        default="tests/acceptance-results",
         help="folder for the latest results, history.csv and benchmark.json",
     )
     group.addoption(
