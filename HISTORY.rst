@@ -20,7 +20,7 @@ History
   and return SpatialData objects.
 * AnnData backwards compatibility available through ``st.io.attach_spatial``.
 * CCI results are now a LR table (AnnData) returned by ``st.tl.cci.run``.
-  A spots x LR pairs with summaries, scores and p-values in ``var```.
+  A spots x LR pairs with summaries, scores and p-values in ``var``.
   Downstream functions and plots now take ``lr_results``.
 * Support for microns through ``microns_per_pixel``,
   ``st.utils.microns_to_pixels``, ``pixels_to_microns`` and
