@@ -12,7 +12,7 @@ from .neighbours import calc_distance, neighbourhood_matrix
 
 def count(
     adata: AnnData,
-    use_label: str | None = None,
+    use_label: str,
     use_het: str = "cci_het",
     verbose: bool = True,
     distance: float | None = None,

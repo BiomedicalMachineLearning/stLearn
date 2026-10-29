@@ -19,7 +19,7 @@ from numba.typed import List
 from scipy import sparse
 
 MEANS_CHUNK_BYTES = 2**28  # memory for a chunk's neighbourhood means and scores
-Expression = sparse.spmatrix | np.ndarray
+type Expression = sparse.spmatrix | np.ndarray
 
 
 class LRScorer:

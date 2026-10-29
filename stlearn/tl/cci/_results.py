@@ -20,7 +20,7 @@ from statsmodels.stats.multitest import multipletests
 
 LR_RESULTS = ("lr_scores", "p_vals", "p_adjs", "neg_log10_p_adjs", "lr_sig_scores")
 DEFAULTS = {"p_vals": 1.0, "p_adjs": 1.0}  # a result's value where an LR was not tested
-Matrix = sparse.spmatrix | np.ndarray
+type Matrix = sparse.spmatrix | np.ndarray
 
 
 def check_lr_results(lr_results: AnnData | None, adata: AnnData | None = None):
