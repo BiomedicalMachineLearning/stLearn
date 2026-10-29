@@ -13,6 +13,7 @@ from stlearn.tl.cci import scoring
 from stlearn.tl.cci.neighbours import calc_neighbours
 from stlearn.tl.cci.scoring import (
     LRScorer,
+    LRPairs,
     flatten_neighbours,
     get_lrs_scores,
     get_scores,
@@ -50,7 +51,7 @@ def _random_neighbours(rng, n_spots, max_neighbours=4):
         others = np.delete(np.arange(n_spots), spot)
         k = rng.integers(0, max_neighbours)
         neighbour_lists.append(
-            rng.choice(others, size=k, replace=False).astype(np.int32)
+            rng.choice(others, size=k, replace=False).astype(np.int32),
         )
     return neighbour_lists
 
@@ -67,7 +68,7 @@ class TestGetScores(unittest.TestCase):
                 np.array([1, 2], dtype=np.int32),
                 np.array([0], dtype=np.int32),
                 np.array([], dtype=np.int32),
-            ]
+            ],
         )
         pairs = np.array([[0, 1]])
         spots = np.arange(3, dtype=np.int32)
@@ -99,7 +100,7 @@ class TestGetScores(unittest.TestCase):
                 expr = rng.random((n_spots, n_genes))
             # Pairs of distinct genes; genes are shared between pairs.
             pairs = np.array(
-                [rng.choice(n_genes, size=2, replace=False) for _ in range(n_pairs)]
+                [rng.choice(n_genes, size=2, replace=False) for _ in range(n_pairs)],
             )
             neighbour_lists = _random_neighbours(rng, n_spots)
             het_vals = rng.integers(0, 4, size=n_spots)
@@ -116,11 +117,20 @@ class TestGetScores(unittest.TestCase):
                     spots,
                 )
                 expected = _reference_scores(
-                    expr, pairs, neighbour_lists, het_vals, min_expr, spots
+                    expr,
+                    pairs,
+                    neighbour_lists,
+                    het_vals,
+                    min_expr,
+                    spots,
                 )
                 self.assertEqual(got.shape, (len(spots), n_pairs), msg=msg)
                 np.testing.assert_allclose(
-                    got, expected, rtol=1e-12, atol=1e-12, err_msg=msg
+                    got,
+                    expected,
+                    rtol=1e-12,
+                    atol=1e-12,
+                    err_msg=msg,
                 )
 
     def test_means_once_per_gene(self):
@@ -187,8 +197,9 @@ class TestGetLrsScores(unittest.TestCase):
         """From named LR pairs on sparse or dense data: pairs with a gene missing
         from the data are dropped, the rest keep their order, and the scores match
         the oracle, including pairs that share a gene and a reversed pair."""
-        lrs = np.array(
-            ["Lig0_Rec0", "Lig1_Rec1", "Lig0_Missing", "Lig1_Rec2", "Rec0_Lig0"]
+        lrs = LRPairs.from_names(
+            ["Lig0_Rec0", "Lig1_Rec1", "Lig0_Missing", "Lig1_Rec2", "Rec0_Lig0"],
+            species="human",
         )
         kept = ["Lig0_Rec0", "Lig1_Rec1", "Lig1_Rec2", "Rec0_Lig0"]
         for sparse in (True, False):
@@ -211,7 +222,10 @@ class TestGetLrsScores(unittest.TestCase):
                 np.arange(len(adata)),
             )
             np.testing.assert_allclose(
-                scores, expected, rtol=1e-6, err_msg=f"{sparse=}"
+                scores,
+                expected,
+                rtol=1e-6,
+                err_msg=f"{sparse=}",
             )
             # Both directions are averaged, so a reversed pair scores the same.
             np.testing.assert_array_equal(scores[:, 0], scores[:, 3])
@@ -221,11 +235,17 @@ class TestGetLrsScores(unittest.TestCase):
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(adata))
-        lrs = np.array(["Lig0_Rec0", "Lig1_Rec1"])
+        lrs = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human")
         full, _ = get_lrs_scores(adata, lrs, neighbours, het_vals, 0)
         spots = np.flatnonzero(full[:, 0] > 0)  # as perform_spot_testing chooses them
         subset, _ = get_lrs_scores(
-            adata, lrs, neighbours, het_vals, 0, filter_pairs=False, spot_indices=spots
+            adata,
+            lrs,
+            neighbours,
+            het_vals,
+            0,
+            filter_pairs=False,
+            spot_indices=spots,
         )
         np.testing.assert_array_equal(subset, full[spots])
 
@@ -236,14 +256,19 @@ class TestGetLrsScores(unittest.TestCase):
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(adata))
-        lrs = np.array(["Lig0_Lig0", "Lig0_Rec0"])
+        lrs = LRPairs.from_names(["Lig0_Lig0", "Lig0_Rec0"], species="human")
 
         scores, new_lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, 0.5)
 
         self.assertEqual(list(new_lrs), ["Lig0_Lig0", "Lig0_Rec0"])
         dense = adata.to_df().to_numpy(dtype=np.float64)
         expected = _reference_scores(
-            dense, [[0, 0]], list(neighbours), het_vals, 0.5, np.arange(len(adata))
+            dense,
+            [[0, 0]],
+            list(neighbours),
+            het_vals,
+            0.5,
+            np.arange(len(adata)),
         )
         np.testing.assert_allclose(scores[:, [0]], expected, rtol=1e-6)
         at_spot = dense[:, 0]
@@ -256,8 +281,13 @@ class TestGetLrsScores(unittest.TestCase):
         still has a row per spot, as run checks new_lrs.size to fail fast."""
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
+        lrs = LRPairs.from_names(["Lig0_Nope", "Nope_Rec0"], species="human")
         scores, new_lrs = get_lrs_scores(
-            adata, np.array(["Lig0_Nope", "Nope_Rec0"]), neighbours, np.ones(36), 0
+            adata,
+            lrs,
+            neighbours,
+            np.ones(36),
+            0,
         )
         self.assertEqual(scores.shape, (len(adata), 0))
         self.assertEqual(scores.dtype, np.float64)
@@ -270,7 +300,7 @@ class TestGetLrsScores(unittest.TestCase):
         int_adata.X = adata.X.astype(np.int64)
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(adata))
-        lrs = np.array(["Lig0_Rec0", "Lig1_Rec1"])
+        lrs = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human")
 
         scores, new_lrs = get_lrs_scores(int_adata, lrs, neighbours, het_vals, 0)
         float_scores, _ = get_lrs_scores(adata, lrs, neighbours, het_vals, 0)
@@ -287,10 +317,22 @@ class TestLRScorer(unittest.TestCase):
         gives each call on its own, on sparse and dense data."""
         rng = np.random.default_rng(3)
         calls = [
-            (np.array(["Lig0_Rec0", "Lig1_Rec1"]), None),
-            (np.array(["gene0_Rec2", "Lig1_gene0", "Rec0_Lig0"]), np.array([5, 1, 30])),
-            (np.array(["Lig0_Rec0"]), np.sort(rng.choice(36, 12, replace=False))),
-            (np.array(["Rec2_Lig1"]), np.array([], dtype=np.int32)),
+            (LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human"), None),
+            (
+                LRPairs.from_names(
+                    ["gene0_Rec2", "Lig1_gene0", "Rec0_Lig0"],
+                    species="human",
+                ),
+                np.array([5, 1, 30]),
+            ),
+            (
+                LRPairs.from_names(["Lig0_Rec0"], species="human"),
+                np.sort(rng.choice(36, 12, replace=False)),
+            ),
+            (
+                LRPairs.from_names(["Rec2_Lig1"], species="human"),
+                np.array([], dtype=np.int32),
+            ),
         ]
         for sparse in (True, False):
             adata = _make_adata(sparse=sparse)
@@ -302,10 +344,20 @@ class TestLRScorer(unittest.TestCase):
 
             for lrs, spots in calls:
                 got, got_lrs = scorer.score(
-                    lrs, het_vals, 0.5, filter_pairs=False, spot_indices=spots
+                    lrs,
+                    het_vals,
+                    0.5,
+                    filter_pairs=False,
+                    spot_indices=spots,
                 )
                 expected, expected_lrs = get_lrs_scores(
-                    adata, lrs, neighbours, het_vals, 0.5, False, spots
+                    adata,
+                    lrs,
+                    neighbours,
+                    het_vals,
+                    0.5,
+                    False,
+                    spots,
                 )
                 msg = f"{sparse=} {lrs=}"
                 np.testing.assert_array_equal(got_lrs, expected_lrs, err_msg=msg)
@@ -316,12 +368,19 @@ class TestLRScorer(unittest.TestCase):
     def test_filters_pairs_like_get_lrs_scores(self):
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
-        lrs = np.array(["Lig0_Rec0", "Lig0_Missing", "Lig1_Rec2"])
+        lrs = LRPairs.from_names(
+            ["Lig0_Rec0", "Lig0_Missing", "Lig1_Rec2"],
+            species="human",
+        )
         scorer = LRScorer(adata, neighbours)
 
         scores, new_lrs = scorer.score(lrs, np.ones(len(adata)), 0)
         expected, expected_lrs = get_lrs_scores(
-            adata, lrs, neighbours, np.ones(len(adata)), 0
+            adata,
+            lrs,
+            neighbours,
+            np.ones(len(adata)),
+            0,
         )
 
         self.assertEqual(list(new_lrs), ["Lig0_Rec0", "Lig1_Rec2"])
@@ -354,7 +413,10 @@ class TestLRScorer(unittest.TestCase):
         scores above 0, at every spot or a subset; a spot with het value 0
         scores 0 everywhere, so has no entries."""
         rng = np.random.default_rng(5)
-        lrs = np.array(["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1", "gene0_Rec1"])
+        lrs = LRPairs.from_names(
+            ["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1", "gene0_Rec1"],
+            species="human",
+        )
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = rng.integers(0, 3, size=len(adata))
@@ -362,31 +424,53 @@ class TestLRScorer(unittest.TestCase):
         for spots in (None, np.sort(rng.choice(36, 20, replace=False))):
             dense, _ = scorer.score(lrs, het_vals, 0.5, spot_indices=spots)
             got, got_lrs = scorer.score(
-                lrs, het_vals, 0.5, spot_indices=spots, sparse_result=True
+                lrs,
+                het_vals,
+                0.5,
+                spot_indices=spots,
+                sparse_result=True,
             )
             msg = f"{spots=}"
             self.assertIsInstance(got, scipy.sparse.csc_matrix, msg=msg)
             self.assertTrue(got.has_canonical_format, msg=msg)
             self.assertTrue((got.data > 0).all(), msg=msg)
             np.testing.assert_array_equal(
-                got.toarray(), np.where(dense > 0, dense, 0), err_msg=msg
+                got.toarray(),
+                np.where(dense > 0, dense, 0),
+                err_msg=msg,
             )
-            np.testing.assert_array_equal(got_lrs, lrs)
+            np.testing.assert_array_equal(
+                got_lrs,
+                ["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1", "gene0_Rec1"],
+            )
 
     def test_sparse_result_in_chunks(self):
         """The sparse scores are the same however many chunks of spots are
         scored, with a chunk boundary inside the spots and a short last chunk."""
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
-        lrs = np.array(["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1"])
+        lrs = LRPairs.from_names(
+            ["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1"],
+            species="human",
+        )
         whole, _ = get_lrs_scores(
-            adata, lrs, neighbours, np.ones(36), 0, sparse_result=True
+            adata,
+            lrs,
+            neighbours,
+            np.ones(36),
+            0,
+            sparse_result=True,
         )
         chunk_bytes = scoring.MEANS_CHUNK_BYTES
         try:
             scoring.MEANS_CHUNK_BYTES = 8 * 5 * 7  # 5 genes: 7 spots per chunk
             chunked, _ = get_lrs_scores(
-                adata, lrs, neighbours, np.ones(36), 0, sparse_result=True
+                adata,
+                lrs,
+                neighbours,
+                np.ones(36),
+                0,
+                sparse_result=True,
             )
         finally:
             scoring.MEANS_CHUNK_BYTES = chunk_bytes
@@ -412,7 +496,10 @@ class TestLRScorer(unittest.TestCase):
 
         with mock.patch.object(scoring, "_dense_rows", recording):
             scores = scorer.score_indices(
-                np.array([[0, 1]]), np.ones(36), 0.0, spot_indices=spots
+                np.array([[0, 1]]),
+                np.ones(36),
+                0.0,
+                spot_indices=spots,
             )
         self.assertEqual(len(taken), 1)
         self.assertEqual(set(taken[0]), needed)
@@ -426,7 +513,10 @@ class TestLRScorer(unittest.TestCase):
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.random.default_rng(4).integers(1, 4, size=len(adata))
-        lrs = np.array(["Lig0_Rec0", "Rec2_Lig1", "gene0_Rec1"])
+        lrs = LRPairs.from_names(
+            ["Lig0_Rec0", "Rec2_Lig1", "gene0_Rec1"],
+            species="human",
+        )
         pairs = np.array([[0, 1], [4, 2], [5, 3]])
         scorer = LRScorer(adata, neighbours)
         for spots in (None, np.array([7, 0, 35])):
@@ -443,8 +533,12 @@ class TestLRScorer(unittest.TestCase):
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         for by_column in (True, False):
             scorer = LRScorer(adata, neighbours, by_column=by_column)
+            lrs = LRPairs.from_names(["Lig0_Rec0", "Lig0_Nope"], species="human")
             with self.assertRaises(KeyError, msg=f"{by_column=}") as raised:
                 scorer.score(
-                    np.array(["Lig0_Rec0", "Lig0_Nope"]), np.ones(36), 0, False
+                    lrs,
+                    np.ones(36),
+                    0,
+                    False,
                 )
             self.assertIn("Nope", str(raised.exception))

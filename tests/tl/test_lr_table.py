@@ -24,7 +24,7 @@ import stlearn as st
 from stlearn.tl.cci import LR_RESULTS, lr_result
 from tests.utils import CCI_LRS, cci_table
 
-SUMMARY = ["n_spots", "n_spots_sig", "n_spots_sig_pval"]
+SUMMARY = ["source", "n_spots", "n_spots_sig", "n_spots_sig_pval"]
 RUN_CCI_UNS = [
     "lr_cci_cell_type",
     "lr_cci_raw_cell_type",

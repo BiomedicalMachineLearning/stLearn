@@ -69,7 +69,7 @@ class TestBase(unittest.TestCase):
             st.tl.cci.lr_result(from_pairs, "lr_scores"),
             st.tl.cci.lr_result(from_names, "lr_scores"),
         )
-        self.assertNotIn("source", from_names.var)
+        self.assertTrue((from_names.var["source"] == "hand-picked").all())
         with self.assertRaises(TypeError):
             st.tl.cci.run(_make_cci_adata(), "connectomeDB2025", **settings)
 

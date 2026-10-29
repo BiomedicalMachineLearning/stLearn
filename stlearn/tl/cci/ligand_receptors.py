@@ -87,11 +87,11 @@ class LRPairs:
         if missing:
             raise ValueError(
                 f"LRPairs needs 'ligand' and 'receptor' columns, missing {missing}; "
-                "use LRPairs.from_frame(df, ligand=..., receptor=..., species=...)"
+                "use LRPairs.from_frame(df, ligand=..., receptor=..., species=...)",
             )
         if not species or not isinstance(species, str):
             raise ValueError(
-                f"species must name a species, e.g. 'human'; got {species!r}"
+                f"species must name a species, e.g. 'human'; got {species!r}",
             )
         if "source" not in frame.columns:
             frame = frame.assign(source=source)
@@ -107,7 +107,7 @@ class LRPairs:
             examples = frame.loc[with_underscore, ["ligand", "receptor"]].head(3)
             raise ValueError(
                 f"Gene symbols in {source} contain '_', which separates ligand from "
-                f"receptor in 'L_R' pair names; e.g. {examples.values.tolist()}"
+                f"receptor in 'L_R' pair names; e.g. {examples.values.tolist()}",
             )
         frame = _merge_repeats(frame).reset_index(drop=True)
         self._set(frame, species.lower(), _labels(frame))
@@ -161,20 +161,25 @@ class LRPairs:
         if len(pairs) == 0:
             raise ValueError(
                 f"No ligand-receptor pairs found in {source} (columns "
-                f"{ligand_col!r} and {receptor_col!r})."
+                f"{ligand_col!r} and {receptor_col!r}).",
             )
         return pairs
 
     @classmethod
     def from_names(
-        cls, names: Iterable[str], *, species: str, source: str = "names"
+        cls,
+        names: Iterable[str],
+        *,
+        species: str,
+        source: str = "names",
     ) -> LRPairs:
         """Pairs from 'LIGAND_RECEPTOR' names, the format stlearn's results use."""
         return cls(_split_names(names), species=species, source=source)
 
     # Transformations; each returns a new LRPairs of the same species
     def filter(
-        self, keep: Callable[[pd.DataFrame], npt.ArrayLike] | npt.ArrayLike
+        self,
+        keep: Callable[[pd.DataFrame], npt.ArrayLike] | npt.ArrayLike,
     ) -> LRPairs:
         """The pairs whose rows `keep` marks True. `keep` is a boolean mask or a
         function of the table returning one, e.g. lambda d: d["Evidence"] == "Direct"
@@ -198,7 +203,7 @@ class LRPairs:
             )
             raise ValueError(
                 f"Can't combine LR pairs of different species: {described}. "
-                "Convert the genes to one species' orthologs first."
+                "Convert the genes to one species' orthologs first.",
             )
         frames = [self._frame] + [other._frame for other in others]
         merged = _merge_repeats(pd.concat(frames, ignore_index=True))
@@ -239,7 +244,7 @@ class LRPairs:
         ligand, receptor = name.split("_")
         frame = self._frame
         return bool(
-            ((frame["ligand"] == ligand) & (frame["receptor"] == receptor)).any()
+            ((frame["ligand"] == ligand) & (frame["receptor"] == receptor)).any(),
         )
 
     def __repr__(self) -> str:
@@ -281,7 +286,7 @@ def load_lrs(
         names = [names]
 
     pairs = lr_pairs(names[0], species=species).union(
-        *(lr_pairs(name, species=species) for name in names[1:])
+        *(lr_pairs(name, species=species) for name in names[1:]),
     )
     return pairs.names()
 
@@ -305,7 +310,7 @@ def lr_pairs(database: str = DEFAULT_DATABASE, species: str = "human") -> LRPair
     spec = _DATABASES.get(database)
     if spec is None:
         raise ValueError(
-            f"Unknown LR database {database!r}; options are {list(_DATABASES)}."
+            f"Unknown LR database {database!r}; options are {list(_DATABASES)}.",
         )
     species = species.lower()
     if species not in spec.species:
@@ -349,23 +354,30 @@ def read_lr_pairs(
     else:
         df = pd.read_csv(path, sep=sep)
     return LRPairs.from_frame(
-        df, ligand, receptor, species=species, source=source or Path(path).name
+        df,
+        ligand,
+        receptor,
+        species=species,
+        source=source or Path(path).name,
     )
 
 
-def _lr_names(lrs: LRPairs | Iterable[str]) -> npt.NDArray[np.str_]:
-    """'L_R' names from LRPairs, or checked 'L_R' names as given (as earlier stlearn
-    versions took)."""
+def _as_lr_pairs(lrs: LRPairs | Iterable[str]) -> LRPairs:
+    """Converts everything to LRPairs - assumes Iterable[str] are human and
+    hand-picked."""
     if isinstance(lrs, LRPairs):
-        return lrs.names()
+        return lrs
     if isinstance(lrs, str | PathLike | pd.DataFrame):
         raise TypeError(
             f"Expected LRPairs or 'L_R' names, got {type(lrs).__name__}; use "
-            "lr_pairs(database), read_lr_pairs(path) or LRPairs.from_frame(df)."
+            "lr_pairs(database), read_lr_pairs(path) or LRPairs.from_frame(df).",
         )
-    names = [str(name) for name in lrs]
-    _split_names(names)
-    return np.array(names, dtype=np.str_)
+    lrs = LRPairs.from_names(
+        lrs,
+        species="unknown",
+        source="hand-picked",
+    )
+    return lrs
 
 
 # Helpers
@@ -379,7 +391,11 @@ def _read_packaged(database: str, species: str) -> LRPairs:
     with (_DB_DIR / spec.filename.format(species=species)).open("rb") as fh:
         df = pd.read_csv(fh, sep=spec.sep)
     return LRPairs.from_frame(
-        df, spec.ligand, spec.receptor, species=species, source=database
+        df,
+        spec.ligand,
+        spec.receptor,
+        species=species,
+        source=database,
     )
 
 
@@ -397,7 +413,7 @@ def _find_column(df: pd.DataFrame, column: int | str) -> str:
     if isinstance(column, int):
         if column >= df.shape[1]:
             raise ValueError(
-                f"LR table has {df.shape[1]} column(s); needs ligand and receptor"
+                f"LR table has {df.shape[1]} column(s); needs ligand and receptor",
             )
         return df.columns[column]
 
@@ -461,7 +477,7 @@ def _merge_repeats(frame: pd.DataFrame) -> pd.DataFrame:
                 label
                 for joined in sources.dropna()
                 for label in joined.split(SOURCE_SEP)
-            )
-        )
+            ),
+        ),
     )
     return merged.reset_index()

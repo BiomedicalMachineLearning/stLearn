@@ -28,7 +28,7 @@ from .het import (
     get_interaction_pvals,
     label_keys,
 )
-from .ligand_receptors import LRPairs, _lr_names, lr_pairs
+from .ligand_receptors import LRPairs, _as_lr_pairs, lr_pairs
 from .neighbours import calc_distance, calc_neighbours, get_neighbourhoods
 from .permutation import perform_spot_testing
 from .scoring import get_lrs_scores
@@ -97,7 +97,7 @@ def run(
         The LR pairs to score/test for enrichment, e.g. st.tl.cci.lr_pairs() for
         connectomeDB2025 or lr_pairs(species="mouse") for mouse data. Each pair's
         source goes in the LR table's var['source']. 'L1_R1' names are also
-        accepted.
+        accepted - assumed to be human and source set to "hand-picked".
     min_spots: int
         More than min_spots with an LR score for an LR to be considered for
         further testing.
@@ -172,10 +172,11 @@ def run(
         If gene names contain '_', or LR pairs were not found or did not score
         sufficiently in a minimum number of spots.
     """
-    lr_names = _lr_names(lrs)
-    if lr_names.size == 0:
-        raise ValueError("No LR pairs given.")
     _set_n_threads(n_cpus)
+
+    lr_pairs = _as_lr_pairs(lrs)
+    if len(lr_pairs) == 0:
+        raise ValueError("No LR pairs given.")
 
     # Making sure none of the var_names contains '_' already, these will need
     # to be renamed.
@@ -231,13 +232,13 @@ def run(
     # 1. Filter any LRs without stored expression.
     # Calculating the lr_scores across spots for the inputted lrs #
     lr_scores, new_lrs = get_lrs_scores(
-        adata, lr_names, neighbours, het_vals, min_expr, sparse_result=True
+        adata, lr_pairs, neighbours, het_vals, min_expr, sparse_result=True
     )
     # Fail fast.
     if new_lrs.size == 0:
         species = f"{lrs.species} " if isinstance(lrs, LRPairs) else ""
         raise ValueError(
-            f"None of the {lr_names.size} {species}LR pairs are in adata.var_names; "
+            f"None of the {len(lr_pairs)} {species}LR pairs are in adata.var_names; "
             "check the pairs' species matches the data, e.g. "
             "lr_pairs(species='mouse')."
         )
@@ -269,9 +270,9 @@ def run(
     lr_results = AnnData(
         obs=pd.DataFrame(index=adata.obs_names), var=pd.DataFrame(index=new_lrs)
     )
-    if isinstance(lrs, LRPairs):
-        lr_results.var["source"] = lrs.source_of(new_lrs).astype(str)
-        lr_results.uns["lr_species"] = lrs.species
+
+    lr_results.var["source"] = lr_pairs.source_of(new_lrs).astype(str)
+    lr_results.uns["lr_species"] = lr_pairs.species
     lr_results.uns["lrfeatures"] = tests.lr_features
 
     padjs = correct_pvals(lr_scores, tests.pvals, "spot", adj_method)

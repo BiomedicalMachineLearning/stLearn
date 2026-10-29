@@ -40,7 +40,6 @@ dependencies = [
     "shapely>=2.0.6,<3.0",
     "pooch[progress]>=1.8.1",
     "requests>=2.32.4",
-    "ruff>=0.16.10",
     "tifffile>=2026.5.2",
     "umap-learn>=0.5.12",
     "openpyxl>=3.1",
@@ -63,7 +62,7 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "black>=23.0",
-    "ruff>=0.16.0",
+    "ruff>=0.16.10",
     "mypy>=2.0",
     "pytest>=7.0",
     "tox>=4.0",

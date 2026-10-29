@@ -139,9 +139,9 @@ def read_slide_seq(
         "tissue_" + quality + "_scalef"
     ] = scale
 
-    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
-        spot_diameter_fullres
-    )
+    adata.uns["spatial"][library_id]["scalefactors"][
+        "spot_diameter_fullres"
+    ] = spot_diameter_fullres
     adata.obsm["spatial"] = meta[["x", "y"]].values
 
     return adata
@@ -423,8 +423,8 @@ def read_seq_fish(
     adata.uns["spatial"][library_id]["scalefactors"][
         "tissue_" + quality + "_scalef"
     ] = scale
-    adata.uns["spatial"][library_id]["scalefactors"]["spot_diameter_fullres"] = (
-        spot_diameter_fullres
-    )
+    adata.uns["spatial"][library_id]["scalefactors"][
+        "spot_diameter_fullres"
+    ] = spot_diameter_fullres
 
     return adata

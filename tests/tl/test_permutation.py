@@ -10,11 +10,12 @@ import scipy.sparse
 from anndata import AnnData
 
 from stlearn.tl.cci._results import to_dense
+from stlearn.tl.cci.ligand_receptors import LRPairs
 from stlearn.tl.cci.neighbours import calc_neighbours
 from stlearn.tl.cci.permutation import gene_quantiles, perform_spot_testing
 from stlearn.tl.cci.scoring import get_lrs_scores
 
-LRS = np.array(["Lig0_Rec0", "Lig1_Rec1", "Lig2_Rec2"])
+LRS = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1", "Lig2_Rec2"], species="human")
 N_PAIRS = 100
 
 
@@ -104,12 +105,20 @@ class TestPermutation(unittest.TestCase):
         het_vals = np.ones(len(adata))
         scores, lrs = get_lrs_scores(adata, LRS, neighbours, het_vals, 0)
         results = perform_spot_testing(
-            adata, scores, lrs, N_PAIRS, neighbours, het_vals, 0, verbose=False
+            adata,
+            scores,
+            lrs,
+            N_PAIRS,
+            neighbours,
+            het_vals,
+            0,
+            verbose=False,
         )
         self.assertIsNone(results.backgrounds)
         self.assertIsNone(results.bg_spot_indices)
         np.testing.assert_array_equal(
-            results.pvals.toarray(), self.results.pvals.toarray()
+            results.pvals.toarray(),
+            self.results.pvals.toarray(),
         )
 
     def test_sparse_scores_test_the_same(self):
@@ -119,16 +128,29 @@ class TestPermutation(unittest.TestCase):
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(adata))
         scores, lrs = get_lrs_scores(
-            adata, LRS, neighbours, het_vals, 0, sparse_result=True
+            adata,
+            LRS,
+            neighbours,
+            het_vals,
+            0,
+            sparse_result=True,
         )
         self.assertTrue(scipy.sparse.issparse(scores))
         results = perform_spot_testing(
-            adata, scores, lrs, N_PAIRS, neighbours, het_vals, 0, verbose=False
+            adata,
+            scores,
+            lrs,
+            N_PAIRS,
+            neighbours,
+            het_vals,
+            0,
+            verbose=False,
         )
         np.testing.assert_array_equal(results.pvals.indptr, scores.indptr)
         np.testing.assert_array_equal(results.pvals.indices, scores.indices)
         np.testing.assert_array_equal(
-            results.pvals.toarray(), self.results.pvals.toarray()
+            results.pvals.toarray(),
+            self.results.pvals.toarray(),
         )
 
     def test_homophilic_lr_is_tested(self):
@@ -138,8 +160,13 @@ class TestPermutation(unittest.TestCase):
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(adata))
+        lrs = LRPairs.from_names(["Lig0_Lig0"], species="human")
         scores, lrs = get_lrs_scores(
-            adata, np.array(["Lig0_Lig0"]), neighbours, het_vals, 0
+            adata,
+            lrs,
+            neighbours,
+            het_vals,
+            0,
         )
         self.assertEqual(list(lrs), ["Lig0_Lig0"])
 
@@ -186,7 +213,8 @@ class TestPermutation(unittest.TestCase):
         self.assertEqual(results.backgrounds[lrs[1]].shape, (0, N_PAIRS))
         self.assertEqual(results.bg_spot_indices[lrs[1]].size, 0)
         np.testing.assert_array_equal(
-            pvals[:, [0, 2]], to_dense(self.results.pvals, 1.0)[:, [0, 2]]
+            pvals[:, [0, 2]],
+            to_dense(self.results.pvals, 1.0)[:, [0, 2]],
         )
 
     def test_matches_quantiles_per_gene(self):
@@ -196,7 +224,11 @@ class TestPermutation(unittest.TestCase):
         genes = adata.var_names.to_numpy()
         quantiles = np.array([0.5, 0.75, 0.9, 0.99, 1])
         expected = np.apply_along_axis(
-            np.quantile, 0, adata.X.toarray(), q=quantiles, method="nearest"
+            np.quantile,
+            0,
+            adata.X.toarray(),
+            q=quantiles,
+            method="nearest",
         )
         for chunk_size in (1, 7, len(genes), 1000):
             np.testing.assert_array_equal(

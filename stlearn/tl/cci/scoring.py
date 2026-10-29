@@ -18,6 +18,8 @@ from numba import njit, prange
 from numba.typed import List
 from scipy import sparse
 
+from .ligand_receptors import LRPairs
+
 MEANS_CHUNK_BYTES = 2**28  # memory for a chunk's neighbourhood means and scores
 type Expression = sparse.spmatrix | np.ndarray
 
@@ -62,7 +64,7 @@ class LRScorer:
 
     def score(
         self,
-        lrs: npt.NDArray[np.str_],
+        lrs: LRPairs,
         het_vals: np.ndarray,
         min_expr: float,
         filter_pairs: bool = True,
@@ -70,7 +72,7 @@ class LRScorer:
         sparse_result: bool = False,
     ) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, npt.NDArray[np.str_]]:
         """The scores of the LR pairs, named 'L_R'; see get_lrs_scores."""
-        names = np.array(list(map(lambda lr: lr.split("_"), lrs))).reshape(-1, 2)
+        names = np.array([name.split("_") for name in lrs.names()]).reshape(-1, 2)
         pairs = self.adata.var_names.get_indexer(names.ravel()).reshape(names.shape)
         found = (pairs >= 0).all(axis=1)
         if filter_pairs:
@@ -125,7 +127,7 @@ class LRScorer:
 
 def get_lrs_scores(
     adata: AnnData,
-    lrs: npt.NDArray[np.str_],
+    lrs: LRPairs,
     neighbours: np.ndarray,
     het_vals: np.ndarray,
     min_expr: float,

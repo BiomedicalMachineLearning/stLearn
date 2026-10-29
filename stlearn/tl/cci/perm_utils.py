@@ -58,13 +58,19 @@ def _column_quantiles(expr, quantiles: np.ndarray, nonzero: bool) -> np.ndarray:
         if not nonzero:
             return np.quantile(expr, quantiles, axis=0, method="nearest")
         return np.apply_along_axis(
-            nonzero_quantile, 0, expr, q=quantiles, method="nearest"
+            nonzero_quantile,
+            0,
+            expr,
+            q=quantiles,
+            method="nearest",
         )
     expr = sparse.csc_matrix(expr)
     if nonzero:  # only the stored values can be above 0
         per_column = [
             nonzero_quantile(
-                expr.data[expr.indptr[j] : expr.indptr[j + 1]], quantiles, "nearest"
+                expr.data[expr.indptr[j] : expr.indptr[j + 1]],
+                quantiles,
+                "nearest",
             )
             for j in range(expr.shape[1])
         ]
@@ -93,7 +99,9 @@ def get_lr_quants(
 
     # First getting the quantiles of gene expression #
     gene_quants = _column_quantiles(
-        lr_expr, quantiles, nonzero=quant_method != "quantiles"
+        lr_expr,
+        quantiles,
+        nonzero=quant_method != "quantiles",
     )
 
     l_quants = gene_quants[:, l_indices]
@@ -186,7 +194,7 @@ def gen_rand_pairs(
     if n_pairs > n_possible:
         raise ValueError(
             f"Requested {n_pairs} unique pairs but only {n_possible} are "
-            f"possible from {len(genes1)}x{len(genes2)} genes."
+            f"possible from {len(genes1)}x{len(genes2)} genes.",
         )
     return _gen_rand_pairs(genes1, genes2, n_pairs, seed)
 
@@ -230,7 +238,11 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
 
     # The nonzero median when quantiles=.5 #
     lr_quants = get_lr_quants(
-        expr, l_indices, r_indices, quantiles, quant_method="quantiles"
+        expr,
+        l_indices,
+        r_indices,
+        quantiles,
+        quant_method="quantiles",
     )
 
     # Calculating the zero proportions for grouping based on median/zeros #
@@ -238,7 +250,11 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
 
     # Getting lr features for later diagnostics
     lr_meds = get_lr_quants(
-        expr, l_indices, r_indices, quantiles=np.array([0.5]), quant_method=""
+        expr,
+        l_indices,
+        r_indices,
+        quantiles=np.array([0.5]),
+        quant_method="",
     )
     lr_median_means = lr_meds.mean(axis=1)
     lr_prop_means = lr_props.mean(axis=1)
@@ -289,7 +305,10 @@ def background_pairs(
     for gene, quant in ((lr_.split("_")[0], l_quant), (lr_.split("_")[1], r_quant)):
         if gene not in gene_bg_genes:
             gene_bg_genes[gene] = get_similar_genes_fast(
-                quant, n_genes, candidate_quants, candidates
+                quant,
+                n_genes,
+                candidate_quants,
+                candidates,
             )
         similar.append(gene_bg_genes[gene])
     return gen_rand_pairs(similar[0], similar[1], n_pairs, seed)
