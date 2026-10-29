@@ -36,10 +36,10 @@ def read_test_data_with_lr_pairs(n_pairs: int = 20):
     to zero. It exercises the code path; the scores carry no biological meaning.
     """
     adata = read_test_data()
-    lrs = st.tl.cci.lr_pairs("connectomeDB2020").names()
+    lrs = st.tl.cci.lr_pairs("connectomeDB2020")
 
     genes: list[str] = []
-    for lr in lrs:
+    for lr in lrs.names():
         ligand, receptor = lr.split("_")
         if ligand != receptor and ligand not in genes and receptor not in genes:
             genes += [ligand, receptor]

@@ -74,7 +74,7 @@ class TestLrTable(unittest.TestCase):
     def test_run_returns_the_lr_table(self):
         lr = self.lr
         self.assertTrue(lr.obs_names.equals(self.adata.obs_names))
-        self.assertLessEqual(set(lr.var_names), set(CCI_LRS))
+        self.assertLessEqual(set(lr.var_names), set(CCI_LRS.names()))
         self.assertEqual(lr.var_names[0], "LigA_RecA")  # the most significant
         self.assertEqual(list(lr.var.columns), SUMMARY)
         self.assertEqual(sorted(lr.layers), sorted(LR_RESULTS))

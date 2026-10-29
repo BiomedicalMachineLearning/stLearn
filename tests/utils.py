@@ -8,6 +8,7 @@ import scipy.sparse
 from PIL import Image
 from spatialdata.models import Image2DModel
 from spatialdata.transformations import Affine
+from stlearn.tl.cci import LRPairs
 
 
 def path_for_tests():
@@ -42,7 +43,7 @@ def scores_and_pvals(n_spots=30, seed=0):
     return scores, pvals
 
 
-CCI_LRS = np.array(["LigA_RecA", "LigB_RecB", "LigC_RecC"])
+CCI_LRS = LRPairs.from_names(["LigA_RecA", "LigB_RecB", "LigC_RecC"], species="human")
 CELL_TYPES = np.array(["CT1", "CT2", "CT3"])
 
 
@@ -59,7 +60,7 @@ def cci_table(
     """
     rng = np.random.default_rng(seed)
     n_spots = n_side * n_side
-    lr_genes = [gene for lr in CCI_LRS for gene in lr.split("_")]
+    lr_genes = [gene for lr in CCI_LRS.names() for gene in lr.split("_")]
     var_names = lr_genes + [f"gene{i}" for i in range(n_other_genes)]
 
     X = rng.poisson(0.3, size=(n_spots, len(var_names))).astype(np.float32)

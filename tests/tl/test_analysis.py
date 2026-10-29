@@ -7,6 +7,7 @@ import anndata
 import numpy as np
 import pandas as pd
 from anndata import AnnData
+from stlearn.tl.cci import LRPairs
 
 import stlearn as st
 
@@ -30,7 +31,7 @@ def _make_cci_adata(dtype=np.float64, n_side=8, n_extra_genes=40, seed=0):
     return AnnData(X=X, obs=obs, var=var)
 
 
-LRS = np.array(["Lig0_Rec0", "Lig1_Rec1"])
+LRS = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human")
 
 
 class TestBase(unittest.TestCase):
@@ -62,14 +63,13 @@ class TestBase(unittest.TestCase):
         """LRPairs and 'L_R' names give the same results; a string is refused."""
         settings = {"min_spots": 0, "distance": 1.5, "n_pairs": 100, "verbose": False}
         from_names = st.tl.cci.run(_make_cci_adata(), LRS, **settings)
-        lrs = st.tl.cci.LRPairs.from_names(LRS, species="human")
-        from_pairs = st.tl.cci.run(_make_cci_adata(), lrs, **settings)
+        from_pairs = st.tl.cci.run(_make_cci_adata(), LRS, **settings)
         np.testing.assert_array_equal(from_pairs.var_names, from_names.var_names)
         np.testing.assert_array_equal(
             st.tl.cci.lr_result(from_pairs, "lr_scores"),
             st.tl.cci.lr_result(from_names, "lr_scores"),
         )
-        self.assertTrue((from_names.var["source"] == "hand-picked").all())
+        self.assertTrue((from_names.var["source"] == "names").all())
         with self.assertRaises(TypeError):
             st.tl.cci.run(_make_cci_adata(), "connectomeDB2025", **settings)
 
