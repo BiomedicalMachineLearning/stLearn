@@ -87,13 +87,13 @@ def transition_markers_plot(
                 axes[1].get_xaxis().set_ticks([])
 
     rects = axes[1].patches
+    pos_genes = list(pos["gene"])
+    pos_p_values = list(pos["p-value"])
     for i, rect in enumerate(rects):
-        try:
-            gene_name = list(pos["gene"])[i]
-            p_value = "{:.2E}".format(Decimal(str(list(pos["p-value"])[i])))
-        except:
-            gene_name = ""
-            p_value = ""
+        gene_name, p_value = "", ""
+        if i < len(pos_genes):
+            gene_name = pos_genes[i]
+            p_value = f"{Decimal(str(pos_p_values[i])):.2E}"
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
         axes[1].text(
             rect.get_x() + rect.get_width() + 0.01,
@@ -112,13 +112,13 @@ def transition_markers_plot(
         )
 
     rects = axes[0].patches
+    neg_genes = list(neg["gene"])
+    neg_p_values = list(neg["p-value"])
     for i, rect in enumerate(rects):
-        try:
-            gene_name = list(neg["gene"])[i]
-            p_value = "{:.2E}".format(Decimal(str(list(neg["p-value"])[i])))
-        except:
-            gene_name = ""
-            p_value = ""
+        gene_name, p_value = "", ""
+        if i < len(neg_genes):
+            gene_name = neg_genes[i]
+            p_value = f"{Decimal(str(neg_p_values[i])):.2E}"
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}
         axes[0].text(
             rect.get_x() + rect.get_width() - 0.01,

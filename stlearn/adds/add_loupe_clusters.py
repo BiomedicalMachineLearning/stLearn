@@ -1,9 +1,10 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from anndata import AnnData
 from natsort import natsorted
+
+from stlearn.adds._barcodes import by_barcode
 
 
 def add_loupe_clusters(
@@ -13,34 +14,32 @@ def add_loupe_clusters(
     copy: bool = False,
 ) -> AnnData | None:
     """\
-    Adding label transfered from Seurat
+    Add loupe clusters to adata.
 
     Parameters
     ----------
     adata
         Annotated data matrix.
-    annotation_path
-        Path of the output of label transfer result by Seurat
-    use_label
-        Choosing cluster type.
-    threshold
-        Quantile threshold of label
+    loupe_path
+        Path of the Loupe Browser CSV file: barcodes in the first column.
+    key_add
+        Column of the CSV with the clusters, and the adata.obs column they go in.
     copy
         Return a copy instead of writing to adata.
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
-    **[cluster method name]_anno** : `adata.obs` field
-        The annotation of cluster results.
+    **[key_add]** : `adata.obs` field
+        The clusters, matched to spots by barcode; NaN for spots not in the file.
 
     """
     adata = adata.copy() if copy else adata
 
-    label = pd.read_csv(loupe_path)
-
+    label = by_barcode(pd.read_csv(loupe_path, index_col=0), adata, loupe_path)
+    clusters = label[key_add].map(str, na_action="ignore")
     adata.obs[key_add] = pd.Categorical(
-        values=np.array(label[key_add]).astype("U"),
-        categories=natsorted(label[key_add].unique().astype("U")),
+        values=clusters.to_numpy(),
+        categories=natsorted(clusters.dropna().unique()),
     )
 
     return adata if copy else None

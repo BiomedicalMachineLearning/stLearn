@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/BiomedicalMachineLearning/stLearn/issues
+Report bugs at https://github.com/GenomicsMachineLearning/stLearn2/issues
 
 If you are reporting a bug, please include:
 

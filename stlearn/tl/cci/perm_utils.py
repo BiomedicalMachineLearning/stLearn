@@ -1,13 +1,12 @@
+"""Building each LR pair's background from random gene pairs of similar
+expression."""
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from anndata import AnnData
 from numba import njit, prange
-from numba.core import types
-from numba.typed import Dict, List
-from scipy.spatial.distance import canberra
-from sklearn.preprocessing import MinMaxScaler
-
-from .base import get_lrs_scores
+from scipy import sparse
 
 
 def nonzero_quantile(expr, q, method):
@@ -19,207 +18,115 @@ def nonzero_quantile(expr, q, method):
     return quants
 
 
-def getzero_prop(expr):
-    """Calculating the proportion of zeros."""
-    zero_bool = expr == 0
-    n_zeros = len(np.where(zero_bool)[0])
-    zero_prop = [n_zeros / len(expr)]
-    return zero_prop
+def nonnegative(X: sparse.spmatrix) -> bool:
+    """Whether every stored value of X is >= 0 (so not NaN either); so too with
+    nothing stored."""
+    return X.nnz == 0 or bool(X.data.min() >= 0)
+
+
+def sparse_quantiles(X: sparse.spmatrix, quantiles) -> np.ndarray:
+    """np.quantile(X.toarray(), quantiles, axis=0, method="nearest") for a sparse
+    matrix with no negative values, from its stored values: quantiles (rows) of
+    each column.
+
+    A column's zeros sort first, so quantile q is 0 unless the order statistic
+    np.quantile picks lies among the column's stored values, and then it is that
+    one of them sorted. np.quantile itself says which order statistic, so the
+    rounding is the installed numpy's.
+    """
+    X = sparse.csc_matrix(X)  # column by column; no copy when already CSC
+    quantiles = np.atleast_1d(quantiles)
+    n, m = X.shape
+    order = np.quantile(np.arange(n), quantiles, method="nearest").astype(np.int64)
+    data = X.data.copy()  # never sort X.data itself: it is aligned with X.indices
+    for start, end in zip(X.indptr[:-1], X.indptr[1:], strict=True):
+        data[start:end].sort()
+    position = order[:, None] - (n - np.diff(X.indptr))  # (q, m); < 0 => a zero
+    hit = position >= 0
+    out = np.zeros((len(order), m), dtype=X.dtype)
+    out[hit] = data[(X.indptr[:-1] + position)[hit]]
+    return out
+
+
+def _column_quantiles(expr, quantiles: np.ndarray, nonzero: bool) -> np.ndarray:
+    """np.quantile(..., method="nearest") of each column of expr (spots by genes):
+    quantiles as rows, genes as columns. With `nonzero`, of the column's values
+    above 0 only. Sparse expr is done from its stored values."""
+    if not sparse.issparse(expr):
+        # a plain array: anndata's views trip up numpy
+        expr = np.asarray(expr)
+        if not nonzero:
+            return np.quantile(expr, quantiles, axis=0, method="nearest")
+        return np.apply_along_axis(
+            nonzero_quantile, 0, expr, q=quantiles, method="nearest"
+        )
+    expr = sparse.csc_matrix(expr)
+    if nonzero:  # only the stored values can be above 0
+        per_column = [
+            nonzero_quantile(
+                expr.data[expr.indptr[j] : expr.indptr[j + 1]], quantiles, "nearest"
+            )
+            for j in range(expr.shape[1])
+        ]
+        # The first column's dtype, as np.apply_along_axis gives.
+        return np.stack(per_column, axis=1).astype(per_column[0].dtype, copy=False)
+    if not nonnegative(expr):  # negative values sort before the zeros
+        return _column_quantiles(expr.toarray(), quantiles, nonzero)
+    return sparse_quantiles(expr, quantiles)
 
 
 def get_lr_quants(
-    lr_expr: pd.DataFrame,
+    lr_expr,
     l_indices: list,
     r_indices: list,
     quantiles: np.ndarray,
     quant_method="",
 ):
     """Gets the quantiles per gene in the LR pair, & then concatenates.
+
+    lr_expr is spots by genes: an array or a sparse matrix.
     Returns
     -------
-    lr_quants, l_quants, r_quants (np.ndarray): First is concatenation of two latter.
-                                                Each row is a quantile value, each
-                                                column is an LR pair.
+    lr_quants:
+        Each row is a quantile value, each column is an LR pair.
     """
 
-    quant_func = nonzero_quantile if quant_method != "quantiles" else np.quantile
-
     # First getting the quantiles of gene expression #
-    gene_quants = np.apply_along_axis(
-        quant_func, 0, lr_expr.values, q=quantiles, method="nearest"
+    gene_quants = _column_quantiles(
+        lr_expr, quantiles, nonzero=quant_method != "quantiles"
     )
 
     l_quants = gene_quants[:, l_indices]
     r_quants = gene_quants[:, r_indices]
-
     lr_quants = np.concatenate((l_quants, r_quants), 0).transpose()
 
-    return lr_quants, l_quants, r_quants
+    return lr_quants
 
 
-def get_lr_zeroprops(lr_expr: pd.DataFrame, l_indices: list, r_indices: list):
+def get_lr_zeroprops(lr_expr, l_indices: list, r_indices: list):
     """Gets the proportion of zeros per gene in the LR pair, & then concatenates.
+
+    lr_expr is spots by genes: an array or a sparse matrix.
     Returns
     -------
-    lr_props, l_props, r_props (np.ndarray):    First is concatenation of two latter.
-                                                Each row is a prop value, each column
-                                                is an LR pair.
+    lr_props:
+        Each row is a prop value, each column is an LR pair.
     """
 
     # First getting the quantiles of gene expression #
-    gene_props = np.apply_along_axis(getzero_prop, 0, lr_expr.values)
+    if sparse.issparse(lr_expr):
+        stored = sparse.csc_matrix(lr_expr, copy=True)
+        stored.eliminate_zeros()  # a stored 0 is a zero
+        n_nonzero = np.diff(stored.indptr)
+        gene_props = ((lr_expr.shape[0] - n_nonzero) / lr_expr.shape[0])[np.newaxis]
+    else:
+        gene_props = (lr_expr == 0).mean(axis=0, keepdims=True)
 
     l_props = gene_props[:, l_indices]
     r_props = gene_props[:, r_indices]
-
     lr_props = np.concatenate((l_props, r_props), 0).transpose()
 
-    return lr_props, l_props, r_props
-
-
-def get_lr_bounds(lr_value: float, bin_bounds: np.ndarray):
-    """For the given lr_value, returns the bin where it belongs.
-    Returns
-    -------
-    lr_bin (tuple):     Tuple of length 2, first is the lower bound of the bin, second
-                        is upper bound of the bin.
-    """
-    if np.any(bin_bounds == lr_value):  # If sits on a boundary
-        lr_i = np.where(bin_bounds == lr_value)[0][0]
-        if lr_value == max(bin_bounds):  # Must be in the final bin
-            _lower = bin_bounds[-2]
-            _upper = bin_bounds[-1]
-        else:  # In the lower bin
-            _lower = bin_bounds[lr_i]
-            _upper = bin_bounds[lr_i + 1]
-    else:  # Bin where it's value sit in-between #
-        _lower = bin_bounds[np.where(bin_bounds < lr_value)[0][-1]]
-        _upper = bin_bounds[np.where(bin_bounds > lr_value)[0][0]]
-
-    return (_lower, _upper)
-
-
-def get_similar_genes(
-    ref_quants: np.ndarray,
-    ref_props: np.ndarray,
-    n_genes: int,
-    candidate_expr: np.ndarray,
-    candidate_genes: np.ndarray,
-    quantiles=(0.5),  # (.5, .75, .85, .9, .95, .97, .98, .99, 1)
-):
-    """Gets genes with a similar expression distribution as the inputted gene,
-        by measuring distance between the gene expression quantiles.
-    Parameters
-    ----------
-    ref_quants: np.ndarray        The pre-calculated quantiles.
-    ref_props: np.ndarray         The query zero proportions.
-    n_genes: int                Number of equivalent genes to select.
-    candidate_expr: np.ndarray  Expression of gene candidates (cells*genes).
-    candidate_genes: np.array   Same as candidate_expr.shape[1], indicating gene names.
-    quantiles: tuple            The quantile to use
-    Returns
-    -------
-    similar_genes: np.array Array of strings for gene names.
-    """
-    if isinstance(quantiles, float):
-        quantiles = np.array([quantiles])
-    else:
-        quantiles = np.array(quantiles)
-
-    # Query quants #
-    query_quants = np.apply_along_axis(
-        nonzero_quantile, 0, candidate_expr, q=quantiles, method="nearest"
-    )
-
-    # Need to min-max normalise so can take distance with the proportion #
-    all_quants = np.concatenate((np.array([ref_quants]), query_quants), axis=1)
-    scaler = MinMaxScaler()
-    scaled_quants = scaler.fit_transform(all_quants.transpose()).transpose()
-    ref_scaled = scaled_quants[:, 0]
-    query_scaled = scaled_quants[:, 1:]
-
-    # Query props #
-    query_props = np.apply_along_axis(getzero_prop, 0, candidate_expr)
-
-    # Concatenating to create the ref & query vals to match #
-    ref_vals = np.array([ref_scaled[0], ref_props[0]])  # both between 0 & 1
-    query_vals = np.concatenate((query_scaled, query_props))
-
-    # Measuring distances from the desired gene #
-    dists = np.apply_along_axis(canberra, 0, query_vals, ref_vals)
-
-    # Retrieving desired number of genes #
-    order = np.argsort(dists)
-    similar_genes = candidate_genes[order[0:n_genes]]
-
-    """ During debugging, plotting distribution of distances & selected genes.
-    import matplotlib.pyplot as plt
-    cutoff = dists[order[n_genes]]
-    plt.hist(dists, bins=100)
-    plt.vlines(cutoff, 0, 500, color='r')
-    plt.show()
-    """
-
-    return similar_genes
-
-
-def get_similar_genes_quantiles(
-    gene_expr: np.ndarray,
-    n_genes: int,
-    candidate_quants: np.ndarray,
-    candidate_genes: np.ndarray,
-    quantiles=(0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 1),
-):
-    """Gets genes with a similar expression distribution as the inputted gene,
-        by measuring distance between the gene expression quantiles.
-    Parameters
-    ----------
-    gene_expr: np.array             Expression of the gene of interest, or, if the
-                                    same length as quantiles, then assumes is the
-                                    pre-calculated quantiles.
-    n_genes: int                    Number of equivalent genes to select.
-    candidate_quants: np.ndarray    Expression quantiles of gene candidates
-                                    (quantiles*genes).
-    candidate_genes: np.array       Same as candidate_expr.shape[1], indicating gene
-                                    names.
-    quantiles: tuple                The quantile to use
-    Returns
-    -------
-    similar_genes: np.array Array of strings for gene names.
-    """
-
-    if isinstance(quantiles, float):
-        quantiles = np.array([quantiles])
-    else:
-        quantiles = np.array(quantiles)
-
-    # Getting the quantiles for the gene #
-    if len(gene_expr) != len(quantiles):
-        ref_quants = nonzero_quantile(gene_expr, q=quantiles, method="nearest")
-    else:
-        ref_quants = gene_expr
-
-    # Measuring distances from the desired gene #
-    dists = np.apply_along_axis(canberra, 0, candidate_quants, ref_quants)
-    order = np.argsort(dists)
-
-    """ During debugging, plotting distribution of distances & selected genes.
-    import matplotlib.pyplot as plt
-    cutoff = dists[order[n_genes]]
-    fig, ax = plt.subplots()
-    ax.hist(dists[order[0:28000]], bins=1000)
-    y_max = ax.get_ylim()[1]
-    ax.vlines(cutoff, 0, y_max/2, color='r')
-    plt.show()
-    print(candidate_quants[:,order[0:3]]) # Showing the quantiles of selected
-    print(candidate_quants[:,order[n_genes-3:n_genes]])
-    print(ref_quants)
-    """
-
-    # Retrieving desired number of genes #
-    similar_genes = candidate_genes[order[0:n_genes]]
-
-    return similar_genes
+    return lr_props
 
 
 @njit(parallel=True)
@@ -228,117 +135,110 @@ def get_similar_genes_fast(
     n_genes: int,
     candidate_quants: np.ndarray,
     candidate_genes: np.ndarray,
-):
-    """Fast version of the above with parallelisation."""
-
-    # Measuring distances from the desired gene #
-    dists = np.zeros((1, candidate_quants.shape[1]), dtype=np.float64)[0, :]
-    for i in prange(0, candidate_quants.shape[1]):
-        cand_quants = candidate_quants[:, i]
-        abs_diff = ref_quants - cand_quants
-        abs_diff[abs_diff < 0] = -abs_diff[abs_diff < 0]
-        dists[i] = np.nansum(abs_diff / (ref_quants + cand_quants))
-
-    # Need to remove the zero-dists since this indicates they are expressed
-    # exactly the same, & hence likely in the same spot !!!
-    nonzero_bool = dists > 0
-    dists = dists[nonzero_bool]
-    candidate_quants = candidate_quants[:, nonzero_bool]
-    candidate_genes = candidate_genes[nonzero_bool]
-    order = np.argsort(dists)
-
-    """ During debugging, plotting distribution of distances & selected genes.
-    import matplotlib.pyplot as plt
-    cutoff = dists[order[n_genes]]
-    fig, ax = plt.subplots()
-    ax.hist(dists[order[0:28000]], bins=1000)
-    y_max = ax.get_ylim()[1]
-    ax.vlines(cutoff, 0, y_max/2, color='r')
-    plt.show()
-    print(candidate_quants[:,order[0:3]]) # Showing the quantiles of selected
-    print(candidate_quants[:,order[n_genes-3:n_genes]])
-    print(ref_quants)
-    """
-
-    # Retrieving desired number of genes #
-    similar_genes = candidate_genes[order[0:n_genes]]
-
-    return similar_genes
+) -> np.ndarray:
+    """The n_genes candidate genes whose expression quantiles are closest to
+    ref_quants, by the sum over quantiles of |ref - cand| / (ref + cand),
+    excluding exact matches (likely the same gene)."""
+    n_quantiles, n_candidates = candidate_quants.shape
+    dists = np.zeros(n_candidates, np.float64)
+    for i in prange(n_candidates):
+        total = 0.0
+        for k in range(n_quantiles):
+            ref, cand = ref_quants[k], candidate_quants[k, i]
+            term = abs(ref - cand) / (ref + cand)
+            if not np.isnan(term):
+                total += term
+        dists[i] = total
+    keep = dists > 0
+    order = np.argsort(dists[keep])
+    return candidate_genes[keep][order[:n_genes]]
 
 
 def gen_rand_pairs(
-    genes1: npt.NDArray[np.str_],
-    genes2: npt.NDArray[np.str_],
+    genes1: npt.NDArray[np.int64],
+    genes2: npt.NDArray[np.int64],
     n_pairs: int,
     seed: int,
-) -> npt.NDArray[np.str_]:
+) -> npt.NDArray[np.int64]:
     """Generate unique random gene pairs for building background LR scores.
 
-    Each pair is formed by drawing one gene from genes1 and one from genes2,
-    formatted as 'gene1_gene2'. Self-pairs (the same gene on both sides) and
-    duplicate pairs are rejected, so every returned pair is unique and its two
-    genes are distinct.
+    Each pair a combination from genes1 and genes2. Self-pairs and duplicate pairs
+    are rejected. Genes are positions in adata.var_names.
 
     Parameters
     ----------
-    genes1: npt.NDArray[np.str_]
-        Candidate genes for the first (ligand) position of each pair.
-    genes2: npt.NDArray[np.str_]
-        Candidate genes for the second (receptor) position of each pair.
+    genes1: npt.NDArray[np.int64]
+        Candidate genes for the ligand position in adata.var_names.
+    genes2: npt.NDArray[np.int64]
+        Candidate genes for the receptor position in adata.var_names.
     n_pairs: int
         Number of unique pairs to generate.
     seed: int
         Seed for the random generator, for reproducible pair selection.
+    Returns
+    -------
+    pairs: npt.NDArray[np.int64]
+        Shape (n_pairs, 2): each pair's (ligand, receptor) positions.
     """
+    if np.unique(genes1).size < len(genes1) or np.unique(genes2).size < len(genes2):
+        raise ValueError("genes1 and genes2 must each list a gene once.")
     n_possible = len(genes1) * len(genes2) - np.intersect1d(genes1, genes2).size
     if n_pairs > n_possible:
         raise ValueError(
             f"Requested {n_pairs} unique pairs but only {n_possible} are "
             f"possible from {len(genes1)}x{len(genes2)} genes."
         )
-    return np.array(list(_gen_rand_pairs(genes1, genes2, n_pairs, seed)))
+    return _gen_rand_pairs(genes1, genes2, n_pairs, seed)
 
 
 @njit
 def _gen_rand_pairs(genes1, genes2, n_pairs, seed):
     np.random.seed(seed)  # noqa: NPY002 (numba requires legacy API)
-    rand_pairs = List()
-    seen = Dict.empty(types.unicode_type, types.boolean)  # O(1) membership
-    for _j in range(0, n_pairs):
-        l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
-        r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
-        rand_pair = "_".join([l_rand, r_rand])
-        while rand_pair in seen or l_rand == r_rand:  # was: in rand_pairs
-            l_rand = np.random.choice(genes1, 1)[0]  # noqa: NPY002
-            r_rand = np.random.choice(genes2, 1)[0]  # noqa: NPY002
-            rand_pair = "_".join([l_rand, r_rand])
-        rand_pairs.append(rand_pair)
-        seen[rand_pair] = True
-    return rand_pairs
+    pairs = np.empty((n_pairs, 2), np.int64)
+    seen = np.zeros((len(genes1), len(genes2)), np.bool_)
+    for j in range(n_pairs):
+        i1 = np.random.randint(0, len(genes1))  # noqa: NPY002
+        i2 = np.random.randint(0, len(genes2))  # noqa: NPY002
+        while seen[i1, i2] or genes1[i1] == genes2[i2]:
+            i1 = np.random.randint(0, len(genes1))  # noqa: NPY002
+            i2 = np.random.randint(0, len(genes2))  # noqa: NPY002
+        pairs[j, 0], pairs[j, 1] = genes1[i1], genes2[i2]
+        seen[i1, i2] = True
+    return pairs
 
 
-def get_lr_features(adata, lr_expr, lrs, quantiles):
-    """Gets expression features of LR pairs; nonzero-median, zero-prop, quantiles."""
+def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
+    """Gets expression features of LR pairs; nonzero-median, zero-prop, quantiles.
+
+    lr_expr is the LR genes' expression, spots by genes: a DataFrame, or an
+    AnnData of those genes, whose sparse X is used as it is, never densified.
+    """
     quantiles = np.array(quantiles)
+    if isinstance(lr_expr, AnnData):
+        genes, expr = lr_expr.var_names.to_numpy(), lr_expr.X
+        # Column by column below, so CSC; dense stays as it is.
+        expr = sparse.csc_matrix(expr) if sparse.issparse(expr) else np.asarray(expr)
+    else:
+        genes, expr = lr_expr.columns.values, lr_expr.values
 
     # Determining indices of LR pairs #
     l_indices, r_indices = [], []
     for lr in lrs:
         l_, r_ = lr.split("_")
-        l_indices.extend(np.where(lr_expr.columns.values == l_)[0])
-        r_indices.extend(np.where(lr_expr.columns.values == r_)[0])
+        l_indices.extend(np.where(genes == l_)[0])
+        r_indices.extend(np.where(genes == r_)[0])
 
     # The nonzero median when quantiles=.5 #
-    lr_quants, _, _ = get_lr_quants(
-        lr_expr, l_indices, r_indices, quantiles, quant_method="quantiles"
+    lr_quants = get_lr_quants(
+        expr, l_indices, r_indices, quantiles, quant_method="quantiles"
     )
 
-    # Calculating the zero proportions, for grouping based on median/zeros #
-    lr_props, _, _ = get_lr_zeroprops(lr_expr, l_indices, r_indices)
+    # Calculating the zero proportions for grouping based on median/zeros #
+    lr_props = get_lr_zeroprops(expr, l_indices, r_indices)
 
     # Getting lr features for later diagnostics
-    lr_meds, _, _ = get_lr_quants(
-        lr_expr, l_indices, r_indices, quantiles=np.array([0.5]), quant_method=""
+    lr_meds = get_lr_quants(
+        expr, l_indices, r_indices, quantiles=np.array([0.5]), quant_method=""
     )
     lr_median_means = lr_meds.mean(axis=1)
     lr_prop_means = lr_props.mean(axis=1)
@@ -366,62 +266,30 @@ def get_lr_features(adata, lr_expr, lrs, quantiles):
     ]
     quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs, dtype=np.float64)
     lr_features = pd.concat((lr_features, quant_df), axis=1)
-    adata.uns["lrfeatures"] = lr_features
 
     return lr_features
 
 
-def get_lr_bg(
-    adata,
-    neighbours,
-    het_vals,
-    min_expr,
-    lr_,
-    lr_score,
-    l_quant,
-    r_quant,
-    genes,
-    candidate_quants,
-    gene_bg_genes,
-    n_genes,
-    n_pairs,
+def background_pairs(
+    lr_: str,
+    l_quant: np.ndarray,
+    r_quant: np.ndarray,
+    candidates: npt.NDArray[np.int64],
+    candidate_quants: np.ndarray,
+    gene_bg_genes: dict[str, np.ndarray],
+    n_genes: int,
+    n_pairs: int,
     seed: int,
-):
-    """Gets the LR-specific background & bg spot indices."""
-    l_, r_ = lr_.split("_")
-    if l_ not in gene_bg_genes:
-        l_genes = get_similar_genes_fast(
-            l_quant,
-            n_genes,
-            candidate_quants,
-            genes,  # group_l_props,
-        )
-        gene_bg_genes[l_] = l_genes
-    else:
-        l_genes = gene_bg_genes[l_]
-
-    if r_ not in gene_bg_genes:
-        r_genes = get_similar_genes_fast(
-            r_quant,
-            n_genes,
-            candidate_quants,
-            genes,  # group_r_props,
-        )
-        gene_bg_genes[r_] = r_genes
-    else:
-        r_genes = gene_bg_genes[r_]
-
-    rand_pairs = gen_rand_pairs(l_genes, r_genes, n_pairs, seed)
-    spot_indices = np.where(lr_score > 0)[0]
-
-    background, _ = get_lrs_scores(
-        adata,
-        rand_pairs,
-        neighbours,
-        het_vals,
-        min_expr,
-        filter_pairs=False,
-        spot_indices=spot_indices,
-    )
-
-    return background, spot_indices
+) -> npt.NDArray[np.int64]:
+    """The random gene pairs of an LR's background: n_pairs pairs of the n_genes
+    candidates most like its ligand and its receptor in expression quantiles.
+    `candidates` are positions in adata.var_names; `gene_bg_genes` caches each
+    gene's similar genes across LRs."""
+    similar = []
+    for gene, quant in ((lr_.split("_")[0], l_quant), (lr_.split("_")[1], r_quant)):
+        if gene not in gene_bg_genes:
+            gene_bg_genes[gene] = get_similar_genes_fast(
+                quant, n_genes, candidate_quants, candidates
+            )
+        similar.append(gene_bg_genes[gene])
+    return gen_rand_pairs(similar[0], similar[1], n_pairs, seed)

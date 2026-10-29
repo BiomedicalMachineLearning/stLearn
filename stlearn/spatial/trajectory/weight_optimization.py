@@ -4,6 +4,8 @@ import pandas as pd
 from anndata import AnnData
 from tqdm import tqdm
 
+from stlearn.utils import _cluster_labels
+
 from .global_level import global_level
 from .local_level import local_level
 from .utils import lambda_dist, resistance_distance
@@ -12,7 +14,7 @@ from .utils import lambda_dist, resistance_distance
 def weight_optimizing_global(
     adata: AnnData,
     use_label: str = "leiden",
-    list_clusters=None,
+    list_clusters: str | list[str] | None = None,
     step=0.01,
     k=10,
     use_rep="X_pca",
@@ -21,9 +23,13 @@ def weight_optimizing_global(
     if k <= 0:
         raise ValueError(f"k must be positive, got {k}")
 
+    labels = _cluster_labels(
+        adata, use_label, [] if list_clusters is None else list_clusters
+    )
+
     # Determine effective k value based on available sub-clusters
     actual_k = k
-    if use_label and list_clusters:
+    if use_label and labels:
         if "sub_cluster_labels" not in adata.obs.columns:
             print(
                 "Warning: 'sub_cluster_labels' column not found. Using provided "
@@ -31,11 +37,11 @@ def weight_optimizing_global(
             )
         else:
             try:
-                filtered_data = adata.obs[adata.obs[use_label].isin(list_clusters)]
+                filtered_data = adata.obs[adata.obs[use_label].isin(labels)]
                 if len(filtered_data) == 0:
                     raise ValueError(
-                        f"No cells found for clusters {list_clusters} "
-                        + "in column '{use_label}'"
+                        f"No cells found for clusters {labels} "
+                        + f"in column '{use_label}'"
                     )
 
                 # Minimum 1 cluster, use K or max available sub-clusters
@@ -45,7 +51,7 @@ def weight_optimizing_global(
                 if actual_k != k:
                     print(
                         f"Adjusted k from {k} to {actual_k} based on available "
-                        + "sub-clusters ({n_subclusters})"
+                        f"sub-clusters ({n_subclusters})"
                     )
 
             except Exception as e:
@@ -70,7 +76,7 @@ def weight_optimizing_global(
             matrix = global_level(
                 adata,
                 use_label=use_label,
-                list_clusters=list_clusters,
+                list_clusters=labels,
                 use_rep=use_rep,
                 n_dims=n_dims,
                 w=weight,
@@ -100,7 +106,8 @@ def weight_optimizing_global(
             a1_list.append(a1)
             a2_list.append(a2)
             index.append(w)
-            result.append(np.absolute(1 - a1 / a2))
+            with np.errstate(invalid="ignore", divide="ignore"):
+                result.append(np.absolute(1 - a1 / a2))
             pbar.update(1)
 
     screening_result = pd.DataFrame(
@@ -111,23 +118,23 @@ def weight_optimizing_global(
 
     normalised_result = normalize_data(result)
 
-    try:
-        optimized_ind = np.where(normalised_result == np.amin(normalised_result))[0][0]
+    if not np.isfinite(normalised_result).any():
+        opt_w = 0.5
+    else:
+        optimized_ind = int(np.nanargmin(normalised_result))
         opt_w = round(index[optimized_ind], 2)
-        print("The optimized weighting is:", str(opt_w))
-        return opt_w
-    except:
-        print("The optimized weighting is: 0.5")
-        return 0.5
+
+    print(f"The optimized weighting is: {opt_w}")
+    return opt_w
 
 
 def weight_optimizing_local(
-    adata: AnnData, use_label: str = "leiden", cluster=None, step=0.01
-):
+    adata: AnnData, use_label: str = "leiden", *, cluster: str, step: float = 0.01
+) -> float:
     # Screening PTS graph
     print("Screening PTS local graph...")
     Gs = []
-    j = 0
+    j = 0.0
     with tqdm(
         total=int(1 / step + 1),
         desc="Screening",
@@ -152,7 +159,7 @@ def weight_optimizing_local(
     a1_list = []
     a2_list = []
     index = []
-    w = 0
+    w = 0.0
 
     with tqdm(
         total=int(1 / step - 1),
@@ -166,7 +173,8 @@ def weight_optimizing_local(
             a1_list.append(a1)
             a2_list.append(a2)
             index.append(w)
-            result.append(np.absolute(1 - a1 / a2))
+            with np.errstate(invalid="ignore", divide="ignore"):
+                result.append(np.absolute(1 - a1 / a2))
             pbar.update(1)
 
     screening_result = pd.DataFrame(
@@ -175,12 +183,18 @@ def weight_optimizing_local(
 
     adata.uns["screening_result_local"] = screening_result
 
-    normalised_result = normalize_data(result)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        normalised_result = normalize_data(result)
 
-    optimized_ind = np.where(normalised_result == np.amin(normalised_result))[0][0]
+    # Every score is NaN when the graphs cannot be told apart, e.g. a cluster
+    # with only two subclusters. Fall back to equal weighting, as the global
+    # search does.
+    if not np.isfinite(normalised_result).any():
+        print("The optimized weighting is: 0.5")
+        return 0.5
+    optimized_ind = int(np.nanargmin(normalised_result))
     opt_w = round(index[optimized_ind], 2)
     print("The optimized weighting is:", str(opt_w))
-
     return opt_w
 
 

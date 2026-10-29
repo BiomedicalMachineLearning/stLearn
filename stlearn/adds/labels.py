@@ -1,7 +1,8 @@
-import numpy as np
 import pandas as pd
 from anndata import AnnData
 from natsort import natsorted
+
+from stlearn.adds._barcodes import by_barcode
 
 
 def labels(
@@ -13,7 +14,7 @@ def labels(
     copy: bool = False,
 ) -> AnnData | None:
     """\
-    Add label transfer results into AnnData object
+    Add label transfer results into AnnData object.
 
     Parameters
     ----------
@@ -38,14 +39,17 @@ def labels(
     adata = adata.copy() if copy else adata
 
     labels = pd.read_csv(label_filepath, index_col=index_col, sep=sep)
+    labels = by_barcode(labels, adata, label_filepath)
+
     uns_key = "label_transfer" if use_label is None else use_label
     adata.uns[uns_key] = labels.drop(["predicted.id", "prediction.score.max"], axis=1)
 
     key_add = "predictions" if use_label is None else use_label
     key_source = "predicted.id"
+    predicted = labels[key_source].map(str, na_action="ignore")
     adata.obs[key_add] = pd.Categorical(
-        values=np.array(labels[key_source]).astype("U"),
-        categories=natsorted(labels[key_source].unique().astype("U")),
+        values=predicted.to_numpy(),
+        categories=natsorted(predicted.dropna().unique()),
     )
 
     print(f"label transfer results added to adata.uns['{uns_key}']")

@@ -1,124 +1,148 @@
 import math
+import warnings
 
 import anndata
 import numpy as np
-from PIL import Image
 from skimage.transform import resize
 
-
-def transform_spatial(coordinates, original, resized):
-    # obs transform
-    x = coordinates[:, 0]
-    y = coordinates[:, 1]
-    x1p = x / original[1]
-    y1p = y / original[0]
-    x1 = x1p * resized[1]
-    y1 = y1p * resized[0]
-
-    return np.vstack([x1, y1]).transpose()
+from ..utils import _image_scalef, as_uint8_image
 
 
-def correct_size(adata, fixed_size):
-    keys = list(adata.uns["spatial"].keys())
-    image = adata.uns["spatial"][keys[0]]["images"]["hires"]
-    image_size = image.shape[:2]
-    if image_size != fixed_size:
-        adata.obs[["imagerow", "imagecol"]] = transform_spatial(
-            adata.obs[["imagerow", "imagecol"]].values, image_size, fixed_size
-        )
-        adata.obsm["spatial"] = transform_spatial(
-            adata.obsm["spatial"], image_size, fixed_size
-        )
-        image_resized = resize(image, fixed_size)
-        adata.uns["spatial"][keys[0]]["images"]["hires"] = image_resized
+def _sample_image(adata):
+    """The library id, its `uns["spatial"]` entry, the image of `use_quality` and its
+    scale factor (image pixels per `obsm["spatial"]` unit)."""
+    library_id = next(iter(adata.uns["spatial"].keys()))
+    spatial = adata.uns["spatial"][library_id]
+    quality = spatial["use_quality"]
+    scale = _image_scalef(adata)
+    return library_id, spatial, spatial["images"][quality], scale
 
-    return adata
+
+def _as_float_rgb(image):
+    """An image as (y, x, 3) float32 RGB in [0, 1], for resizing."""
+    image = as_uint8_image(image)  # Any dtype stLearn reads images in, to 0-255.
+    if image.ndim == 2:
+        image = np.repeat(image[..., None], 3, axis=2)
+    image = image[..., :3]  # drop alpha
+    return image.astype(np.float32) / 255
 
 
 def concatenate_spatial_adata(adata_list, ncols=2, fixed_size=(2000, 2000)):
     """\
-    Concatnate multiple anndata for visualization of spatial transcriptomics
+    Concatenate multiple anndata for visualization of spatial transcriptomics.
+
+    Each sample's image is scaled to fit a tile of `fixed_size` pixels, keeping its
+    aspect ratio, and the tiles are laid out in `ncols` columns. When every sample
+    has `scalefactors["microns_per_pixel"]`, the samples share one scale, so their
+    tissues keep their relative sizes; otherwise each fills its tile.
+
+    The result uses the first sample's library id and `use_quality`, with the tiled
+    image and `obsm["spatial"]` in full-resolution units of that image's scale
+    factor, so `obsm["spatial"] * tissue_{use_quality}_scalef` lands on it.
+    `spot_diameter_fullres` is the first sample's.
 
     Parameters
     ----------
     adata_list
-        A list of anndata objet.
+        A list of anndata objects.
     ncols
         Number of columns
     fixed_size
-        The size that fixed for every spatial transcriptomics data
+        Size of each tile, in pixels: (height, width).
     Returns
     -------
     Returns adata.
     """
 
-    use_adata_list = []
-    for adata in adata_list:
-        use_adata_list.append(adata.copy())
+    use_adata_list = [adata.copy() for adata in adata_list]
 
     # check valid
     n_adata = len(use_adata_list)
     nrows = math.ceil(n_adata / ncols)
     if ncols > n_adata:
         raise ValueError("Number of column is out of bound")
+    height, width = fixed_size
 
-    # Correct size
-    for adata in use_adata_list:
-        correct_size(adata, fixed_size=fixed_size)
-
-    # Transform
-    n = 0
-    break_out_flag = False
-    keys = next(iter(use_adata_list[0].uns["spatial"].keys()))
-    scale = use_adata_list[0].uns["spatial"][keys]["scalefactors"][
-        "tissue_hires_scalef"
+    samples = [_sample_image(adata) for adata in use_adata_list]
+    # Microns per image pixel, where every sample has a micron scale.
+    microns = [
+        spatial["scalefactors"].get("microns_per_pixel") for _, spatial, _, _ in samples
     ]
-    for _i in range(0, nrows):
-        for j in range(0, ncols):
-            obs_spatial = use_adata_list[n].obs[["imagerow", "imagecol"]].values
-            obsm_spatial = use_adata_list[n].obsm["spatial"]
-            obs_spatial = np.vstack(
-                (
-                    obs_spatial[:, 0] + fixed_size[0] * _i,
-                    obs_spatial[:, 1] + fixed_size[1] * j,
-                )
-            ).transpose()
-            obsm_spatial = np.vstack(
-                (
-                    obsm_spatial[:, 0] + fixed_size[0] / scale * _i,
-                    obsm_spatial[:, 1] + fixed_size[1] / scale * j,
-                )
-            ).transpose()
-            use_adata_list[n].obs[["imagerow", "imagecol"]] = obs_spatial
-            use_adata_list[n].obsm["spatial"] = obsm_spatial
-            if n == len(use_adata_list) - 1:
-                break_out_flag = True
-                break
-            n += 1
-        if break_out_flag:
-            break
+    if all(m is not None for m in microns):
+        microns_per_image_px = [
+            m / scalef for m, (_, _, _, scalef) in zip(microns, samples, strict=True)
+        ]
+        # Microns per tiled-image pixel, so the largest tissue fills its tile.
+        tiled_microns = max(
+            max(image.shape[0] / height, image.shape[1] / width) * m
+            for m, (_, _, image, _) in zip(microns_per_image_px, samples, strict=True)
+        )
+        resize_factors = [m / tiled_microns for m in microns_per_image_px]
+    else:
+        tiled_microns = None
+        resize_factors = [
+            min(height / image.shape[0], width / image.shape[1])
+            for _, _, image, _ in samples
+        ]
 
-    # Combine images
-    imgs = []
-    for adata in use_adata_list:
-        keys = next(iter(adata.uns["spatial"].keys()))
-        imgs.append(adata.uns["spatial"][keys]["images"]["hires"])
+    # Each sample's image, resized and padded with white to its tile.
+    tiles = []
+    for (_, _, image, _), factor in zip(samples, resize_factors, strict=True):
+        image = _as_float_rgb(image)
+        shape = (
+            min(height, max(1, round(image.shape[0] * factor))),
+            min(width, max(1, round(image.shape[1] * factor))),
+        )
+        tile = np.ones((height, width, 3), dtype=np.float32)
+        tile[: shape[0], : shape[1]] = resize(
+            image, shape, order=1, anti_aliasing=True, preserve_range=True
+        )
+        tiles.append(tile)
+    tiles += [np.ones((height, width, 3), dtype=np.float32)] * (nrows * ncols - n_adata)
+    imgs_comb = np.vstack(
+        [np.hstack(tiles[row * ncols : (row + 1) * ncols]) for row in range(nrows)]
+    )
 
-    if (nrows * ncols - len(use_adata_list)) > 0:
-        for _i in range(0, (nrows * ncols - len(use_adata_list))):
-            image = Image.new("RGB", fixed_size, (255, 255, 255, 255))
-            imgs.append(np.array(image))
-
-    img_rows = []
-    for min_id in range(0, len(use_adata_list), ncols):
-        img_row = np.hstack(imgs[min_id : min_id + ncols])
-        img_rows.append(img_row)
-    imgs_comb = np.vstack(img_rows)
+    # Coordinates: image pixels, resized and moved to the tile, then full-resolution
+    # units of the first sample's scale factor.
+    _, _, _, first_scalef = samples[0]
+    for n, (adata, (_, _, _, scalef), factor) in enumerate(
+        zip(use_adata_list, samples, resize_factors, strict=True)
+    ):
+        row, col = divmod(n, ncols)
+        image_xy = np.asarray(adata.obsm["spatial"], dtype=float)[:, :2] * scalef
+        tiled_xy = image_xy * factor + np.array([width * col, height * row])
+        adata.obs["imagecol"] = tiled_xy[:, 0]
+        adata.obs["imagerow"] = tiled_xy[:, 1]
+        adata.obsm["spatial"] = tiled_xy / first_scalef
 
     adata_concat = anndata.concat(use_adata_list, label="batch", index_unique="-")
-    adata_concat.uns["spatial"] = use_adata_list[0].uns["spatial"]
 
-    keys = next(iter(adata_concat.uns["spatial"].keys()))
-    adata_concat.uns["spatial"][keys]["images"]["hires"] = imgs_comb
+    library_id, spatial, _, _ = samples[0]
+    quality = spatial["use_quality"]
+    scalefactors = {
+        key: value
+        for key, value in spatial["scalefactors"].items()
+        if not (key.startswith("tissue_") and key.endswith("_scalef"))
+    }
+    if quality != "fulres":
+        scalefactors[f"tissue_{quality}_scalef"] = first_scalef
+    if "spot_diameter_fullres" in scalefactors:
+        scalefactors["spot_diameter_fullres"] *= resize_factors[0]
+    if tiled_microns is not None:
+        scalefactors["microns_per_pixel"] = tiled_microns * first_scalef
+    elif scalefactors.pop("microns_per_pixel", None) is not None:
+        warnings.warn(
+            "Not every sample has microns_per_pixel, so the samples are scaled to "
+            "their tiles and the result has none.",
+            stacklevel=2,
+        )
+    adata_concat.uns["spatial"] = {
+        library_id: {
+            **spatial,
+            "images": {quality: as_uint8_image(imgs_comb)},
+            "scalefactors": scalefactors,
+        }
+    }
 
     return adata_concat

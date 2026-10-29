@@ -2,8 +2,9 @@ import os
 from pathlib import Path
 
 from anndata import AnnData
-from matplotlib import pyplot as plt
 from PIL import Image
+
+from ..utils import read_image
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -47,39 +48,29 @@ def image(
     """
     adata = adata.copy() if copy else adata
 
-    if imgpath is not None and os.path.isfile(imgpath):
-        try:
-            img = plt.imread(imgpath, 0)
-
-            if visium:
-                adata.uns["spatial"][library_id]["images"][quality] = img
-            else:
-                adata.uns["spatial"] = {}
-                adata.uns["spatial"][library_id] = {}
-                adata.uns["spatial"][library_id]["images"] = {}
-                adata.uns["spatial"][library_id]["images"][quality] = img
-                adata.uns["spatial"][library_id]["use_quality"] = quality
-                adata.uns["spatial"][library_id]["scalefactors"] = {}
-                adata.uns["spatial"][library_id]["scalefactors"][
-                    "tissue_" + quality + "_scalef"
-                ] = scale
-                adata.uns["spatial"][library_id]["scalefactors"][
-                    "spot_diameter_fullres"
-                ] = spot_diameter_fullres
-                adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
-                adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
-
-            print("Added tissue image to the object!")
-        except Exception as e:
-            raise ValueError(
-                f"""\
-            {imgpath!r} does not end on a valid extension.
-            """
-            ) from e
+    if imgpath is None or not os.path.isfile(imgpath):
+        raise ValueError(f"No image file at {imgpath!r}.")
+    try:
+        img = read_image(imgpath)
+    except Exception as e:
+        raise ValueError(f"Could not read {imgpath!r} as an image: {e}") from e
+    if visium:
+        adata.uns["spatial"][library_id]["images"][quality] = img
     else:
-        raise ValueError(
-            f"""\
-        {imgpath!r} does not end on a valid extension.
-        """
-        )
+        adata.uns["spatial"] = {}
+        adata.uns["spatial"][library_id] = {}
+        adata.uns["spatial"][library_id]["images"] = {}
+        adata.uns["spatial"][library_id]["images"][quality] = img
+        adata.uns["spatial"][library_id]["use_quality"] = quality
+        adata.uns["spatial"][library_id]["scalefactors"] = {}
+        adata.uns["spatial"][library_id]["scalefactors"][
+            "tissue_" + quality + "_scalef"
+        ] = scale
+        adata.uns["spatial"][library_id]["scalefactors"][
+            "spot_diameter_fullres"
+        ] = spot_diameter_fullres
+        adata.obsm["spatial"] = adata.obs[["imagecol", "imagerow"]].values
+        adata.obs[["imagecol", "imagerow"]] = adata.obsm["spatial"] * scale
+
+    print("Added tissue image to the object!")
     return adata if copy else None

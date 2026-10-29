@@ -7,7 +7,8 @@ run's alone:
 
 numba's functions are compiled on a small slice first, so the timed run is
 steady state. Results are stored sparse, as their difference from the value
-most spots have (score 0, p-value 1).
+most spots have (score 0, p-value 1): the entries of the LR table's sparse
+layers, which hold the tested spots, shifted by that value.
 """
 
 import argparse
@@ -36,7 +37,7 @@ RESULTS = {
     "lr_scores": 0.0,
     "p_vals": 1.0,
     "p_adjs": 1.0,
-    "-log10(p_adjs)": 0.0,
+    "neg_log10_p_adjs": 0.0,
     "lr_sig_scores": 0.0,
 }
 NEIGHBOURS = ["spot_neighbours", "spot_neigh_bcs"]
@@ -46,8 +47,21 @@ PHASES = {
     "cell type counts": ("stlearn.tl.cci.analysis", "count"),
     "LR scores": ("stlearn.tl.cci.analysis", "get_lrs_scores"),
     "testing": ("stlearn.tl.cci.analysis", "perform_spot_testing"),
-    "testing: backgrounds": ("stlearn.tl.cci.permutation", "get_lr_bg"),
+    "testing: backgrounds": ("stlearn.tl.cci.permutation", "score_background"),
 }
+
+
+def shifted(layer, usual: float) -> scipy.sparse.csr_matrix:
+    """The layer's values minus `usual`, sparse: 0, left out, where a spot has
+    the usual value. From the LR table's sparse layers, whose entries are the
+    tested spots and whose other spots have the usual value, or a dense array."""
+    if scipy.sparse.issparse(layer):
+        out = scipy.sparse.csr_matrix(layer, dtype=numpy.float64, copy=True)
+        out.data -= usual
+    else:
+        out = scipy.sparse.csr_matrix(numpy.asarray(layer, dtype=numpy.float64) - usual)
+    out.eliminate_zeros()
+    return out
 
 
 def peak_memory_bytes() -> int:
@@ -104,7 +118,7 @@ def main() -> None:
     args = parser.parse_args()
 
     adata = anndata.read_h5ad(args.sample)
-    lrs = stlearn.tl.cci.load_lrs(["connectomeDB2020_lit"], species="human")
+    lrs = stlearn.tl.cci.lr_pairs("connectomeDB2025").names()
     settings = dict(
         min_spots=args.min_spots,
         n_pairs=args.n_pairs,
@@ -128,7 +142,7 @@ def main() -> None:
     memory_before = peak_memory_bytes()
     with PhaseTimer() as phases, contextlib.redirect_stdout(sys.stderr):
         wall, cpu = time.perf_counter(), time.process_time()
-        stlearn.tl.cci.run(adata, lrs, **settings, verbose=False)
+        lr_results = stlearn.tl.cci.run(adata, lrs, **settings, verbose=False)
         wall, cpu = time.perf_counter() - wall, time.process_time() - cpu
     memory_after = peak_memory_bytes()
 
@@ -139,7 +153,7 @@ def main() -> None:
         "bins": adata.n_obs,
         "genes": adata.n_vars,
         "lr_pairs_requested": len(lrs),
-        "lr_pairs_tested": int(adata.uns["lr_summary"].shape[0]),
+        "lr_pairs_tested": int(lr_results.n_vars),
         "settings": settings,
         "warm_up_seconds": warm_up_seconds,
         "wall_seconds": wall,
@@ -167,15 +181,14 @@ def main() -> None:
 
     result = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names))
     for key, usual in RESULTS.items():
-        result.obsm[key] = scipy.sparse.csr_matrix(
-            numpy.asarray(adata.obsm[key]) - usual,
-        )
+        result.obsm[key] = shifted(lr_results.layers[key], usual)
     for key in NEIGHBOURS:
         result.obs[key] = adata.obsm[key].iloc[:, 0].to_numpy()
     if args.use_label:
         result.obs["cci_het"] = numpy.asarray(adata.obsm["cci_het"]).ravel()
-    result.uns["lr_summary"] = adata.uns["lr_summary"]
-    result.uns["lrfeatures"] = adata.uns["lrfeatures"]
+    # The layout of baselines written before the LR table.
+    result.uns["lr_summary"] = lr_results.var
+    result.uns["lrfeatures"] = lr_results.uns["lrfeatures"]
     result.uns["metrics"] = json.dumps(metrics)
     pathlib.Path(args.result).parent.mkdir(parents=True, exist_ok=True)
     result.write_h5ad(args.result, compression="gzip")

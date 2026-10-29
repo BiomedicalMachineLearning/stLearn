@@ -5,16 +5,12 @@ import numpy as np
 import pandas as pd
 import scipy
 from anndata import AnnData
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, issparse, vstack
 
 import stlearn
 
-from ._weighting_matrix import (
-    _PLATFORM,
-    _WEIGHTING_MATRIX,
-    impute_neighbour,
-    weight_matrix_imputed,
-)
+from ._adjust import expression
+from ._weighting_matrix import _PLATFORM, _WEIGHTING_MATRIX, pseudo_spot_weights
 
 _COPY = Literal["pseudo_spot_adata", "combined_adata"]
 
@@ -64,25 +60,23 @@ def pseudo_spot(
 
     from sklearn.linear_model import LinearRegression
 
-    adata = adata.copy() if copy else adata
-
     if platform == "Visium":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
         array_row = adata.obs["array_row"]
         array_col = adata.obs["array_col"]
-        obs_df_ = adata.obs[["array_row", "array_col"]].copy()
+        obs_df_ = adata.obs[["array_row", "array_col"]].astype(np.float64)
         obs_df_.loc[:, "array_row"] = obs_df_["array_row"].apply(lambda x: x - 2 / 3)
-        obs_df = adata.obs[["array_row", "array_col"]].copy()
+        obs_df = adata.obs[["array_row", "array_col"]].astype(np.float64)
         obs_df.loc[:, "array_row"] = obs_df["array_row"].apply(lambda x: x + 2 / 3)
-        obs_df = obs_df.append(obs_df_).reset_index()
-        obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
+        obs_df = pd.concat([obs_df, obs_df_]).reset_index()
+        obs_df = obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
 
     elif platform == "Old_ST":
         img_row = adata.obs["imagerow"]
         img_col = adata.obs["imagecol"]
-        array_row = adata.obs_names.map(lambda x: x.split("x")[1])
-        array_col = adata.obs_names.map(lambda x: x.split("x")[0])
+        array_row = adata.obs_names.map(lambda x: float(x.split("x")[1]))
+        array_col = adata.obs_names.map(lambda x: float(x.split("x")[0]))
         obs_df_left = pd.DataFrame(
             {"array_row": array_row.to_list(), "array_col": array_col.to_list()},
             dtype=np.float64,
@@ -159,8 +153,9 @@ def pseudo_spot(
             lambda x: x + 1 / 2
         )
 
-        obs_df = obs_df_left.append(
+        obs_df = pd.concat(
             [
+                obs_df_left,
                 obs_df_right,
                 obs_df_up,
                 obs_df_down,
@@ -170,31 +165,29 @@ def pseudo_spot(
                 obs_df_right_down,
             ]
         ).reset_index()
-        obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
+        obs_df = obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
 
     reg_row = LinearRegression().fit(array_row.values.reshape(-1, 1), img_row)
 
     reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
 
     obs_df.loc[:, "imagerow"] = (
-        obs_df.loc[:, "array_row"] * reg_row.coef_ + reg_row.intercept_
+        obs_df.loc[:, "array_row"] * reg_row.coef_[0] + reg_row.intercept_
     )
     obs_df.loc[:, "imagecol"] = (
-        obs_df.loc[:, "array_col"] * reg_col.coef_ + reg_col.intercept_
+        obs_df.loc[:, "array_col"] * reg_col.coef_[0] + reg_col.intercept_
     )
 
     impute_coor = obs_df[["imagecol", "imagerow"]]
-    coor = adata.obs[["imagecol", "imagerow"]].append(impute_coor)
+    coor = pd.concat([adata.obs[["imagecol", "imagerow"]], impute_coor])
 
     point_tree = scipy.spatial.cKDTree(coor)
     n_neighbour = []
-    unit = math.sqrt(reg_row.coef_**2 + reg_col.coef_**2)
+    unit = math.sqrt(reg_row.coef_[0] ** 2 + reg_col.coef_[0] ** 2)
     for i in range(len(impute_coor)):
         current_neighbour = point_tree.query_ball_point(
             impute_coor.values[i], round(unit)
@@ -208,9 +201,12 @@ def pseudo_spot(
 
     obs_df.index = obs_df.index.map(lambda x: "Pseudo_Spot_" + str(x))
 
-    impute_df = pd.DataFrame(0, index=obs_df.index, columns=adata.var_names)
-
-    pseudo_spot_adata = AnnData(impute_df, obs=obs_df)
+    # Empty (sparse) expression until it is imputed below.
+    pseudo_spot_adata = AnnData(
+        csr_matrix((len(obs_df), adata.n_vars)),
+        obs=obs_df,
+        var=pd.DataFrame(index=adata.var_names),
+    )
     pseudo_spot_adata.uns["spatial"] = adata.uns["spatial"]
 
     actual_crop_size: int
@@ -224,27 +220,16 @@ def pseudo_spot(
 
     stlearn.pp.extract_feature(pseudo_spot_adata)
 
-    if use_data == "raw":
-        if isinstance(adata.X, csr_matrix):
-            count_embed = adata.X.toarray()
-        elif isinstance(adata.X, np.ndarray):
-            count_embed = adata.X
-        elif isinstance(adata.X, pd.Dataframe):
-            count_embed = adata.X.values
-        else:
-            print(f"{type(adata.X)} is not a valid type")
-    else:
-        count_embed = adata.obsm[use_data]
+    count_embed = expression(adata, use_data)
 
-    weight_matrix_imputed(adata, pseudo_spot_adata, platform=platform)
+    neighbours, top_weights = pseudo_spot_weights(
+        adata, pseudo_spot_adata, weights=weights, platform=platform
+    )
+    pseudo_spot_adata.X = neighbours @ count_embed
+    pseudo_spot_adata.obsm["top_weights"] = top_weights
 
-    impute_neighbour(pseudo_spot_adata, count_embed=count_embed, weights=weights)
-
-    assert pseudo_spot_adata.shape == pseudo_spot_adata.obsm["imputed_data"].shape
-
-    pseudo_spot_adata.X = pseudo_spot_adata.obsm["imputed_data"]
-
-    pseudo_spot_adata = pseudo_spot_adata[np.sum(pseudo_spot_adata.X, axis=1) > 0]
+    expressed = np.asarray(pseudo_spot_adata.X.sum(axis=1)).ravel() > 0
+    pseudo_spot_adata = pseudo_spot_adata[expressed]
 
     print("Done")
 
@@ -259,9 +244,17 @@ def _merge(
     adata2: AnnData,
     copy: bool = True,
 ) -> AnnData | None:
-    merged_df = adata1.to_df().append(adata2.to_df())
-    merged_df_obs = adata1.obs.append(adata2.obs)
-    merged_adata = AnnData(merged_df, obs=merged_df_obs)
+    # Stacked as they are: sparse expression stays sparse.
+    if issparse(adata1.X) or issparse(adata2.X):
+        merged_X = vstack([csr_matrix(adata1.X), csr_matrix(adata2.X)], format="csr")
+    else:
+        merged_X = np.vstack([adata1.X, adata2.X])
+
+    merged_adata = AnnData(
+        merged_X,
+        obs=pd.concat([adata1.obs, adata2.obs]),
+        var=pd.DataFrame(index=adata1.var_names),
+    )
     merged_adata.uns["spatial"] = adata1.uns["spatial"]
 
     return merged_adata if copy else None

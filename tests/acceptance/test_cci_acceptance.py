@@ -38,7 +38,7 @@ import numpy as np
 import psutil
 import pytest
 
-from stlearn.tl.cci.analysis import load_lrs
+from stlearn.tl.cci import lr_pairs
 from tests.acceptance.cci_sample import make_sample
 from tests.acceptance.run_cci import NEIGHBOURS, RESULTS
 
@@ -70,8 +70,7 @@ def sample(request: pytest.FixtureRequest, tmp_path_factory) -> Path:
         folder = tmp_path_factory.mktemp("cci_acceptance")
     path = folder / f"sample_{bins}_bins.h5ad"
     if not path.exists():
-        lrs = load_lrs(["connectomeDB2020_lit"], species="human")
-        lr_genes = sorted({gene for lr in lrs for gene in lr.split("_")})
+        lr_genes = lr_pairs("connectomeDB2025").genes().tolist()
         make_sample(lr_genes, n_bins=bins).write_h5ad(path)
     return path
 

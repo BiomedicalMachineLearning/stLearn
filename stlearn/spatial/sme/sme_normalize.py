@@ -1,13 +1,10 @@
-import numpy as np
-import pandas as pd
 from anndata import AnnData
-from scipy.sparse import csr_matrix
 
+from ._adjust import adjust_by_blocks, average_with_imputed, expression
 from ._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
-    impute_neighbour,
-    weight_matrix,
+    neighbour_weights,
 )
 
 
@@ -25,6 +22,11 @@ def sme_normalize(
     This function modified ALL expression values by averaging each spot's expression
     with weighted contributions from similar neighbors. It modifies ALL expression
     values to reduce technical noise across the entire dataset.
+
+    Each spot is adjusted by its 3 most similar neighbours (or 6 for physical distance).
+    No spots x spots matrix is created - only possible neighbours. Weightings without
+    physical distance still compare every pair of spots, so they are slow on large
+    samples.
 
     Parameters
     ----------
@@ -50,35 +52,19 @@ def sme_normalize(
     Returns
     -------
     AnnData or None
+        Adds `adata.obsm[use_data + "_SME_normalized"]`, sparse when the data
+        is sparse.
     """
     adata = adata.copy() if copy else adata
 
-    if use_data == "raw":
-        if isinstance(adata.X, csr_matrix):
-            count_embed = adata.X.toarray()
-        elif isinstance(adata.X, np.ndarray):
-            count_embed = adata.X
-        elif isinstance(adata.X, pd.Dataframe):
-            count_embed = adata.X.values
-        else:
-            raise ValueError(
-                f"""\
-                    {type(adata.X)} is not a valid type.
-                    """
-            )
-    else:
-        count_embed = adata.obsm[use_data]
-
-    weight_matrix(adata, platform=platform)
-
-    impute_neighbour(adata, count_embed=count_embed, weights=weights)
-
-    imputed_data = adata.obsm["imputed_data"].astype(float)
-    imputed_data[imputed_data == 0] = np.nan
-    adjusted_count_matrix = np.nanmean(np.array([count_embed, imputed_data]), axis=0)
+    data = expression(adata, use_data)
+    neighbours, top_weights = neighbour_weights(
+        adata, weights=weights, platform=platform
+    )
+    adata.obsm["top_weights"] = top_weights
 
     key_added = use_data + "_SME_normalized"
-    adata.obsm[key_added] = adjusted_count_matrix
+    adata.obsm[key_added] = adjust_by_blocks(average_with_imputed, data, neighbours)
 
     print("The data adjusted by SME is added to adata.obsm['" + key_added + "']")
 

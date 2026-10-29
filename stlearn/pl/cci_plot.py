@@ -3,7 +3,7 @@ import math
 import sys
 from typing import (
     Any,
-    Optional,  # Special
+    Optional,
 )
 
 import matplotlib
@@ -14,14 +14,21 @@ import matplotlib.patches as patches
 import networkx as nx
 import numpy as np
 import pandas as pd
+import scipy.sparse
 from anndata import AnnData
 from bokeh.io import output_notebook
 from bokeh.plotting import show
 from scipy.stats import gaussian_kde
 
 import stlearn.pl.cci_plot_helpers as cci_hs
-from stlearn.pl.utils import get_colors
+from stlearn.pl.utils import (
+    figure_and_axes,
+    get_colors,
+    place_legend_right_of_colour_bar,
+)
 
+from ..tl.cci import LR_RESULTS
+from ..tl.cci._results import check_lr_results, lr_result
 from ..utils import _docs_params
 from ._docs import doc_het_plot, doc_spatial_base_plot
 from .cci_plot_helpers import (
@@ -39,11 +46,19 @@ from .utils import check_cmap, get_cmap
 importlib.reload(cci_hs)
 
 
+def _expression(adata: AnnData, gene: str) -> np.ndarray:
+    """One gene's expression, a value per spot, from sparse or dense data: that
+    gene's column alone, never the whole matrix made dense."""
+    column = adata[:, gene].X
+    column = column.toarray() if scipy.sparse.issparse(column) else np.asarray(column)
+    return column.ravel()
+
+
 #### Functions for visualising the overall LR results and diagnostics.
 
 
 def lr_diagnostics(
-    adata,
+    lr_results: AnnData,
     highlight_lrs: list | None = None,
     n_top: int | None = None,
     color0: str = "turquoise",
@@ -60,8 +75,8 @@ def lr_diagnostics(
 
     Parameters
     ----------
-    adata (AnnData):
-        The data object on which st.tl.cci.run has been applied.
+    lr_results (AnnData):
+        The LR table st.tl.cci.run returned.
     highlight_lrs (list):
         List of LRs to highlight, will add text and change point color for these
         LR pairs.
@@ -78,11 +93,12 @@ def lr_diagnostics(
     Figure, Axes
         Figure and axes of the plot, if show=False.
     """
+    lr = check_lr_results(lr_results)
     if n_top is None:
-        n_top = adata.uns["lr_summary"].shape[0]
+        n_top = lr.n_vars
     fig, axes = plt.pyplot.subplots(ncols=2, figsize=figsize)
     cci_hs.lr_scatter(
-        adata,
+        lr,
         "nonzero-median",
         highlight_lrs=highlight_lrs,
         n_top=n_top,
@@ -92,7 +108,7 @@ def lr_diagnostics(
         show=False,
     )
     cci_hs.lr_scatter(
-        adata,
+        lr,
         "zero-prop",
         highlight_lrs=highlight_lrs,
         n_top=n_top,
@@ -108,7 +124,7 @@ def lr_diagnostics(
 
 
 def lr_summary(
-    adata,
+    lr_results: AnnData,
     n_top: int = 50,
     highlight_lrs: list | None = None,
     y: str = "n_spots_sig",
@@ -124,8 +140,8 @@ def lr_summary(
 
     Parameters
     ----------
-    adata: AnnData
-        The data object on which st.tl.cci.run has been applied.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned.
     n_top: int
         The no. of LRs to plot.
     highlight_lrs: list
@@ -133,7 +149,7 @@ def lr_summary(
         of points for these LRs. Useful for highlighting LRs of interest.
     y: str
         The way to rank the LRs, default is by the no. of significant spots,
-        but can be any column in adata.uns['lr_summary'].
+        but can be any column of the LR table's var (the LR summary).
     color: str
         The color of the points.
     figsize: tuple
@@ -161,7 +177,7 @@ def lr_summary(
         raise Exception(f"Got {y} for y; must be one of {allowed}")
 
     return cci_hs.lr_scatter(
-        adata,
+        check_lr_results(lr_results),
         y,
         n_top=n_top,
         color=color,
@@ -176,7 +192,7 @@ def lr_summary(
 
 
 def lr_n_spots(
-    adata,
+    lr_results: AnnData,
     n_top: int = 100,
     font_dict: dict | None = None,
     xtick_dict: dict | None = None,
@@ -192,10 +208,10 @@ def lr_n_spots(
 
     Parameters
     ----------
-    adata: AnnData
-        Data on which st.tl.cci.run has been applied.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned.
     n_top: int
-        The no. of LRs to display, ranked by adata.uns['lr_summary']
+        The no. of LRs to display, ranked by the LR table's var
     font_dict: dict
         dictionary specifying matplotlib font parameters e.g. weight.
     xtick_dict: dict
@@ -227,9 +243,10 @@ def lr_n_spots(
     if xtick_dict is None:
         xtick_dict = {"fontweight": "bold", "rotation": 90, "size": 6}
 
-    lrs = adata.uns["lr_summary"].index.values[0:n_top]
-    n_sig = adata.uns["lr_summary"].loc[:, "n_spots_sig"].values
-    n_non_sig = adata.uns["lr_summary"].loc[:, "n_spots"].values - n_sig
+    lr_summary = check_lr_results(lr_results).var
+    lrs = lr_summary.index.values[0:n_top]
+    n_sig = lr_summary.loc[:, "n_spots_sig"].values
+    n_non_sig = lr_summary.loc[:, "n_spots"].values - n_sig
     rank = list(range(len(n_sig)))
     fig, ax = plt.pyplot.subplots(figsize=figsize)
     ax.bar(rank[0:n_top], n_non_sig[0:n_top], bar_width, color=non_sig_color)
@@ -258,7 +275,7 @@ def lr_n_spots(
 
 
 def lr_go(
-    adata,
+    lr_results: AnnData,
     n_top: int = 20,
     highlight_go: list | None = None,
     figsize=(6, 4),
@@ -272,8 +289,8 @@ def lr_go(
 
     Parameters
     ----------
-    adata: AnnData
-        Data object on which st.tl.cci.lr & st.tl.cci.run_lr_go has been called.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned and st.tl.cci.run_lr_go added to.
     n_top: int
         Specifies the no. of GO terms to show.
     highlight_go: list
@@ -294,11 +311,12 @@ def lr_go(
         Whether to show the plot.
     """
     # Making sure LR GO has been run #
-    if "lr_go" not in adata.uns:
+    lr = check_lr_results(lr_results)
+    if "lr_go" not in lr.uns:
         raise Exception("Need to run st.tl.cci.run_lr_go() first!")
 
-    go_results = adata.uns["lr_go"]
-    gos = go_results.loc[:, "Description"].values.astype(str)
+    go_results = lr.uns["lr_go"]
+    gos = go_results.loc[:, "Description"].to_numpy().astype(str)
     y = -np.log10(go_results.loc[:, "p.adjust"].values)
     sizes = go_results.loc[:, "Count"].values
     cci_hs.rank_scatter(
@@ -324,6 +342,7 @@ def lr_go(
 def cci_check(
     adata: AnnData,
     use_label: str,
+    lr_results: AnnData | None = None,
     figsize=(16, 10),
     cell_label_size=20,
     axis_text_size=18,
@@ -339,6 +358,8 @@ def cci_check(
         Data on which st.tl.cci.run & st.tl.cci.run_cci has been performed.
     use_label: str
         The cell type label information used when running st.tl.cci.run_cci
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     figsize: tuple
         Size of outputted figure.
     cell_label_size: int
@@ -354,11 +375,11 @@ def cci_check(
     Figure, Ax1, Ax2
         The figure, axes for the barchart, and twin axes for the lineplot.
     """
-    labels = adata.obs[use_label].values.astype(str)
+    labels = adata.obs[use_label].to_numpy().astype(str)
     label_set = np.array(list(adata.obs[use_label].cat.categories))
     colors = get_colors(adata, use_label)
     xs = np.array(list(range(len(label_set))))
-    int_dfs = adata.uns[f"per_lr_cci_{use_label}"]
+    int_dfs = check_lr_results(lr_results, adata).uns[f"per_lr_cci_{use_label}"]
 
     cell_counts: np.ndarray = np.zeros(len(label_set), dtype=int)
     cell_sigs: np.ndarray = np.zeros(len(label_set), dtype=int)
@@ -421,9 +442,9 @@ def cci_check(
 # Functions for visualisation the LR results per spot.
 def lr_result_plot(
     adata: AnnData,
+    lr_results: AnnData | None = None,
     use_lr: Optional["str"] = None,
     use_result: Optional["str"] = "lr_sig_scores",
-    # plotting param
     title: str | None = None,
     figsize: tuple[float, float] | None = None,
     cmap: str = "Spectral_r",
@@ -453,11 +474,13 @@ def lr_result_plot(
     ----------
     adata: AnnData
         Data on which st.tl.cci.run has been performed
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     use_lr: str
         LR to show results for.
     use_result: str
-        LR matrix in data.obsm; 'lr_scores', 'lr_sig_scores', 'p_vals', 'p_adjs'
-        '-log10(p_adjs)'.
+        Layer of the LR table; 'lr_scores', 'lr_sig_scores', 'p_vals', 'p_adjs'
+        or 'neg_log10_p_adjs'.
     title: str
         Plot title.
     figsize: tuple
@@ -506,33 +529,32 @@ def lr_result_plot(
     """
     LrResultPlot(
         adata,
-        use_lr,
-        use_result,
-        # plotting param
-        title,
-        figsize,
-        cmap,
-        None,
-        ax,
-        fig,
-        show_plot,
-        show_axis,
-        show_image,
-        show_color_bar,
-        crop,
-        zoom_coord,
-        margin,
-        size,
-        image_alpha,
-        cell_alpha,
-        use_raw,
-        fname,
-        dpi,
-        # cci_rank param
-        contour,
-        step_size,
-        vmin,
-        vmax,
+        lr_results=lr_results,
+        use_lr=use_lr,
+        use_result=use_result,
+        title=title,
+        figsize=figsize,
+        cmap=cmap,
+        list_clusters=None,
+        ax=ax,
+        fig=fig,
+        show_plot=show_plot,
+        show_axis=show_axis,
+        show_image=show_image,
+        show_color_bar=show_color_bar,
+        crop=crop,
+        zoom_coord=zoom_coord,
+        margin=margin,
+        size=size,
+        image_alpha=image_alpha,
+        cell_alpha=cell_alpha,
+        use_raw=use_raw,
+        fname=fname,
+        dpi=dpi,
+        contour=contour,
+        step_size=step_size,
+        vmin=vmin,
+        vmax=vmax,
     )
 
 
@@ -540,6 +562,7 @@ def lr_result_plot(
 def lr_plot(
     adata: AnnData,
     lr: str,
+    lr_results: AnnData | None = None,
     min_expr: float = 0,
     sig_spots=True,
     use_label: str | None = None,
@@ -565,7 +588,6 @@ def lr_plot(
     lr_colors: dict | None = None,
     figsize: tuple = (6.4, 4.8),
     use_mix: bool | None = None,
-    # plotting params
     **kwargs,
 ) -> None:
     """Creates different kinds of spatial visualisations for the LR analysis results.
@@ -578,13 +600,16 @@ def lr_plot(
         below when have performed st.tl.cci.run_cci as well.
     lr: str
         The LR to display results for.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     min_expr: float
         The minimum expr above which LR considered expressed when plotting
         binary LR expression.
     sig_spots: bool
         Whether to subset to significant spots or not.
     use_label: str
-        The cell type labels to use if plotting cell types.
+        The cell type labels to use if plotting cell types, or one of the LR
+        results (LR_RESULTS) to show in the inner points.
     outer_mode: str
         The mode for the larger points when displaying LR expression;
         can either be 'binary' or 'continuous' or None.
@@ -649,25 +674,22 @@ def lr_plot(
 
     # Input checking #
     ligand, receptor = lr.split("_")
-    ran_lr = "lr_summary" in adata.uns
-    ran_sig = False if not ran_lr else "n_spots_sig" in adata.uns["lr_summary"].columns
-    if ran_lr and lr in adata.uns["lr_summary"].index:
-        if ran_sig:
-            lr_sig = adata.uns["lr_summary"].loc[lr, :].values[1] > 0
-        else:
-            lr_sig = True
-    else:
-        lr_sig = False
+    results = None if lr_results is None else check_lr_results(lr_results, adata)
+    # Whether st.tl.cci.run tested this LR and found it significant in some spot.
+    lr_sig = (
+        results is not None
+        and lr in results.var_names
+        and results.var.loc[lr, "n_spots_sig"] > 0
+    )
 
-    if sig_spots and not ran_lr:
-        raise Exception(
-            "No LR results testing results found, "
-            "please run st.tl.cci_rank.run first, or set sig_spots=False."
+    if sig_spots and results is None:
+        raise ValueError(
+            "No LR test results: pass lr_results=, the table st.tl.cci.run "
+            "returned, or set sig_spots=False."
         )
-
     elif sig_spots and not lr_sig:
         raise Exception(
-            "LR has no significant spots, to visualise anyhow setsig_spots=False"
+            "LR has no significant spots; to plot it anyway, set sig_spots=False."
         )
 
     # Making sure have run_cci first with respective labelling #
@@ -675,7 +697,7 @@ def lr_plot(
         show_arrows
         and sig_cci
         and use_label
-        and f"per_lr_cci_{use_label}" not in adata.uns
+        and (results is None or f"per_lr_cci_{use_label}" not in results.uns)
     ):
         raise Exception(
             "Cannot subset arrow interactions to significant ccis "
@@ -684,25 +706,13 @@ def lr_plot(
         )
 
     # Getting which are the allowed stats for the lr to plot #
-    if not ran_sig:
-        lr_use_labels = ["lr_scores"]
-    else:
-        lr_use_labels = [
-            "lr_scores",
-            "p_val",
-            "p_adj",
-            "-log10(p_adj)",
-            "lr_sig_scores",
-        ]
-
+    lr_use_labels = list(LR_RESULTS) if results is not None else []
     if use_mix is not None and use_mix not in adata.uns:
         raise Exception(
             "Specified use_mix, but no deconvolution results added "
             "to adata.uns matching the use_mix ({use_mix}) key."
         )
-    elif (
-        use_label is not None and use_label in lr_use_labels and ran_sig and not lr_sig
-    ):
+    elif use_label is not None and use_label in lr_use_labels and not lr_sig:
         raise Exception(
             "Since use_label refers to lr stats & ran permutation testing, "
             "LR needs to be significant to view stats."
@@ -723,22 +733,30 @@ def lr_plot(
     if ligand not in adata.var_names or receptor not in adata.var_names:
         raise Exception("L or R not found in adata.var_names.")
 
-    # Whether to show just the significant spots or all spots
-    lr_index = np.where(adata.uns["lr_summary"].index.values == lr)[0][0]
-    sig_bool = adata.obsm["lr_sig_scores"][:, lr_index] > 0
-    if sig_spots:
-        adata_full = adata
-        adata = adata[sig_bool, :]
+    # The LR's significant spots: all that is shown with sig_spots, and where
+    # the arrows start.
+    if results is not None and lr in results.var_names:
+        sig_bool = lr_result(results, "lr_sig_scores", lr) > 0
+    elif show_arrows:
+        raise ValueError(
+            "show_arrows draws the interactions of significant spots: pass "
+            "lr_results=, the table st.tl.cci.run returned."
+        )
     else:
-        adata_full = adata
+        sig_bool = np.zeros(adata.n_obs, dtype=bool)
+
+    adata_full = adata
+    # sig_spots needs results: checked above
+    if sig_spots and results is not None:
+        adata = adata[sig_bool, :].copy()
+        # the same spots as adata
+        results = results[sig_bool]
 
     # Dealing with the axis #
-    if fig_or_none is None or ax_or_none is None:
-        fig, ax = plt.pyplot.subplots(figsize=figsize)
+    fig, ax, _ = figure_and_axes(fig_or_none, ax_or_none, figsize=figsize)
+    axes_before = set(fig.axes)
 
-    expr = adata.to_df()
-    l_expr = expr.loc[:, ligand].values
-    r_expr = expr.loc[:, receptor].values
+    l_expr, r_expr = _expression(adata, ligand), _expression(adata, receptor)
     # Adding binary points of the ligand/receptor pair #
     if outer_mode == "binary":
         l_bool, r_bool = l_expr > min_expr, r_expr > min_expr
@@ -833,12 +851,14 @@ def lr_plot(
             inner_cmap = inner_cmap if inner_cmap is not None else "copper"
             lr_result_plot(
                 adata,
+                lr_results=results,
                 use_lr=lr,
-                show_image=show_image,
+                use_result=use_label,
                 cmap=inner_cmap,
-                crop=False,
                 ax=ax,
                 fig=fig,
+                show_image=show_image,
+                crop=False,
                 size=inner_size_prop * pt_scale,
                 **kwargs,
             )
@@ -860,13 +880,12 @@ def lr_plot(
     # Adding in labels which show the interactions between signicant spots &
     # neighbours
     if show_arrows:
-        l_expr = adata_full[:, ligand].X.toarray()[:, 0]
-        r_expr = adata_full[:, receptor].X.toarray()[:, 0]
+        l_expr = _expression(adata_full, ligand)
+        r_expr = _expression(adata_full, receptor)
 
-        if sig_cci:
-            int_df = adata.uns[f"per_lr_cci_{use_label}"][lr]
-        else:
-            int_df = None
+        int_df = None
+        if sig_cci and results is not None:
+            int_df = results.uns[f"per_lr_cci_{use_label}"][lr]
 
         cci_hs.add_arrows(
             adata_full,
@@ -883,6 +902,13 @@ def lr_plot(
             arrow_cmap,
             arrow_vmax,
         )
+
+    colour_bars = [a for a in fig.axes if a not in axes_before]
+    legend = ax.get_legend()
+    if legend is not None and colour_bars and "bbox_to_anchor" not in kwargs:
+        rightmost = max(colour_bars, key=lambda a: a.get_position().x1)
+        place_legend_right_of_colour_bar(legend, ax, rightmost)
+
     fig.suptitle(title)
 
 
@@ -912,7 +938,7 @@ def het_plot(
     use_raw: bool = False,
     fname: str | None = None,
     dpi: int = 120,
-    # cci_rank param
+    # CCI plot params
     use_het: str = "het",
     contour: bool = False,
     step_size: int | None = None,
@@ -926,12 +952,12 @@ def het_plot(
 
 
     Parameters
-    -------------------------------------
+    ----------
     {spatial_base_plot}
     {het_plot}
 
     Examples
-    -------------------------------------
+    --------
     >>> import stlearn as st
     >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> pvalues = "lr_pvalues"
@@ -976,6 +1002,7 @@ def het_plot(
 def ccinet_plot(
     adata: AnnData,
     use_label: str,
+    lr_results: AnnData | None = None,
     lr: str | None = None,
     pos: dict | None = None,
     return_pos: bool = False,
@@ -1004,6 +1031,8 @@ def ccinet_plot(
     use_label: str
         Indicates the cell type labels or deconvolution results used for
         cell-cell interaction counting by LR pairs.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     lr: str
         The LR pair to visualise the cci network for. If None, will use spot
         cci counts across all LR pairs from adata.uns[f'lr_cci_{use_label}'].
@@ -1035,19 +1064,22 @@ def ccinet_plot(
     """
     cmap, _ = get_cmap(cmap)
     # Making sure adata in correct state that this function should run #
-    if f"lr_cci_{use_label}" not in adata.uns:
+    results = check_lr_results(lr_results, adata)
+    if f"lr_cci_{use_label}" not in results.uns:
         raise Exception(
             "Need to first call st.tl.run_cci with the equivalnt "
             "use_label to visualise cell-cell interactions."
         )
-    elif lr is not None and lr not in adata.uns[f"per_lr_cci_{use_label}"]:
+    elif lr is not None and lr not in results.uns[f"per_lr_cci_{use_label}"]:
         raise Exception(
             f"{lr} not found in {f'per_lr_cci_{use_label}'}, "
             "suggesting no significant interactions."
         )
 
     # Either plotting overall interactions, or just for a particular LR #
-    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title_or_none)
+    int_df, title = get_int_df(
+        adata, lr, use_label, sig_interactions, title_or_none, results
+    )
     # Creating the interaction graph #
     all_set = int_df.index.values
     int_matrix = int_df.values
@@ -1103,8 +1135,9 @@ def ccinet_plot(
     #### Drawing the graph #####
     ax: plt_axis.Axes
     fig: plt_figure.Figure
-    if fig_or_none is None or ax_or_none is None:
-        fig, ax = plt.pyplot.subplots(figsize=figsize, facecolor=[0.7, 0.7, 0.7, 0.4])
+    fig, ax, new_figure = figure_and_axes(
+        fig_or_none, ax_or_none, figsize=figsize, facecolor=[0.7, 0.7, 0.7, 0.4]
+    )
 
     # Adding in the self-loops #
     z = 55
@@ -1144,7 +1177,8 @@ def ccinet_plot(
         ax=ax,
     )
     fig.suptitle(title, fontsize=30)
-    plt.pyplot.tight_layout()
+    if new_figure:  # leave the layout of a figure that was passed in alone
+        fig.tight_layout()
 
     # Adding padding #
     xlims = ax.get_xlim()
@@ -1159,6 +1193,7 @@ def ccinet_plot(
 def cci_map(
     adata: AnnData,
     use_label: str,
+    lr_results: AnnData | None = None,
     lr_or_none: str | None = None,
     ax_or_none: plt_axis.Axes | None = None,
     show: bool = False,
@@ -1176,6 +1211,8 @@ def cci_map(
     use_label: str
         Indicates the cell type labels or deconvolution results used for
         cell-cell interaction counting by LR pairs.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     lr_or_none: str
         The LR pair to visualise the sender->receiver interactions for.
         If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
@@ -1201,7 +1238,9 @@ def cci_map(
     """
 
     # Either plotting overall interactions, or just for a particular LR #
-    int_df, title = get_int_df(adata, lr_or_none, use_label, sig_interactions, title)
+    int_df, title = get_int_df(
+        adata, lr_or_none, use_label, sig_interactions, title, lr_results
+    )
 
     figsize: tuple
     if figsize_or_none is None:  # Adjust size depending on no. cell types
@@ -1241,6 +1280,7 @@ def cci_map(
 def lr_cci_map(
     adata: AnnData,
     use_label: str,
+    lr_results: AnnData | None = None,
     lrs: list | np.ndarray | None = None,
     n_top_lrs: int = 5,
     n_top_ccis: int = 15,
@@ -1262,9 +1302,11 @@ def lr_cci_map(
     use_label: str
         Indicates the cell type labels or deconvolution results used for
         the cell-cell interaction counting by LR pairs.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     lrs: list-like
         LR pairs to show in the heatmap, if None then top 5 lrs with the highest
-        no. of interactions used from adata.uns['lr_summary'].
+        no. of interactions used from the LR table's var.
     n_top_lrs: int
         Indicates how many top lrs to show; is ignored if lrs is not None.
     n_top_ccis: int
@@ -1289,10 +1331,11 @@ def lr_cci_map(
     ax: matplotlib.figure.Axes
         Axes where the heatmap was drawn on if show=False.
     """
+    results = check_lr_results(lr_results, adata)
     if sig_interactions:
-        lr_int_dfs = adata.uns[f"per_lr_cci_{use_label}"]
+        lr_int_dfs = results.uns[f"per_lr_cci_{use_label}"]
     else:
-        lr_int_dfs = adata.uns[f"per_lr_cci_raw_{use_label}"]
+        lr_int_dfs = results.uns[f"per_lr_cci_raw_{use_label}"]
 
     if lrs is None:
         lrs = np.array(list(lr_int_dfs.keys()))
@@ -1301,7 +1344,7 @@ def lr_cci_map(
         n_top_lrs = len(lrs)
 
     # Creating a new int_df with lrs as rows & cell-cell as column #
-    cell_types = next(iter(lr_int_dfs.values())).index.values.astype(str)
+    cell_types = next(iter(lr_int_dfs.values())).index.to_numpy().astype(str)
     n_ints = len(cell_types) ** 2
     new_ints = np.zeros((len(lrs), n_ints))
     for lr_i, lr in enumerate(lrs):
@@ -1322,7 +1365,7 @@ def lr_cci_map(
 
     # Getting the top_lrs to display by top loadings in PCA #
     if n_top_lrs < len(lrs):
-        top_lrs = adata.uns["lr_summary"].index.values[0:n_top_lrs]
+        top_lrs = results.var_names.values[0:n_top_lrs]
         new_int_df = new_int_df.loc[top_lrs, :]
 
     # Ordering by the no. of interactions #
@@ -1359,6 +1402,7 @@ def lr_cci_map(
 def lr_chord_plot(
     adata: AnnData,
     use_label: str,
+    lr_results: AnnData | None = None,
     lr: str | None = None,
     min_ints: int = 2,
     n_top_ccis: int = 10,
@@ -1395,6 +1439,8 @@ def lr_chord_plot(
     use_label: str
         Indicates the cell type labels or deconvolution results used for
         cell-cell interaction counting by LR pairs.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     lr: str
         The LR pair to visualise the CCIs for.
         If None, will use all pairs via adata.uns[f'lr_cci_{use_label}'].
@@ -1425,7 +1471,9 @@ def lr_chord_plot(
         Axes where the heatmap was drawn on if show=False.
     """
     # Either plotting overall interactions, or just for a particular LR #
-    int_df, title = get_int_df(adata, lr, use_label, sig_interactions, title)
+    int_df, title = get_int_df(
+        adata, lr, use_label, sig_interactions, title, lr_results
+    )
 
     int_df = int_df.transpose()
     fig = plt.pyplot.figure(figsize=figsize)
@@ -1433,12 +1481,13 @@ def lr_chord_plot(
     flux = int_df.values
     total_ints = flux.sum(axis=1) + flux.sum(axis=0) - flux.diagonal()
     keep = np.where(total_ints > min_ints)[0]
-    # Limit of 10 for good display #
+    # Limit of 10 for displaying well.
     if len(keep) > n_top_ccis:
         keep = np.argsort(-total_ints)[0:n_top_ccis]
-    # Filter any with all zeros after filtering #
+    # Create boolean array to filter out any with all zeros after filtering.
     all_zero = np.array(
-        [np.all(np.logical_and(flux[i, keep] == 0, flux[keep, i] == 0)) for i in keep]
+        [np.all(np.logical_and(flux[i, keep] == 0, flux[keep, i] == 0)) for i in keep],
+        dtype=bool,
     )
     keep = keep[~all_zero]
     if len(keep) == 0:  # If we don't keep anything, warn the user
@@ -1460,7 +1509,7 @@ def lr_chord_plot(
         elif np.all(flux[:, i] == 0):
             flux[flux[i, :] > 0, i] += sys.float_info.min
 
-    cell_names = int_df.index.values.astype(str)[keep]
+    cell_names = int_df.index.to_numpy().astype(str)[keep]
     nodes = cell_names
 
     # Retrieving colors of cell types #
@@ -1551,27 +1600,31 @@ def grid_plot(
 
 
 # Bokeh Interactive Plots
-def lr_plot_interactive(adata: AnnData):
+def lr_plot_interactive(adata: AnnData, lr_results: AnnData | None = None):
     """Plots the LR scores for significant spots interatively using Bokeh.
 
     Parameters
     ----------
     adata: AnnData
         Data on which st.tl.cci.run has been applied.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     """
-    bokeh_object = BokehLRPlot(adata)
+    bokeh_object = BokehLRPlot(adata, lr_results=lr_results)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)
 
 
-def spatialcci_plot_interactive(adata: AnnData):
+def spatialcci_plot_interactive(adata: AnnData, lr_results: AnnData | None = None):
     """Plots the significant CCI in the spatial context interactively using Bokeh.
 
     Parameters
     ----------
     adata: AnnData
         Data on which st.tl.cci.run & st.tl.cci.run_cci has been applied.
+    lr_results: AnnData
+        The LR table st.tl.cci.run returned for adata.
     """
-    bokeh_object = BokehSpatialCciPlot(adata)
+    bokeh_object = BokehSpatialCciPlot(adata, lr_results=lr_results)
     output_notebook()
     show(bokeh_object.app, notebook_handle=True)

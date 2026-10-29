@@ -43,8 +43,9 @@ from bokeh.plotting import (
 from PIL import Image
 
 from stlearn.classes import Spatial
-from stlearn.tl.cci import get_edges
-from stlearn.utils import _read_graph
+from stlearn.tl.cci import get_edges, lr_result
+from stlearn.tl.cci._results import check_lr_results
+from stlearn.utils import _read_trajectory, as_uint8_image
 
 
 class BokehGenePlot(Spatial):
@@ -60,7 +61,7 @@ class BokehGenePlot(Spatial):
         if self.img is None:
             raise ValueError("self.img must be a numpy array")
         else:
-            image = (self.img * 255).astype(np.uint8)
+            image = as_uint8_image(self.img)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -189,7 +190,7 @@ class BokehGenePlot(Spatial):
             palette=cmap, low=min(s1.data["color"]), high=max(s1.data["color"])
         )
 
-        fig.circle(
+        fig.scatter(
             "x",
             "y",
             color={"field": "color", "transform": color_mapper},
@@ -329,7 +330,7 @@ class BokehClusterPlot(Spatial):
         if self.img is None:
             raise ValueError("self.img must be a numpy array")
         else:
-            image = (self.img * 255).astype(np.uint8)
+            image = as_uint8_image(self.img)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -594,15 +595,8 @@ class BokehClusterPlot(Spatial):
             )
 
         if 0 in self.checkbox_group.active:
-            tmp = _read_graph(self.adata[0], "PTS_graph")
-            G = tmp.copy()
-
-            remove = [edge for edge in G.edges if 9999 in edge]
-            G.remove_edges_from(remove)
-            G.remove_node(9999)
+            G = _read_trajectory(self.adata[0])
             centroid_dict = self.adata[0].uns["centroid_dict"]
-            centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
-
             set_x = []
             set_y = []
             for edges in G.edges:
@@ -764,15 +758,17 @@ class BokehLRPlot(Spatial):
         self,
         # plotting param
         adata: AnnData,
+        lr_results: AnnData | None = None,
     ):
         super().__init__(
             adata,
         )
+        self.lr_results = check_lr_results(lr_results, adata)
         # Open image, and make sure it's RGB*A*
         if self.img is None:
             raise ValueError("self.img must be a numpy array")
         else:
-            image = (self.img * 255).astype(np.uint8)
+            image = as_uint8_image(self.img)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -788,11 +784,7 @@ class BokehLRPlot(Spatial):
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
-        # available_het = [] #Checking available LR scores
-        # for key in list(self.adata[0].obsm.keys()):
-        #     if len(self.adata[0].obsm[key].shape) == 1:
-        #         available_het.append(key)
-        lrs = list(adata.uns["lr_summary"].index.values.astype(str))
+        lrs = list(self.lr_results.var_names.to_numpy().astype(str))
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
@@ -804,18 +796,6 @@ class BokehLRPlot(Spatial):
             title="Spot size", value=5.0, start=0, end=5.0, step=1.0
         )
 
-        # self.het_select = AutocompleteInput(
-        #     title="Het:",
-        #     value=available_het[0],
-        #     completions=available_het,
-        #     min_characters=1,
-        # )
-        # self.lr_select = AutocompleteInput(
-        #     title="Ligand-receptor:",
-        #     value=lrs[0],
-        #     completions=lrs,
-        #     min_characters=1,
-        # )
         self.lr_select = Select(
             title="Ligand-receptor:",
             value=lrs[0],
@@ -838,8 +818,6 @@ class BokehLRPlot(Spatial):
         self.layout = row(inputs, self.make_fig())
 
         # Make a tab with the layout
-        # self.tab = Tabs(tabs = [Panel(child=self.layout, title="Gene plot")])
-
         def modify_fig(doc):
             doc.add_root(row(self.layout, width=800))
 
@@ -879,7 +857,7 @@ class BokehLRPlot(Spatial):
             palette=Spectral11, low=min(s1.data["color"]), high=max(s1.data["color"])
         )
 
-        fig.circle(
+        fig.scatter(
             "x",
             "y",
             color={"field": "color", "transform": color_mapper},
@@ -928,14 +906,10 @@ class BokehLRPlot(Spatial):
         return colors
 
     def _get_lr(self, lr):
-        if lr not in self.adata[0].uns["lr_summary"].index:
+        if lr not in self.lr_results.var_names:
             raise ValueError(lr + " is not exist in the data, please try another het")
 
-        lr_bool = self.adata[0].uns["lr_summary"].index.values.astype(str) == lr
-        lr_index = np.where(lr_bool)[0][0]
-        colors = self.adata[0].obsm["lr_sig_scores"][:, lr_index]
-
-        return colors
+        return lr_result(self.lr_results, "lr_sig_scores", lr)
 
 
 class BokehSpatialCciPlot(Spatial):
@@ -943,15 +917,17 @@ class BokehSpatialCciPlot(Spatial):
         self,
         # plotting param
         adata: AnnData,
+        lr_results: AnnData | None = None,
     ):
         super().__init__(
             adata,
         )
+        self.lr_results = check_lr_results(lr_results, adata)
         # Open image, and make sure it's RGB*A*
         if self.img is None:
             raise ValueError("self.img must be a numpy array")
         else:
-            image = (self.img * 255).astype(np.uint8)
+            image = as_uint8_image(self.img)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -967,11 +943,7 @@ class BokehSpatialCciPlot(Spatial):
 
         # Display the 32-bit RGBA image
         self.dim = max(self.xdim, self.ydim)
-        # available_het = [] #Checking available LR scores
-        # for key in list(self.adata[0].obsm.keys()):
-        #     if len(self.adata[0].obsm[key].shape) == 1:
-        #         available_het.append(key)
-        lrs = list(adata.uns["lr_summary"].index.values.astype(str))
+        lrs = list(self.lr_results.var_names.to_numpy().astype(str))
 
         self.data_alpha = Slider(
             title="Spot alpha", value=1.0, start=0, end=1.0, step=0.1
@@ -989,7 +961,7 @@ class BokehSpatialCciPlot(Spatial):
         # Getting the annnotations for which CCI has been performed.. #
         annots = [
             opt.replace("lr_cci_", "")
-            for opt in adata.uns
+            for opt in self.lr_results.uns
             if opt.startswith("lr_cci_") and "raw" not in opt
         ]
         self.annot_select = Select(
@@ -1152,19 +1124,18 @@ class BokehSpatialCciPlot(Spatial):
 
         # Extracting the data #
         ligand, receptor = lr.split("_")
-        lr_index = np.where(adata.uns["lr_summary"].index.values == lr)[0][0]
         L_bool = adata[:, ligand].X.toarray()[:, 0] > 0
         R_bool = adata[:, receptor].X.toarray()[:, 0] > 0
-        sig_bool = adata.obsm["lr_sig_scores"][:, lr_index] > 0
-        int_df = adata.uns[f"per_lr_cci_{selected}"][lr]
+        sig_bool = lr_result(self.lr_results, "lr_sig_scores", lr) > 0
+        int_df = self.lr_results.uns[f"per_lr_cci_{selected}"][lr]
 
         ###### Getting the edges, from sig-L->R and sig-R<-L ##########
         forward_edges, reverse_edges = get_edges(adata, L_bool, R_bool, sig_bool)
 
         ###### Subsetting to cell types with significant interactions ########
-        spot_bcs = adata.obs_names.values.astype(str)
-        spot_labels = adata.obs[selected].values.astype(str)
-        label_set = int_df.index.values.astype(str)
+        spot_bcs = adata.obs_names.to_numpy().astype(str)
+        spot_labels = adata.obs[selected].to_numpy().astype(str)
+        label_set = int_df.index.to_numpy().astype(str)
         interact_bool = int_df.values > 0
 
         ###### Subsetting to only significant CCIs ########
@@ -1233,7 +1204,7 @@ class Annotate(Spatial):
         if self.img is None:
             raise ValueError("self.img must be a numpy array")
         else:
-            image = (self.img * 255).astype(np.uint8)
+            image = as_uint8_image(self.img)
 
         img_pillow = Image.fromarray(image).convert("RGBA")
 
@@ -1307,7 +1278,7 @@ class Annotate(Spatial):
             global_alpha=self.tissue_alpha.value,
         )
 
-        fig.circle(
+        fig.scatter(
             "x",
             "y",
             size=self.spot_size.value,

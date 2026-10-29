@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stlearn"
-version = "1.4.1"
+version = "1.5.0"
 authors = [
     { name = "Genomics and Machine Learning Lab", email = "andrew.newman@uq.edu.au" },
 ]
@@ -14,30 +14,38 @@ license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
-    "anndata>=0.12.0",
+    "anndata>=0.12.2",
     "bokeh>=3.7.0,<4.0",
     "click>=8.2.0,<9.0",
     "igraph>=1.0.0",
     "leidenalg>=0.11.0",
-    "numba>=0.58.1",
+    "numba>=0.64.0",
     "numpy>=2.4.0",
     "pillow>=12.0.0,<13.0",
     "scanpy>=1.12.0",
-    "scikit-image>=0.22.0",
+    "scikit-image>=0.25.0",
     "pandas>=2.3.0",
     "imageio>=2.37.0,<3.0",
-    "scipy>=1.17.0,<2.0",
+    "scipy>=1.17.1,<2.0",
     "scikit-learn>=1.8.0,<2.0",
-    "zarr>=3.1",
-    "dask>=2024.11.2",
-    "spatialdata>=0.7.0",
+    "scikit-misc>=0.5.1",
+    "zarr>=3.1.6,<4.0",
+    "dask>=2025.12.0",
+    "spatialdata>=0.7.3",
     "spatialdata-io>=0.6.0",
     "spatialdata-plot>=0.3.0",
-    "torch>=2.0",
-    "torchvision>=0.15",
+    "torch>=2.5.0",
+    "torchvision>=0.20.0",
     "geopandas>=1.0.0,<2.0",
-    "shapely>=2.0.0,<3.0",
+    "shapely>=2.0.6,<3.0",
+    "pooch[progress]>=1.8.1",
+    "requests>=2.32.4",
+    "ruff>=0.16.10",
+    "tifffile>=2026.5.2",
+    "umap-learn>=0.5.12",
+    "openpyxl>=3.1",
 ]
+
 keywords = ["stlearn"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -55,8 +63,8 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "black>=23.0",
-    "ruff>=0.1.0",
-    "mypy>=1.16",
+    "ruff>=0.16.0",
+    "mypy>=2.0",
     "pytest>=7.0",
     "tox>=4.0",
     "ghp-import>=2.1.0",
@@ -79,12 +87,11 @@ jupyter = [
     "ipywidgets>=8.0.0",
     "plotly>=5.0.0",
     "bokeh>=3.7.0,<4.0",
-    "rpy2>=3.4.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/BiomedicalMachineLearning/stLearn"
-Repository = "https://github.com/BiomedicalMachineLearning/stLearn"
+Homepage = "https://github.com/GenomicsMachineLearning/stLearn2"
+Repository = "https://github.com/GenomicsMachineLearning/stLearn2"
 
 [tool.setuptools]
 include-package-data = true
@@ -133,3 +140,18 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.importlinter]
+root_package = "stlearn"
+
+[[tool.importlinter.contracts]]
+name = "cci is layered"
+type = "layers"
+containers = ["stlearn.tl.cci"]
+layers = [
+    "analysis",
+    "permutation | het | edges | gridding | go",
+    "perm_utils",
+    "scoring | neighbours",
+    "_results | r_helpers",
+]
