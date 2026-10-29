@@ -185,9 +185,6 @@ def run(
 
     _set_n_threads(n_cpus)
 
-    if len(lrs) == 0:
-        raise ValueError("No LR pairs given.")
-
     # Making sure none of the var_names contains '_' already, these will need
     # to be renamed.
     prob_genes = [gene for gene in adata.var_names if "_" in gene]
@@ -246,11 +243,10 @@ def run(
     )
     # Fail fast.
     if new_lrs.size == 0:
-        species = f"{lrs.species} " if isinstance(lrs, LRPairs) else ""
         raise ValueError(
-            f"None of the {len(lrs)} {species}LR pairs are in adata.var_names; "
+            f"None of the {len(lrs)} {lrs.species} LR pairs are in adata.var_names; "
             "check the pairs' species matches the data, e.g. "
-            "lrs(species='mouse')."
+            "lr_pairs(species='mouse')."
         )
     n_scored = np.diff(lr_scores.indptr).astype(np.int64)  # spots scored per LR
     lr_bool = n_scored > min_spots
