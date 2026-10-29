@@ -29,12 +29,12 @@ improvements in runtime and memory usage and requires code to be updated.
 * SME computes weights only between nearby spots and data is kept sparse
   where possible.
 * ``extract_feature`` supports ConvNeXt and takes ``weights=``.
+* ``st.tl.cci.run`` takes only ``LRPairs``; for a list of 'L_R' names use
+  ``st.tl.cci.LRPairs.from_names(names, species="human")``.
 
 .. rubric:: Bugs
 
-* ``st.tl.cci.run`` takes only ``LRPairs``; for a list of 'L_R' names use
-  ``st.tl.cci.LRPairs.from_names(names, species="human")``. A pair listed
-  twice is now tested once - Bug #305.
+* A pair listed twice is now tested once - fixed Bug #305.
 * ``st.tl.cci.run(use_label=...)`` never applied cell heterogeneity weighting:
   it read the cell-type data from the wrong key, found nothing, and weighted
   every spot 1, so results were identical with and without ``use_label``. It
