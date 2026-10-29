@@ -7,9 +7,9 @@ import anndata
 import numpy as np
 import pandas as pd
 from anndata import AnnData
-from stlearn.tl.cci import LRPairs
 
 import stlearn as st
+from stlearn.tl.cci import LRPairs
 
 
 def _make_cci_adata(dtype=np.float64, n_side=8, n_extra_genes=40, seed=0):
@@ -59,19 +59,21 @@ class TestBase(unittest.TestCase):
         st.tl.cci.adj_pvals(lr_results, pval_adj_cutoff=0.05, correct_axis="spot")
         self.assertIn("p_adjs", lr_results.layers)
 
-    def test_run_takes_lr_pairs(self):
-        """LRPairs and 'L_R' names give the same results; a string is refused."""
+    def test_run_takes_only_lr_pairs(self):
+        """'L_R' names or a database name are refused, saying how to make LRPairs."""
         settings = {"min_spots": 0, "distance": 1.5, "n_pairs": 100, "verbose": False}
-        from_names = st.tl.cci.run(_make_cci_adata(), LRS, **settings)
-        from_pairs = st.tl.cci.run(_make_cci_adata(), LRS, **settings)
-        np.testing.assert_array_equal(from_pairs.var_names, from_names.var_names)
-        np.testing.assert_array_equal(
-            st.tl.cci.lr_result(from_pairs, "lr_scores"),
-            st.tl.cci.lr_result(from_names, "lr_scores"),
-        )
-        self.assertTrue((from_names.var["source"] == "names").all())
-        with self.assertRaises(TypeError):
-            st.tl.cci.run(_make_cci_adata(), "connectomeDB2025", **settings)
+        for lrs in (LRS.names(), list(LRS.names()), "connectomeDB2025"):
+            with self.subTest(lrs=lrs), self.assertRaises(TypeError) as raised:
+                st.tl.cci.run(_make_cci_adata(), lrs, **settings)
+            self.assertIn("LRPairs.from_names", str(raised.exception))
+
+    def test_run_merges_a_repeated_pair(self):
+        """A pair listed twice is tested once."""
+        settings = {"min_spots": 0, "distance": 1.5, "n_pairs": 100, "verbose": False}
+        names = [*LRS.names(), LRS.names()[0]]
+        lrs = st.tl.cci.LRPairs.from_names(names, species="human")
+        lr_results = st.tl.cci.run(_make_cci_adata(), lrs, **settings)
+        self.assertEqual(sorted(lr_results.var_names), sorted(LRS.names()))
 
     def test_results_record_sources_and_species(self):
         """Each tested pair's source is in var['source'], kept by adj_pvals and in a

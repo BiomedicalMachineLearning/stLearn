@@ -342,11 +342,9 @@ def row_col_by_platform(
         array_col = adata.obs_names.map(lambda x: float(x.split("x")[0]))
         rate = 1.5
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
     # One estimator per axis: fit() returns the estimator itself, so fitting a
     # shared one twice leaves both names pointing at the column fit.
     reg_row: LinearRegression = LinearRegression().fit(  # type: ignore

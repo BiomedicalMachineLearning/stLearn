@@ -12,8 +12,8 @@ from numba.typed import List
 from stlearn.tl.cci import scoring
 from stlearn.tl.cci.neighbours import calc_neighbours
 from stlearn.tl.cci.scoring import (
-    LRScorer,
     LRPairs,
+    LRScorer,
     flatten_neighbours,
     get_lrs_scores,
     get_scores,
@@ -195,7 +195,7 @@ def _make_adata(n_side=6, seed=0, sparse=True):
 class TestGetLrsScores(unittest.TestCase):
     def test_matches_reference_through_adata(self):
         """From named LR pairs on sparse or dense data: pairs with a gene missing
-        from the data are dropped, the rest keep their order, and the scores match
+        from the data are dropped, the rest by name order, and the scores match
         the oracle, including pairs that share a gene and a reversed pair."""
         lrs = LRPairs.from_names(
             ["Lig0_Rec0", "Lig1_Rec1", "Lig0_Missing", "Lig1_Rec2", "Rec0_Lig0"],

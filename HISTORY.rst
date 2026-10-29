@@ -31,7 +31,9 @@ History
 
 API and Bug Fixes:
 
-* Fixed: #305.
+* ``st.tl.cci.run`` takes only ``LRPairs``; for a list of 'L_R' names use
+  ``st.tl.cci.LRPairs.from_names(names, species="human")``. A pair listed
+  twice is now tested once - Bug #305.
 * ``st.tl.cci.run(use_label=...)`` never applied cell heterogeneity weighting:
   it read the cell-type data from the wrong key, found nothing, and weighted
   every spot 1, so results were identical with and without ``use_label``. It

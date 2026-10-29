@@ -8,6 +8,7 @@ import scipy.sparse
 from PIL import Image
 from spatialdata.models import Image2DModel
 from spatialdata.transformations import Affine
+
 from stlearn.tl.cci import LRPairs
 
 

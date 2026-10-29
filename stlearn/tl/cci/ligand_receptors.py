@@ -362,24 +362,6 @@ def read_lr_pairs(
     )
 
 
-def _as_lr_pairs(lrs: LRPairs | Iterable[str]) -> LRPairs:
-    """Converts everything to LRPairs - assumes Iterable[str] are human and
-    hand-picked."""
-    if isinstance(lrs, LRPairs):
-        return lrs
-    if isinstance(lrs, str | PathLike | pd.DataFrame):
-        raise TypeError(
-            f"Expected LRPairs or 'L_R' names, got {type(lrs).__name__}; use "
-            "lr_pairs(database), read_lr_pairs(path) or LRPairs.from_frame(df).",
-        )
-    lrs = LRPairs.from_names(
-        lrs,
-        species="unknown",
-        source="hand-picked",
-    )
-    return lrs
-
-
 # Helpers
 _COMPRESSION = {".gz", ".bz2", ".zip", ".xz", ".zst"}
 _SEPARATORS = {".csv": ",", ".tsv": "\t", ".txt": "\t", ".tab": "\t"}

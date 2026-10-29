@@ -31,6 +31,7 @@ import pandas
 import scipy
 
 import stlearn
+from stlearn.tl.cci import lr_pairs
 
 # Each result, and the value most spots have.
 RESULTS = {
@@ -118,7 +119,7 @@ def main() -> None:
     args = parser.parse_args()
 
     adata = anndata.read_h5ad(args.sample)
-    lrs = stlearn.tl.cci.lr_pairs("connectomeDB2025").names()
+    lrs = lr_pairs("connectomeDB2025")
     settings = dict(
         min_spots=args.min_spots,
         n_pairs=args.n_pairs,
@@ -132,7 +133,7 @@ def main() -> None:
     with contextlib.redirect_stdout(sys.stderr):
         stlearn.tl.cci.run(
             warm_up,
-            lrs[:60],
+            lrs.filter(numpy.arange(len(lrs)) < 60),
             **{**settings, "min_spots": 5, "n_pairs": 200},
             verbose=False,
         )

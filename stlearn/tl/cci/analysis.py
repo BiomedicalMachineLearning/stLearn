@@ -156,8 +156,8 @@ def run(
                 matrices leave out; read a layer with st.tl.cci.lr_result,
                 which fills them in, one LR at a time for a large sample.
             uns
-                'lrfeatures'; with LRPairs, 'lr_species'; and with save_bg
-                'lrs_to_bg' and 'lr_spot_indices'.
+                Returns 'lr_species' and 'lrfeatures'
+                With save_bg 'lrs_to_bg' and 'lr_spot_indices'.
         Relevant information stored in adata:
             adata.obsm['spot_neighbours'] and adata.obsm['spot_neigh_bcs']
                 The neighbours of each spot.
@@ -166,10 +166,23 @@ def run(
                 per spot.
     Raises
     ------
-    ValueError
+    ValueError:
         If gene names contain '_', or LR pairs were not found or did not score
         sufficiently in a minimum number of spots.
+    TypeError:
+        If lrs aren't LRPairs.
     """
+
+    if not isinstance(lrs, LRPairs):
+        raise TypeError(
+            f"lrs must be LRPairs, got {type(lrs).__name__}; use lr_pairs(database), "
+            "read_lr_pairs(path), LRPairs.from_frame(df) or LRPairs.from_names(names, "
+            "species=...)."
+        )
+
+    if len(lrs) == 0:
+        raise ValueError("No LR pairs given.")
+
     _set_n_threads(n_cpus)
 
     if len(lrs) == 0:

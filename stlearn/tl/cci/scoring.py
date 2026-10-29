@@ -144,7 +144,7 @@ def get_lrs_scores(
     ----------
     adata: AnnData
         See run() doc-string.
-    lrs: np.ndarray
+    lrs: LRPairs
         See run() doc-string.
     neighbours: np.ndarray
         Array of arrays with indices specifying neighbours of each spot.
