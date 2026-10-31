@@ -61,8 +61,8 @@ classifiers = [
 ]
 [project.optional-dependencies]
 dev = [
-    "black>=23.0",
-    "ruff>=0.16.10",
+    "black>=26.10",
+    "ruff>=0.17.3",
     "mypy>=2.0",
     "pytest>=7.0",
     "tox>=4.0",

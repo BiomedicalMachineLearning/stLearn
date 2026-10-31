@@ -38,11 +38,9 @@ def add_mask(
         library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except Exception as e:
-        raise KeyError(
-            """\
+        raise KeyError("""\
         Please read ST data first and try again
-        """
-        ) from e
+        """) from e
 
     if imgpath is None or not os.path.isfile(imgpath):
         raise ValueError(f"No mask file at {imgpath!r}.")
@@ -121,11 +119,9 @@ def apply_mask(
         library_id = next(iter(adata.uns["spatial"].keys()))
         quality = adata.uns["spatial"][library_id]["use_quality"]
     except Exception as e:
-        raise KeyError(
-            """\
+        raise KeyError("""\
         Please read ST data first and try again
-        """
-        ) from e
+        """) from e
 
     if masks == "all":
         masks = list(adata.uns["mask_image"][library_id].keys())
@@ -139,11 +135,9 @@ def apply_mask(
         try:
             mask_image = adata.uns["mask_image"][library_id][mask][quality]
         except Exception as e:
-            raise KeyError(
-                f"""\
+            raise KeyError(f"""\
             Please load mask {mask} images first and try again
-            """
-            ) from e
+            """) from e
 
         # Normalise to uint8 if the image is float in [0, 1]
         if mask_image.dtype.kind == "f" and mask_image.max() <= 1.0:
@@ -154,11 +148,9 @@ def apply_mask(
         elif select == "white":
             mask_image = np.where(mask_image >= 155, 1, 0)
         else:
-            raise ValueError(
-                """\
+            raise ValueError("""\
             Only support black and white mask yet.
-            """
-            )
+            """)
         mask_image_2d = mask_image.mean(axis=2)
 
         def apply_spot_mask(x, _mask=mask, _i=i, _mask_image_2d=mask_image_2d):

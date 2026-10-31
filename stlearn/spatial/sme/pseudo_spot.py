@@ -164,11 +164,9 @@ def pseudo_spot(
         ).reset_index()
         obs_df = obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
 
     reg_col, reg_row, _ = row_col_by_platform(adata, platform)
     # Spots without an array position (NaN) give no pseudo-spots: there is

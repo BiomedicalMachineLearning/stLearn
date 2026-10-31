@@ -342,11 +342,9 @@ def row_col_by_platform(
         array_col = adata.obs_names.map(lambda x: float(x.split("x")[0]))
         rate = 1.5
     else:
-        raise ValueError(
-            f"""\
+        raise ValueError(f"""\
                 {platform!r} does not support.
-                """
-        )
+                """)
     return (
         _fit_axis(array_col, img_col, "col"),
         _fit_axis(array_row, img_row, "row"),
