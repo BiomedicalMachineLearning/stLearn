@@ -1,13 +1,10 @@
-import numpy as np
-import pandas as pd
 from anndata import AnnData
-from scipy.sparse import csr_matrix
 
+from stlearn.spatial.sme._adjust import adjust_by_blocks, expression, fill_zeros
 from stlearn.spatial.sme._weighting_matrix import (
     _PLATFORM,
     _WEIGHTING_MATRIX,
-    impute_neighbour,
-    weight_matrix,
+    neighbour_weights,
 )
 
 
@@ -50,38 +47,19 @@ def sme_impute0(
     Returns
     -------
     AnnData or None
+        Adds `adata.obsm[use_data + "_SME_imputed"]`, sparse when the data is
+        sparse.
     """
     adata = adata.copy() if copy else adata
 
-    if use_data == "raw":
-        if isinstance(adata.X, csr_matrix):
-            count_embed = adata.X.toarray()
-        elif isinstance(adata.X, np.ndarray):
-            count_embed = adata.X
-        elif isinstance(adata.X, pd.Dataframe):
-            count_embed = adata.X.values
-        else:
-            raise ValueError(
-                f"""\
-                    {type(adata.X)} is not a valid type.
-                    """
-            )
-    else:
-        count_embed = adata.obsm[use_data]
-
-    weight_matrix(adata, platform=platform)
-
-    impute_neighbour(adata, count_embed=count_embed, weights=weights)
-
-    imputed_data = adata.obsm["imputed_data"].astype(float)
-    mask = count_embed != 0
-    count_embed_ = count_embed.astype(float)
-    count_embed_[count_embed_ == 0] = np.nan
-    adjusted_count_matrix = np.nanmean(np.array([count_embed_, imputed_data]), axis=0)
-    adjusted_count_matrix[mask] = count_embed[mask]
+    data = expression(adata, use_data)
+    neighbours, top_weights = neighbour_weights(
+        adata, weights=weights, platform=platform
+    )
+    adata.obsm["top_weights"] = top_weights
 
     key_added = use_data + "_SME_imputed"
-    adata.obsm[key_added] = adjusted_count_matrix
+    adata.obsm[key_added] = adjust_by_blocks(fill_zeros, data, neighbours)
 
     print("The data adjusted by sme is added to adata.obsm['" + key_added + "']")
 

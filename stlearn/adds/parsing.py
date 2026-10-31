@@ -10,7 +10,7 @@ def parsing(
     copy: bool = True,
 ) -> AnnData | None:
     """\
-    Parsing the old spaital transcriptomics data
+    Parsing the old spatial transcriptomics data
 
     Parameters
     ----------
@@ -36,8 +36,6 @@ def parsing(
             if tokens[0] != "x":
                 old_x = int(tokens[0])
                 old_y = int(tokens[1])
-                new_x = round(float(tokens[2]), 2)
-                new_y = round(float(tokens[3]), 2)
                 if len(tokens) >= 6:
                     pixel_x = float(tokens[4])
                     pixel_y = float(tokens[5])
@@ -48,11 +46,7 @@ def parsing(
                         "the coordinates file only contains 4 columns\n"
                     )
 
-    adata = adata.copy() if copy else adata
-
     counts_table = adata.to_df()
-    new_index_values = list()
-
     imgcol = []
     imgrow = []
     for index in counts_table.index:
@@ -60,24 +54,22 @@ def parsing(
         x = int(tokens[0])
         y = int(tokens[1])
         try:
-            new_x, new_y = new_coordinates[(x, y)]
-            imgcol.append(new_x)
-            imgrow.append(new_y)
-
-            new_index_values.append(f"{new_x}x{new_y}")
+            pixel_x, pixel_y = new_coordinates[(x, y)]
+            imgcol.append(pixel_x)
+            imgrow.append(pixel_y)
         except KeyError:
             counts_table.drop(index, inplace=True)
-
-    # Assign the new indexes
-    # counts_table.index = new_index_values
 
     # Remove genes that have now a total count of zero
     counts_table = counts_table.transpose()[counts_table.sum(axis=0) > 0].transpose()
 
-    adata = AnnData(counts_table)
+    parsed = AnnData(counts_table)
 
-    adata.obs["imagecol"] = imgcol
-    adata.obs["imagerow"] = imgrow
-    adata.obsm["spatial"] = np.c_[[imgcol, imgrow]].reshape(-1, 2)
+    parsed.obs["imagecol"] = imgcol
+    parsed.obs["imagerow"] = imgrow
+    parsed.obsm["spatial"] = np.column_stack([imgcol, imgrow])
 
-    return adata if copy else None
+    if copy:
+        return parsed
+    adata._init_as_actual(parsed)
+    return None

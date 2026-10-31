@@ -48,7 +48,7 @@ def cluster_plot(
     color_bar_size: float = 10,
     bbox_to_anchor: tuple[float, float] | None = (1, 1),
     # trajectory
-    trajectory_node_size: int = 10,
+    trajectory_node_size: int = 60,
     trajectory_alpha: float = 1.0,
     trajectory_width: float = 2.5,
     trajectory_edge_color: str = "#f4efd3",
@@ -61,12 +61,12 @@ def cluster_plot(
 
 
     Parameters
-    -------------------------------------
+    ----------
     {spatial_base_plot}
     {cluster_plot}
 
     Examples
-    -------------------------------------
+    --------
     >>> import stlearn as st
     >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> label = "leiden"

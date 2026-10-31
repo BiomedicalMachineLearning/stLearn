@@ -64,20 +64,23 @@ show_trajectories
 reverse
     Reverse the direction of spatial trajectories.
 show_node
-    Show node of PAGA graph mapping in spatial.
+    Show a node for each subcluster on the trajectories, in its cluster's colour.
 threshold_spots
     The number of spots threshold for not display the subcluster labels
 text_box_size
     The font size in the box of labels.
 color_bar_size
-    The size of color bar.
+    The font size of the legend.
 bbox_to_anchor
-    Set the position of box of color bar. Default is `(1,1)`
+    Position of the legend's upper-left corner, in axes coordinates. The
+    default `(1, 1)` puts the legend just outside the top-right of the image.
+trajectory_node_size
+    Area of the trajectory nodes in points^2; the arrows stop at their edge.
 """
 
 doc_lr_plot = """\
 adata
-    AnnData object with run st.tl.cci_rank.run performed on.
+    AnnData object with run st.tl.cci.run performed on.
 lr
     Ligand receptor paid (in format L_R)
 min_expr
@@ -140,5 +143,5 @@ cluster
 text_box_size
     The font size in the box of labels.
 bbox_to_anchor
-    Set the position of box of color bar. Default is `(1,1)`
+    Set the position of the legend. Default is `(1,1)`
 """
