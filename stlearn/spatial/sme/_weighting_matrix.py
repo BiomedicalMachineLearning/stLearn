@@ -342,15 +342,30 @@ def row_col_by_platform(
         array_col = adata.obs_names.map(lambda x: float(x.split("x")[0]))
         rate = 1.5
     else:
-        raise ValueError(f"""\
+        raise ValueError(
+            f"""\
                 {platform!r} does not support.
-                """)
-    # One estimator per axis: fit() returns the estimator itself, so fitting a
-    # shared one twice leaves both names pointing at the column fit.
-    reg_row: LinearRegression = LinearRegression().fit(  # type: ignore
-        array_row.values.reshape(-1, 1), img_row
+                """
+        )
+    return (
+        _fit_axis(array_col, img_col, "col"),
+        _fit_axis(array_row, img_row, "row"),
+        rate,
     )
-    reg_col: LinearRegression = LinearRegression().fit(  # type: ignore
-        array_col.values.reshape(-1, 1), img_col
-    )
-    return reg_col, reg_row, rate
+
+
+def _fit_axis(array, image, axis: str) -> LinearRegression:
+    """Image position against array position along one axis. Spots missing
+    either (NaN) are left out of the fit; they are still weighted by image
+    position."""
+    x = np.asarray(array, dtype=np.float64)
+    y = np.asarray(image, dtype=np.float64)
+    known = np.isfinite(x) & np.isfinite(y)
+    if not known.any():
+        raise ValueError(
+            f"No spot has both array_{axis} and image{axis}, so the distance "
+            "between spots can't be found. Add them to adata.obs."
+        )
+    # A new estimator each call: fit() returns the estimator itself, so fitting a
+    # shared one twice leaves both axes pointing at the second fit.
+    return LinearRegression().fit(x[known].reshape(-1, 1), y[known])  # type: ignore

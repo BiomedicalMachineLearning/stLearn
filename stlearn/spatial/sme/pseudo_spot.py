@@ -10,7 +10,12 @@ from scipy.sparse import csr_matrix, issparse, vstack
 import stlearn
 
 from ._adjust import expression
-from ._weighting_matrix import _PLATFORM, _WEIGHTING_MATRIX, pseudo_spot_weights
+from ._weighting_matrix import (
+    _PLATFORM,
+    _WEIGHTING_MATRIX,
+    pseudo_spot_weights,
+    row_col_by_platform,
+)
 
 _COPY = Literal["pseudo_spot_adata", "combined_adata"]
 
@@ -58,13 +63,7 @@ def pseudo_spot(
     """
     import math
 
-    from sklearn.linear_model import LinearRegression
-
     if platform == "Visium":
-        img_row = adata.obs["imagerow"]
-        img_col = adata.obs["imagecol"]
-        array_row = adata.obs["array_row"]
-        array_col = adata.obs["array_col"]
         obs_df_ = adata.obs[["array_row", "array_col"]].astype(np.float64)
         obs_df_.loc[:, "array_row"] = obs_df_["array_row"].apply(lambda x: x - 2 / 3)
         obs_df = adata.obs[["array_row", "array_col"]].astype(np.float64)
@@ -73,8 +72,6 @@ def pseudo_spot(
         obs_df = obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
 
     elif platform == "Old_ST":
-        img_row = adata.obs["imagerow"]
-        img_col = adata.obs["imagecol"]
         array_row = adata.obs_names.map(lambda x: float(x.split("x")[1]))
         array_col = adata.obs_names.map(lambda x: float(x.split("x")[0]))
         obs_df_left = pd.DataFrame(
@@ -167,13 +164,16 @@ def pseudo_spot(
         ).reset_index()
         obs_df = obs_df.drop_duplicates(subset=["array_row", "array_col"], keep="last")
     else:
-        raise ValueError(f"""\
+        raise ValueError(
+            f"""\
                 {platform!r} does not support.
-                """)
+                """
+        )
 
-    reg_row = LinearRegression().fit(array_row.values.reshape(-1, 1), img_row)
-
-    reg_col = LinearRegression().fit(array_col.values.reshape(-1, 1), img_col)
+    reg_col, reg_row, _ = row_col_by_platform(adata, platform)
+    # Spots without an array position (NaN) give no pseudo-spots: there is
+    # nowhere to put them.
+    obs_df = obs_df.dropna(subset=["array_row", "array_col"])
 
     obs_df.loc[:, "imagerow"] = (
         obs_df.loc[:, "array_row"] * reg_row.coef_[0] + reg_row.intercept_

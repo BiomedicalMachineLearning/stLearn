@@ -7,7 +7,8 @@ import numpy
 import pandas
 import PIL.Image as PIL_Image
 
-import stlearn
+from stlearn.adds._barcodes import by_barcode
+from stlearn.adds.image import _read_image_file
 from stlearn.types import _BACKGROUND
 
 
@@ -29,14 +30,20 @@ def create_stlearn(
     count
         Pandas Dataframe of count matrix with rows as barcodes and columns as gene names
     spatial
-        Pandas Dataframe of spatial location of cells/spots.
+        Pandas Dataframe of spatial location of cells/spots, with `imagecol` and
+        `imagerow` columns, indexed by barcode. Its rows are matched to `count`'s
+        by barcode; spots without a row get NaN, with a warning.
     library_id
         Identifier for the library. Can be modified when concatenating multiple
         adata objects.
     image_path:
-        Path to image. Only need when loading full resolution image.
+        Path to a tissue image to show behind the spots. Without one, a blank
+        image is made.
     scale
-        Set scale factor.
+        Image pixels per unit of `spatial`'s coordinates: `obs['imagecol']` and
+        `obs['imagerow']` are the coordinates times `scale`, while
+        `obsm['spatial']` keeps them as given. If None, 1 with an image (the
+        coordinates are its pixels), otherwise 2000 / the largest coordinate.
     quality
         Set quality that convert to stlearn to use. Store in
         anndata.obs['imagecol' & 'imagerow']
@@ -49,48 +56,43 @@ def create_stlearn(
     AnnData
     """
     adata = anndata.AnnData(X=count)
-
+    adata.X = adata.X.copy()
+    spatial = by_barcode(spatial, adata, "spatial")
     adata.obsm["spatial"] = spatial.values
 
-    if scale is None:
-        max_coor = numpy.max(adata.obsm["spatial"])
+    if scale is None and image_path is not None:
+        # Pixels equal coordinates of the image.
+        scale = 1.0
+    elif scale is None:
+        # Fit the spots to a blank image about 2000 pixels across.
+        max_coor = numpy.nanmax(adata.obsm["spatial"])
         scale = 2000 / max_coor
 
     adata.obs["imagecol"] = spatial["imagecol"].values * scale
     adata.obs["imagerow"] = spatial["imagerow"].values * scale
 
     if image_path is not None:
-        stlearn.add.image(
-            adata,
-            library_id=library_id,
-            quality=quality,
-            imgpath=image_path,
-            scale=scale,
-            spot_diameter_fullres=spot_diameter_fullres,
-        )
+        imgarr = _read_image_file(image_path)
     else:
-        # Create image
+        # Create a plain black / white image.
         max_size = numpy.max([adata.obs["imagecol"].max(), adata.obs["imagerow"].max()])
         max_size = int(max_size + 0.1 * max_size)
-
-        if background_color == "black":
-            image = PIL_Image.new("RGBA", (max_size, max_size), (0, 0, 0, 0))
-        else:
-            image = PIL_Image.new("RGBA", (max_size, max_size), (255, 255, 255, 255))
+        colour = (0, 0, 0, 0) if background_color == "black" else (255, 255, 255, 255)
+        image = PIL_Image.new("RGBA", (max_size, max_size), colour)
         imgarr = numpy.array(image)
 
-        # Create spatial dictionary
-        adata.uns["spatial"] = {}
-        adata.uns["spatial"][library_id] = {}
-        adata.uns["spatial"][library_id]["images"] = {}
-        adata.uns["spatial"][library_id]["images"][quality] = imgarr
-        adata.uns["spatial"][library_id]["use_quality"] = quality
-        adata.uns["spatial"][library_id]["scalefactors"] = {}
-        adata.uns["spatial"][library_id]["scalefactors"][
-            "tissue_" + quality + "_scalef"
-        ] = scale
-        adata.uns["spatial"][library_id]["scalefactors"][
-            "spot_diameter_fullres"
-        ] = spot_diameter_fullres
+    # Create a spatial dictionary
+    adata.uns["spatial"] = {}
+    adata.uns["spatial"][library_id] = {}
+    adata.uns["spatial"][library_id]["images"] = {}
+    adata.uns["spatial"][library_id]["images"][quality] = imgarr
+    adata.uns["spatial"][library_id]["use_quality"] = quality
+    adata.uns["spatial"][library_id]["scalefactors"] = {}
+    adata.uns["spatial"][library_id]["scalefactors"][
+        "tissue_" + quality + "_scalef"
+    ] = scale
+    adata.uns["spatial"][library_id]["scalefactors"][
+        "spot_diameter_fullres"
+    ] = spot_diameter_fullres
 
     return adata

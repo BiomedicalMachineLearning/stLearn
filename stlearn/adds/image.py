@@ -48,12 +48,7 @@ def image(
     """
     adata = adata.copy() if copy else adata
 
-    if imgpath is None or not os.path.isfile(imgpath):
-        raise ValueError(f"No image file at {imgpath!r}.")
-    try:
-        img = read_image(imgpath)
-    except Exception as e:
-        raise ValueError(f"Could not read {imgpath!r} as an image: {e}") from e
+    img = _read_image_file(imgpath)
     if visium:
         adata.uns["spatial"][library_id]["images"][quality] = img
     else:
@@ -74,3 +69,13 @@ def image(
 
     print("Added tissue image to the object!")
     return adata if copy else None
+
+
+def _read_image_file(imgpath: Path | str | None):
+    """The image at `imgpath`, as `read_image` gives it, with errors naming it."""
+    if imgpath is None or not os.path.isfile(imgpath):
+        raise ValueError(f"No image file at {imgpath!r}.")
+    try:
+        return read_image(imgpath)
+    except Exception as e:
+        raise ValueError(f"Could not read {imgpath!r} as an image: {e}") from e
