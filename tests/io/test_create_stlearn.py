@@ -5,10 +5,11 @@
 import pathlib
 import tempfile
 import unittest
+import warnings
 
+import PIL.Image
 import numpy as np
 import pandas as pd
-import PIL.Image
 import scanpy as sc
 
 import stlearn as st
@@ -17,10 +18,13 @@ import stlearn as st
 class TestCreateStlearn(unittest.TestCase):
     def setUp(self):
         self.count = pd.DataFrame(
-            [[1.0, 3.0], [2.0, 6.0]], index=["s0", "s1"], columns=["GeneA", "GeneB"]
+            [[1.0, 3.0], [2.0, 6.0]],
+            index=["s0", "s1"],
+            columns=["GeneA", "GeneB"],
         )
         self.spatial = pd.DataFrame(
-            {"imagecol": [0.0, 300.0], "imagerow": [0.0, 300.0]}, index=["s0", "s1"]
+            {"imagecol": [0.0, 300.0], "imagerow": [0.0, 300.0]},
+            index=["s0", "s1"],
         )
 
     def test_spots_matched_by_barcode(self):
@@ -40,24 +44,29 @@ class TestCreateStlearn(unittest.TestCase):
         np.testing.assert_allclose(adata.X, [[1.0, 3.0], [1.0, 3.0]])
         self.assertEqual(self.count.loc["s1", "GeneB"], 6.0)
 
-    def image(self) -> pathlib.Path:
-        """A 200 x 200 px white image, deleted after the test."""
+    def image(self, size: int = 200) -> pathlib.Path:
+        """A square white image `size` px across, deleted after the test."""
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)
         path = pathlib.Path(folder.name) / "tissue.png"
-        PIL.Image.new("RGB", (200, 200), "white").save(path)
+        PIL.Image.new("RGB", (size, size), "white").save(path)
         return path
 
     def test_image_coordinates_scaled_once(self):
         """With an image, obsm["spatial"] keeps the given coordinates and
         imagecol/imagerow are them times scale, once."""
         adata = st.io.create_stlearn(
-            self.count, self.spatial, "lib", image_path=self.image(), scale=0.5
+            self.count,
+            self.spatial,
+            "lib",
+            image_path=self.image(),
+            scale=0.5,
         )
 
         np.testing.assert_array_equal(adata.obsm["spatial"], self.spatial.to_numpy())
         np.testing.assert_array_equal(
-            adata.obs[["imagecol", "imagerow"]], self.spatial.to_numpy() * 0.5
+            adata.obs[["imagecol", "imagerow"]],
+            self.spatial.to_numpy() * 0.5,
         )
         library = adata.uns["spatial"]["lib"]
         self.assertEqual(library["scalefactors"]["tissue_hires_scalef"], 0.5)
@@ -66,14 +75,44 @@ class TestCreateStlearn(unittest.TestCase):
     def test_image_without_scale_is_not_scaled(self):
         """With an image and no scale, the coordinates are its pixels."""
         adata = st.io.create_stlearn(
-            self.count, self.spatial, "lib", image_path=self.image()
+            self.count,
+            self.spatial,
+            "lib",
+            image_path=self.image(400),
         )
 
         np.testing.assert_array_equal(
-            adata.obs[["imagecol", "imagerow"]], self.spatial.to_numpy()
+            adata.obs[["imagecol", "imagerow"]],
+            self.spatial.to_numpy(),
         )
         scalefactors = adata.uns["spatial"]["lib"]["scalefactors"]
         self.assertEqual(scalefactors["tissue_hires_scalef"], 1)
+
+    def test_warns_when_spots_fall_outside_image(self):
+        """Full-resolution coordinates with a smaller image and no scale put the
+        spots beyond it (#303): a warning says to pass scale, and the image's
+        scale factor places them on it."""
+
+        fullres = self.spatial * 10
+        with self.assertWarnsRegex(
+            UserWarning,
+            r"1 of 2 spots fall outside the 200 x 200 px image.*scale",
+        ):
+            st.io.create_stlearn(self.count, fullres, "lib", image_path=self.image())
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            st.io.create_stlearn(
+                self.count,
+                fullres,
+                "lib",
+                image_path=self.image(),
+                scale=0.05,
+            )
+        self.assertEqual(
+            [str(w.message) for w in caught if "outside" in str(w.message)],
+            [],
+        )
 
 
 if __name__ == "__main__":

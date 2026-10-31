@@ -1,6 +1,7 @@
 """Reading and Writing"""
 
 import pathlib
+import warnings
 
 import anndata
 import numpy
@@ -44,6 +45,9 @@ def create_stlearn(
         `obs['imagerow']` are the coordinates times `scale`, while
         `obsm['spatial']` keeps them as given. If None, 1 with an image (the
         coordinates are its pixels), otherwise 2000 / the largest coordinate.
+        For example, use Space Ranger's: `tissue_hires_scalef` or
+        `tissue_lowres_scalef` from `scalefactors_json.json`. Spots that fall
+        outside the image give a warning.
     quality
         Set quality that convert to stlearn to use. Store in
         anndata.obs['imagecol' & 'imagerow']
@@ -73,6 +77,7 @@ def create_stlearn(
 
     if image_path is not None:
         imgarr = _read_image_file(image_path)
+        _warn_if_spots_outside(adata, imgarr, scale)
     else:
         # Create a plain black / white image.
         max_size = numpy.max([adata.obs["imagecol"].max(), adata.obs["imagerow"].max()])
@@ -96,3 +101,21 @@ def create_stlearn(
     ] = spot_diameter_fullres
 
     return adata
+
+
+def _warn_if_spots_outside(
+    adata: anndata.AnnData, image: numpy.ndarray, scale: float
+) -> None:
+    """Warn when spots fall outside the image, as when `scale` doesn't match it."""
+    height, width = image.shape[:2]
+    col = adata.obs["imagecol"].to_numpy()
+    row = adata.obs["imagerow"].to_numpy()
+    outside = (col < 0) | (col > width) | (row < 0) | (row > height)
+    if outside.any():
+        warnings.warn(
+            f"{outside.sum()} of {adata.n_obs} spots fall outside the {width} x "
+            f"{height} px image at scale={scale:g}. Pass scale, the image pixels per "
+            "unit of spatial's coordinates. For example, Space Ranger's "
+            "tissue_hires_scalef or tissue_lowres_scalef.",
+            stacklevel=3,
+        )
