@@ -1,11 +1,11 @@
 from pathlib import Path
 
-import numpy as np
 from anndata import AnnData
 from PIL import Image
 from tqdm import tqdm
 
 from ..utils import as_uint8_image
+
 
 def tiling(
     adata: AnnData,
