@@ -1267,8 +1267,8 @@ def cci_map(
         cmap=cmap,
     )
 
-    ax.set_ylabel("Sender")
-    ax.set_xlabel("Receiver")
+    ax.set_xlabel("Sender")
+    ax.set_ylabel("Receiver")
     plt.pyplot.suptitle(title)
 
     if show:
