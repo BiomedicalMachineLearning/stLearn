@@ -7,9 +7,9 @@ import tempfile
 import unittest
 import warnings
 
-import PIL.Image
 import numpy as np
 import pandas as pd
+import PIL.Image
 import scanpy as sc
 
 import stlearn as st
