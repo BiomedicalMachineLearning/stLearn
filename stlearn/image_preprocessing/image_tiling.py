@@ -5,6 +5,7 @@ from anndata import AnnData
 from PIL import Image
 from tqdm import tqdm
 
+from ..utils import as_uint8_image
 
 def tiling(
     adata: AnnData,
@@ -142,11 +143,7 @@ def _load_and_prepare_image(adata: AnnData, library_id: str) -> Image.Image:
             f"Could not find image data in adata.uns['spatial']['{library_id}']: {e}"
         ) from e
 
-    if image.dtype in (np.float32, np.float64):
-        image = np.clip(image, 0, 1)
-        image = (image * 255).astype(np.uint8)
-
-    img_pillow = Image.fromarray(image)
+    img_pillow = Image.fromarray(as_uint8_image(image))
 
     if img_pillow.mode == "RGBA":
         img_pillow = img_pillow.convert("RGB")
