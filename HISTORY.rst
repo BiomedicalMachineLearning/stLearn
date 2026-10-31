@@ -34,6 +34,8 @@ History
 API and Bug Fixes:
 
 * A pair listed twice is now tested once - fixed Bug #305.
+* Input matrices with NaN are no longer processed in weighting matrix - fixed
+  Bug #310.
 * ``st.tl.cci.run(use_label=...)`` never applied cell heterogeneity weighting:
   it read the cell-type data from the wrong key, found nothing, and weighted
   every spot 1, so results were identical with and without ``use_label``. It
