@@ -30,6 +30,8 @@ History
 * ``extract_feature`` supports ConvNeXt and takes ``weights=``.
 * ``st.tl.cci.run`` takes only ``LRPairs``; for a list of 'L_R' names use
   ``st.tl.cci.LRPairs.from_names(names, species="human")``.
+* Upgrade libraries: pillow>=13.0.0,<14.0, numba>=0.64.0,
+  scikit-image>=0.25.0, torch>=2.5.0, matplotlib>=3.11,<4.0.
 
 API and Bug Fixes:
 
@@ -88,7 +90,6 @@ API and Bug Fixes:
   differ), ``shortest_path_spatial_paga`` returns labels, plus fixes to
   ``local_level``, ``weight_optimizing_local``, ``de_transition_plot`` and the
   trajectory plots.
-* Upgraded to current matplotlib (3.11.0).
 * ``qc_plot`` no longer makes a dense copy.
 * ``stlearn.wrapper`` removed.
 * ``cci.grid`` vectorised and nolonger takes ``n_cpus``.

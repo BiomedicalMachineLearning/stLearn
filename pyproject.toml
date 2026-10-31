@@ -19,6 +19,7 @@ dependencies = [
     "click>=8.2.0,<9.0",
     "igraph>=1.0.0",
     "leidenalg>=0.11.0",
+    "matplotlib>=3.11,<4.0",
     "numba>=0.64.0",
     "numpy>=2.4.0",
     "pillow>=13.0.0,<14.0",
