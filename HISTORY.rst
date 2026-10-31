@@ -2,7 +2,7 @@
 History
 =======
 
-1.5.0 (2026-10-30)
+1.5.0 (2026-11-01)
 ------------------
 * Memory usage is reduced through chunking in CCI scoring and permutation
   testing ~5,000,000 bins @ 20GB in ~20 minutes.

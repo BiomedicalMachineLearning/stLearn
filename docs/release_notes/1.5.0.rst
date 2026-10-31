@@ -1,4 +1,4 @@
-1.5.0 (2026-10-30)
+1.5.0 (2026-11-01)
 ------------------
 This release contains changes in cell-cell interaction (CCI) mainly
 improvements in runtime and memory usage and requires code to be updated.
