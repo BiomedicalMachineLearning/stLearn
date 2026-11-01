@@ -4,20 +4,39 @@ History
 
 1.5.0 (2026-11-01)
 ------------------
-* Memory usage is reduced through chunking in CCI scoring and permutation
-  testing ~5,000,000 bins @ 20GB in ~20 minutes.
+This release contains changes in cell-cell interaction (CCI) mainly
+improvements in runtime and memory usage and requires code to be updated.
+
+* Memory usage is reduced through chunking (~256MB) in ```st.cci.run```
+  scoring and permutation testing ~5,000,000 bins @ 20GB in ~20 minutes.
 * SpatialData support added with a new ``st.io`` package. Supporting:
   ``atera``, ``xenium``, ``visium_hd`` and ``visium``. Start of
   spatial data native plotting with ``st.pl.sdata_plot`` and
   ``st.pp.highly_variable_genes``.
-* Spatial trajectory and other APIs use cluster labels strings
-  (``cluster="6"``).
-* Upgraded ligand-receptor databases to connectomeDB2025 (human and mouse).
-* Loading via ``load_lrs`` is deprecated for ``lr_pairs`` with
-  ``connectomeDB2020_put`` removed. CCI and GO results change with the
-  new databases.
 * New datasets available to download via ``visium_hd_sge`` and ``atera_sge``
   and return SpatialData objects.
+* Upgraded ligand-receptor databases to connectomeDB2025 (human and mouse).
+* Ligand-receptor are an ``LRPairs`` object instead of an array of
+  'L_R' strings. It tracks the species and where each pair came from.
+  Pairs can be filtered and combined (``lrs.filter(...)``, ``lrs1 | lrs2``).
+  * ``st.tl.cci.run`` takes only ``LRPairs``; an array of 'L_R' names raises
+    ``TypeError``. Wrap strings with
+    ``st.tl.cci.LRPairs.from_names(names, species="human")``.
+  * ``st.tl.cci.lr_pairs(database, species)`` loads a database shipped with
+    stLearn: ``"connectomeDB2025"`` (default; human or mouse) or
+    ``"connectomeDB2020"`` (human).
+  * ``st.tl.cci.read_lr_pairs(path, species=...)``
+    reads your own csv/tsv of ligand and receptor columns.
+  * ``st.tl.cci.load_lrs`` is deprecated; use ``lr_pairs``, or
+    ``lr_pairs(...).names()`` for the old array. Note that ``lr_pairs()``
+    defaults to connectomeDB2025, where ``load_lrs()`` defaults to
+    connectomeDB2020.
+  * ``st.add.lr`` is removed; use ``read_lr_pairs`` or ``LRPairs.from_names``.
+  * The LR table from ``run`` stores each pair's source in ``var["source"]``
+    and the species in ``uns["lr_species"]``, which ``run_lr_go`` uses as its
+    default species.
+* Spatial trajectory and other APIs use cluster labels strings
+  (``cluster="6"``).
 * AnnData backwards compatibility available through ``st.io.attach_spatial``.
 * CCI results are now a LR table (AnnData) returned by ``st.tl.cci.run``.
   A spots x LR pairs with summaries, scores and p-values in ``var``.
@@ -28,8 +47,6 @@ History
 * SME computes weights only between nearby spots and data is kept sparse
   where possible.
 * ``extract_feature`` supports ConvNeXt and takes ``weights=``.
-* ``st.tl.cci.run`` takes only ``LRPairs``; for a list of 'L_R' names use
-  ``st.tl.cci.LRPairs.from_names(names, species="human")``.
 * Upgrade libraries: pillow>=13.0.0,<14.0, numba>=0.64.0,
   scikit-image>=0.25.0, torch>=2.5.0, matplotlib>=3.11,<4.0.
 
