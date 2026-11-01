@@ -17,6 +17,7 @@ improvements in runtime and memory usage and requires code to be updated.
 * Ligand-receptor are an ``LRPairs`` object instead of an array of
   'L_R' strings. It tracks the species and where each pair came from.
   Pairs can be filtered and combined (``lrs.filter(...)``, ``lrs1 | lrs2``).
+
   * ``st.tl.cci.run`` takes only ``LRPairs``; an array of 'L_R' names raises
     ``TypeError``. Wrap strings with
     ``st.tl.cci.LRPairs.from_names(names, species="human")``.
