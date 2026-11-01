@@ -59,7 +59,7 @@ improvements in runtime and memory usage and requires code to be updated.
 .. rubric:: Bugs
 
 * Fixed double application of scaling, adding instructions and warning for
-  image alignment in create_stlearn Bug #303.
+  image alignment in ``st.io.create_stlearn`` Bug #303.
 * A pair listed twice is now tested once - fixed Bug #305.
 * Incorrect labelling in CCI Plot - rows labelled "Senders", columns labelled
   "Receivers" - should be the other way around Bugs #309, #363.
@@ -91,9 +91,9 @@ improvements in runtime and memory usage and requires code to be updated.
   ``ax`` you passed in rather than opening a new figure, so they can go in
   subplots.
 * Images in ``uns["spatial"]`` are now uint8 (0-255), not floats in [0, 1].
-* ``extract_feature`` tiles were fed as floats between 0-255 instead of 0-1.
-  Tiles are now read as uint8, so ``X_tile_feature`` and ``X_morphology``
-  change.
+* ``st.pp.extract_feature`` tiles were fed as floats between 0-255 instead
+  of 0-1. Tiles are now read as uint8, so ``X_tile_feature`` and
+  ``X_morphology`` change.
 * ``st.concatenate_spatial_adata``: the x and y offsets added to
   ``obsm["spatial"]`` for each tile were swapped, so spots on any tile off
   the diagonal landed on the wrong tile. Tiles also keep their aspect ratio
@@ -104,7 +104,7 @@ improvements in runtime and memory usage and requires code to be updated.
   ``spot_diameter_fullres`` to 10 (it was 50).
 * ``st.io.read_10x`` reads 16-bit / signed PNGs and reports missing images
   clearly.
-* ``st.add.labels`` / ``add_loupe_clusters`` match by barcode.
+* ``st.add.labels`` / ``st.add.add_loupe_clusters`` match by barcode.
 * ``st.add.positions`` reads Space Ranger 2.0+ files.
 * ``st.add.parsing`` assigned spots the wrong coordinates (they were interleaved
   from the spots in ``obs``), so every plot and anything using
