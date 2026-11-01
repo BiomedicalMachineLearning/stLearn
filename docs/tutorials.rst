@@ -5,6 +5,8 @@ Tutorials
    :caption: Main features:
 
    tutorials/cell_cell_interaction
+   tutorials/cell_cell_interaction_atera
+   tutorials/cell_cell_interaction_visium_hd
    tutorials/cell_cell_interaction_xenium
    tutorials/pseudotime_space
    tutorials/pseudotime_space_xenium
@@ -20,6 +22,8 @@ Tutorials
 
 .. nbgallery::
    :caption: Supporting platforms:
+
+    tutorials/read_merfish
 
 .. nbgallery::
    :caption: Integration with other spatial tools:
