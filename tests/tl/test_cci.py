@@ -39,8 +39,9 @@ def read_test_data_with_lr_pairs(n_pairs: int = 20):
     lrs = st.tl.cci.lr_pairs("connectomeDB2020")
 
     genes: list[str] = []
-    for lr in lrs.names():
-        ligand, receptor = lr.split("_")
+    for ligand, receptor in zip(
+        lrs.ligands().tolist(), lrs.receptors().tolist(), strict=True
+    ):
         if ligand != receptor and ligand not in genes and receptor not in genes:
             genes += [ligand, receptor]
         if len(genes) == 2 * n_pairs:

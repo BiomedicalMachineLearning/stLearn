@@ -27,7 +27,7 @@ from .het import (
     get_interaction_pvals,
     label_keys,
 )
-from .ligand_receptors import LRPairs, lr_pairs
+from .ligand_receptors import LRPairs, genes_of, lr_pairs, split_name
 from .neighbours import calc_distance, calc_neighbours, get_neighbourhoods
 from .permutation import perform_spot_testing
 from .scoring import get_lrs_scores
@@ -35,7 +35,7 @@ from .scoring import get_lrs_scores
 
 def _report_dropped_lrs(
     adata: AnnData,
-    lrs: npt.NDArray[np.str_],
+    lrs: LRPairs,
     n_scored: npt.NDArray[np.int64],
     min_spots: int,
     min_expr: float,
@@ -45,28 +45,31 @@ def _report_dropped_lrs(
     (with min_expr 0, such a pair scores in no spot; above 0 it can still score
     through its partner, so only dropped pairs are looked at), or else scored in
     min_spots spots or fewer."""
-    dropped = lrs[n_scored <= min_spots]
-    by_gene, unexpressed = [], set()
-    if dropped.size:
-        genes = np.unique([lr.split("_") for lr in dropped])
+    dropped = lrs.filter(n_scored <= min_spots)
+    n_by_gene, unexpressed = 0, np.array([], dtype=np.str_)
+    if len(dropped):
+        genes = dropped.genes()
         n_above = np.asarray((min_expr < adata[:, genes].X).sum(axis=0)).ravel()
-        unexpressed = set(genes[n_above == 0])
-        by_gene = [lr for lr in dropped if unexpressed.intersection(lr.split("_"))]
-    too_few = dropped.size - len(by_gene)
-    if by_gene:
-        named = ", ".join(sorted(unexpressed)[:max_named])
+        unexpressed = genes[n_above == 0]  # sorted, as genes() are
+        by_gene = np.isin(dropped.ligands(), unexpressed) | np.isin(
+            dropped.receptors(), unexpressed
+        )
+        n_by_gene = int(by_gene.sum())
+    too_few = len(dropped) - n_by_gene
+    if n_by_gene:
+        named = ", ".join(unexpressed[:max_named])
         more = (
             f" and {len(unexpressed) - max_named} more"
             if len(unexpressed) > max_named
             else ""
         )
         print(
-            f"Dropping {len(by_gene)} LR pairs with a gene never expressed above "
+            f"Dropping {n_by_gene} LR pairs with a gene never expressed above "
             f"min_expr={min_expr}: {named}{more}."
         )
     if too_few:
         print(f"Dropping {too_few} LR pairs scored in {min_spots} or fewer spots.")
-    print(f"Altogether {lrs.size - dropped.size} valid L-R pairs")
+    print(f"Altogether {len(lrs) - len(dropped)} valid L-R pairs")
 
 
 def run(
@@ -238,11 +241,11 @@ def run(
 
     # 1. Filter any LRs without stored expression.
     # Calculating the lr_scores across spots for the inputted lrs #
-    lr_scores, new_lrs = get_lrs_scores(
+    lr_scores, scored = get_lrs_scores(
         adata, lrs, neighbours, het_vals, min_expr, sparse_result=True
     )
     # Fail fast.
-    if new_lrs.size == 0:
+    if len(scored) == 0:
         raise ValueError(
             f"None of the {len(lrs)} {lrs.species} LR pairs are in adata.var_names; "
             "check the pairs' species matches the data, e.g. "
@@ -251,10 +254,10 @@ def run(
     n_scored = np.diff(lr_scores.indptr).astype(np.int64)  # spots scored per LR
     lr_bool = n_scored > min_spots
     if verbose:
-        _report_dropped_lrs(adata, new_lrs, n_scored, min_spots, min_expr)
-    new_lrs = new_lrs[lr_bool]
+        _report_dropped_lrs(adata, scored, n_scored, min_spots, min_expr)
+    tested = scored.filter(lr_bool)
     lr_scores = lr_scores[:, lr_bool]
-    if new_lrs.size == 0:
+    if len(tested) == 0:
         raise ValueError(
             f"No LR pairs had scores in more than {min_spots} spots; "
             "try lowering min_spots or min_expr."
@@ -263,7 +266,7 @@ def run(
     tests = perform_spot_testing(
         adata,
         lr_scores,
-        new_lrs,
+        tested,
         n_pairs,
         neighbours,
         het_vals,
@@ -274,10 +277,10 @@ def run(
         random_state=random_state,
     )
     lr_results = AnnData(
-        obs=pd.DataFrame(index=adata.obs_names), var=pd.DataFrame(index=new_lrs)
+        obs=pd.DataFrame(index=adata.obs_names), var=pd.DataFrame(index=tested.names())
     )
 
-    lr_results.var["source"] = lrs.source_of(new_lrs).astype(str)
+    lr_results.var["source"] = tested.to_frame()["source"].to_numpy(dtype=str)
     lr_results.uns["lr_species"] = lrs.species
     lr_results.uns["lrfeatures"] = tests.lr_features
 
@@ -398,7 +401,7 @@ def run_lr_go(
     lrs = lr_results.var_names.to_numpy().astype(str)
     n_sig = lr_results.var["n_spots_sig"].to_numpy().astype(int)
     top_lrs = lrs[n_sig > min_sig_spots][0:n_top]
-    top_genes = np.unique([lr.split("_") for lr in top_lrs])
+    top_genes = genes_of(top_lrs)
 
     # Determining the background genes if not inputted
     if bg_genes is None:
@@ -571,7 +574,7 @@ def run_cci(
     col = "lr_sig_scores" if sig_spots else "lr_scores"
     best_lr_indices = np.flatnonzero(lr_summary[count_col].to_numpy() > min_spots)
     best_lrs = lr_summary.index.values[best_lr_indices]
-    lr_genes = np.unique([lr.split("_") for lr in best_lrs])
+    lr_genes = genes_of(best_lrs)
     if len(lr_genes) == 0:
         raise ValueError(
             "No LR pairs returned with current filtering params; \n"
@@ -602,7 +605,7 @@ def run_cci(
         disable=not verbose,
     ) as pbar:
         for i, best_lr in enumerate(best_lrs):
-            ligand, receptor = best_lr.split("_")
+            ligand, receptor = split_name(best_lr)
 
             L_bool = expressed(ligand)
             R_bool = expressed(receptor)

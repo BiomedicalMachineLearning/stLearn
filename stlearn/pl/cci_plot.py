@@ -29,6 +29,7 @@ from stlearn.pl.utils import (
 
 from ..tl.cci import LR_RESULTS
 from ..tl.cci._results import check_lr_results, lr_result
+from ..tl.cci.ligand_receptors import split_name
 from ..utils import _docs_params
 from ._docs import doc_het_plot, doc_spatial_base_plot
 from .cci_plot_helpers import (
@@ -673,7 +674,7 @@ def lr_plot(
     """
 
     # Input checking #
-    ligand, receptor = lr.split("_")
+    ligand, receptor = split_name(lr)
     results = None if lr_results is None else check_lr_results(lr_results, adata)
     # Whether st.tl.cci.run tested this LR and found it significant in some spot.
     lr_sig = (

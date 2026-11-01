@@ -16,6 +16,7 @@ from statsmodels.stats.multitest import multipletests
 from tqdm import tqdm
 
 from ._results import Matrix, scored_entries
+from .ligand_receptors import LRPairs
 from .perm_utils import _column_quantiles, background_pairs, get_lr_features
 from .scoring import LRScorer, spots_per_chunk
 
@@ -36,7 +37,7 @@ class SpotTests:
 def perform_spot_testing(
     adata: AnnData,
     lr_scores: Matrix,
-    lrs: npt.NDArray[np.str_],
+    lrs: LRPairs,
     n_pairs: int,
     neighbours: List,
     het_vals: np.ndarray,
@@ -63,13 +64,15 @@ def perform_spot_testing(
     """Tests each spot's LR scores against random gene pairs with similar
     expression to the LR pair; backgrounds are only generated for spots
     which have a score for the LR: those above 0 in lr_scores, sparse (as
-    get_lrs_scores returns with sparse_result) or dense. The p-values come back
-    sparse, an entry for each.
+    get_lrs_scores returns with sparse_result) or dense. lr_scores has a column
+    for each of `lrs`, in the order of lrs.names(), as get_lrs_scores gives them.
+    The p-values come back sparse, an entry for each.
     """
     quantiles = np.array(quantiles)
     scores = scored_entries(lr_scores)
+    names, ligands, receptors = lrs.names(), lrs.ligands(), lrs.receptors()
 
-    lr_genes = np.unique([lr_.split("_") for lr_ in lrs])
+    lr_genes = lrs.genes()
     candidates = np.flatnonzero(~adata.var_names.isin(lr_genes))
     genes = adata.var_names.to_numpy()[candidates]
     n_genes = round(np.sqrt(n_pairs) * 2)
@@ -88,10 +91,10 @@ def perform_spot_testing(
     # Quantiles to select similar gene to LRs to gen. rand-pairs
     lr_feats = get_lr_features(adata[:, lr_genes], lrs, quantiles)
     l_quants = lr_feats.loc[
-        lrs, [col for col in lr_feats.columns if "L_" in col]
+        names, [col for col in lr_feats.columns if "L_" in col]
     ].values
     r_quants = lr_feats.loc[
-        lrs, [col for col in lr_feats.columns if "R_" in col]
+        names, [col for col in lr_feats.columns if "R_" in col]
     ].values
     candidate_quants = gene_quantiles(
         adata, genes, quantiles, expression=scorer.columns
@@ -116,7 +119,7 @@ def perform_spot_testing(
         # Per LR gene, the candidates (positions) its random pairs draw from.
         gene_bg_genes: dict[str, np.ndarray] = {}
         for lr_j in range(scores.shape[1]):
-            lr_ = lrs[lr_j]
+            lr_ = names[lr_j]
             start, end = scores.indptr[lr_j], scores.indptr[lr_j + 1]
             if start == end:
                 # Nothing to test: no spot has a score for the LR.
@@ -128,7 +131,8 @@ def perform_spot_testing(
             lr_j_scores = scores.data[start:end]
             spot_indices = scores.indices[start:end].astype(np.int64)
             rand_pairs = background_pairs(
-                lr_,
+                ligands[lr_j],
+                receptors[lr_j],
                 l_quants[lr_j, :],
                 r_quants[lr_j, :],
                 candidates,

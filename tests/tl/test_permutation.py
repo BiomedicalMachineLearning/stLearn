@@ -47,7 +47,7 @@ class TestPermutation(unittest.TestCase):
         neighbours = calc_neighbours(cls.adata, distance=1.5, verbose=False)
         het_vals = np.ones(len(cls.adata))
         # Columns of scores, and of everything perform_spot_testing returns,
-        # follow lrs: the order get_lrs_scores gives them.
+        # follow the scored pairs get_lrs_scores gives: their names() order.
         cls.scores, cls.lrs = get_lrs_scores(cls.adata, LRS, neighbours, het_vals, 0)
         cls.results = perform_spot_testing(
             cls.adata,
@@ -70,7 +70,7 @@ class TestPermutation(unittest.TestCase):
         self.assertEqual(sparse_pvals.shape, self.scores.shape)
         np.testing.assert_array_equal(sparse_pvals.toarray() != 0, self.scores > 0)
         pvals = to_dense(sparse_pvals, 1.0)
-        for j, lr in enumerate(self.lrs):
+        for j, lr in enumerate(self.lrs.names()):
             background = self.results.backgrounds[lr]
             spots = self.results.bg_spot_indices[lr]
             np.testing.assert_array_equal(spots, np.flatnonzero(self.scores[:, j] > 0))
@@ -87,11 +87,11 @@ class TestPermutation(unittest.TestCase):
 
     def test_some_spots_significant(self):
         """The co-expressed corner gives Lig0_Rec0 p-values at the floor."""
-        j = list(self.lrs).index("Lig0_Rec0")
+        j = list(self.lrs.names()).index("Lig0_Rec0")
         self.assertEqual(to_dense(self.results.pvals, 1.0)[:, j].min(), 1 / N_PAIRS)
 
     def test_lr_features_cover_every_lr(self):
-        self.assertCountEqual(self.results.lr_features.index, self.lrs)
+        self.assertCountEqual(self.results.lr_features.index, self.lrs.names())
 
     def test_leaves_adata_alone(self):
         """Results are returned; st.tl.cci.run is what stores them."""
@@ -168,7 +168,7 @@ class TestPermutation(unittest.TestCase):
             het_vals,
             0,
         )
-        self.assertEqual(list(lrs), ["Lig0_Lig0"])
+        self.assertEqual(list(lrs.names()), ["Lig0_Lig0"])
 
         results = perform_spot_testing(
             adata,
@@ -210,8 +210,9 @@ class TestPermutation(unittest.TestCase):
         pvals = to_dense(results.pvals, 1.0)
         np.testing.assert_array_equal(pvals[:, 1], 1)
         self.assertEqual(results.pvals[:, 1].nnz, 0)  # no entries: nothing tested
-        self.assertEqual(results.backgrounds[lrs[1]].shape, (0, N_PAIRS))
-        self.assertEqual(results.bg_spot_indices[lrs[1]].size, 0)
+        unscored = lrs.names()[1]
+        self.assertEqual(results.backgrounds[unscored].shape, (0, N_PAIRS))
+        self.assertEqual(results.bg_spot_indices[unscored].size, 0)
         np.testing.assert_array_equal(
             pvals[:, [0, 2]],
             to_dense(self.results.pvals, 1.0)[:, [0, 2]],

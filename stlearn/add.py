@@ -4,7 +4,6 @@ from .adds.add_mask import add_mask, apply_mask
 from .adds.annotation import annotation
 from .adds.image import image
 from .adds.labels import labels
-from .adds.lr import lr
 from .adds.parsing import parsing
 from .adds.polygon_annotations import polygon_annotations
 from .adds.positions import positions
@@ -18,7 +17,6 @@ __all__ = [
     "apply_mask",
     "image",
     "labels",
-    "lr",
     "parsing",
     "polygon_annotations",
     "positions",

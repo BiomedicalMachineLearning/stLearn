@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from stlearn.tl.cci import LRPairs
+from stlearn.tl.cci.ligand_receptors import genes_of, split_name, split_names
 
 # Rows in the layout of connectomeDB2025's csv download (current release).
 TEST_DATABASE = pd.DataFrame(
@@ -63,7 +64,7 @@ class TestLRPairs(unittest.TestCase):
         np.testing.assert_array_equal(direct.names(), ["CCN2_LRP1", "CXCL12_CXCR4"])
         self.assertEqual((len(lrs), direct.species), (3, "human"))
 
-        masked = lrs.filter(np.array([True, False, True]))
+        masked = lrs.filter(np.array([True, True, False]))
         np.testing.assert_array_equal(masked.names(), direct.names())
 
         mine = LRPairs.from_names(
@@ -154,6 +155,72 @@ class TestLRPairs(unittest.TestCase):
         for bad in ["CXCL12", "A_B_C", "CXCL12_ CXCR4"]:
             with self.assertRaisesRegex(ValueError, "LIGAND_RECEPTOR"):
                 LRPairs.from_names([bad], species="human")
+        self.assertEqual(len(LRPairs.from_names([], species="human")), 0)
+
+    def test_rows_in_name_order(self):
+        """Whatever order pairs come in, names(), ligands(), receptors() and
+        to_frame() share one order, so a mask over any of them filters the same
+        pairs; the order names sort in, which differs from (ligand, receptor)."""
+        lrs = LRPairs.from_names(
+            ["A_Z", "THBS1_LRP1", "AB_C", "CCN2_LRP1"], species="human"
+        ) | LRPairs.from_names(["CXCL12_CXCR4", "AA_B"], species="human")
+        expected = ["AA_B", "AB_C", "A_Z", "CCN2_LRP1", "CXCL12_CXCR4", "THBS1_LRP1"]
+        np.testing.assert_array_equal(lrs.names(), expected)
+        np.testing.assert_array_equal(
+            lrs.ligands(), ["AA", "AB", "A", "CCN2", "CXCL12", "THBS1"]
+        )
+        np.testing.assert_array_equal(
+            lrs.receptors(), ["B", "C", "Z", "LRP1", "CXCR4", "LRP1"]
+        )
+        frame = lrs.to_frame()
+        np.testing.assert_array_equal(frame["ligand"], lrs.ligands())
+        np.testing.assert_array_equal(frame["receptor"], lrs.receptors())
+        self.assertEqual(list(frame.index), list(range(len(lrs))))
+
+        receptor_lrp1 = lrs.filter(lrs.receptors() == "LRP1")
+        np.testing.assert_array_equal(
+            receptor_lrp1.names(), ["CCN2_LRP1", "THBS1_LRP1"]
+        )
+        second_half = lrs.filter(np.arange(len(lrs)) >= 3)
+        np.testing.assert_array_equal(second_half.names(), expected[3:])
+        self.assertEqual(lr_test_pairs().ligands().dtype.kind, "U")
+
+    def test_contains(self):
+        lrs = lr_test_pairs()
+        self.assertIn("CCN2_LRP1", lrs)
+        self.assertIn(np.str_("CCN2_LRP1"), lrs)
+        for absent in ["LRP1_CCN2", "CCN2", "CCN2_LRP1_X", "CCN2 _LRP1", "", 3, None]:
+            self.assertNotIn(absent, lrs)
+
+    def test_split_names(self):
+        """'L_R' names, e.g. an LR table's var_names, are taken apart in one place,
+        in the order given, checking their format as from_names does."""
+        names = np.array(["CXCL12_CXCR4", "CCN2_LRP1", "CXCL12_ACKR3"])
+        np.testing.assert_array_equal(
+            split_names(names),
+            [["CXCL12", "CXCR4"], ["CCN2", "LRP1"], ["CXCL12", "ACKR3"]],
+        )
+        self.assertEqual(split_name("CXCL12_CXCR4"), ("CXCL12", "CXCR4"))
+        self.assertIs(type(split_name(np.str_("CCN2_LRP1"))[0]), str)
+        np.testing.assert_array_equal(
+            genes_of(names), ["ACKR3", "CCN2", "CXCL12", "CXCR4", "LRP1"]
+        )
+        self.assertEqual(split_names([]).shape, (0, 2))
+        self.assertEqual(genes_of([]).dtype.kind, "U")
+        for bad in ["CXCL12", "A_B_C", "CXCL12_ CXCR4", "_CXCR4"]:
+            with self.assertRaisesRegex(ValueError, "LIGAND_RECEPTOR"):
+                split_name(bad)
+            with self.assertRaisesRegex(ValueError, "LIGAND_RECEPTOR"):
+                genes_of(["CCN2_LRP1", bad])
+
+    def test_split_names_reverses_names(self):
+        lrs = lr_test_pairs()
+        frame = lrs.to_frame()
+        np.testing.assert_array_equal(
+            sorted(map(tuple, split_names(lrs.names()))),
+            sorted(zip(frame["ligand"], frame["receptor"], strict=True)),
+        )
+        np.testing.assert_array_equal(genes_of(lrs.names()), lrs.genes())
 
     def test_bad_input(self):
         with self.assertRaisesRegex(ValueError, "1 column"):

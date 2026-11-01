@@ -1,5 +1,6 @@
 """Handling ligand-receptor pairs - a Database and LRPairs data structure for loading
-and manipulating LR sources as well as functions to manipulate LRPairs.
+and manipulating LR sources as well as functions to manipulate LRPairs, and to take
+apart the 'LIGAND_RECEPTOR' names they and stlearn's results use.
 
 Usage::
 
@@ -28,6 +29,42 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+
+# Helpers
+_COMPRESSION = {".gz", ".bz2", ".zip", ".xz", ".zst"}
+_SEPARATORS = {".csv": ",", ".tsv": "\t", ".txt": "\t", ".tab": "\t"}
+
+# 'LIGAND_RECEPTOR' names, as LRPairs.names() gives and an LR table's var_names are.
+# The one place they are taken apart; LRPairs only makes them (_names).
+_NAME = re.compile(r"([^_\s]+)_([^_\s]+)")
+
+
+def split_names(names: Iterable[str]) -> npt.NDArray[np.str_]:
+    """Each 'LIGAND_RECEPTOR' name's ligand and receptor, as rows of an (n, 2)
+    array; raises ValueError for a name not in that form."""
+    pairs, bad = [], []
+    for name in map(str, names):
+        match = _NAME.fullmatch(name)
+        if match is None:
+            bad.append(name)
+        else:
+            pairs.append(match.groups())
+    if bad:
+        raise ValueError(f"LR names must look like 'LIGAND_RECEPTOR'; got {bad[:3]}")
+    return np.array(pairs, dtype=np.str_).reshape(-1, 2)
+
+
+def split_name(name: str) -> tuple[str, str]:
+    """A 'LIGAND_RECEPTOR' name's ligand and receptor."""
+    ligand, receptor = split_names([name])[0]
+    return str(ligand), str(receptor)
+
+
+def genes_of(names: Iterable[str]) -> npt.NDArray[np.str_]:
+    """Every ligand and receptor gene in 'LIGAND_RECEPTOR' names, sorted; for an
+    LRPairs, its genes() does this."""
+    return np.unique(split_names(names))
+
 
 DEFAULT_DATABASE = "connectomeDB2025"
 SOURCE_SEP = " | "  # between the sources of a pair from more than one
@@ -72,6 +109,10 @@ class LRPairs:
     of the source (e.g. connectomeDB2025's 'Evidence') to filter on. Methods return
     new LRPairs, so calls chain. Pairs combine only with pairs of the same species.
 
+    The rows are in the order of the pairs' names, so names(), ligands(),
+    receptors(), to_frame() and a mask given to filter() line up, as do the columns
+    of the scores stlearn computes for the pairs.
+
     Make one with lr_pairs() (databases shipped with stlearn), read_lr_pairs() (a
     csv/tsv file), LRPairs.from_frame() or LRPairs.from_names().
     """
@@ -109,11 +150,11 @@ class LRPairs:
                 f"Gene symbols in {source} contain '_', which separates ligand from "
                 f"receptor in 'L_R' pair names; e.g. {examples.values.tolist()}",
             )
-        frame = _merge_repeats(frame).reset_index(drop=True)
+        frame = _merge_repeats(frame)
         self._set(frame, species.lower(), _labels(frame))
 
     def _set(self, frame: pd.DataFrame, species: str, sources: tuple[str, ...]):
-        self._frame, self._species, self._sources = frame, species, sources
+        self._frame, self._species, self._sources = _by_name(frame), species, sources
 
     def _derive(self, frame: pd.DataFrame, sources: tuple[str, ...]) -> LRPairs:
         """New LRPairs of this species from an already clean table; `sources` in the
@@ -121,7 +162,7 @@ class LRPairs:
         present = set(_labels(frame))
         pairs = object.__new__(LRPairs)
         kept = tuple(label for label in sources if label in present)
-        pairs._set(frame.reset_index(drop=True), self.species, kept)
+        pairs._set(frame, self.species, kept)
         return pairs
 
     @property
@@ -174,16 +215,18 @@ class LRPairs:
         source: str = "names",
     ) -> LRPairs:
         """Pairs from 'LIGAND_RECEPTOR' names, the format stlearn's results use."""
-        return cls(_split_names(names), species=species, source=source)
+        frame = pd.DataFrame(split_names(names), columns=["ligand", "receptor"])
+        return cls(frame, species=species, source=source)
 
     # Transformations; each returns a new LRPairs of the same species
     def filter(
         self,
         keep: Callable[[pd.DataFrame], npt.ArrayLike] | npt.ArrayLike,
     ) -> LRPairs:
-        """The pairs whose rows `keep` marks True. `keep` is a boolean mask or a
-        function of the table returning one, e.g. lambda d: d["Evidence"] == "Direct"
-        or lambda d: d["source"].str.contains("connectomeDB2025").
+        """The pairs whose rows `keep` marks True. `keep` is a boolean mask, a value
+        per pair in the order of names(), or a function of the table returning one,
+        e.g. lambda d: d["Evidence"] == "Direct" or
+        lambda d: d["source"].str.contains("connectomeDB2025").
         """
         mask = keep(self.to_frame()) if callable(keep) else keep
         # Positional, with missing values (e.g. a comparison with NaN) as False.
@@ -217,8 +260,16 @@ class LRPairs:
 
     # Outputs
     def names(self) -> npt.NDArray[np.str_]:
-        """'LIGAND_RECEPTOR' names, sorted."""
-        return np.array(sorted(_names(self._frame)), dtype=np.str_)
+        """'LIGAND_RECEPTOR' names, sorted: the order of the pairs."""
+        return _names(self._frame).to_numpy(dtype=np.str_)
+
+    def ligands(self) -> npt.NDArray[np.str_]:
+        """Each pair's ligand, in the order of names()."""
+        return self._frame["ligand"].to_numpy(dtype=np.str_)
+
+    def receptors(self) -> npt.NDArray[np.str_]:
+        """Each pair's receptor, in the order of names()."""
+        return self._frame["receptor"].to_numpy(dtype=np.str_)
 
     def genes(self) -> npt.NDArray[np.str_]:
         """Every ligand and receptor gene, sorted; e.g. a GO background."""
@@ -232,20 +283,14 @@ class LRPairs:
 
     def to_frame(self) -> pd.DataFrame:
         """A copy of the table: 'ligand', 'receptor', 'source', and the source's
-        other columns."""
+        other columns; a row per pair, in the order of names()."""
         return self._frame.copy()
 
     def __len__(self) -> int:
         return len(self._frame)
 
     def __contains__(self, name: object) -> bool:
-        if not isinstance(name, str) or name.count("_") != 1:
-            return False
-        ligand, receptor = name.split("_")
-        frame = self._frame
-        return bool(
-            ((frame["ligand"] == ligand) & (frame["receptor"] == receptor)).any(),
-        )
+        return isinstance(name, str) and bool((_names(self._frame) == name).any())
 
     def __repr__(self) -> str:
         sources = ", ".join(self.sources) or "nowhere"
@@ -362,11 +407,6 @@ def read_lr_pairs(
     )
 
 
-# Helpers
-_COMPRESSION = {".gz", ".bz2", ".zip", ".xz", ".zst"}
-_SEPARATORS = {".csv": ",", ".tsv": "\t", ".txt": "\t", ".tab": "\t"}
-
-
 @functools.cache
 def _read_packaged(database: str, species: str) -> LRPairs:
     spec = _DATABASES[database]
@@ -432,17 +472,14 @@ def _labels(frame: pd.DataFrame) -> tuple[str, ...]:
 
 
 def _names(frame: pd.DataFrame) -> pd.Series:
+    """A table's pairs as 'LIGAND_RECEPTOR' names; split_names reverses this."""
     return frame["ligand"] + "_" + frame["receptor"]
 
 
-def _split_names(names: Iterable[str]) -> pd.DataFrame:
-    """'LIGAND_RECEPTOR' names as a ligand/receptor table, checking their format."""
-    names = [str(name) for name in names]
-    bad = [name for name in names if not re.fullmatch(r"[^_\s]+_[^_\s]+", name)]
-    if bad:
-        raise ValueError(f"LR names must look like 'LIGAND_RECEPTOR'; got {bad[:3]}")
-    split = [name.split("_") for name in names]
-    return pd.DataFrame(split, columns=["ligand", "receptor"], dtype="string")
+def _by_name(frame: pd.DataFrame) -> pd.DataFrame:
+    """A table's rows in the order of their pairs' names, indexed from 0."""
+    order = np.argsort(_names(frame).to_numpy(dtype=np.str_), kind="stable")
+    return frame.iloc[order].reset_index(drop=True)
 
 
 def _merge_repeats(frame: pd.DataFrame) -> pd.DataFrame:

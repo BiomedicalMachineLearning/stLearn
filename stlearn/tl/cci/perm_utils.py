@@ -8,6 +8,8 @@ from anndata import AnnData
 from numba import njit, prange
 from scipy import sparse
 
+from .ligand_receptors import LRPairs
+
 
 def nonzero_quantile(expr, q, method):
     """Calculating the non-zero quantiles."""
@@ -215,8 +217,9 @@ def _gen_rand_pairs(genes1, genes2, n_pairs, seed):
     return pairs
 
 
-def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
+def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs: LRPairs, quantiles):
     """Gets expression features of LR pairs; nonzero-median, zero-prop, quantiles.
+    A row per pair, indexed by its name.
 
     lr_expr is the LR genes' expression, spots by genes: a DataFrame, or an
     AnnData of those genes, whose sparse X is used as it is, never densified.
@@ -231,8 +234,7 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
 
     # Determining indices of LR pairs #
     l_indices, r_indices = [], []
-    for lr in lrs:
-        l_, r_ = lr.split("_")
+    for l_, r_ in zip(lrs.ligands(), lrs.receptors(), strict=True):
         l_indices.extend(np.where(genes == l_)[0])
         r_indices.extend(np.where(genes == r_)[0])
 
@@ -275,19 +277,21 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs, quantiles):
         cols[3]: np.array(prop_ranks, dtype=np.float64),
         cols[4]: np.array(mean_ranks, dtype=np.float64),
     }
-    lr_features = pd.DataFrame(lr_features_data, index=lrs)
+    names = lrs.names()
+    lr_features = pd.DataFrame(lr_features_data, index=names)
     lr_features = lr_features.iloc[np.argsort(mean_ranks), :]
     lr_cols = [f"L_{quant}" for quant in quantiles] + [
         f"R_{quant}" for quant in quantiles
     ]
-    quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=lrs, dtype=np.float64)
+    quant_df = pd.DataFrame(lr_quants, columns=lr_cols, index=names, dtype=np.float64)
     lr_features = pd.concat((lr_features, quant_df), axis=1)
 
     return lr_features
 
 
 def background_pairs(
-    lr_: str,
+    ligand: str,
+    receptor: str,
     l_quant: np.ndarray,
     r_quant: np.ndarray,
     candidates: npt.NDArray[np.int64],
@@ -302,7 +306,7 @@ def background_pairs(
     `candidates` are positions in adata.var_names; `gene_bg_genes` caches each
     gene's similar genes across LRs."""
     similar = []
-    for gene, quant in ((lr_.split("_")[0], l_quant), (lr_.split("_")[1], r_quant)):
+    for gene, quant in ((ligand, l_quant), (receptor, r_quant)):
         if gene not in gene_bg_genes:
             gene_bg_genes[gene] = get_similar_genes_fast(
                 quant,

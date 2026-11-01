@@ -9,6 +9,7 @@ import pandas as pd
 import scipy.sparse
 from anndata import AnnData
 
+from stlearn.tl.cci import LRPairs
 from stlearn.tl.cci.analysis import _report_dropped_lrs
 
 
@@ -22,11 +23,11 @@ def _adata(sparse=False):
 
 
 def _report(adata, lrs, n_scored, min_spots=10, min_expr=0.0):
+    pairs = LRPairs.from_names(lrs, species="human")
+    by_name = np.asarray(n_scored)[np.argsort(lrs)]
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
-        _report_dropped_lrs(
-            adata, np.array(lrs), np.array(n_scored), min_spots, min_expr
-        )
+        _report_dropped_lrs(adata, pairs, by_name, min_spots, min_expr)
     return out.getvalue()
 
 

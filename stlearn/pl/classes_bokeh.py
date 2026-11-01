@@ -45,6 +45,7 @@ from PIL import Image
 from stlearn.classes import Spatial
 from stlearn.tl.cci import get_edges, lr_result
 from stlearn.tl.cci._results import check_lr_results
+from stlearn.tl.cci.ligand_receptors import split_name
 from stlearn.utils import _read_trajectory, as_uint8_image
 
 
@@ -1123,7 +1124,7 @@ class BokehSpatialCciPlot(Spatial):
         selected = self.annot_select.value
 
         # Extracting the data #
-        ligand, receptor = lr.split("_")
+        ligand, receptor = split_name(lr)
         L_bool = adata[:, ligand].X.toarray()[:, 0] > 0
         R_bool = adata[:, receptor].X.toarray()[:, 0] > 0
         sig_bool = lr_result(self.lr_results, "lr_sig_scores", lr) > 0

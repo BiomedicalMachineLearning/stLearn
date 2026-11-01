@@ -61,7 +61,8 @@ def cci_table(
     """
     rng = np.random.default_rng(seed)
     n_spots = n_side * n_side
-    lr_genes = [gene for lr in CCI_LRS.names() for gene in lr.split("_")]
+    lr_genes = np.column_stack((CCI_LRS.ligands(), CCI_LRS.receptors())).ravel()
+    lr_genes = lr_genes.tolist()  # each pair's ligand then receptor
     var_names = lr_genes + [f"gene{i}" for i in range(n_other_genes)]
 
     X = rng.poisson(0.3, size=(n_spots, len(var_names))).astype(np.float32)

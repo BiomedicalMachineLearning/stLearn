@@ -207,9 +207,9 @@ class TestGetLrsScores(unittest.TestCase):
             neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
             het_vals = np.random.default_rng(1).integers(1, 4, size=len(adata))
 
-            scores, new_lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, 0.5)
+            scores, scored = get_lrs_scores(adata, lrs, neighbours, het_vals, 0.5)
 
-            self.assertEqual(list(new_lrs), kept)
+            self.assertEqual(list(scored.names()), kept)
             dense = adata.to_df()
             columns = {gene: i for i, gene in enumerate(dense.columns)}
             pairs = np.array([[columns[g] for g in lr.split("_")] for lr in kept])
@@ -258,9 +258,9 @@ class TestGetLrsScores(unittest.TestCase):
         het_vals = np.ones(len(adata))
         lrs = LRPairs.from_names(["Lig0_Lig0", "Lig0_Rec0"], species="human")
 
-        scores, new_lrs = get_lrs_scores(adata, lrs, neighbours, het_vals, 0.5)
+        scores, scored = get_lrs_scores(adata, lrs, neighbours, het_vals, 0.5)
 
-        self.assertEqual(list(new_lrs), ["Lig0_Lig0", "Lig0_Rec0"])
+        self.assertEqual(list(scored.names()), ["Lig0_Lig0", "Lig0_Rec0"])
         dense = adata.to_df().to_numpy(dtype=np.float64)
         expected = _reference_scores(
             dense,
@@ -278,11 +278,11 @@ class TestGetLrsScores(unittest.TestCase):
 
     def test_no_pairs_in_data(self):
         """With every pair missing a gene there are no scores, but the shape
-        still has a row per spot, as run checks new_lrs.size to fail fast."""
+        still has a row per spot, as run checks len(scored) to fail fast."""
         adata = _make_adata()
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         lrs = LRPairs.from_names(["Lig0_Nope", "Nope_Rec0"], species="human")
-        scores, new_lrs = get_lrs_scores(
+        scores, scored = get_lrs_scores(
             adata,
             lrs,
             neighbours,
@@ -291,7 +291,7 @@ class TestGetLrsScores(unittest.TestCase):
         )
         self.assertEqual(scores.shape, (len(adata), 0))
         self.assertEqual(scores.dtype, np.float64)
-        self.assertEqual(len(new_lrs), 0)
+        self.assertEqual(len(scored), 0)
 
     def test_scores_accept_integer_expression(self):
         """Integer counts score as float64, the same as the float data."""
@@ -302,11 +302,11 @@ class TestGetLrsScores(unittest.TestCase):
         het_vals = np.ones(len(adata))
         lrs = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human")
 
-        scores, new_lrs = get_lrs_scores(int_adata, lrs, neighbours, het_vals, 0)
+        scores, scored = get_lrs_scores(int_adata, lrs, neighbours, het_vals, 0)
         float_scores, _ = get_lrs_scores(adata, lrs, neighbours, het_vals, 0)
 
         self.assertEqual(scores.dtype, np.float64)
-        self.assertEqual(scores.shape, (len(adata), len(new_lrs)))
+        self.assertEqual(scores.shape, (len(adata), len(scored)))
         np.testing.assert_allclose(scores, float_scores)
 
 
@@ -360,7 +360,9 @@ class TestLRScorer(unittest.TestCase):
                     spots,
                 )
                 msg = f"{sparse=} {lrs=}"
-                np.testing.assert_array_equal(got_lrs, expected_lrs, err_msg=msg)
+                np.testing.assert_array_equal(
+                    got_lrs.names(), expected_lrs.names(), err_msg=msg
+                )
                 np.testing.assert_array_equal(got, expected, err_msg=msg)
                 n_spots = len(adata) if spots is None else len(spots)
                 self.assertEqual(got.shape, (n_spots, len(lrs)), msg=msg)
@@ -374,7 +376,7 @@ class TestLRScorer(unittest.TestCase):
         )
         scorer = LRScorer(adata, neighbours)
 
-        scores, new_lrs = scorer.score(lrs, np.ones(len(adata)), 0)
+        scores, scored = scorer.score(lrs, np.ones(len(adata)), 0)
         expected, expected_lrs = get_lrs_scores(
             adata,
             lrs,
@@ -383,8 +385,8 @@ class TestLRScorer(unittest.TestCase):
             0,
         )
 
-        self.assertEqual(list(new_lrs), ["Lig0_Rec0", "Lig1_Rec2"])
-        np.testing.assert_array_equal(new_lrs, expected_lrs)
+        self.assertEqual(list(scored.names()), ["Lig0_Rec0", "Lig1_Rec2"])
+        np.testing.assert_array_equal(scored.names(), expected_lrs.names())
         np.testing.assert_array_equal(scores, expected)
 
     def test_expression_is_the_genes_columns(self):
@@ -440,7 +442,7 @@ class TestLRScorer(unittest.TestCase):
                 err_msg=msg,
             )
             np.testing.assert_array_equal(
-                got_lrs,
+                got_lrs.names(),
                 ["Lig0_Rec0", "Lig1_Rec1", "Rec2_Lig1", "gene0_Rec1"],
             )
 

@@ -70,22 +70,21 @@ class LRScorer:
         filter_pairs: bool = True,
         spot_indices: npt.NDArray[np.int32] | None = None,
         sparse_result: bool = False,
-    ) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, npt.NDArray[np.str_]]:
-        """The scores of the LR pairs, named 'L_R'; see get_lrs_scores."""
-        names = np.array([name.split("_") for name in lrs.names()]).reshape(-1, 2)
-        pairs = self.adata.var_names.get_indexer(names.ravel()).reshape(names.shape)
+    ) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, LRPairs]:
+        """The scores of the LR pairs, and the pairs scored; see get_lrs_scores."""
+        genes = np.column_stack((lrs.ligands(), lrs.receptors()))
+        pairs = self.adata.var_names.get_indexer(genes.ravel()).reshape(genes.shape)
         found = (pairs >= 0).all(axis=1)
         if filter_pairs:
-            names, pairs = names[found], pairs[found]
+            lrs, pairs = lrs.filter(found), pairs[found]
         elif not found.all():
             raise KeyError(
-                f"Genes not in adata.var_names: {np.unique(names[pairs < 0]).tolist()}"
+                f"Genes not in adata.var_names: {np.unique(genes[pairs < 0]).tolist()}"
             )
         lr_scores = self.score_indices(
             pairs, het_vals, min_expr, spot_indices, sparse_result
         )
-        new_lrs = np.array(list(map("_".join, names)), dtype=str)
-        return lr_scores, new_lrs
+        return lr_scores, lrs
 
     def score_indices(
         self,
@@ -134,7 +133,7 @@ def get_lrs_scores(
     filter_pairs: bool = True,
     spot_indices: npt.NDArray[np.int32] | None = None,
     sparse_result: bool = False,
-) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, npt.NDArray[np.str_]]:
+) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, LRPairs]:
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
 
     For repeated calls on the same sample, make an LRScorer once and call its
@@ -154,7 +153,8 @@ def get_lrs_scores(
         Minimum gene expression of either L or R for spot to be considered to
         have reasonable score.
     filter_pairs: bool
-        Whether to filter to valid pairs or not.
+        Whether to drop the pairs with a gene not in adata.var_names; if not,
+        such a pair raises KeyError.
     spot_indices: npt.NDArray[np.int32]
         Subset of spots to score, given as their integer row positions.
     sparse_result: bool
@@ -167,9 +167,9 @@ def get_lrs_scores(
         Shape (n_scored_spots, n_pairs). LR score for each scored spot (rows in
         the order of spot_indices) and each ligand-receptor pair (columns).
         Sparse with sparse_result, holding the scores above 0.
-    new_lrs: npt.NDArray[np.str_]
-        Shape (n_pairs,). Ligand-receptor pair labels in 'L_R' format
-        (e.g. 'L1_R1'), column-aligned with lr_scores.
+    scored: LRPairs
+        The n_pairs pairs scored, those of lrs with both genes in adata; a column
+        of lr_scores each, in the order of scored.names().
     """
     scorer = LRScorer(adata, neighbours, by_column=False)
     return scorer.score(
