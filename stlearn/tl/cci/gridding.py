@@ -23,7 +23,6 @@ def create_grid(
     bin_um: float = 52.0,
     use_label: str | None = None,
     microns_per_pixel: float | None = None,
-    n_cpus: int | None = None,
     verbose: bool = True,
 ) -> AnnData:
     """Grids single-cell data into squares about `bin_um` microns across, with
@@ -54,8 +53,6 @@ def create_grid(
         Microns per full-resolution pixel. If None, uses
         uns["spatial"][library_id]["scalefactors"]["microns_per_pixel"], which
         the st.io readers set and Space Ranger writes for Visium HD.
-    n_cpus: int
-        Number of threads to use or if None use numba.config.NUMBA_NUM_THREADS
     verbose: bool
         Whether to print the grid's size.
     Returns
