@@ -9,4 +9,4 @@
 
 .. rubric:: Bugs
 
-* Fixed copy-paste error in louvain.py file.
+* Fixed copy-paste error in ``leiden.py`` file.

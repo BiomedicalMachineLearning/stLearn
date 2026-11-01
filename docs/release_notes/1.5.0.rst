@@ -1,21 +1,22 @@
 1.5.0 (2026-11-01)
-------------------
+~~~~~~~~~~~~~~~~~~
 This release contains changes in cell-cell interaction (CCI) mainly
 improvements in runtime and memory usage and requires code to be updated.
 
 .. rubric:: Features
 
-* Memory usage is reduced through chunking (~256MB) in ```st.cci.run```
+* Memory usage is reduced through chunking (~256MB) in ``st.cci.run``
   scoring and permutation testing. On a 5,000,000 bin synthetic Visium HD
   sample with connectomeDB2025, n_pairs=1000, runs take ~24GB in ~10 minutes.
 * SpatialData support added with a new ``st.io`` package. Supporting:
   ``atera``, ``xenium``, ``visium_hd`` and ``visium``. Start of
-  spatial data native plotting with ``st.pl.sdata_plot`` and
-  ``st.pp.highly_variable_genes``.
-* New datasets available to download via ``visium_hd_sge`` and ``atera_sge``
-  and return SpatialData objects.
+  spatial data native plotting with ``st.pl.sdata_plot`` and added
+  AnnData's ``st.pp.highly_variable_genes``.
+* New datasets ``st.datasets.visium_hd_sge`` and ``atera_sge``. All four
+  dataset functions now return SpatialData objects; ``visium_sge`` returned
+  AnnData and ``xenium_sge`` only downloaded the files.
 * Upgraded ligand-receptor databases to connectomeDB2025 (human and mouse).
-* Ligand-receptor are an ``LRPairs`` object instead of an array of
+* Ligand-receptor pairs are an ``LRPairs`` object instead of an array of
   'L_R' strings. It tracks the species and where each pair came from.
   Pairs can be filtered and combined (``lrs.filter(...)``, ``lrs1 | lrs2``).
 
@@ -27,26 +28,31 @@ improvements in runtime and memory usage and requires code to be updated.
     ``"connectomeDB2020"`` (human).
   * ``st.tl.cci.read_lr_pairs(path, species=...)``
     reads your own csv/tsv of ligand and receptor columns.
-  * ``st.tl.cci.load_lrs`` is deprecated; use ``lr_pairs``, or
-    ``lr_pairs(...).names()`` for the old array. Note that ``lr_pairs()``
+  * ``st.tl.cci.load_lrs`` is deprecated and all APIs now use ``lr_pairs``,
+    or ``lr_pairs(...).names()`` for the old array. Note that ``lr_pairs()``
     defaults to connectomeDB2025, where ``load_lrs()`` defaults to
     connectomeDB2020.
+  * Previous databases names ``"connectomeDB2020_lit"`` and
+    ``"connectomeDB2020_put"`` are removed. ``"connectomeDB2020"`` is the
+    human only, literature pairs and the putative pairs are no longer shipped.
   * ``st.add.lr`` is removed; use ``read_lr_pairs`` or ``LRPairs.from_names``.
   * The LR table from ``run`` stores each pair's source in ``var["source"]``
     and the species in ``uns["lr_species"]``, which ``run_lr_go`` uses as its
     default species.
-* Spatial trajectory and other APIs use cluster labels strings
+* Spatial trajectory and other APIs use cluster label strings
   (``cluster="6"``).
-* AnnData backwards compatibility available through ``st.io.attach_spatial``.
+* AnnData backwards compatibility available through ``st.io.attach_spatial``
+  for Visium/Visium HD and ``st.io.attach_spatial_sdata`` for Xenium/Atera.
 * CCI results are now a LR table (AnnData) returned by ``st.tl.cci.run``.
-  A spots x LR pairs with summaries, scores and p-values in ``var``.
-  Downstream functions and plots now take ``lr_results``.
+  A spots x LR pairs with summaries in ``var`` and scores and p-values are
+  in sparse ``layers``. Downstream functions and plots now take
+  ``lr_results``.
 * Support for microns through ``microns_per_pixel``,
   ``st.utils.microns_to_pixels``, ``pixels_to_microns`` and
   ``create_grid(bin_um=)``.
 * SME computes weights only between nearby spots and data is kept sparse
   where possible.
-* ``extract_feature`` supports ConvNeXt and takes ``weights=``.
+* ``st.pp.extract_feature`` supports ConvNeXt and takes ``weights=``.
 * Upgrade libraries: pillow>=13.0.0,<14.0, numba>=0.64.0,
   scikit-image>=0.25.0, torch>=2.5.0, matplotlib>=3.11,<4.0.
 
@@ -57,64 +63,70 @@ improvements in runtime and memory usage and requires code to be updated.
 * A pair listed twice is now tested once - fixed Bug #305.
 * Incorrect labelling in CCI Plot - rows labelled "Senders", columns labelled
   "Receivers" - should be the other way around Bugs #309, #363.
-* Input matrices with NaN are no longer processed in weighting matrix - fixed
-  Bug #310.
+* SME failed with "Input X contains NaN" when a spot had no
+  ``array_row``/``array_col`` - these are now left out of the spot spacing fit
+  - fixed Bug #310.
 * ``st.tl.cci.run(use_label=...)`` never applied cell heterogeneity weighting:
   it read the cell-type data from the wrong key, found nothing, and weighted
   every spot 1, so results were identical with and without ``use_label``. It
   now weights by heterogeneity from cell-type proportions in ``uns[use_label]``
   or per-cell labels in ``obs[use_label]``, and takes ``cell_prop_cutoff``.
   CCI scores and significance change for any run that used ``use_label``.
-* ``run_cci`` changes: p-values calculated via permutation calculation
-  via  are ``(k+1)/(N+1)`` and can nolonger be 0, cutoff is now
-  ``p < p_cutoff``, and permutations are seeded through ``random_state``.
+* ``st.tl.cci.run_cci``: p-values from permutation are now ``(k+1)/(N+1)``
+  and can no longer be 0, cutoff is now ``p < p_cutoff``, and each
+  permutation thread is seeded through ``random_state``.
 * ``spot_mixtures`` matches cell types by exact name.
-* ``n_spots`` in the LR summary counted spots with a score above ``min_expr``,
-  while the ``min_spots`` filter counted spots with a score above 0, so the
-  reported count was not the one the filter used. Both now use score > 0;
-  ``n_spots`` goes up for weakly scoring pairs.
-* ``st.tl.cci.grid`` dropped cells that fell on the last row or column of the
-  grid or exactly on a square boundary. Every cell now lands in exactly one
-  square, so cell counts, summed expression and label proportions change,
-  mostly in edge squares.
-* ``lr_plot`` always drew ``lr_sig_scores`` whatever ``use_label`` asked for,
-  so a plot labelled ``p_adjs`` or ``neg_log10_p_adjs`` showed the masked
-  score instead. It now draws the statistic requested. ``lr_plot`` and
-  ``ccinet_plot`` also draw on a ``fig`` or ``ax`` you pass in rather than
-  opening a new figure, so they can go in subplots.
-* ``lr_plot`` / ``ccinet_plot`` use the ``fig`` / ``ax`` passed in rather
-  than creating their own.
+* When ``min_expr > 0`` ``n_spots`` in the LR summary counted spots with a
+  score above ``min_expr``, while the ``min_spots`` filter counted spots
+  with a score above 0, so the reported count was not the one the filter
+  used. Both now use score > 0.
+* ``st.tl.cci.grid`` dropped cells lying exactly on the inner edge of the
+  last row or column of the grid, and on the outer edges of the corner
+  square.
+* ``st.pl.lr_plot`` statistic names were changed from ``p_val``, ``p_adj`` and
+  ``-log10(p_adj)`` to ``p_vals``, ``p_adjs`` and ``neg_log10_p_adjs``. It
+  always drew ``lr_sig_scores`` whatever ``use_label`` asked for, so a plot
+  labelled ``p_adjs`` or ``neg_log10_p_adjs`` showed the masked score instead.
+  ``st.pl.lr_plot`` and ``st.pl.ccinet_plot`` also draw on a ``fig`` or
+  ``ax`` you passed in rather than opening a new figure, so they can go in
+  subplots.
 * Images in ``uns["spatial"]`` are now uint8 (0-255), not floats in [0, 1].
 * ``extract_feature`` tiles were fed as floats between 0-255 instead of 0-1.
   Tiles are now read as uint8, so ``X_tile_feature`` and ``X_morphology``
   change.
-* ``concatenate_spatial_adata``: the x and y offsets added to ``obsm["spatial"]``
-  for each tile were swapped, so spots landed on the wrong tile unless the tile
-  grid was symmetric. Tiles also keep their aspect ratio instead of being
-  stretched to ``fixed_size``, each sample is scaled by its own scale factor
-  rather than the first sample's, and ``fixed_size`` is (height, width) like a
-  NumPy shape.
-* ``read_merfish`` works again with new notebook.
-* ``read_10x`` reads 16-bit / signed PNGs and reports missing images clearly.
-* ``add.labels`` / ``add_loupe_clusters`` match by barcode
-* ``add.positions`` reads Space Ranger 2.0+ files
-* ``add.parsing`` assigned spots the wrong coordinates (they were written in a
-  different order from the spots in ``obs``), so every plot and anything using
-  ``obsm["spatial"]`` (neighbours, SME, CCI) was wrong. Each spot now gets its
-  own position.
+* ``st.concatenate_spatial_adata``: the x and y offsets added to
+  ``obsm["spatial"]`` for each tile were swapped, so spots on any tile off
+  the diagonal landed on the wrong tile. Tiles also keep their aspect ratio
+  instead of being stretched to ``fixed_size``, each sample is scaled by its
+  own scale factor rather than the first sample's, and ``fixed_size`` is
+  (height, width) like a NumPy shape.
+* ``st.io.read_merfish`` works again with new notebook. Defaults
+  ``spot_diameter_fullres`` to 10 (it was 50).
+* ``st.io.read_10x`` reads 16-bit / signed PNGs and reports missing images
+  clearly.
+* ``st.add.labels`` / ``add_loupe_clusters`` match by barcode.
+* ``st.add.positions`` reads Space Ranger 2.0+ files.
+* ``st.add.parsing`` assigned spots the wrong coordinates (they were interleaved
+  from the spots in ``obs``), so every plot and anything using
+  ``obsm["spatial"]`` was wrong. Each spot now gets its own position.
 * SME fits each axis separately when finding neighbours.
-* Spatial trajectory: ``pseudotime`` orients by median pseudotime (paths may
-  differ), ``shortest_path_spatial_paga`` returns labels, plus fixes to
-  ``local_level``, ``weight_optimizing_local``, ``de_transition_plot`` and the
-  trajectory plots.
-* ``qc_plot`` no longer makes a dense copy.
-* ``stlearn.wrapper`` removed.
-* ``cci.grid`` vectorised and nolonger takes ``n_cpus``.
+* Spatial trajectory: ``st.spatial.trajectory.pseudotime`` orients by median
+  pseudotime (paths may differ), ``shortest_path_spatial_paga`` returns
+  labels, plus fixes to ``local_level``, ``weight_optimizing_local``,
+  ``de_transition_plot`` and the trajectory plots.
+* ``st.pl.qc_plot`` no longer makes a dense copy.
+* Readers were moved to ``st.io``: ``st.read_10x``, ``st.read_xenium``,
+  ``st.read_old_st``, ``st.read_slide_seq``, ``st.read_merfish``,
+  ``st.read_seq_fish`` and ``st.create_stlearn``.
+* ``st.tl.cci.grid`` vectorised and no longer takes ``n_cpus``.
 * ``obsm["spatial"]`` is in full-resolution pixels (was image pixels), matching
-  the rest of stLearn.
+  the rest of stLearn (used by ``st.tl.cci.grid``).
 * SME outputs are sparse when ``X`` is sparse; no weight matrices in ``uns``.
 * Removed: ``extract_feature(cnn_base="xception")``,
   ``deconvolution_plot(data_alpha=)``, ``local_plot(cluster=)``,
   ``Spatial(basis=)``.
-* New defaults: trajectory ``node_size=60`` (area);
-  ``check_trajectory(size_spatial=7, img_key=None)``.
+* New defaults: ``pl.trajectory.pseudotime_plot(node_size=60)`` (area);
+  ``pl.trajectory.check_trajectory(size_spatial=7, img_key=None)``.
+* ``st.spatial.trajectory.pseudotime`` no longer takes ``n_neighbors``,
+  ``use_rep`` or ``run_knn`` - these must be run prior and will throw an
+  exception if there's no neighbourhood graph.
