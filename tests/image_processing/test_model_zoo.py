@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 
 """Tests for Model."""
 
@@ -34,11 +34,11 @@ class TestModelZoo(unittest.TestCase):
         self.assertEqual(out.shape, (10, 2048))
 
     def test_invalid_base_raises(self):
-        with self.assertRaisesRegex(ValueError, "not a valid model"):
+        with self.assertRaisesRegex(ValueError, "Unknown model"):
             Model(base="not_a_real_backbone")
 
     def test_invalid_weights_version_raises(self):
-        with self.assertRaisesRegex(ValueError, "Available versions"):
+        with self.assertRaises(KeyError):
             Model(base="vgg16", weights="v2")
 
     def test_predict_rejects_wrong_ndim(self):
@@ -50,4 +50,10 @@ class TestModelZoo(unittest.TestCase):
         model = Model(base="resnet50", batch_size=4)
         x = np.zeros((5, 224, 224, 4), dtype=np.uint8)  # RGBA
         with self.assertRaisesRegex(ValueError, "3 channels"):
+            model.predict(x)
+
+    def test_predict_rejects_non_uint8_input(self):
+        model = Model(base="resnet50", batch_size=4)
+        x = self._make_input(n=2).astype(np.float32)
+        with self.assertRaisesRegex(TypeError, "uint8"):
             model.predict(x)

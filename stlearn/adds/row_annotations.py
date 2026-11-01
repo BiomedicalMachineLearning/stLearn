@@ -108,11 +108,9 @@ def _read_annotations(
     if isinstance(annotations, (str, Path)):
         path = Path(annotations)
         sep = "\t" if path.suffix in (".tsv", ".txt") else ","
-        annotations = pd.read_csv(path, sep=sep)
+        annotations = pd.read_csv(path, sep=sep, index_col=None if join_column else 0)
 
-    if join_column is None:
-        annotations = annotations.set_index(annotations.columns[0])
-    else:
+    if join_column is not None:
         if join_column not in annotations.columns:
             raise ValueError(
                 f"Column '{join_column}' not found. "

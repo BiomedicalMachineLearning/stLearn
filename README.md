@@ -42,7 +42,7 @@
       <b>License</b>
     </td>
     <td>
-      <a href="https://github.com/BiomedicalMachineLearning/stLearn/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-BSD-blue.svg"
+      <a href="https://github.com/GenomicsMachineLearning/stLearn2/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-BSD-blue.svg"
         alt="LICENSE"></a>
     </td>
   </tr>

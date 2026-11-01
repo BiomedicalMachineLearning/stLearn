@@ -1,27 +1,29 @@
-from collections.abc import Iterable
+"""Cell type heterogeneity: cell type counts per spot neighbourhood, and the
+celltype-celltype interaction counts and permutation p-values behind run_cci.
+"""
 
 import numpy as np
 import pandas as pd
-import scipy.spatial as spatial
 from anndata import AnnData
-from numba import jit, njit, prange
-from numba.typed import List
+from numba import njit, prange
 
-from stlearn.tl.cci.het_helpers import (
-    get_between_spot_edge_array,
-    get_neighbourhoods,
-    init_edge_list,
-)
+from .neighbours import calc_distance, neighbourhood_matrix
 
 
 def count(
     adata: AnnData,
-    use_label: str | None = None,
+    use_label: str,
     use_het: str = "cci_het",
     verbose: bool = True,
     distance: float | None = None,
-) -> AnnData:
-    """Count the cell type densities
+    cell_prop_cutoff: float = 0.2,
+) -> None:
+    """Counts the cell types present in each spot's neighbourhood.
+
+    A cell type is present in a spot when it makes up more than cell_prop_cutoff.
+    The proportions are in adata.uns[use_label] or the label in adata.obs[use_label]
+    for single cells.
+
     Parameters
     ----------
     adata: AnnData
@@ -30,128 +32,96 @@ def count(
         The cell type results to use in counting
     use_het:
         The storage place for result
+    verbose: bool
+        Whether to print where the result is stored.
     distance: float
         Distance to determine the neighbours (default is the nearest neighbour),
         distance=0 means within spot
+    cell_prop_cutoff: float
+        A cell type is present in a spot when its proportion is above this.
 
     Returns
     -------
-    adata: AnnData
-        With the counts of specified clusters in nearby spots stored as
-        adata.uns['het']
+    None
+        The number of cell types in each spot's neighbourhood, the spot itself
+        included, is stored in adata.obsm[use_het], one column.
+
+    Raises
+    ------
+    KeyError
+        If use_label is in neither adata.uns nor adata.obs.
     """
 
-    library_id = next(iter(adata.uns["spatial"].keys()))
+    present = label_proportions(adata, use_label).to_numpy() > cell_prop_cutoff
     # between spot
     if distance != 0:
-        # automatically calculate distance if not given, won't overwrite distance=0
-        # which is within-spot
-        if not distance:
-            # calculate default neighbour distance
-            scalefactors = next(iter(adata.uns["spatial"].values()))["scalefactors"]
-            distance = (
-                scalefactors["spot_diameter_fullres"]
-                * scalefactors[
-                    "tissue_"
-                    + adata.uns["spatial"][library_id]["use_quality"]
-                    + "_scalef"
-                ]
-                * 2
-            )
-
-        counts_ct = pd.DataFrame(0, adata.obs_names, ["CT"])
-
-        # get neighbour spots for each spot
-        coor = adata.obs[["imagerow", "imagecol"]]
-        point_tree = spatial.cKDTree(coor)
-        neighbours = []
-        for spot in adata.obs_names:
-            n_index = point_tree.query_ball_point(
-                np.array(
-                    [adata.obs["imagerow"].loc[spot], adata.obs["imagecol"].loc[spot]],
-                ),
-                distance,
-            )
-            neighbours = [item for item in adata.obs_names[n_index]]
-            counts_ct.loc[spot] = (
-                (adata.uns[use_label].loc[neighbours] > 0.2).sum() > 0
-            ).sum()
-        adata.obsm[use_het] = counts_ct["CT"].values
+        # The default neighbour distance if not given; distance=0 is within-spot.
+        neighbourhoods = neighbourhood_matrix(adata, calc_distance(adata, distance))
+        # The number of cell types present anywhere in each neighbourhood.
+        adata.obsm[use_het] = ((neighbourhoods @ present.astype(np.int32)) > 0).sum(1)
 
     # within spot
     else:
-        # count the cell types with prob > 0.2 in the result of label transfer
-        adata.obsm[use_het] = (adata.uns[use_label] > 0.2).sum(axis=1)
+        adata.obsm[use_het] = present.sum(axis=1)
 
     if verbose:
         print(
-            "Counts for cluster (cell type) diversity stored into adata.uns['"
+            "Counts for cluster (cell type) diversity stored into adata.obsm['"
             + use_het
             + "']",
         )
 
-    return adata
 
+def label_keys(use_label: str) -> tuple[str, str]:
+    """The obs and uns keys holding a label and its mixture proportions.
 
-def get_edges(
-    adata: AnnData,
-    l_bool: np.ndarray,
-    r_bool: np.ndarray,
-    sig_bool: np.ndarray,
-):
-    """Gets a list edges representing significant interactions.
-
-    Parameters
-    ----------
-    adata : AnnData
-        Annotated data object containing spatial transcriptomics data.
-    l_bool : np.ndarray of bool, shape (n_spots,)
-        Boolean array indicating spots where the ligand is expressed.
-    r_bool : np.ndarray of bool, shape (n_spots,)
-        Boolean array indicating spots where the receptor is expressed.
-    sig_bool : np.ndarray of bool, shape (n_spots,)
-        Boolean array indicating spots with significant ligand-receptor interactions.
-
-    Returns
-    -------
-    edge_list_unique:   list<list<str>> Either a list of tuples (directed), or
-                        list of sets (undirected), indicating unique significant
-                        interactions between spots.
+    Label transfer stores the dominant label in obs['predictions'] and the
+    proportions in uns['label_transfer']; other labels use one key for both.
     """
-    # Getting the neighbourhoods #
-    neighbourhood_bcs, neighbourhood_indices = get_neighbourhoods(adata)
+    if use_label in ("label_transfer", "predictions"):
+        return "predictions", "label_transfer"
+    return use_label, use_label
 
-    # Getting the edges to draw in-between #
-    l_spot_indices = np.where(np.logical_and(l_bool, sig_bool))[0]
-    r_spot_indices = np.where(np.logical_and(r_bool, sig_bool))[0]
 
-    # To keep the get_between_spot_edge_array function happy #
-    cell_data = np.ones((1, len(sig_bool)))[0, :].astype(np.float64)
+def label_proportions(adata: AnnData, use_label: str) -> pd.DataFrame:
+    """Spots by cell types: the proportions in adata.uns[use_label], as
+    deconvolution and st.tl.cci.grid store them, or, without those, 1 for each
+    spot's label in adata.obs[use_label] and 0 elsewhere, as for single cells."""
+    obs_key, uns_key = label_keys(use_label)
+    if uns_key in adata.uns:
+        return adata.uns[uns_key].loc[adata.obs_names]
+    if obs_key in adata.obs:
+        return pd.get_dummies(adata.obs[obs_key], dtype=float)
+    raise KeyError(
+        f"No cell types {use_label!r} in adata.uns (proportions per spot) or "
+        "adata.obs (a label per spot)."
+    )
 
-    # Retrieving the edges #
-    gene_bools = [r_bool, l_bool]
-    edge_list = []
-    for i, spot_indices in enumerate([l_spot_indices, r_spot_indices]):
-        # Subsetting to the relevant neighbourhoods #
-        neigh_bcs = List()
-        neigh_indices = List()
-        for j in spot_indices:
-            neigh_bcs.append(neighbourhood_bcs[j])
-            neigh_indices.append(neighbourhood_indices[j])
 
-        # Getting the edges in this neighbourhood #
-        edges = init_edge_list(neighbourhood_bcs)  # Note this has 1 pseudo edge
-        if len(spot_indices) != 0:
-            get_between_spot_edge_array(
-                edges,
-                neigh_bcs,
-                neigh_indices,
-                gene_bools[i],
-                cell_data,
+def get_data_for_counting(adata, use_label, mix_mode, all_set):
+    """Spots by cell types (all_set): the cell type proportions in mixture mode,
+    else 1 for each spot's label and 0 elsewhere."""
+    # First determining how the edge counting needs to be performed #
+    # Ensuring compatibility with current way of adding label_transfer to object
+    obs_key, uns_key = label_keys(use_label)
+
+    # Getting the cell type information; if not mixtures then populate
+    # matrix with one's indicating pure spots.
+    if mix_mode:
+        cell_props = adata.uns[uns_key]
+        # Exact names: "2" in "12" would read cluster 12's proportions for 2.
+        cols = list(cell_props.columns.astype(str))
+        col_order = [cols.index(cell_type) for cell_type in all_set]
+        cell_data = cell_props.iloc[:, col_order].to_numpy(dtype=np.float64)
+    else:
+        cell_labels = adata.obs.loc[:, obs_key].values
+        cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
+        for i, cell_type in enumerate(all_set):
+            cell_data[:, i] = (
+                (cell_labels == cell_type).astype(np.int32).astype(np.float64)
             )
-        edge_list.append(edges[1:])
 
-    return edge_list
+    return cell_data
 
 
 @njit(parallel=True)
@@ -169,8 +139,6 @@ def get_interaction_pvals(
 ):
     """Gets the p-values for the interaction counts."""
 
-    # Set random seed (part of numba)
-    np.random.seed(seed)  # noqa: NPY002 (numba requires legacy API)
     # Counting how many times permutation of spots cell data creates interaction
     # counts greater than that observed, in order to calculate p-values.
     shape_ = (n_perms, int_matrix.shape[0], int_matrix.shape[1])
@@ -184,17 +152,24 @@ def get_interaction_pvals(
     # If dealing with discrete data, no need to randomise columns indendently #
     discrete = np.all(np.logical_or(cell_data == 0, cell_data == 1))
     for i in prange(n_perms):
+        # Each numba thread has its own random state, and a seed set outside prange
+        # doesn't reach the threads drawing the permutations.
+        np.random.seed(seed * n_perms + i)  # noqa: NPY002 (numba needs legacy API)
         # Permuting the cell data by swapping between spots for each column #
         if not discrete:
             perm_data = cell_data.copy()
             for j in range(cell_data.shape[1]):
                 rand_indices = np.random.choice(  # noqa: NPY002
-                    indices, cell_data.shape[0], False
+                    indices,
+                    cell_data.shape[0],
+                    False,
                 )
                 perm_data[:, j] = cell_data[rand_indices, j]
         else:
             rand_indices = np.random.choice(  # noqa: NPY002
-                indices, cell_data.shape[0], False
+                indices,
+                cell_data.shape[0],
+                False,
             )
             perm_data = cell_data[rand_indices, :]
 
@@ -220,7 +195,9 @@ def get_interaction_pvals(
         for row in range(int_matrix.shape[0]):
             for col in range(int_matrix.shape[1]):
                 out[row, col] += greater_counts[i, row, col]
-    int_pvals = out / n_perms
+    # Counting the observed matrix as one of the permutations, so p is at least
+    # 1 / (n_perms + 1) and never 0.
+    int_pvals = (out + 1) / (n_perms + 1)
     return int_pvals
 
 
@@ -274,170 +251,3 @@ def get_interaction_matrix(
             int_matrix[t1, t2] = len(s)
 
     return int_matrix
-
-
-def create_grids(adata: AnnData, num_row: int, num_col: int, radius: int = 1):
-    """Generate screening grids across the tissue sample
-    Parameters
-    ----------
-    adata: AnnData          The data object to generate grids on
-    num_row: int            Number of rows
-    num_col: int            Number of columns
-    radius: int             Radius to determine neighbours (default: 1, nearest)
-
-    Returns
-    -------
-    grids                 The individual grids defined by left and upper side
-    width                   Width of grids
-    height                  Height of grids
-    """
-
-    from itertools import chain
-
-    coor = adata.obs[["imagerow", "imagecol"]]
-    max_x = max(coor["imagecol"])
-    min_x = min(coor["imagecol"])
-    max_y = max(coor["imagerow"])
-    min_y = min(coor["imagerow"])
-    width = (max_x - min_x) / num_col
-    height = (max_y - min_y) / num_row
-    grids, neighbours = [], []
-    # generate grids from top to bottom and left to right
-    for n in range(num_row * num_col):
-        neighbour: Iterable[float] = []
-        x = min_x + n // num_row * width  # left side
-        y = min_y + n % num_row * height  # upper side
-        grids.append([x, y])
-
-        # get neighbouring grids
-        row = n % num_row
-        col = n // num_row
-        a = np.arange(num_row * num_col).reshape(num_col, num_row).T
-        nb_matrix = [
-            [
-                a[i][j] if 0 <= i < a.shape[0] and 0 <= j < a.shape[1] else -1
-                for j in range(col - radius, col + 1 + radius)
-            ]
-            for i in range(row - radius, row + 1 + radius)
-        ]
-        for item in nb_matrix:
-            neighbour = chain(neighbour, item)
-        neighbour = list(set(list(neighbour)))
-        neighbours.append(
-            [
-                grid
-                for grid in neighbour
-                if not (grid == n and radius > 0) and grid != -1
-            ],
-        )
-
-    return grids, width, height, neighbours
-
-
-def count_grid(
-    adata: AnnData,
-    num_row: int = 30,
-    num_col: int = 30,
-    use_label: str | None = None,
-    use_het: str = "cci_het_grid",
-    radius: int = 1,
-    verbose: bool = True,
-) -> AnnData:
-    """Count the cell type densities
-    Parameters
-    ----------
-    adata: AnnData          The data object including the cell types to count
-    num_row: int            Number of grids on height
-    num_col: int            Number of grids on width
-    use_label:              The cell type results to use in counting
-    use_het:                The storage place for result
-    radius: int             Distance to determine the neighbour grids
-                            (default: 1=nearest), radius=0 means within grid
-
-    Returns
-    -------
-    adata (AnnData):        With the counts of specified clusters in each grid of the
-                            tissue stored as adata.uns['het']
-    """
-
-    coor = adata.obs[["imagerow", "imagecol"]]
-    grids, width, height, _ = create_grids(adata, num_row, num_col, radius)
-    counts = pd.DataFrame(0, range(len(grids)), ["CT"])
-    for n, grid in enumerate(grids):
-        spots = coor[
-            (coor["imagecol"] > grid[0])
-            & (coor["imagecol"] < grid[0] + width)
-            & (coor["imagerow"] < grid[1])
-            & (coor["imagerow"] > grid[1] - height)
-        ]
-        counts.loc[n] = (adata.obsm[use_label].loc[spots.index] > 0.2).sum().sum()
-    adata.obsm[use_het] = (counts / counts.max())["CT"]
-
-    if verbose:
-        print(
-            "Counts for cluster (cell type) diversity stored into data.uns['"
-            + use_het
-            + "']",
-        )
-
-    return adata
-
-
-@jit(parallel=True, forceobj=True)
-def grid_parallel(
-    grid_coords: np.ndarray,
-    xedges: np.ndarray,
-    yedges: np.ndarray,
-    n_row: int,
-    n_col: int,
-    xs: np.ndarray,
-    ys: np.ndarray,
-    cell_bcs: np.ndarray,
-    grid_cell_counts: np.ndarray,
-    grid_expr: np.ndarray,
-    cell_expr: np.ndarray,
-    use_label_bool: bool,
-    cell_labels: np.ndarray,
-    cell_info: np.ndarray,
-    cell_set: np.ndarray,
-):
-    """Grids the gene expression information."""
-    # generate grids from top to bottom and left to right
-    for i in prange(n_col):
-        x_left, x_right = xedges[i], xedges[i + 1]
-        for j in range(n_row):
-            n = (i * n_row) + j
-
-            y_down, y_up = yedges[j], yedges[j + 1]
-            grid_coords[n, :] = [(x_right + x_left) / 2, (y_up + y_down) / 2]
-
-            # Now determining the cells within the gridded area #
-            if i != n_col - 1 and j == n_row - 1:  # top left corner
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys <= y_up) & (ys > y_down)
-            elif i == n_col - 1 and j != n_row - 1:  # bottom right corner
-                x_true = (xs > x_left) & (xs <= x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-            else:  # average case
-                x_true = (xs >= x_left) & (xs < x_right)
-                y_true = (ys < y_up) & (ys >= y_down)
-
-            cell_bool = x_true & y_true
-            grid_cells = cell_bcs[cell_bool]
-            # grid_cells_str = ",".join( grid_cells )
-            # grid_bcs.append( grid_cells_str )
-            grid_cell_counts[n] = len(grid_cells)
-            # gridded_cells.extend( grid_cells )
-            # cell_grid.extend( [f"grid_{n}"] * len(grid_cells) )
-
-            # Summing the expression across these cells to get the grid expression #
-            if len(grid_cells) > 0:
-                grid_expr[n, :] = cell_expr[cell_bool, :].sum(axis=0)
-
-            # If we have cell type information, will record #
-            if use_label_bool and len(grid_cells) > 0:
-                grid_cell_types = cell_labels[cell_bool]
-                cell_info[n, :] = [
-                    len(np.where(grid_cell_types == ct)[0]) / len(grid_cell_types)
-                    for ct in cell_set
-                ]

@@ -2,6 +2,8 @@ from typing import Literal
 
 from anndata import AnnData
 
+from stlearn.utils import _check_cluster, _cluster_labels
+
 from .global_level import global_level
 from .local_level import local_level
 from .weight_optimization import weight_optimizing_global, weight_optimizing_local
@@ -12,7 +14,7 @@ def pseudotimespace_global(
     use_label: str = "leiden",
     use_rep: str = "X_pca",
     n_dims: int = 40,
-    list_clusters=None,
+    list_clusters: str | list[str] | None = None,
     model: Literal["spatial", "gene_expression", "mixed"] = "spatial",
     step=0.01,
     k=10,
@@ -30,9 +32,9 @@ def pseudotimespace_global(
         Which obsm location to use.
     n_dims: int, default = 40
         Number of dimensions to use in PCA
-    list_clusters: list, optional
-        List of cluster used to reconstruct spatial trajectory. If None, uses all
-        clusters.
+    list_clusters: list of str, optional
+         Labels of the clusters in ``adata.obs[use_label]`` to reconstruct the spatial
+         trajectory between, e.g. ``["6", "9"]``. If None, uses all clusters.
     model: Literal["spatial", "gene_expression", "mixed"] = "mixed",
         Can be mixed, spatial or gene expression. spatial sets weight to 0,
         gene expression sets weight to 1 and mixed uses the list_clusters, step and k.
@@ -45,12 +47,13 @@ def pseudotimespace_global(
     Anndata
     """
 
-    if list_clusters is None:
-        list_clusters = []
+    labels = _cluster_labels(
+        adata, use_label, [] if list_clusters is None else list_clusters
+    )
 
     if model == "mixed":
         w = weight_optimizing_global(
-            adata, use_label=use_label, list_clusters=list_clusters, step=step, k=k
+            adata, use_label=use_label, list_clusters=labels, step=step, k=k
         )
     elif model == "spatial":
         w = 0
@@ -65,7 +68,7 @@ def pseudotimespace_global(
     global_level(
         adata,
         use_label=use_label,
-        list_clusters=list_clusters,
+        list_clusters=labels,
         w=w,
         use_rep=use_rep,
         n_dims=n_dims,
@@ -77,7 +80,8 @@ def pseudotimespace_global(
 def pseudotimespace_local(
     adata: AnnData,
     use_label: str = "leiden",
-    cluster=None,
+    *,
+    cluster: str,
     w: float | None = None,
 ) -> AnnData | None:
     """\
@@ -90,7 +94,8 @@ def pseudotimespace_local(
     use_label: str, default = "leiden"
         Use label result of cluster method.
     cluster:
-        Cluster used to reconstruct intra regional spatial trajectory.
+        Label of the cluster in ``adata.obs[use_label]`` used to reconstruct the
+        intra-regional spatial trajectory, e.g. ``"6"``.
     w:
         Weighting factor to balance between spatial data and gene expression
     Returns
@@ -98,8 +103,8 @@ def pseudotimespace_local(
     Anndata
     """
 
-    if cluster is None:
-        cluster = []
+    cluster = _check_cluster(adata, use_label, cluster)
+
     if w is None:
         w = weight_optimizing_local(adata, use_label=use_label, cluster=cluster)
 

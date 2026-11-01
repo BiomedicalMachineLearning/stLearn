@@ -23,6 +23,7 @@ from .gene_plot import gene_plot, gene_plot_interactive
 from .mask_plot import plot_mask
 from .non_spatial_plot import non_spatial_plot
 from .qc_plot import qc_plot
+from .sd_plot import sdata_plot
 from .stack_3d_plot import stack_3d_plot
 from .subcluster_plot import subcluster_plot
 
@@ -63,6 +64,7 @@ __all__ = [  # noqa: RUF022
     "plot_mask",
     "non_spatial_plot",
     "qc_plot",
+    "sdata_plot",
     "stack_3d_plot",
     "subcluster_plot",
     # Trajectory functions

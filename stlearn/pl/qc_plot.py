@@ -57,10 +57,11 @@ def qc_plot(
     imagerow = adata.obs["imagerow"]
     from sklearn.preprocessing import MinMaxScaler
 
-    reads_per_spot = adata.to_df().sum(axis=1)
+    # Sums over the matrix as it is, sparse or dense: never a dense copy of it.
+    reads_per_spot = np.asarray(adata.X.sum(axis=1)).ravel()
     scaler = MinMaxScaler(feature_range=spot_size)
-    reads_per_spot_size = scaler.fit_transform(reads_per_spot.to_numpy().reshape(-1, 1))
-    genes_per_spot = adata.to_df().astype(bool).sum(axis=1)
+    reads_per_spot_size = scaler.fit_transform(reads_per_spot.reshape(-1, 1))
+    genes_per_spot = np.asarray((adata.X != 0).sum(axis=1)).ravel()
 
     # plt.rcParams['figure.dpi'] = dpi
 
@@ -112,10 +113,7 @@ def qc_plot(
             size_max,
         ]
         legend_markers = [plt.scatter([], [], s=i, c="grey") for i in markers]
-        labels = [
-            str(int(scaler.inverse_transform(np.array(i).reshape(1, 1))))
-            for i in markers
-        ]
+        labels = [str(int(scaler.inverse_transform([[i]]).item())) for i in markers]
         a.legend(
             handles=legend_markers,
             labels=labels,

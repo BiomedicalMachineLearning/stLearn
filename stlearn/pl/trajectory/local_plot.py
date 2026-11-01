@@ -4,13 +4,14 @@ from anndata import AnnData
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 
+from stlearn.utils import _check_cluster
+
 
 def local_plot(
     adata: AnnData,
-    use_cluster: int,
+    use_cluster: str,
     use_label: str = "leiden",
     reverse: bool = False,
-    cluster: int = 0,
     data_alpha: float = 1.0,
     arrow_alpha: float = 1.0,
     branch_alpha: float = 0.2,
@@ -24,36 +25,39 @@ def local_plot(
     copy: bool = False,
 ) -> AnnData | None:
     """\
-    Local spatial trajectory inference plot.
+    Local spatial trajectory inference plot. Run
+    ``st.spatial.trajectory.pseudotimespace_local`` with ``cluster=use_cluster`` first.
 
     Parameters
     ----------
     adata
         Annotated data matrix.
+    use_cluster
+        Label of the cluster in ``adata.obs[use_label]`` to plot, e.g. ``"6"``.
     use_label
         Use label result of cluster method.
-    use_cluster
-        Choose a specific clusters that will display in the plot.
+    reverse
+        Reverse the direction of the arrows.
     data_alpha
         Opacity of the spot.
     arrow_alpha
         Opacity of the arrow.
     branch_alpha
         Opacity of the branch edge.
-    edge_alpha
-        Opacity of edge in PAGA graph in the tissue.
-    node_alpha
-        Opacity of node in PAGA graph in the tissue.
     spot_size
         Size of the spot.
     show_color_bar
         Show color bar or not.
     show_axis
         Show axis or not.
-    show_legend
-        Show legend or not.
+    show_plot
+        Show the plot or not.
+    name
+        File name used when ``output`` is given.
     dpi
         Set dpi as the resolution for the plot.
+    output
+        Directory to save the plot to.
     copy
         Return a copy instead of writing to adata.
     Returns
@@ -61,32 +65,32 @@ def local_plot(
     Nothing
     """
 
-    tmp = adata.obs[adata.obs[use_label] == str(use_cluster)]
+    use_cluster = _check_cluster(adata, use_label, use_cluster)
+    tmp = adata.obs[adata.obs[use_label] == use_cluster]
     ref_cluster = adata[list(tmp.index)]
 
-    # plt.rcParams['figure.dpi'] = dpi
-    # plt.rcParams['figure.figsize'] = 5, 5
     fig = plt.figure(figsize=(5, 5))
-    ax = fig.gca(projection="3d")
+    ax = fig.add_subplot(projection="3d")
 
+    # Subclusters in the same order local_level used for ST_distance_matrix, so
+    # row i of the matrix is centroids_[i].
+    centroid_dict = adata.uns["centroid_dict"]
     centroids_ = []
-    classes_ = []
-    order_dict = {}
-    order = 0
     for i in ref_cluster.obs["sub_cluster_labels"].unique():
         if (
-            len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+            len(adata.obs[adata.obs["sub_cluster_labels"] == i])
             > adata.uns["threshold_spots"]
         ):
-            classes_.append(i)
-            centroid_dict = adata.uns["centroid_dict"]
-            centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
-            centroids_.append(centroid_dict[int(i)])
-            order_dict[int(i)] = int(order)
-            order += 1
+            centroids_.append(centroid_dict[i])
 
     stdm = adata.uns["ST_distance_matrix"]
     non_abs_dpt = adata.uns["nonabs_dpt_distance_matrix"]
+    if stdm.shape[0] != len(centroids_):
+        raise ValueError(
+            "adata.uns['ST_distance_matrix'] was computed for a different cluster. "
+            "Run st.spatial.trajectory.pseudotimespace_local with "
+            f"cluster={use_cluster!r} first."
+        )
 
     for i in range(0, len(centroids_)):
         if i == len(centroids_) - 1:
@@ -95,14 +99,16 @@ def local_plot(
         while j <= (len(centroids_) - 2 - i):
             j = j + 1
 
-            m = stdm[order_dict[int(classes_[i])], order_dict[int(classes_[i + j])]]
-            dpt_distance = non_abs_dpt[
-                order_dict[int(classes_[i])], order_dict[int(classes_[i + j])]
-            ]
+            m = stdm[i, i + j]
+            dpt_distance = non_abs_dpt[i, i + j]
             y = calculate_y(np.abs(m))
 
             x = np.linspace(centroids_[i][0], centroids_[i + j][0], 1000)
             z = np.linspace(centroids_[i][1], centroids_[i + j][1], 1000)
+
+            # The branch: an arc from one subcluster centroid to the other, rising
+            # out of the tissue plane by the PTS distance m.
+            ax.plot(x, y, z, zorder=10, c="#333333", linewidth=1, alpha=branch_alpha)
 
             if reverse:
                 dpt_distance = -dpt_distance
@@ -146,9 +152,9 @@ def local_plot(
     )
 
     _ = ax.scatter(
-        adata.obs[adata.obs[use_label] != cluster]["imagecol"],
+        adata.obs[adata.obs[use_label] != use_cluster]["imagecol"],
         0,
-        adata.obs[adata.obs[use_label] != cluster]["imagerow"],
+        adata.obs[adata.obs[use_label] != use_cluster]["imagerow"],
         c="grey",
         s=spot_size,
         zorder=0,
@@ -206,8 +212,8 @@ class Arrow3D(FancyArrowPatch):
         FancyArrowPatch.__init__(self, (0, 0), (0, 0), *args, **kwargs)
         self._verts3d = xs, ys, zs
 
-    def draw(self, renderer):
+    def do_3d_projection(self, renderer=None):
         xs3d, ys3d, zs3d = self._verts3d
-        xs, ys, _ = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
         self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
-        FancyArrowPatch.draw(self, renderer)
+        return np.min(zs)

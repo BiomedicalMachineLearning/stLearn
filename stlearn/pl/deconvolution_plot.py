@@ -1,7 +1,8 @@
 import matplotlib as mpl
-import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.colorbar
+import matplotlib.colors
+import matplotlib.pyplot
+import numpy
 from anndata import AnnData
 
 
@@ -12,7 +13,6 @@ def deconvolution_plot(
     cluster: int | str | None = None,
     celltype: str | None = None,
     celltype_threshold: float = 0,
-    data_alpha: float = 1.0,
     threshold: float = 0.0,
     cmap: str = "tab20",
     colors: (
@@ -44,8 +44,6 @@ def deconvolution_plot(
         Use label result of cluster method.
     cluster
         Choose a cluster (in adata.obs[use_label]) that will display in the plot.
-    data_alpha
-        Opacity of the spot.
     tissue_alpha
         Opacity of the tissue.
     cmap
@@ -81,13 +79,13 @@ def deconvolution_plot(
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
 
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = matplotlib.pyplot.subplots(figsize=figsize)
 
     label = adata.obsm["deconvolution"].T
 
     tmp = label.sum(axis=1)
 
-    label_filter = label.loc[tmp[tmp >= np.quantile(tmp, threshold)].index]
+    label_filter = label.loc[tmp[tmp >= numpy.quantile(tmp, threshold)].index]
 
     if cluster is not None:
         base = adata.obs[adata.obs[use_label] == str(cluster)][["imagecol", "imagerow"]]
@@ -102,8 +100,12 @@ def deconvolution_plot(
     label_filter_ = label_filter[base.index]
     if colors is None:
         color_vals: list[int] = list(range(0, len(label_filter_), 1))
-        my_norm: mcolors.Normalize = mpl.colors.Normalize(0, len(label_filter_))
-        my_cmap: mcolors.Colormap = mpl.cm.get_cmap(cmap, len(color_vals))
+        my_norm: matplotlib.colors.Normalize = mpl.colors.Normalize(
+            0, len(label_filter_)
+        )
+        my_cmap: matplotlib.colors.Colormap = mpl.colormaps[cmap].resampled(
+            len(color_vals)
+        )
         colors = [my_cmap(my_norm(i)) for i in color_vals]
 
     for i, xy in enumerate(base.values):
@@ -143,12 +145,12 @@ def deconvolution_plot(
 
     if show_legend:
         ax_cb = fig.add_axes((0.9, 0.25, 0.03, 0.5), axisbelow=False)
-        cb = mpl.pyplot.colorbar.ColorbarBase(
+        cb = matplotlib.colorbar.Colorbar(
             ax_cb, cmap=my_cmap, norm=my_norm, ticks=color_vals
         )
 
         cb.ax.tick_params(size=0)
-        loc = np.array(color_vals) + 0.5
+        loc = numpy.array(color_vals) + 0.5
         cb.set_ticks(loc)
         cb.set_ticklabels(label_filter_.index)
         cb.outline.set_visible(False)
@@ -166,7 +168,6 @@ def deconvolution_plot(
         ax.set_xlim(imagecol.min() - margin, imagecol.max() + margin)
         ax.set_ylim(imagerow.min() - margin, imagerow.max() + margin)
         ax.set_ylim(ax.get_ylim()[::-1])
-        # plt.gca().invert_yaxis()
 
     if name is None:
         name = use_label
@@ -175,4 +176,4 @@ def deconvolution_plot(
         fig.savefig(output + "/" + name, dpi=dpi, bbox_inches="tight", pad_inches=0)
 
     if show:
-        plt.show()
+        matplotlib.pyplot.show()

@@ -14,22 +14,31 @@ import matplotlib
 import matplotlib.axes
 import matplotlib.figure
 import matplotlib.pyplot as plt
-import networkx as nx
-import numpy as np
-import pandas as pd
+import networkx
+import numpy
+import pandas
 from anndata import AnnData
 from scipy.interpolate import griddata
 
-from ..classes import Spatial
-from ..utils import Axes, _AxesSubplot, _read_graph
-from .utils import (
+from stlearn.pl.utils import (
+    add_cluster_legend,
     centroidpython,
     check_sublist,
-    get_cluster,
+    draw_cluster_nodes,
     get_cmap,
     get_colors,
-    get_node,
 )
+from stlearn.utils import (
+    Axes,
+    _AxesSubplot,
+    _check_cluster,
+    _cluster_labels,
+    _read_trajectory,
+)
+
+from ..classes import Spatial
+from ..tl.cci import LR_RESULTS, lr_result
+from ..tl.cci._results import check_lr_results
 
 
 class SpatialBasePlot(Spatial):
@@ -69,13 +78,13 @@ class SpatialBasePlot(Spatial):
         self.image_alpha = image_alpha
         self.cell_alpha = cell_alpha
         self.size = size
-        self.query_adata = self.adata[0].copy()
+        self.query_adata = self.adata[0]
         self.list_clusters = list_clusters
         self.fname = fname
         self.dpi = dpi
 
         if use_raw:
-            self.query_adata = self.adata[0].raw.to_adata().copy()
+            self.query_adata = self.adata[0].raw.to_adata()
 
         if self.list_clusters is not None:
             assert use_label is not None, "Please specify `use_label` parameter!"
@@ -86,20 +95,16 @@ class SpatialBasePlot(Spatial):
             ), "Please choose the right label in `adata.obs.columns`!"
             self.use_label = use_label
 
-            unique_categories = np.array(self.adata[0].obs[use_label].cat.categories)
+            unique_categories = numpy.array(self.adata[0].obs[use_label].cat.categories)
 
             if self.list_clusters is None:
                 self.list_clusters = unique_categories
             else:
-                if not isinstance(self.list_clusters, list):
-                    self.list_clusters = [self.list_clusters]
-
-                clusters_indexes = [
-                    np.where(unique_categories == i)[0][0] for i in self.list_clusters
-                ]
-                self.list_clusters = np.array(self.list_clusters)[
-                    np.argsort(clusters_indexes)
-                ]
+                labels = _cluster_labels(self.adata[0], use_label, self.list_clusters)
+                # Keep the order of the categories.
+                self.list_clusters = numpy.array(
+                    [category for category in unique_categories if category in labels],
+                )
 
             self.query_indexes = self._get_query_clusters_index()
 
@@ -137,26 +142,11 @@ class SpatialBasePlot(Spatial):
             self._crop_image(self.ax, margin)
 
     def _select_clusters(self):
-        def create_query(list_cl, use_label):
-            ini = ""
-            for sub in list_cl:
-                ini = ini + self.use_label + ' == "' + str(sub) + '" | '
-            return ini[:-2]
-
-        if self.list_clusters is not None:
-            # IF not all clusters specified, subset, otherwise just copy.
-            if len(self.list_clusters) != len(
-                self.adata[0].obs[self.use_label].cat.categories
-            ):
-                self.query_adata = self.query_adata[
-                    self.query_adata.obs.query(
-                        create_query(self.list_clusters, self.use_label)
-                    ).index
-                ].copy()
-            else:
-                self.query_adata = self.query_adata.copy()
-        else:
-            self.query_adata = self.query_adata.copy()
+        if self.list_clusters is not None and len(self.list_clusters) != len(
+            self.adata[0].obs[self.use_label].cat.categories,
+        ):
+            in_clusters = self.query_adata.obs[self.use_label].isin(self.list_clusters)
+            self.query_adata = self.query_adata[in_clusters]
 
     def _generate_frame(self):
         import matplotlib.pyplot as plt
@@ -174,7 +164,11 @@ class SpatialBasePlot(Spatial):
 
     def _plot_colorbar(self, plot_ax: Axes, color_bar_label: str = ""):
         cb = plt.colorbar(
-            plot_ax, aspect=10, shrink=0.5, cmap=self.cmap, label=color_bar_label
+            plot_ax,
+            aspect=10,
+            shrink=0.5,
+            cmap=self.cmap,
+            label=color_bar_label,
         )
         cb.outline.set_visible(False)
 
@@ -187,10 +181,20 @@ class SpatialBasePlot(Spatial):
         main_ax.set_ylim(main_ax.get_ylim()[::-1])
 
     def _zoom_image(
-        self, main_ax: _AxesSubplot, zoom_coord: tuple[float, float, float, float]
+        self,
+        main_ax: _AxesSubplot,
+        zoom_coord: tuple[float, float, float, float],
     ):
-        main_ax.set_xlim(zoom_coord[0], zoom_coord[1])
-        main_ax.set_ylim(zoom_coord[3], zoom_coord[2])
+        """Show (x_min, x_max, y_min, y_max), in image pixels: the units of
+        obs["imagecol"] and obs["imagerow"], and of the axes with show_axis."""
+
+        if len(zoom_coord) != 4:
+            raise ValueError(
+                f"zoom_coord must be (x_min, x_max, y_min, y_max), got {zoom_coord}"
+            )
+        x_min, x_max, y_min, y_max = zoom_coord
+        main_ax.set_xlim(x_min, x_max)
+        main_ax.set_ylim(y_max, y_min)
 
     def _add_color_bar(self, plot, color_bar_label: str = ""):
         cb = plt.colorbar(
@@ -210,13 +214,16 @@ class SpatialBasePlot(Spatial):
         full_labels = self.adata[0].obs[self.use_label].cat.categories
 
         for query in self.list_clusters:
-            index_query.append(np.where(np.array(full_labels) == query)[0][0])
+            index_query.append(numpy.where(numpy.array(full_labels) == query)[0][0])
 
         return index_query
 
     def _save_output(self):
         self.fig.savefig(
-            fname=self.fname, bbox_inches="tight", pad_inches=0, dpi=self.dpi
+            fname=self.fname,
+            bbox_inches="tight",
+            pad_inches=0,
+            dpi=self.dpi,
         )
 
 
@@ -291,7 +298,7 @@ class GenePlot(SpatialBasePlot):
 
         method_available = ["CumSum", "NaiveMean"]
         assert method in method_available, "Please choose available method in: " + str(
-            method_available
+            method_available,
         )
         self.method = method
 
@@ -335,7 +342,7 @@ class GenePlot(SpatialBasePlot):
             if self.gene_symbols[0] not in self.query_adata.var_names:
                 raise ValueError(
                     self.gene_symbols[0]
-                    + " is not exist in the data, please try another gene"
+                    + " is not exist in the data, please try another gene",
                 )
 
             colors = self.query_adata[:, self.gene_symbols].to_df().iloc[:, -1]
@@ -356,7 +363,7 @@ class GenePlot(SpatialBasePlot):
 
             if self.method is None:
                 raise ValueError(
-                    "Please provide method to combine genes by NaiveMean/CumSum"
+                    "Please provide method to combine genes by NaiveMean/CumSum",
                 )
 
             if self.method == "NaiveMean":
@@ -371,7 +378,7 @@ class GenePlot(SpatialBasePlot):
 
             return colors
 
-    def _plot_genes(self, gene_values: pd.Series):
+    def _plot_genes(self, gene_values: pandas.Series):
         if self.vmin is None and self.vmax is None:
             vmin = min(gene_values)
             vmax = max(gene_values)
@@ -395,7 +402,7 @@ class GenePlot(SpatialBasePlot):
         )
         return plot
 
-    def _plot_contour(self, gene_values: pd.Series):
+    def _plot_contour(self, gene_values: pandas.Series):
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -404,12 +411,12 @@ class GenePlot(SpatialBasePlot):
         x = imgcol_new
 
         # Interpolating values to get better coverage
-        xi = np.linspace(x.min(), x.max(), 100)
-        yi = np.linspace(y.min(), y.max(), 100)
+        xi = numpy.linspace(x.min(), x.max(), 100)
+        yi = numpy.linspace(y.min(), y.max(), 100)
         zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="linear")
 
         if self.step_size is None:
-            self.step_size = int(np.max(z) / 50)
+            self.step_size = int(numpy.max(z) / 50)
             if self.step_size < 1:
                 self.step_size = 1
         # Creating contour plot with a step size of 1
@@ -418,7 +425,7 @@ class GenePlot(SpatialBasePlot):
             xi,
             yi,
             zi,
-            range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
+            range(0, int(numpy.nanmax(zi)) + self.step_size, self.step_size),
             cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
@@ -426,7 +433,7 @@ class GenePlot(SpatialBasePlot):
 
     def _add_threshold(self, gene_values, threshold):
         if threshold is None:
-            return np.repeat(True, len(gene_values))
+            return numpy.repeat(True, len(gene_values))
         else:
             return gene_values > threshold
 
@@ -524,21 +531,22 @@ class FeaturePlot(SpatialBasePlot):
     def _get_feature_values(self):
         if self.feature not in self.query_adata.obs:
             raise ValueError(
-                self.feature + " is not in data.obs, please try another feature"
+                self.feature + " is not in data.obs, please try another feature",
             )
         elif not isinstance(
-            self.query_adata.obs[self.feature].values[0], numbers.Number
+            self.query_adata.obs[self.feature].values[0],
+            numbers.Number,
         ):
             raise ValueError(
                 self.feature
-                + " in data.obs is not continuous, please try another feature"
+                + " in data.obs is not continuous, please try another feature",
             )
 
         colors = self.query_adata.obs[self.feature]
 
         return colors
 
-    def _plot_feature(self, feature_values: pd.Series):
+    def _plot_feature(self, feature_values: pandas.Series):
         if self.vmin is None and self.vmax is None:
             vmin = min(feature_values)
             vmax = max(feature_values)
@@ -562,7 +570,7 @@ class FeaturePlot(SpatialBasePlot):
         )
         return plot
 
-    def _plot_contour(self, feature_values: pd.Series):
+    def _plot_contour(self, feature_values: pandas.Series):
         imgcol_new = self.query_adata.obsm["spatial"][:, 0] * self.scale_factor
         imgrow_new = self.query_adata.obsm["spatial"][:, 1] * self.scale_factor
         # Extracting x,y and values (z)
@@ -571,12 +579,12 @@ class FeaturePlot(SpatialBasePlot):
         x = imgcol_new
 
         # Interpolating values to get better coverage
-        xi = np.linspace(x.min(), x.max(), 100)
-        yi = np.linspace(y.min(), y.max(), 100)
+        xi = numpy.linspace(x.min(), x.max(), 100)
+        yi = numpy.linspace(y.min(), y.max(), 100)
         zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method="linear")
 
         if self.step_size is None:
-            self.step_size = int(np.max(z) / 50)
+            self.step_size = int(numpy.max(z) / 50)
             if self.step_size < 1:
                 self.step_size = 1
         # Creating contour plot with a step size of 1
@@ -585,7 +593,7 @@ class FeaturePlot(SpatialBasePlot):
             xi,
             yi,
             zi,
-            range(0, int(np.nanmax(zi)) + self.step_size, self.step_size),
+            range(0, int(numpy.nanmax(zi)) + self.step_size, self.step_size),
             cmap=plt.get_cmap(self.cmap) if isinstance(self.cmap, str) else self.cmap,
             alpha=self.cell_alpha,
         )
@@ -593,7 +601,7 @@ class FeaturePlot(SpatialBasePlot):
 
     def _add_threshold(self, feature_values, threshold):
         if threshold is None:
-            return np.repeat(True, len(feature_values))
+            return numpy.repeat(True, len(feature_values))
         else:
             return feature_values > threshold
 
@@ -634,7 +642,7 @@ class ClusterPlot(SpatialBasePlot):
         color_bar_size: float = 10,
         bbox_to_anchor: tuple[float, float] | None = (1, 1),
         # trajectory
-        trajectory_node_size: int = 10,
+        trajectory_node_size: int = 60,
         trajectory_alpha: float = 1.0,
         trajectory_width: float = 2.5,
         trajectory_edge_color: str = "#f4efd3",
@@ -700,7 +708,7 @@ class ClusterPlot(SpatialBasePlot):
         # Plot scatter plot based on pixel of spots
 
         for _, cluster in enumerate(
-            self.query_adata.obs.groupby(self.use_label, observed=True)
+            self.query_adata.obs.groupby(self.use_label, observed=True),
         ):
             # Plot scatter plot based on pixel of spots
             subset_spatial = self.query_adata.obsm["spatial"][
@@ -708,7 +716,7 @@ class ClusterPlot(SpatialBasePlot):
             ]
 
             label_set = self.adata[0].obs[self.use_label].cat.categories.values
-            col_index = np.where(label_set == cluster[0])[0][0]
+            col_index = numpy.where(label_set == cluster[0])[0][0]
             color = self.colors[col_index]
 
             imgcol_new = subset_spatial[:, 0] * self.scale_factor
@@ -736,8 +744,8 @@ class ClusterPlot(SpatialBasePlot):
             labelspacing=0.05,
             fontsize=self.color_bar_size,
             handleheight=1.0,
-            loc="upper right",
-            edgecolor="white",
+            loc="upper left",
+            frameon=False,
         )
         for handle in lgnd.legend_handles:
             handle.set_sizes([20.0])
@@ -747,7 +755,7 @@ class ClusterPlot(SpatialBasePlot):
             label_index = list(
                 self.query_adata.obs[
                     self.query_adata.obs[self.use_label] == str(label)
-                ].index
+                ].index,
             )
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), label_index)
@@ -789,7 +797,7 @@ class ClusterPlot(SpatialBasePlot):
             label_index = list(
                 self.query_adata.obs[
                     self.query_adata.obs[self.use_label] == str(label)
-                ].index
+                ].index,
             )
             subset_spatial = self.query_adata.obsm["spatial"][
                 check_sublist(list(self.query_adata.obs.index), label_index)
@@ -802,15 +810,15 @@ class ClusterPlot(SpatialBasePlot):
                 len(
                     self.query_adata.obs[
                         self.query_adata.obs[self.use_label] == str(label)
-                    ]["sub_cluster_labels"].unique()
+                    ]["sub_cluster_labels"].unique(),
                 )
                 < 2
             ):
                 centroids = [centroidpython(imgcol_new, imgrow_new)]
-                classes = np.array(
+                classes = numpy.array(
                     self.query_adata.obs[
                         self.query_adata.obs[self.use_label] == str(label)
-                    ]["sub_cluster_labels"].unique()
+                    ]["sub_cluster_labels"].unique(),
                 )
 
             else:
@@ -818,7 +826,7 @@ class ClusterPlot(SpatialBasePlot):
 
                 clf = NearestCentroid()
                 clf.fit(
-                    np.column_stack((imgcol_new, imgrow_new)),
+                    numpy.column_stack((imgcol_new, imgrow_new)),
                     self.query_adata.obs[
                         self.query_adata.obs[self.use_label] == str(label)
                     ]["sub_cluster_labels"],
@@ -832,7 +840,7 @@ class ClusterPlot(SpatialBasePlot):
                     len(
                         self.query_adata.obs[
                             self.query_adata.obs["sub_cluster_labels"] == label
-                        ]
+                        ],
                     )
                     > self.threshold_spots
                 ):
@@ -861,73 +869,34 @@ class ClusterPlot(SpatialBasePlot):
                     )
 
     def _add_trajectories(self):
-        used_colors = self.colors
-        cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
-
-        cmap = plt.get_cmap(cmaps)
-
         if "PTS_graph" not in self.adata[0].uns:
             raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
-        tmp = _read_graph(self.adata[0], "PTS_graph")
+        G = _read_trajectory(self.adata[0])
 
-        G = tmp.copy()
+        networkx.draw_networkx_edges(
+            G,
+            pos=self.adata[0].uns["centroid_dict"],
+            ax=self.ax,
+            node_size=self.trajectory_node_size,
+            alpha=self.trajectory_alpha,
+            width=self.trajectory_width,
+            edge_color=self.trajectory_edge_color,
+            arrowsize=self.trajectory_arrowsize,
+            arrowstyle="<|-" if self.reverse else "-|>",
+            connectionstyle="arc3,rad=0.2",
+        )
 
-        remove = [edge for edge in G.edges if 9999 in edge]
-        G.remove_edges_from(remove)
-        G.remove_node(9999)
-        centroid_dict = self.adata[0].uns["centroid_dict"]
-        centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
-        if self.reverse:
-            nx.draw_networkx_edges(
-                G,
-                pos=centroid_dict,
-                node_size=self.trajectory_node_size,
-                alpha=self.trajectory_alpha,
-                width=self.trajectory_width,
-                edge_color=self.trajectory_edge_color,
-                arrowsize=self.trajectory_arrowsize,
-                arrowstyle="<|-",
-                connectionstyle="arc3,rad=0.2",
-            )
-        else:
-            nx.draw_networkx_edges(
-                G,
-                pos=centroid_dict,
-                node_size=self.trajectory_node_size,
-                alpha=self.trajectory_alpha,
-                width=self.trajectory_width,
-                edge_color=self.trajectory_edge_color,
-                arrowsize=self.trajectory_arrowsize,
-                arrowstyle="-|>",
-                connectionstyle="arc3,rad=0.2",
-            )
-
+        # Nodes take their cluster's colour; the legend names the clusters.
         if self.show_node:
-            for node, pos in centroid_dict.items():
-                if str(node) in get_node(
-                    self.list_clusters, self.adata[0].uns["split_node"]
-                ):
-                    self.ax.text(
-                        pos[0],
-                        pos[1],
-                        get_cluster(str(node), self.adata[0].uns["split_node"]),
-                        color="black",
-                        fontsize=8,
-                        zorder=100,
-                        bbox=dict(
-                            facecolor=cmap(
-                                int(
-                                    get_cluster(
-                                        str(node), self.adata[0].uns["split_node"]
-                                    )
-                                )
-                                / (len(used_colors) - 1)
-                            ),
-                            boxstyle="circle",
-                            alpha=1,
-                        ),
-                    )
+            draw_cluster_nodes(
+                self.ax,
+                self.adata[0],
+                self.use_label,
+                list(self.list_clusters),
+                self.colors,
+                size=self.trajectory_node_size,
+            )
 
 
 ################################################################
@@ -962,7 +931,7 @@ class SubClusterPlot(SpatialBasePlot):
         fname: str | None = None,
         dpi: int = 120,
         # subcluster plot param
-        cluster: int = 0,
+        cluster: str = "0",
         threshold_spots: int = 5,
         text_box_size: float = 5,
         bbox_to_anchor: tuple[float, float] | None = (1, 1),
@@ -992,20 +961,33 @@ class SubClusterPlot(SpatialBasePlot):
         )
 
         self.text_box_size = text_box_size
-        self.cluster = cluster
+        self.cluster = _check_cluster(self.adata[0], self.use_label, cluster)
 
+        # Plot
         subset = self._plot_subclusters(threshold_spots)
-
         self._add_subclusters_label(subset)
+
+        # Add legend.
+        if show_color_bar:
+            labels = list(self.mapping)  # already sorted
+            add_cluster_legend(
+                self.ax,
+                labels,
+                [self._subcluster_colour(label) for label in labels],
+                bbox_to_anchor=bbox_to_anchor,
+            )
 
         if fname is not None:
             self._save_output()
 
+    def _subcluster_colour(self, label):
+        norm = matplotlib.colors.Normalize(vmin=min(self.vals), vmax=max(self.vals))
+        m = matplotlib.cm.ScalarMappable(norm=norm, cmap=self.cmap)
+        return matplotlib.colors.to_hex(m.to_rgba(self.mapping[label]))
+
     def _plot_subclusters(self, threshold_spots):
         subset = (
-            self.adata[0]
-            .obs[self.adata[0].obs[self.use_label] == str(self.cluster)]
-            .copy()
+            self.adata[0].obs[self.adata[0].obs[self.use_label] == self.cluster].copy()
         )
 
         meaningful_sub = []
@@ -1016,15 +998,15 @@ class SubClusterPlot(SpatialBasePlot):
         subset = subset[subset["sub_cluster_labels"].isin(meaningful_sub)]
 
         colors = subset["sub_cluster_labels"]
-        sub_anndata = self.adata[0][subset.index, :].copy()
-        self.imgcol_new = sub_anndata.obsm["spatial"][:, 0] * self.scale_factor
-        self.imgrow_new = sub_anndata.obsm["spatial"][:, 1] * self.scale_factor
+        spatial = self.adata[0][subset.index, :].obsm["spatial"]
+        self.imgcol_new = spatial[:, 0] * self.scale_factor
+        self.imgrow_new = spatial[:, 1] * self.scale_factor
 
-        keys = list(np.sort(colors.unique()))
-        self.vals = np.arange(len(keys))
+        keys = list(numpy.sort(colors.unique()))
+        self.vals = numpy.arange(len(keys))
         self.mapping = dict(zip(keys, self.vals, strict=True))
 
-        colors = colors.replace(self.mapping)
+        colors = colors.astype(str).map(self.mapping)
 
         self.ax.scatter(
             self.imgcol_new,
@@ -1041,30 +1023,26 @@ class SubClusterPlot(SpatialBasePlot):
 
     def _add_subclusters_label(self, subset):
         unique_subcluster_labels = len(subset["sub_cluster_labels"].unique())
-        if unique_subcluster_labels == 1:
+        if unique_subcluster_labels == 0:
             print("No unique labels found")
             return
         elif unique_subcluster_labels == 1:
             imgcol = subset["imagecol"].values
             imgrow = subset["imagerow"].values
             centroids = [centroidpython(imgcol, imgrow)]
-            classes = np.array([subset["sub_cluster_labels"][0]])
+            classes = numpy.array([subset["sub_cluster_labels"].iloc[0]])
 
         else:
             from sklearn.neighbors import NearestCentroid
 
             clf = NearestCentroid()
             clf.fit(
-                np.column_stack((self.imgcol_new, self.imgrow_new)),
+                numpy.column_stack((self.imgcol_new, self.imgrow_new)),
                 subset["sub_cluster_labels"],
             )
 
             centroids = clf.centroids_
             classes = clf.classes_
-
-        norm = matplotlib.colors.Normalize(vmin=min(self.vals), vmax=max(self.vals))
-
-        m = matplotlib.cm.ScalarMappable(norm=norm, cmap=self.cmap)
 
         for i, label in enumerate(classes):
             if centroids[i][0] < 1000:
@@ -1082,7 +1060,7 @@ class SubClusterPlot(SpatialBasePlot):
                 fontsize=self.text_box_size,
                 zorder=3,
                 bbox=dict(
-                    facecolor=matplotlib.colors.to_hex(m.to_rgba(self.mapping[label])),
+                    facecolor=self._subcluster_colour(label),
                     boxstyle="round",
                     alpha=0.5,
                 ),
@@ -1121,7 +1099,7 @@ class CciPlot(GenePlot):
         use_raw: bool = False,
         fname: str | None = None,
         dpi: int = 120,
-        # cci_rank param
+        # CCI plot params
         use_het: str = "het",
         contour: bool = False,
         step_size: int | None = None,
@@ -1169,9 +1147,9 @@ class LrResultPlot(GenePlot):
     def __init__(
         self,
         adata: AnnData,
+        lr_results: AnnData | None = None,
         use_lr: Optional["str"] = None,
         use_result: Optional["str"] = "lr_sig_scores",
-        # plotting param
         title: Optional["str"] = None,
         figsize: tuple[float, float] | None = None,
         cmap: str = "Spectral_r",
@@ -1191,29 +1169,25 @@ class LrResultPlot(GenePlot):
         use_raw: bool = False,
         fname: str | None = None,
         dpi: int = 120,
-        # cci_rank param
         contour: bool = False,
         step_size: int | None = None,
         vmin: float | None = None,
         vmax: float | None = None,
         **kwargs,
     ):
-        # Making sure cci_rank has been run first #
-        if "lr_summary" not in adata.uns:
-            raise Exception(
-                "To visualise LR interaction results, must run st.pl.cci.run first."
-            )
+        self.lr_results = check_lr_results(lr_results, adata)
+        lrs = self.lr_results.var_names
 
         # By default, using the LR with most significant spots #
         if use_lr is None:
-            use_lr = adata.uns["lr_summary"].index.values[0]
-        elif use_lr not in adata.uns["lr_summary"].index:
-            raise Exception(f"use_lr must be one of:\n{adata.uns['lr_summary'].index}")
+            use_lr = lrs[0]
+        elif use_lr not in lrs:
+            raise Exception(f"use_lr must be one of:\n{lrs}")
         else:
             use_lr = str(use_lr)
 
         # Checking is a valid result #
-        res_info = ["lr_scores", "p_vals", "p_adjs", "-log10(p_adjs)", "lr_sig_scores"]
+        res_info = LR_RESULTS
         if use_result not in res_info:
             raise Exception(f"use_result must be one of:\n{res_info}")
         else:
@@ -1248,8 +1222,4 @@ class LrResultPlot(GenePlot):
         )
 
     def _get_gene_expression(self):
-        use_lr = self.gene_symbols[0]
-        index = np.where(self.query_adata.uns["lr_summary"].index.values == use_lr)[0][
-            0
-        ]
-        return self.query_adata.obsm[self.use_result][:, index]
+        return lr_result(self.lr_results, self.use_result, self.gene_symbols[0])

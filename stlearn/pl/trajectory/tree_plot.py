@@ -4,8 +4,9 @@ import random
 import networkx as nx
 from anndata import AnnData
 from matplotlib import pyplot as plt
+from natsort import natsorted
 
-from stlearn.utils import _read_graph
+from stlearn.utils import _read_trajectory
 
 
 def tree_plot(
@@ -60,12 +61,10 @@ def tree_plot(
     Nothing
     """
 
-    G = _read_graph(adata, "PTS_graph")
+    G = _read_trajectory(adata)
 
     if library_id is None:
         library_id = next(iter(adata.uns["spatial"].keys()))
-
-    G.remove_node(9999)
 
     start_nodes = []
     disconnected_nodes = []
@@ -77,8 +76,7 @@ def tree_plot(
         if node[1] == 0:
             disconnected_nodes.append(node[0])
 
-    start_nodes = list(set(start_nodes) - set(disconnected_nodes))
-    start_nodes.sort()
+    start_nodes = natsorted(set(start_nodes) - set(disconnected_nodes))
 
     nrows = math.ceil(len(start_nodes) / ncols)
 
@@ -217,11 +215,12 @@ def generate_tree_viz(adata, library_id, use_label, G, axis, starter_node):
 
     colors = []
     for n in tmp_D:
-        subset = obs[obs["sub_cluster_labels"] == str(n)]
+        subset = obs[obs["sub_cluster_labels"] == n]
         if subset.empty:
             colors.append("#CCCCCC")
             continue
-        cluster_idx = int(subset[use_label].iloc[0])
+        label = subset[use_label].iloc[0]
+        cluster_idx = adata.obs[use_label].cat.categories.get_loc(label)
         colors.append(adata.uns[f"{use_label}_colors"][cluster_idx])
 
     nx.draw_networkx_edges(

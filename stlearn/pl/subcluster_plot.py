@@ -33,7 +33,7 @@ def subcluster_plot(
     fname: str | None = None,
     dpi: int = 120,
     # subcluster plot param
-    cluster: int = 0,
+    cluster: str = "0",
     threshold_spots: int = 5,
     text_box_size: float = 5,
     bbox_to_anchor: tuple[float, float] | None = (1, 1),
@@ -43,17 +43,16 @@ def subcluster_plot(
     of dot points in the Spatial transcriptomics array.
 
     Parameters
-    -------------------------------------
+    ----------
     {spatial_base_plot}
     {subcluster_plot}
 
     Examples
-    -------------------------------------
+    --------
     >>> import stlearn as st
     >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> label = "leiden"
-    >>> cluster = 6
-    >>> st.pl.cluster_plot(adata, use_label = label, cluster = cluster)
+    >>> st.pl.subcluster_plot(adata, use_label=label, cluster="6")
 
     """
 

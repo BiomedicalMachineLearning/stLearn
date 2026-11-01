@@ -77,9 +77,7 @@ def plot_mask(
             "We only support vega_10_scanpy, vega_20_scanpy, default_28, default_102"
         )
 
-    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
-
-    cmap_ = plt.cm.get_cmap(cmaps)
+    cmap_ = matplotlib.colors.LinearSegmentedColormap.from_list("", cmap)
 
     plt.rcParams["figure.dpi"] = dpi
 
@@ -99,7 +97,7 @@ def plot_mask(
     key = "mask_annotation"
     if show_spot:
         for _, cluster in enumerate(adata.obs.groupby(key)):
-            if cluster[1][key + "_code"][0] == -1:
+            if cluster[1][key + "_code"].iloc[0] == -1:
                 # Plot scatter plot based on pixel of spots
                 _ = a.scatter(
                     cluster[1]["imagecol"],
@@ -119,7 +117,7 @@ def plot_mask(
                     alpha=spot_alpha,
                     s=spot_size,
                     marker="o",
-                    c=[cmap_(int(cluster[1][key + "_code"][0]) / (len(cmap) - 1))],
+                    c=[cmap_(int(cluster[1][key + "_code"].iloc[0]) / (len(cmap) - 1))],
                 )
 
     if show_legend:

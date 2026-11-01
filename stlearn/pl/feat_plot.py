@@ -49,12 +49,12 @@ def feat_plot(
 
 
     Parameters
-    -------------------------------------
+    ----------
     {spatial_base_plot}
     {feature_plot}
 
     Examples
-    -------------------------------------
+    --------
     >>> import stlearn as st
     >>> adata = st.datasets.visium_sge(sample_id="V1_Breast_Cancer_Block_A_Section_1")
     >>> st.pl.gene_plot(adata, 'dpt_pseudotime')

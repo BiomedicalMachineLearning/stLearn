@@ -18,14 +18,43 @@ Wrapper functions: `wrapper`
 .. autosummary::
    :toctree: api/
 
-   read_10x
-   read_old_st
-   read_slide_seq
-   read_merfish
-   read_seq_fish
-   read_xenium
-   create_stlearn
    convert_scanpy
+   concatenate_spatial_adata
+
+
+Reading and writing: `io`
+------------------------------
+
+.. module:: stlearn.io
+.. currentmodule:: stlearn
+
+.. autosummary::
+   :toctree: api/
+
+   io.read_10x
+   io.read_xenium
+   io.read_old_st
+   io.read_slide_seq
+   io.read_merfish
+   io.read_seq_fish
+   io.create_stlearn
+
+.. autosummary::
+   :toctree: api/
+
+   io.visium
+   io.visium_hd
+   io.xenium
+   io.attach_spatial
+   io.attach_spatial_sdata
+   io.visium_scalefactors
+   io.xenium_pixel_size
+   io.crop_to_cells
+   io.crop_visium_hd
+   io.crop_xenium
+   io.save_table
+   io.checkpoint
+   io.store_checkpoint
 
 
 Add: `add`
@@ -39,9 +68,10 @@ Add: `add`
    add.image
    add.positions
    add.parsing
-   add.lr
    add.labels
    add.annotation
+   add.row_annotations
+   add.polygon_annotations
    add.add_loupe_clusters
    add.add_mask
    add.apply_mask
@@ -58,8 +88,10 @@ Preprocessing: `pp`
    :toctree: api/
 
    pp.filter_genes
+   pp.filter_cells
    pp.log1p
    pp.normalize_total
+   pp.highly_variable_genes
    pp.scale
    pp.neighbors
    pp.tiling
@@ -136,12 +168,25 @@ Tools: `tl`
 
    tl.clustering.kmeans
    tl.clustering.leiden
-   tl.cci.load_lrs
-   tl.cci.grid
+   tl.clustering.annotate_interactive
+   tl.label.run_label_transfer
+   tl.label.run_rctd
+   tl.label.run_single_r
+
+.. autosummary::
+   :toctree: api/
+
+   tl.cci.lr_pairs
+   tl.cci.read_lr_pairs
+   tl.cci.LRPairs
    tl.cci.run
    tl.cci.adj_pvals
+   tl.cci.lr_result
    tl.cci.run_lr_go
    tl.cci.run_cci
+   tl.cci.grid
+   tl.cci.create_grid
+   tl.cci.load_lrs
 
 Plot: `pl`
 -------------------
@@ -154,10 +199,13 @@ Plot: `pl`
    pl.qc_plot
    pl.gene_plot
    pl.gene_plot_interactive
+   pl.feat_plot
    pl.cluster_plot
    pl.cluster_plot_interactive
    pl.subcluster_plot
    pl.non_spatial_plot
+   pl.stack_3d_plot
+   pl.sdata_plot
    pl.deconvolution_plot
    pl.plot_mask
    pl.lr_summary
@@ -166,6 +214,8 @@ Plot: `pl`
    pl.lr_go
    pl.lr_result_plot
    pl.lr_plot
+   pl.het_plot
+   pl.grid_plot
    pl.cci_check
    pl.ccinet_plot
    pl.lr_chord_plot
@@ -184,6 +234,7 @@ Plot: `pl`
    pl.trajectory.tree_plot
    pl.trajectory.transition_markers_plot
    pl.trajectory.de_transition_plot
+   pl.trajectory.check_trajectory
 
 Datasets: `datasets`
 ---------------------------
@@ -194,4 +245,6 @@ Datasets: `datasets`
    :toctree: api/
 
    datasets.visium_sge
+   datasets.visium_hd_sge
    datasets.xenium_sge
+   datasets.atera_sge

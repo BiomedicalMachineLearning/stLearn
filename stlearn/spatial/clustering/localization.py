@@ -76,12 +76,8 @@ def localization(
     adata.obs["sub_cluster_labels"] = pd.Categorical(
         values=np.array(adata.obs["sub_cluster_labels"]).astype("U"),
         categories=natsorted(
-            np.unique(np.array(adata.obs["sub_cluster_labels"])).astype("U")
+            np.unique(np.array(adata.obs["sub_cluster_labels"])).astype("U").tolist()
         ),
     )
-
-    labels_cat = list(map(int, adata.obs[use_label].cat.categories))
-    cat_ind = {labels_cat[i]: i for i in range(len(labels_cat))}
-    adata.uns[use_label + "_index_dict"] = cat_ind
 
     return adata if copy else None

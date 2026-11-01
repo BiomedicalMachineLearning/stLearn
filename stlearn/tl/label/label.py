@@ -32,6 +32,7 @@ def run_label_transfer(
     sc_genes = sc_data.var_names
     st_genes = st_data.var_names
     genes = [gene for gene in sc_genes if gene in st_genes]
+    st_data_orig = st_data
     sc_data = sc_data[:, genes].copy()
     st_data = st_data[:, genes].copy()
 
@@ -55,7 +56,7 @@ def run_label_transfer(
     # Extracting the relevant information from anndatas #
     st_expr_df = st_data.to_df().transpose()
     sc_expr_df = sc_data.to_df().transpose()
-    sc_labels = sc_data.obs[sc_label_col].values.astype(str)
+    sc_labels = sc_data.obs[sc_label_col].to_numpy().astype(str)
     print(f"Finished extracting data. st shape: {st_expr_df.shape}")
 
     # R conversion of the data #
@@ -78,10 +79,10 @@ def run_label_transfer(
     argmaxs = np.argmax(label_transfer_scores.values, axis=1)
     labels = [label_transfer_scores.columns.values[argmax] for argmax in argmaxs]
 
-    st_data.obs[st_label_col] = labels
-    st_data.obs[st_label_col] = st_data.obs[st_label_col].astype("category")
-    label_transfer_scores.index = st_data.obs_names.values
-    st_data.uns[st_label_col] = label_transfer_scores
+    st_data_orig.obs[st_label_col] = labels
+    st_data_orig.obs[st_label_col] = st_data_orig.obs[st_label_col].astype("category")
+    label_transfer_scores.index = st_data_orig.obs_names.values
+    st_data_orig.uns[st_label_col] = label_transfer_scores
 
     print(f"Spot labels added to st_data.obs[{st_label_col}].")
     print(f"Spot label scores added to st_data.uns[{st_label_col}].")
@@ -167,7 +168,7 @@ def run_rctd(
     sc_counts = sc_counts.loc[genes_bool, :]
 
     st_coords = st_data.obs.loc[:, ["imagecol", "imagerow"]]
-    sc_labels = sc_data.obs[sc_label_col].values.astype(str)
+    sc_labels = sc_data.obs[sc_label_col].to_numpy().astype(str)
     print("Finished extracting counts data.")
 
     # Converting to R objects
@@ -257,7 +258,7 @@ def run_single_r(
     # Extracting the relevant information from anndatas #
     st_expr_df = st_data.to_df().transpose()
     sc_expr_df = sc_data.to_df().transpose()
-    sc_labels = sc_data.obs[sc_label_col].values.astype(str)
+    sc_labels = sc_data.obs[sc_label_col].to_numpy().astype(str)
     print("Finished extracting data.")
 
     # R conversion of the data #

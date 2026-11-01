@@ -13,7 +13,9 @@ from matplotlib.patches import Arc, Wedge
 from matplotlib.path import Path
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from stlearn.tl.cci.het import get_edges
+from stlearn.tl.cci._results import check_lr_results
+from stlearn.tl.cci.edges import get_edges
+from stlearn.utils import _image_scalef
 
 # Helper functions for overview plots of the LRs.
 
@@ -35,7 +37,8 @@ def lr_scatter(
     figsize: tuple | None = None,
     show_all: bool = False,
 ):
-    lr_df = data.uns["lr_summary"]
+    """`feature` of the LR pairs against their rank; `data` is the LR table."""
+    lr_df = data.var
 
     if max_text > len(lr_df):
         print(f"Note: max_text ({max_text}) exceeds available LRs ({len(lr_df)})")
@@ -51,7 +54,7 @@ def lr_scatter(
             )
         highlight_lrs = highlight_lrs[0:max_text]
 
-    lrs = lr_df.index.values.astype(str)[0:n_top]
+    lrs = lr_df.index.to_numpy().astype(str)[0:n_top]
     lr_features = data.uns["lrfeatures"]
     lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
     if feature not in lr_df.columns:
@@ -154,7 +157,6 @@ def rank_scatter(
             handles,
             labels2,
             frameon=False,
-            # bbox_to_anchor=(0.1, 0.05, 1., 1.),
             handletextpad=1.6,
             loc="upper right",
             title=point_size_name,
@@ -222,17 +224,7 @@ def add_arrows(
                       an edge, only returns unique edges.
     """
 
-    library_id = next(iter(adata.uns["spatial"].keys()))
-    res = adata.uns["spatial"][library_id]["use_quality"]
-    scale_factor = adata.uns["spatial"][library_id]["scalefactors"][
-        f"tissue_{res}_scalef"
-    ]
-    # scale_factor = 1
-    # scale_factor = 1 # scale factor pretty much isn't used since always parsed as 1
-    # in the base plotting function class.
-    # Reason why is because scale_factor refers to scaling the
-    # image to match the spot spatial coordinates, not the
-    # spots to match the image coordinates!!!
+    scale_factor = _image_scalef(adata)
 
     L_bool = l_expr > min_expr
     R_bool = r_expr > min_expr
@@ -242,15 +234,13 @@ def add_arrows(
 
     # If int_df specified, means need to subset to CCIs which are significant #
     if int_df is not None:
-        spot_bcs = adata.obs_names.values.astype(str)
-        spot_labels = adata.obs[use_label].values.astype(str)
-        label_set = int_df.index.values.astype(str)
+        spot_bcs = adata.obs_names.to_numpy().astype(str)
+        spot_labels = adata.obs[use_label].to_numpy().astype(str)
+        label_set = int_df.index.to_numpy().astype(str)
         interact_bool = int_df.values > 0
 
         # Subsetting to only significant CCI #
         edges_sub: list[list[tuple[str, str]]] = [[], []]  # forward, reverse
-        # ints_2 = np.zeros(int_df.shape) # Just for debugging make sure edge
-        # list re-capitulates edge-counts.
         for i, edges in enumerate([forward_edges, reverse_edges]):
             for _, edge in enumerate(edges):
                 k_ = [0, 1] if i == 0 else [1, 0]
@@ -261,14 +251,8 @@ def add_arrows(
                     0
                 ][0]
                 celltypes = np.array([celltype0, celltype1])
-                # For debugging purposes, used to find indexing bug #
-                # print(label_set[celltypes[k_[0]]],
-                #       label_set[celltypes[k_[1]]])
-                # print( celltypes[k_[0]], celltypes[k_[1]] )
-                # print( interact_bool[celltypes[k_[0]], celltypes[k_[1]]] )
                 if interact_bool[celltypes[k_[0]], celltypes[k_[1]]]:
                     edges_sub[i].append(edge)
-                    # ints_2[celltypes[k_[0]], celltypes[k_[1]]] += 1
 
         forward_edges, reverse_edges = edges_sub
 
@@ -301,11 +285,6 @@ def add_arrows(
                 color_val = scalar_map.to_rgba(edges_means[i][j])
                 edges_colors[i].append(color_val)
 
-        # Need to add new axes #
-        # xlims = ax.get_xlim()
-        # ylims = ax.get_ylim()
-        # left, bottom = xlims[0]*0.025, ylims[0]*0.17
-        # axc = fig.add_axes([0, 0, 0.28, 0.015])
         divider = make_axes_locatable(ax)
         cax = divider.new_vertical(size="2%", pad=0.1, pack_start=True)
         axc = fig.add_axes(cax)
@@ -360,15 +339,11 @@ def add_arrows_by_edges(
         edge_colors = []
     """Adds the arrows using an edge list."""
     for i, edge in enumerate(edges):
-        # cols = ["imagecol", "imagerow"]
         if forward:
             edge0, edge1 = edge
         else:
             edge0, edge1 = edge[::-1]
 
-        # Arrow details #
-        # x1, y1 = adata.obs.loc[edge0, cols].values.astype(float) * scale_factor
-        # x2, y2 = adata.obs.loc[edge1, cols].values.astype(float) * scale_factor
         edge0_index = np.where(adata.obs_names.values == edge0)[0][0]
         edge1_index = np.where(adata.obs_names.values == edge1)[0][0]
         x1, y1 = adata.obsm["spatial"][edge0_index, :] * scale_factor
@@ -391,23 +366,24 @@ def add_arrows_by_edges(
 # Helper functions for cci_map
 
 
-def get_int_df(adata, lr, use_label, sig_interactions, title):
-    """Retrieves the relevant interaction count matrix."""
+def get_int_df(adata, lr, use_label, sig_interactions, title, lr_results=None):
+    """Retrieves the relevant interaction count matrix from the LR table."""
     no_title = title is None
+    results = check_lr_results(lr_results, adata)
     labels_ordered = adata.obs[use_label].cat.categories
     if lr is None:  # No LR inputted, so just use all
         int_df = (
-            adata.uns[f"lr_cci_{use_label}"]
+            results.uns[f"lr_cci_{use_label}"]
             if sig_interactions
-            else adata.uns[f"lr_cci_raw_{use_label}"]
+            else results.uns[f"lr_cci_raw_{use_label}"]
         )[labels_ordered].loc[labels_ordered]
         title = "Cell-Cell LR Interactions" if no_title else title
     else:
         labels_ordered = adata.obs[use_label].cat.categories
         int_df = (
-            adata.uns[f"per_lr_cci_{use_label}"][lr]
+            results.uns[f"per_lr_cci_{use_label}"][lr]
             if sig_interactions
-            else adata.uns[f"per_lr_cci_raw_{use_label}"][lr]
+            else results.uns[f"per_lr_cci_raw_{use_label}"][lr]
         )[labels_ordered].loc[labels_ordered]
 
         title = f"Cell-Cell {lr} interactions" if no_title else title
@@ -729,7 +705,6 @@ def chord_diagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1)
         end = start + y[i]
         arc.append((start, end))
         angle = 0.5 * (start + end)
-        # print(start, end, angle)
         if -30 <= angle <= 210:
             angle -= 90
         else:
@@ -749,9 +724,6 @@ def chord_diagram(X, ax, colors=None, width=0.1, pad=2, chordwidth=0.7, lim=1.1)
 
     for i in range(len(x)):
         start, end = arc[i]
-        # This draws the outter ring #
-        # IdeogramArc(start=start, end=end, radius=1.0, ax=ax,
-        #            color=colors[i], width=width)
         a = Arc(
             xy=(0, 0),
             width=diam,

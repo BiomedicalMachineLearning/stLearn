@@ -1,12 +1,17 @@
-import matplotlib
-import networkx as nx
-import numpy as np
+import networkx
+import numpy
 from anndata import AnnData
 from matplotlib import pyplot as plt
 from numpy._typing import NDArray
 
-from stlearn.pl.utils import get_cluster, get_node
-from stlearn.utils import _read_graph
+from stlearn.pl.utils import (
+    add_cluster_legend,
+    draw_cluster_nodes,
+    get_colors,
+    place_legend_right_of_colour_bar,
+    subclusters_of,
+)
+from stlearn.utils import _cluster_labels, _read_graph, _read_trajectory
 
 
 def pseudotime_plot(
@@ -20,13 +25,14 @@ def pseudotime_plot(
     edge_alpha: float = 0.8,
     node_alpha: float = 1.0,
     spot_size: float | int = 6.5,
-    node_size: float = 5,
+    node_size: float = 60,
     show_color_bar: bool = True,
     show_axis: bool = False,
     show_graph: bool = True,
     show_trajectories: bool = False,
     reverse: bool = False,
     show_node: bool = True,
+    show_legend: bool = True,
     show_plot: bool = True,
     cropped: bool = True,
     margin: int = 100,
@@ -61,17 +67,23 @@ def pseudotime_plot(
     spot_size
         Size of the spot.
     node_size
-        Size of node in PAGA graph in the tissue.
+        Area of the nodes in points^2, as for matplotlib's scatter.
     show_color_bar
         Show color bar or not.
     show_axis
         Show axis or not.
     show_graph
         Show PAGA graph or not.
+    show_trajectories
+        Show the spatial trajectories or not.
+    reverse
+        Reverse the direction of the trajectories.
+    show_node
+        Show the nodes, one per subcluster, in their cluster's colour.
     show_legend
-        Show legend or not.
+        Show the legend of cluster labels for the nodes, outside the plot.
     show_plot
-        Show plot or not
+        Show the plot or not.
     dpi
         DPI of the output figure.
     output
@@ -85,39 +97,30 @@ def pseudotime_plot(
 
     checked_list_clusters: list[str]
     if list_clusters is None:
-        checked_list_clusters = adata.obs[use_label].cat.categories
-    elif isinstance(list_clusters, str):
-        checked_list_clusters = [list_clusters]
+        checked_list_clusters = list(adata.obs[use_label].cat.categories)
     else:
-        checked_list_clusters = list_clusters
+        checked_list_clusters = _cluster_labels(adata, use_label, list_clusters)
 
     imagecol = adata.obs["imagecol"]
     imagerow = adata.obs["imagerow"]
     tmp = adata.obs
     G = _read_graph(adata, "global_graph")
 
-    labels = nx.get_edge_attributes(G, "weight")
-
     result = []
-    query_node = list(
-        map(int, get_node(checked_list_clusters, adata.uns["split_node"]))
-    )
+    query_node = subclusters_of(adata, use_label, checked_list_clusters)
     for edge in G.edges(query_node):
         if (edge[0] in query_node) and (edge[1] in query_node):
             result.append(edge)
 
-    result2 = []
-    for edge in result:
-        try:
-            result2.append(labels[edge] + 0.5)
-        except:
-            result2.append(labels[edge[::-1]] + 0.5)
+    result2 = [G.edges[edge]["weight"] + 0.5 for edge in result]
 
-    fig, a = plt.subplots()
-    if ax is not None:
+    if ax is None:
+        fig, a = plt.subplots()
+    else:
         a = ax
-    centroid_dict: dict[int, NDArray[np.float64]] = adata.uns["centroid_dict"]
-    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
+        fig = a.figure
+
+    centroid_dict: dict[str, NDArray[numpy.float64]] = adata.uns["centroid_dict"]
     dpt = adata.obs[pseudotime_key]
     vmin = min(dpt)
     vmax = max(dpt)
@@ -126,7 +129,8 @@ def pseudotime_plot(
 
     scaler = MinMaxScaler()
     scale = scaler.fit_transform(tmp[pseudotime_key].values.reshape(-1, 1)).reshape(
-        -1, 1
+        -1,
+        1,
     )
 
     plot = a.scatter(
@@ -141,109 +145,61 @@ def pseudotime_plot(
         cmap=plt.get_cmap("viridis"),
         c=scale.reshape(1, -1)[0],
     )
-    used_colors = adata.uns[use_label + "_colors"]
-    cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
-    cmap = plt.get_cmap(cmaps)
     if show_graph:
-        nx.draw_networkx(
+        networkx.draw_networkx_edges(
             G,
             pos=centroid_dict,
-            node_size=1,
-            font_size=0,
-            linewidths=2,
+            ax=a,
             edgelist=result,
             width=result2,
             alpha=edge_alpha,
             edge_color="#333333",
         )
-
-        for node, pos in centroid_dict.items():
-            if str(node) in get_node(checked_list_clusters, adata.uns["split_node"]):
-                a.text(
-                    pos[0],
-                    pos[1],
-                    get_cluster(str(node), adata.uns["split_node"]),
-                    color="white",
-                    fontsize=node_size,
-                    zorder=100,
-                    bbox=dict(
-                        facecolor=cmap(
-                            int(get_cluster(str(node), adata.uns["split_node"]))
-                            / (len(used_colors) - 1)
-                        ),
-                        boxstyle="circle",
-                        alpha=node_alpha,
-                    ),
-                )
-
     if show_trajectories:
-        used_colors = adata.uns[use_label + "_colors"]
-        cmaps = matplotlib.colors.LinearSegmentedColormap.from_list("", used_colors)
-
-        cmap = plt.get_cmap(cmaps)
-
         if "PTS_graph" not in adata.uns:
             raise ValueError("Please run stlearn.spatial.trajectory.pseudotimespace!")
 
-        tmp = _read_graph(adata, "PTS_graph")
+        G = _read_trajectory(adata)
 
-        G = tmp.copy()
-
-        remove = [edge for edge in G.edges if 9999 in edge]
-        G.remove_edges_from(remove)
-        G.remove_node(9999)
-        centroid_dict = adata.uns["centroid_dict"]
-        centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
-        if reverse:
-            nx.draw_networkx_edges(
-                G,
-                pos=centroid_dict,
-                node_size=10,
-                alpha=1.0,
-                width=2.5,
-                edge_color="#f4efd3",
-                arrowsize=17,
-                arrowstyle="<|-",
-                connectionstyle="arc3,rad=0.2",
-            )
-        else:
-            nx.draw_networkx_edges(
-                G,
-                pos=centroid_dict,
-                node_size=10,
-                alpha=1.0,
-                width=2.5,
-                edge_color="#f4efd3",
-                arrowsize=17,
-                arrowstyle="-|>",
-                connectionstyle="arc3,rad=0.2",
-            )
-
-        if show_node:
-            for node, pos in centroid_dict.items():
-                if str(node) in get_node(
-                    checked_list_clusters, adata.uns["split_node"]
-                ):
-                    a.text(
-                        pos[0],
-                        pos[1],
-                        str(get_cluster(str(node), adata.uns["split_node"])),
-                        color="black",
-                        fontsize=8,
-                        zorder=100,
-                        bbox=dict(
-                            facecolor=cmap(
-                                get_cluster(str(node), adata.uns["split_node"])
-                                / (len(used_colors) - 1)
-                            ),
-                            boxstyle="circle",
-                            alpha=1,
-                        ),
-                    )
+        networkx.draw_networkx_edges(
+            G,
+            pos=centroid_dict,
+            ax=a,
+            node_size=node_size,
+            alpha=1.0,
+            width=2.5,
+            edge_color="#f4efd3",
+            arrowsize=17,
+            arrowstyle="<|-" if reverse else "-|>",
+            connectionstyle="arc3,rad=0.2",
+        )
 
     if show_color_bar:
-        cb = plt.colorbar(plot, cmap="viridis")
+        cb = fig.colorbar(plot, ax=a)
         cb.outline.set_visible(False)
+
+    # Nodes take their cluster's colour; the legend names the clusters.
+    if show_node and (show_graph or show_trajectories):
+        colors = get_colors(adata, use_label)
+        drawn = draw_cluster_nodes(
+            a,
+            adata,
+            use_label,
+            checked_list_clusters,
+            colors,
+            size=node_size,
+            alpha=node_alpha,
+        )
+        if show_legend:
+            categories = adata.obs[use_label].cat.categories
+            legend = add_cluster_legend(
+                a,
+                [categories[p] for p in drawn],
+                [colors[p] for p in drawn],
+            )
+            if show_color_bar:
+                # Beyond the colour bar's tick labels, which sit outside its axes.
+                place_legend_right_of_colour_bar(legend, a, cb.ax)
 
     if library_id is None:
         library_id = next(iter(adata.uns["spatial"].keys()))

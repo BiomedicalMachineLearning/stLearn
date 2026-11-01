@@ -12,7 +12,7 @@ def annotate_interactive(
     Allow user to manually define the clusters
 
     Parameters
-    -------------------------------------
+    ----------
     adata
         Annotated data matrix.
     """

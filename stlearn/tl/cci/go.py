@@ -2,7 +2,7 @@
 
 import os
 
-import stlearn.tl.cci.r_helpers as rhs
+from . import r_helpers as rhs
 
 
 def run_go(genes, bg_genes, species, r_path, p_cutoff=0.01, q_cutoff=0.5, onts="BP"):

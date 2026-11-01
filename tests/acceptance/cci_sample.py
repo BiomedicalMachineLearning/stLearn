@@ -2,7 +2,7 @@
 
 8 µm bins on a square grid, with sparse log-normalised expression with ~1.2%
 non-zero values (about what 8 µm bins have), every ligand and receptor gene of
-connectomeDB2020_lit, and cell type proportions. The same arguments always give
+connectomeDB2025, and cell type proportions. The same arguments always give
 the same sample, on any machine.
 """
 

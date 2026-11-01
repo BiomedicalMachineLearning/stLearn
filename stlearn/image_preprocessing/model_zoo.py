@@ -1,23 +1,23 @@
-from typing import ClassVar
+from typing import Literal
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
 
+CNN_BASE = Literal[
+    "resnet50",
+    "vgg16",
+    "inception_v3",
+    "convnext_tiny",
+    "convnext_small",
+    "convnext_base",
+    "convnext_large",
+]
+WEIGHTS_VERSION = Literal["v1", "v2"]
+
 
 class Model:
-    _WEIGHTS: ClassVar[dict] = {
-        ("resnet50", "v1"): models.ResNet50_Weights.IMAGENET1K_V1,
-        ("resnet50", "v2"): models.ResNet50_Weights.IMAGENET1K_V2,
-        ("vgg16", "v1"): models.VGG16_Weights.IMAGENET1K_V1,
-        ("inception_v3", "v1"): models.Inception_V3_Weights.IMAGENET1K_V1,
-        ("convnext_tiny", "v1"): models.ConvNeXt_Tiny_Weights.IMAGENET1K_V1,
-        ("convnext_small", "v1"): models.ConvNeXt_Small_Weights.IMAGENET1K_V1,
-        ("convnext_base", "v1"): models.ConvNeXt_Base_Weights.IMAGENET1K_V1,
-        ("convnext_large", "v1"): models.ConvNeXt_Large_Weights.IMAGENET1K_V1,
-    }
-
     def __init__(self, base: str, batch_size: int = 32, weights: str = "v1"):
         self.base = base
         self.batch_size = batch_size
@@ -33,71 +33,38 @@ class Model:
         self.model = self.model.to(self.device)
         self.model.eval()
 
-    def _resolve_weights(self):
-        legal = {v for b, v in self._WEIGHTS if b == self.base}
-        if not legal:
-            raise ValueError(f"{self.base!r} is not a valid model")
-        if self.weights_version not in legal:
-            raise ValueError(
-                f"weights={self.weights_version!r} is not available for "
-                f"base={self.base!r}. Available versions: {sorted(legal)}",
-            )
-        return self._WEIGHTS[(self.base, self.weights_version)]
-
     def _load_model(self):
-        if self.base == "resnet50":
-            weights = self._resolve_weights()
-            net = models.resnet50(weights=weights)
-            net.fc = nn.Identity()  # → 2048-d pooled features
-            weight_transforms = weights.transforms()
+        weights = models.get_model_weights(self.base)[
+            f"IMAGENET1K_{self.weights_version.upper()}"
+        ]
+        net = models.get_model(self.base, weights=weights)
 
+        # Drop each network's classification layer so it outputs pooled
+        # features (as Keras include_top=False, pooling="avg").
+        if self.base == "resnet50":
+            # 2048-d
+            net.fc = nn.Identity()
         elif self.base == "vgg16":
-            weights = self._resolve_weights()
-            base_net = models.vgg16(weights=weights)
-            # Keras include_top=False, pooling="avg" = conv stack + global avg pool.
             net = nn.Sequential(
-                base_net.features,
+                net.features,
                 nn.AdaptiveAvgPool2d((1, 1)),
                 nn.Flatten(),
-            )
-            weight_transforms = weights.transforms()
-
+            )  # 512-d
         elif self.base == "inception_v3":
-            weights = self._resolve_weights()
-            # Load the pretrained weights
-            net = models.inception_v3(weights=weights, aux_logits=True)
-            # Disable the aux branch at forward time - lowercase
+            # The pretrained weights include the aux branch; skip it in forward.
             net.aux_logits = False
+            # 2048-d
             net.fc = nn.Identity()
-            weight_transforms = weights.transforms()
-
-        elif self.base in (
-            "convnext_tiny",
-            "convnext_small",
-            "convnext_base",
-            "convnext_large",
-        ):
-            weights = self._resolve_weights()
-            builder = getattr(models, self.base)
-            net = builder(weights=weights)
-            # C = 768/768/1024/1536 for Tiny/Small/Base/Large
-            # ConvNeXt's head is: avgpool → LayerNorm2d → Flatten → Linear(C, 1000)
-            # We want everything except the final Linear, so the model outputs
-            # C-d pooled features (analogous to include_top=False, pooling="avg").
+        elif self.base.startswith("convnext_"):
+            # Head: avgpool -> LayerNorm2d -> Flatten -> Linear(C, 1000); drop the
+            # Linear. C = 768/768/1024/1536 for tiny/small/base/large.
             net.classifier[2] = nn.Identity()
-            weight_transforms = weights.transforms()
         else:
-            raise ValueError(f"{self.base!r} is not a valid model")
+            raise ValueError(f"No feature head defined for {self.base!r}")
 
-        # Bridge NHWC numpy → CHW float tensor, then apply the weights'
-        # own preprocessing (resize, normalize, etc.). We use Compose just
-        # to chain ToTensor with the weights transform.
-        preprocess = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                weight_transforms,
-            ],
-        )
+        # Bridge NHWC numpy -> CHW float tensor, then apply the weights' own
+        # preprocessing (resize, crop, normalise).
+        preprocess = transforms.Compose([transforms.ToTensor(), weights.transforms()])
         return net, preprocess
 
     @torch.inference_mode()
@@ -110,7 +77,11 @@ class Model:
                 f"For RGBA images, drop the alpha channel; for grayscale, "
                 f"replicate to 3 channels."
             )
-
+        if x.dtype != np.uint8:
+            raise TypeError(
+                f"expected uint8 pixel values (0-255), got {x.dtype}; "
+                "ToTensor only rescales uint8 input"
+            )
         outputs = []
         for start in range(0, len(x), self.batch_size):
             chunk = x[start : start + self.batch_size]

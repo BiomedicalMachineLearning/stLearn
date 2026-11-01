@@ -2,17 +2,20 @@ import numpy as np
 from anndata import AnnData
 from scipy.spatial.distance import cdist
 
+from stlearn.utils import _check_cluster
+
 
 def local_level(
     adata: AnnData,
     use_label: str = "leiden",
-    cluster: int = 9,
+    *,
+    cluster: str,
     w: float = 0.5,
     return_matrix: bool = False,
     verbose: bool = True,
 ) -> np.ndarray | None:
     """\
-    Perform local sptial trajectory inference (required run pseudotime first).
+    Perform local spatial trajectory inference (requires running pseudotime first).
 
     Parameters
     ----------
@@ -21,7 +24,8 @@ def local_level(
     use_label:
         Use label result of cluster method.
     cluster:
-        Choose cluster to perform local spatial trajectory inference.
+        Label of the cluster in ``adata.obs[use_label]`` to infer the local
+        trajectory for, e.g. ``"6"``.
     w: float, default=0.5
         Pseudo-spatio-temporal distance weight (balance between spatial effect and DPT)
     return_matrix:
@@ -33,26 +37,26 @@ def local_level(
     np.ndarray: the STDM (spatio-temporal distance matrix) - weighted combination of
     spatial and temporal distances.
 
-    adata["nonabs_dpt_distance_matrix"]: np.ndarray
+    adata.uns["nonabs_dpt_distance_matrix"]: np.ndarray
         Pseudotime distance (difference between values) matrix
 
-    adata["nonabs_dpt_distance_matrix"]: np.ndarray
+    adata.uns["ST_distance_matrix"]: np.ndarray
         STDM
     """
+    cluster = _check_cluster(adata, use_label, cluster)
     if verbose:
-        print("Start construct trajectory for subcluster " + str(cluster))
+        print("Start construct trajectory for cluster " + cluster)
 
-    tmp = adata.obs[adata.obs[use_label] == str(cluster)]
+    tmp = adata.obs[adata.obs[use_label] == cluster]
     cluster_data = adata[list(tmp.index)]
 
     list_cluster = cluster_data.obs["sub_cluster_labels"].unique()
     dpt = []
     sd = []
     centroid_dict = cluster_data.uns["centroid_dict"]
-    centroid_dict = {int(key): centroid_dict[key] for key in centroid_dict}
     for i in list_cluster:
         if (
-            len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
+            len(adata.obs[adata.obs["sub_cluster_labels"] == i])
             > adata.uns["threshold_spots"]
         ):
             dpt.append(
@@ -60,16 +64,19 @@ def local_level(
                     "dpt_pseudotime"
                 ].max()
             )
-            sd.append(centroid_dict[int(i)])
-    dm = cdist(
-        np.array(dpt).reshape(-1, 1),
-        np.array(dpt).reshape(-1, 1),
-        lambda u, v: np.abs(u - v),
-    )
+            sd.append(centroid_dict[i])
 
-    non_abs_dm = cdist(
-        np.array(dpt).reshape(-1, 1), np.array(dpt).reshape(-1, 1), lambda u, v: u - v
-    )
+    if len(dpt) < 2:
+        raise ValueError(
+            f"Cluster {cluster!r} has fewer than two subclusters with more than "
+            f"{adata.uns['threshold_spots']} spots, so it has no local trajectory. "
+            "Choose another cluster, or re-run pseudotime with a smaller eps or "
+            "threshold_spots."
+        )
+
+    dpt_values = np.asarray(dpt, dtype=float)
+    non_abs_dm = dpt_values[:, None] - dpt_values[None, :]
+    dm = np.abs(non_abs_dm)
     adata.uns["nonabs_dpt_distance_matrix"] = non_abs_dm
 
     scale_dm = dm / np.max(dm)

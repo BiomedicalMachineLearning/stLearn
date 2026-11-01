@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import geopandas as gpd
+import spatialdata
 import spatialdata.models as models
 
 from stlearn._compat import get_adata, is_spatial_data
@@ -29,7 +30,8 @@ def polygon_annotations(
     is_sd = is_spatial_data(data)
 
     if copy:
-        data = data.copy()
+        # SpatialData has no .copy(); deepcopy also copies its images into memory.
+        data = spatialdata.deepcopy(data) if is_sd else data.copy()
     adata = get_adata(data, table_key)
 
     if isinstance(annotations, (str, Path)):

@@ -125,8 +125,8 @@ def de_transition_plot(
     for i, rect in enumerate(rects):
         try:
             gene_name = pos_1.index[i]
-            p_value = "{:.2E}".format(Decimal(str(pos_1["p-value"][i])))
-        except:
+            p_value = "{:.2E}".format(Decimal(str(pos_1["p-value"].iloc[i])))
+        except IndexError:
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
@@ -150,8 +150,8 @@ def de_transition_plot(
     for i, rect in enumerate(rects):
         try:
             gene_name = neg_1.index[i]
-            p_value = "{:.2E}".format(Decimal(str(neg_1["p-value"][i])))
-        except:
+            p_value = "{:.2E}".format(Decimal(str(neg_1["p-value"].iloc[i])))
+        except IndexError:
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}
@@ -175,8 +175,8 @@ def de_transition_plot(
     for i, rect in enumerate(rects):
         try:
             gene_name = pos_2.index[i]
-            p_value = "{:.2E}".format(Decimal(str(pos_2["p-value"][i])))
-        except:
+            p_value = "{:.2E}".format(Decimal(str(pos_2["p-value"].iloc[i])))
+        except IndexError:
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "left", "verticalalignment": "center"}
@@ -200,8 +200,8 @@ def de_transition_plot(
     for i, rect in enumerate(rects):
         try:
             gene_name = neg_2.index[i]
-            p_value = "{:.2E}".format(Decimal(str(neg_2["p-value"][i])))
-        except:
+            p_value = "{:.2E}".format(Decimal(str(neg_2["p-value"].iloc[i])))
+        except IndexError:
             gene_name = ""
             p_value = ""
         alignment = {"horizontalalignment": "right", "verticalalignment": "center"}

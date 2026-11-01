@@ -1,10 +1,12 @@
 from anndata import AnnData
 
+from ..utils import _quality_scalef
+
 
 def convert_scanpy(
     adata: AnnData,
     use_quality: str = "hires",
-) -> AnnData | None:
+) -> AnnData:
     adata.var_names_make_unique()
 
     library_id = next(iter(adata.uns["spatial"].keys()))
@@ -12,9 +14,7 @@ def convert_scanpy(
     if use_quality == "fulres":
         image_coor = adata.obsm["spatial"]
     else:
-        scale = adata.uns["spatial"][library_id]["scalefactors"][
-            "tissue_" + use_quality + "_scalef"
-        ]
+        scale = _quality_scalef(adata.uns["spatial"][library_id], use_quality)
         image_coor = adata.obsm["spatial"] * scale
 
     adata.obs["imagecol"] = image_coor[:, 0]

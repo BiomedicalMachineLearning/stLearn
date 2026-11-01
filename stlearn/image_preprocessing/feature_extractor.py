@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import get_args
 
 import numpy as np
 from anndata import AnnData
@@ -6,18 +6,18 @@ from PIL import Image
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 
-from .model_zoo import Model
-
-_CNN_BASE = Literal["resnet50", "vgg16", "inception_v3", "xception"]
+from .model_zoo import CNN_BASE, WEIGHTS_VERSION, Model
 
 
 def extract_feature(
     adata: AnnData,
-    cnn_base: _CNN_BASE = "resnet50",
+    cnn_base: CNN_BASE = "resnet50",
     n_components: int = 50,
     seeds: int = 1,
     verbose: bool = False,
     copy: bool = False,
+    *,
+    weights: WEIGHTS_VERSION = "v1",
 ) -> AnnData | None:
     """\
     Extract latent morphological features from H&E images using pre-trained
@@ -28,8 +28,9 @@ def extract_feature(
     adata:
         Annotated data matrix.
     cnn_base:
-        Established convolutional neural network bases
-        choose one from ['resnet50', 'vgg16', 'inception_v3', 'xception']
+        Pretrained network used to extract tile features. One of 'resnet50',
+        'vgg16', 'inception_v3', 'convnext_tiny', 'convnext_small',
+        'convnext_base' or 'convnext_large'.
     n_components:
         Number of principal components to compute for latent morphological features
     seeds:
@@ -38,6 +39,9 @@ def extract_feature(
         Verbose output
     copy:
         Return a copy instead of writing to adata.
+    weights:
+        Version of the ImageNet weights for `cnn_base`. 'v1' exists for every
+        network; 'v2' only for 'resnet50'.
     Returns
     -------
     Depending on `copy`, returns or updates `adata` with the following fields.
@@ -49,12 +53,18 @@ def extract_feature(
         If any image fails to process or if tile_path column is missing.
     """
 
+    if cnn_base not in get_args(CNN_BASE):
+        raise ValueError(
+            f"cnn_base={cnn_base!r} is not supported; choose one of "
+            f"{list(get_args(CNN_BASE))}"
+        )
+
     adata = adata.copy() if copy else adata
 
     if "tile_path" not in adata.obs:
         raise ValueError("Please run the function stlearn.pp.tiling")
 
-    model = Model(cnn_base)
+    model = Model(cnn_base, weights=weights)
 
     # Pre-allocate feature matrix, spot names and arrays to avoid overhead
     tile_paths = adata.obs["tile_path"].values
@@ -94,7 +104,7 @@ def extract_feature(
 def _read_and_predict(path, model, verbose=False):
     try:
         with Image.open(path) as img:
-            tile = np.asarray(img, dtype=np.float32)
+            tile = np.array(img.convert("RGB"))
 
         if verbose:
             print(f"Loaded image: {path}")

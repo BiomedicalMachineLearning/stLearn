@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 from anndata import AnnData
+from natsort import natsorted
 from networkx import Graph
 from sklearn.neighbors import NearestCentroid
 
@@ -109,66 +110,49 @@ def pseudotime(
 
     # Filter by threshold
     cnt_matrix[cnt_matrix < threshold] = 0.0
-    cnt_matrix = pd.DataFrame(cnt_matrix)
 
-    # Mapping leiden label to subcluster
-    cat_inds = adata.uns[use_label + "_index_dict"]
+    # Subclusters of each cluster, keyed by the cluster's position in the
+    # categories, which is also its row in the PAGA matrix.
     split_node = {}
-    for label in adata.obs[use_label].cat.categories:
+    for position, label in enumerate(adata.obs[use_label].cat.categories):
         meaningful_sub = []
         for i in adata.obs[adata.obs[use_label] == label][
             "sub_cluster_labels"
         ].unique():
-            if (
-                len(adata.obs[adata.obs["sub_cluster_labels"] == str(i)])
-                > threshold_spots
-            ):
+            if len(adata.obs[adata.obs["sub_cluster_labels"] == i]) > threshold_spots:
                 meaningful_sub.append(i)
 
-        label = cat_inds[int(label)]
-        split_node[label] = meaningful_sub
+        split_node[position] = meaningful_sub
 
     adata.uns["threshold_spots"] = threshold_spots
-    # split_node has string keys for rest of code/plotting (names a strings)
+    # Stored with the positions as strings: anndata only saves string keys.
     adata.uns["split_node"] = {str(k): v for k, v in split_node.items()}
 
-    # Replicate leiden label row to prepare for subcluster connection
-    # matrix construction
-    replicate_list = np.array([])
-    for i in range(0, len(cnt_matrix)):
-        replicate_list = np.concatenate(
-            [replicate_list, np.array([i] * len(split_node[i]))],
-        )
-
-    # Connection matrix for subcluster
-    cnt_matrix = cnt_matrix.loc[replicate_list.astype(int), replicate_list.astype(int)]
-
-    # Replace column and index
-    cnt_matrix.columns = replace_with_dict(cnt_matrix.columns, split_node)
-    cnt_matrix.index = replace_with_dict(cnt_matrix.index, split_node)
-
-    # Sort column and index
-    cnt_matrix = cnt_matrix.loc[
-        selection_sort(np.array(cnt_matrix.columns)),
-        selection_sort(np.array(cnt_matrix.index)),
-    ]
+    # Connection matrix between subclusters, in label order: each subcluster
+    # takes its cluster's row and column of the PAGA matrix.
+    cluster_of = {
+        subcluster: position
+        for position, subclusters in split_node.items()
+        for subcluster in subclusters
+    }
+    subclusters = natsorted(cluster_of)
+    rows = [cluster_of[subcluster] for subcluster in subclusters]
+    subcluster_matrix = pd.DataFrame(
+        cnt_matrix[np.ix_(rows, rows)], index=subclusters, columns=subclusters
+    )
 
     # Create a connection graph of subclusters
-    graph = nx.from_pandas_adjacency(cnt_matrix)
-    graph_nodes = list(range(len(graph.nodes)))
+    graph = nx.from_pandas_adjacency(subcluster_matrix)
 
-    node_convert = {}
-    for pair in zip(list(graph.nodes), graph_nodes, strict=True):
-        node_convert[pair[1]] = pair[0]
-
-    adata.uns["global_graph"] = {}
-    adata.uns["global_graph"]["graph"] = nx.to_scipy_sparse_array(graph)
-    adata.uns["global_graph"]["node_dict"] = node_convert
+    adata.uns["global_graph"] = {
+        "graph": nx.to_scipy_sparse_array(graph),
+        "nodes": list(graph.nodes),
+    }
 
     # Create centroid dict for subclusters
     clf = NearestCentroid()
     clf.fit(adata.obs[["imagecol", "imagerow"]].values, adata.obs["sub_cluster_labels"])
-    centroid_dict = dict(zip(clf.classes_.astype(int), clf.centroids_, strict=True))
+    centroid_dict = dict(zip(clf.classes_.tolist(), clf.centroids_, strict=True))
 
     def closest_node(node, nodes):
         nodes = np.asarray(nodes)
@@ -179,8 +163,8 @@ def pseudotime(
         cl_points = adata.obs[adata.obs["sub_cluster_labels"] == cl][
             ["imagecol", "imagerow"]
         ].values
-        new_centroid = cl_points[closest_node(centroid_dict[int(cl)], cl_points)]
-        centroid_dict[int(cl)] = new_centroid
+        new_centroid = cl_points[closest_node(centroid_dict[cl], cl_points)]
+        centroid_dict[cl] = new_centroid
 
     adata.uns["centroid_dict"] = centroid_dict
 
@@ -195,25 +179,6 @@ def pseudotime(
     return adata if copy else None
 
 
-# Utils
-def replace_with_dict(ar, dic):
-    # Extract out keys and values
-    k = np.array(list(dic.keys()), dtype=object)
-    v = np.array(list(dic.values()), dtype=object)
-
-    out = np.zeros_like(ar)
-    for key, val in zip(k, v, strict=True):
-        out[ar == key] = val
-    return out
-
-
-def selection_sort(x):
-    for i in range(len(x)):
-        swap = i + np.argmin(x[i:])
-        x[i], x[swap] = (x[swap], x[i])
-    return x
-
-
 def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key):
     # Recreate original PAGA graph.
     graph = nx.from_numpy_array(adata.uns["paga"]["connectivities"].toarray())
@@ -226,7 +191,9 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
     # Convert undirected graph to directed graph by pseudotime.
     directed_graph = orient_by_pseudotime(graph, node_pseudotime)
 
-    # Extract all available paths
+    # Paths are stored as cluster labels. The keys use the clusters' positions:
+    # labels can hold characters, like "/", that anndata can't save in keys.
+    categories = adata.obs[use_label].cat.categories
     all_paths = {}
 
     for source in directed_graph.nodes:
@@ -238,7 +205,9 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
             )
             for i, path in enumerate(paths):
                 if len(path) < max_nodes:
-                    all_paths[str(i) + "_" + str(source) + "_" + str(target)] = path
+                    all_paths[str(i) + "_" + str(source) + "_" + str(target)] = [
+                        categories[node] for node in path
+                    ]
 
     adata.uns["available_paths"] = all_paths
     print(
@@ -250,9 +219,11 @@ def store_available_paths(adata, threshold, use_label, max_nodes, pseudotime_key
 
 
 def node_pseudotime_summary(adata, graph: Graph, pseudotime_key, use_label):
+    # Graph nodes are PAGA rows, i.e. positions in the categories.
+    categories = adata.obs[use_label].cat.categories
     summary = {}
     for node in graph.nodes:
-        s = adata.obs.query(f"{use_label} == '{node}'")[pseudotime_key]
+        s = adata.obs.loc[adata.obs[use_label] == categories[node], pseudotime_key]
         finite = s[np.isfinite(s)]
         summary[node] = float(finite.median()) if len(finite) else np.nan
     return summary
