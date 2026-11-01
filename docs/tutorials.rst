@@ -23,7 +23,7 @@ Tutorials
 .. nbgallery::
    :caption: Supporting platforms:
 
-    tutorials/read_merfish
+   tutorials/read_merfish
 
 .. nbgallery::
    :caption: Integration with other spatial tools:
