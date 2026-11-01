@@ -6,7 +6,8 @@ improvements in runtime and memory usage and requires code to be updated.
 .. rubric:: Features
 
 * Memory usage is reduced through chunking (~256MB) in ```st.cci.run```
-  scoring and permutation testing ~5,000,000 bins @ 20GB in ~20 minutes.
+  scoring and permutation testing. On a 5,000,000 bin synthetic Visium HD
+  sample with connectomeDB2025, n_pairs=1000, runs take ~24GB in ~10 minutes.
 * SpatialData support added with a new ``st.io`` package. Supporting:
   ``atera``, ``xenium``, ``visium_hd`` and ``visium``. Start of
   spatial data native plotting with ``st.pl.sdata_plot`` and
