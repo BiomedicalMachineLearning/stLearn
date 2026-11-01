@@ -90,8 +90,8 @@ jupyter = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/GenomicsMachineLearning/stLearn2"
-Repository = "https://github.com/GenomicsMachineLearning/stLearn2"
+Homepage = "https://github.com/BiomedicalMachineLearning/stLearn"
+Repository = "https://github.com/BiomedicalMachineLearning/stLearn"
 
 [tool.setuptools]
 include-package-data = true
