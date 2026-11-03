@@ -49,6 +49,7 @@ GB = 1024**3
 SCENARIOS = {
     "lit": [],
     "cell_types": ["--use-label"],
+    "wide": ["--distance-um", "40"],
 }
 # Phases of cci.run timed in history.csv: phase name: column.
 PHASES = {

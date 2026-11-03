@@ -114,17 +114,20 @@ def main() -> None:
     parser.add_argument("--use-label", action="store_true")
     parser.add_argument("--n-pairs", type=int, default=1000)
     parser.add_argument("--min-spots", type=int, default=20)
+    parser.add_argument("--distance-um", type=float)
     parser.add_argument("--n-cpus", type=int)
     args = parser.parse_args()
 
     adata = anndata.read_h5ad(args.sample)
     lrs = stlearn.tl.cci.lr_pairs("connectomeDB2025")
+    um_per_px = stlearn.utils._microns_per_image_pixel(adata)
     settings = dict(
         min_spots=args.min_spots,
         n_pairs=args.n_pairs,
         n_cpus=args.n_cpus,
         use_label="cell_type" if args.use_label else None,
         random_state=0,
+        distance=None if args.distance_um is None else args.distance_um / um_per_px,
     )
 
     wall = time.perf_counter()
