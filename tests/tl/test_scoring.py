@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Tests for stlearn.tl.cci.scoring: LR scores against a plain-numpy reference."""
 
 import unittest
@@ -7,22 +9,20 @@ import numpy as np
 import pandas as pd
 import scipy.sparse
 from anndata import AnnData
-from numba.typed import List
 
 from stlearn.tl.cci import scoring
 from stlearn.tl.cci.neighbours import calc_neighbours
 from stlearn.tl.cci.scoring import (
     LRPairs,
     LRScorer,
-    flatten_neighbours,
     get_lrs_scores,
-    get_scores,
     neighbourhood_means,
+    score_spots,
 )
 
 
 def _reference_scores(expr, pairs, neighbour_lists, het_vals, min_expr, spot_indices):
-    """Plain-numpy oracle for get_scores (slow but obvious).
+    """Plain-numpy oracle for score_spots (slow but obvious).
 
     For each pair: the (ligand, receptor) expression at the spot, against the
     (receptor, ligand) expression averaged over the spot's neighbours (0 with no
@@ -44,6 +44,18 @@ def _reference_scores(expr, pairs, neighbour_lists, het_vals, min_expr, spot_ind
     return scores
 
 
+def _graph(neighbour_lists):
+    """Each spot's neighbours as the spots-by-spots CSR matrix calc_neighbours
+    makes: row i's indices are neighbour_lists[i], in order."""
+    n_spots = len(neighbour_lists)
+    lengths = [len(neighbours) for neighbours in neighbour_lists]
+    indptr = np.concatenate([[0], np.cumsum(lengths)]).astype(np.int64)
+    indices = np.concatenate([np.asarray(n, np.int32) for n in neighbour_lists])
+    return scipy.sparse.csr_matrix(
+        (np.ones(len(indices), np.int8), indices, indptr), shape=(n_spots, n_spots)
+    )
+
+
 def _random_neighbours(rng, n_spots, max_neighbours=4):
     """Random neighbour sets of up to max_neighbours - 1 other spots, some empty."""
     neighbour_lists = []
@@ -56,33 +68,27 @@ def _random_neighbours(rng, n_spots, max_neighbours=4):
     return neighbour_lists
 
 
-class TestGetScores(unittest.TestCase):
+class TestScoreSpots(unittest.TestCase):
     def test_worked_example(self):
         """Spot 0: ligand 1 with receptor mean (3 + 7) / 2 = 5 gives 1 + 5; its
         receptor is 0, so (6 + 0) / 2 = 3. Spot 1: ligand 5 with receptor mean 0
         gives 0; receptor 3 with ligand mean 1 gives 3 + 1; (0 + 4) / 2 = 2. Spot 2
         has no neighbours, so 0. Then each is multiplied by its het value."""
         expr = np.array([[1.0, 0.0], [5.0, 3.0], [0.0, 7.0]])  # ligand, receptor
-        neighbours = List(
-            [
-                np.array([1, 2], dtype=np.int32),
-                np.array([0], dtype=np.int32),
-                np.array([], dtype=np.int32),
-            ],
-        )
+        neighbours = _graph([[1, 2], [0], []])
         pairs = np.array([[0, 1]])
         spots = np.arange(3, dtype=np.int32)
 
-        scores = get_scores(expr, pairs, neighbours, np.ones(3), 0.0, spots)
+        scores = score_spots(expr, pairs, neighbours, np.ones(3), 0.0, spots)
         self.assertEqual(scores.dtype, np.float64)
         np.testing.assert_array_equal(scores[:, 0], [3.0, 2.0, 0.0])
 
         het_vals = np.array([1, 2, 3])
-        scores = get_scores(expr, pairs, neighbours, het_vals, 0.0, spots)
+        scores = score_spots(expr, pairs, neighbours, het_vals, 0.0, spots)
         np.testing.assert_array_equal(scores[:, 0], [3.0, 4.0, 0.0])
 
     def test_matches_reference_on_random_inputs(self):
-        """get_scores agrees with the numpy oracle across shapes, thresholds, het
+        """score_spots agrees with the numpy oracle across shapes, thresholds, het
         values and subsets of spots. Integer-valued expression puts values exactly
         on min_expr, which is not above it."""
         rng = np.random.default_rng(0)
@@ -108,10 +114,10 @@ class TestGetScores(unittest.TestCase):
             some_spots = np.sort(rng.choice(n_spots, size=n_spots // 2, replace=False))
 
             for spots in (all_spots, some_spots):
-                got = get_scores(
+                got = score_spots(
                     np.asfortranarray(expr),
                     pairs,
-                    List(neighbour_lists),
+                    _graph(neighbour_lists),
                     het_vals,
                     min_expr,
                     spots,
@@ -142,7 +148,8 @@ class TestGetScores(unittest.TestCase):
         neighbour_lists = _random_neighbours(rng, n_spots)
         spots = np.sort(rng.choice(n_spots, size=12, replace=False)).astype(np.int32)
 
-        starts, flat = flatten_neighbours(List(neighbour_lists))
+        graph = _graph(neighbour_lists)
+        starts, flat = graph.indptr.astype(np.int64), graph.indices.astype(np.int64)
         means = neighbourhood_means(expr, starts, flat, spots)
 
         self.assertEqual(means.shape, (n_genes, len(spots)))
@@ -160,16 +167,16 @@ class TestGetScores(unittest.TestCase):
         n_spots, n_genes = 23, 4
         expr = np.asfortranarray(rng.random((n_spots, n_genes)))
         pairs = np.array([[0, 1], [2, 3], [1, 2]])
-        neighbours = List(_random_neighbours(rng, n_spots))
+        neighbours = _graph(_random_neighbours(rng, n_spots))
         het_vals = np.ones(n_spots)
         spots = np.arange(n_spots, dtype=np.int32)
 
-        whole = get_scores(expr, pairs, neighbours, het_vals, 0.0, spots)
+        whole = score_spots(expr, pairs, neighbours, het_vals, 0.0, spots)
         chunk_bytes = scoring.MEANS_CHUNK_BYTES
         try:
             # 8 bytes per mean, n_genes genes: 5 spots of means per chunk.
             scoring.MEANS_CHUNK_BYTES = 8 * n_genes * 5
-            chunked = get_scores(expr, pairs, neighbours, het_vals, 0.0, spots)
+            chunked = score_spots(expr, pairs, neighbours, het_vals, 0.0, spots)
         finally:
             scoring.MEANS_CHUNK_BYTES = chunk_bytes
         np.testing.assert_array_equal(chunked, whole)
@@ -216,7 +223,7 @@ class TestGetLrsScores(unittest.TestCase):
             expected = _reference_scores(
                 dense.to_numpy(dtype=np.float64),
                 pairs,
-                list(neighbours),
+                np.split(neighbours.indices, neighbours.indptr[1:-1]),
                 het_vals,
                 0.5,
                 np.arange(len(adata)),
@@ -262,17 +269,18 @@ class TestGetLrsScores(unittest.TestCase):
 
         self.assertEqual(list(scored.names()), ["Lig0_Lig0", "Lig0_Rec0"])
         dense = adata.to_df().to_numpy(dtype=np.float64)
+        rows = np.split(neighbours.indices, neighbours.indptr[1:-1])
         expected = _reference_scores(
             dense,
             [[0, 0]],
-            list(neighbours),
+            rows,
             het_vals,
             0.5,
             np.arange(len(adata)),
         )
         np.testing.assert_allclose(scores[:, [0]], expected, rtol=1e-6)
         at_spot = dense[:, 0]
-        own_mean = np.array([dense[n, 0].mean() if len(n) else 0.0 for n in neighbours])
+        own_mean = np.array([dense[n, 0].mean() if len(n) else 0.0 for n in rows])
         one_direction = at_spot * (own_mean > 0.5) + (at_spot > 0.5) * own_mean
         np.testing.assert_allclose(scores[:, 0], one_direction, rtol=1e-6)
 
@@ -488,7 +496,7 @@ class TestLRScorer(unittest.TestCase):
         neighbours = calc_neighbours(adata, distance=1.5, verbose=False)
         scorer = LRScorer(adata, neighbours)
         spots = np.array([0, 1, 35], dtype=np.int32)
-        needed = set(spots) | {n for s in spots for n in neighbours[s]}
+        needed = set(spots) | {n for s in spots for n in neighbours[s].indices}
         taken = []
         original = scoring._dense_rows
 

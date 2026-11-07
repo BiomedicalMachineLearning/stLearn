@@ -11,7 +11,6 @@ import scipy
 import scipy.sparse
 import statsmodels.api as sm
 from anndata import AnnData
-from numba.typed import List
 from statsmodels.stats.multitest import multipletests
 from tqdm import tqdm
 
@@ -39,7 +38,7 @@ def perform_spot_testing(
     lr_scores: Matrix,
     lrs: LRPairs,
     n_pairs: int,
-    neighbours: List,
+    neighbours: scipy.sparse.csr_matrix,
     het_vals: np.ndarray,
     min_expr: float,
     verbose: bool = True,

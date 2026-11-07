@@ -13,51 +13,44 @@ above 0: the tested ones, a small fraction for a large sample.
 
 import numpy as np
 import numpy.typing as npt
+import scipy.sparse
 from anndata import AnnData
 from numba import njit, prange
-from numba.typed import List
-from scipy import sparse
 
 from .ligand_receptors import LRPairs
 
 MEANS_CHUNK_BYTES = 2**28  # memory for a chunk's neighbourhood means and scores
-type Expression = sparse.spmatrix | np.ndarray
+type Expression = scipy.sparse.spmatrix | np.ndarray
 
 
 class LRScorer:
     """Scores LR pairs on a sample, with the sample prepared once for every call:
-    the neighbours flattened, and sparse expression kept by column so a call
-    takes out just its genes, in time proportional to their values rather than
-    to the whole matrix.
+    sparse expression kept by column so a call takes out just its genes, in time
+    proportional to their values rather than to the whole matrix.
 
     Parameters
     ----------
     adata: AnnData
         See get_lrs_scores.
-    neighbours: List | scipy.sparse.csr_matrix
-        Each spot's neighbours: a List of index arrays, or the spots-by-spots CSR
-        matrix `adjacency` makes from one, as st.tl.cci.run stores in
-        obsp["spot_neighbours"].
+    neighbours: scipy.sparse.csr_matrix
+        Spots by spots: row i's indices are spot i's neighbours, as calc_neighbours
+        makes and st.tl.cci.run stores in obsp["spot_neighbours"].
     by_column: bool
-        Keep a column-oriented copy of sparse expression, the size of adata.X.
+        Keep a column-oriented copy of a sparse expression, the size of adata.X.
         Worth it for repeated calls; get_lrs_scores passes False for its one.
     """
 
     def __init__(
         self,
         adata: AnnData,
-        neighbours: List | sparse.csr_matrix,
+        neighbours: scipy.sparse.csr_matrix,
         by_column: bool = True,
     ):
         self.adata = adata
-        self.adjacency = (
-            sparse.csr_matrix(neighbours)
-            if sparse.issparse(neighbours)
-            else adjacency(neighbours)
-        )
-        self.columns: sparse.csc_matrix | None = (
-            sparse.csc_matrix(adata.X)
-            if by_column and sparse.issparse(adata.X)
+        self.adjacency = neighbours
+        self.columns: scipy.sparse.csc_matrix | None = (
+            scipy.sparse.csc_matrix(adata.X)
+            if by_column and scipy.sparse.issparse(adata.X)
             else None
         )
         """adata.X by column, for taking out genes; None for dense data or
@@ -69,8 +62,8 @@ class LRScorer:
         if self.columns is not None:
             return self.columns[:, genes].tocsr()
         expr = self.adata[:, genes].X
-        if sparse.issparse(expr):
-            return sparse.csr_matrix(expr)
+        if scipy.sparse.issparse(expr):
+            return scipy.sparse.csr_matrix(expr)
         return np.asfortranarray(expr)
 
     def score(
@@ -81,7 +74,7 @@ class LRScorer:
         filter_pairs: bool = True,
         spot_indices: npt.NDArray[np.int32] | None = None,
         sparse_result: bool = False,
-    ) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, LRPairs]:
+    ) -> tuple[npt.NDArray[np.float64] | scipy.sparse.csc_matrix, LRPairs]:
         """The scores of the LR pairs, and the pairs scored; see get_lrs_scores."""
         genes = np.column_stack((lrs.ligands(), lrs.receptors()))
         pairs = self.adata.var_names.get_indexer(genes.ravel()).reshape(genes.shape)
@@ -104,7 +97,7 @@ class LRScorer:
         min_expr: float,
         spot_indices: npt.NDArray[np.int32] | None = None,
         sparse_result: bool = False,
-    ) -> npt.NDArray[np.float64] | sparse.csc_matrix:
+    ) -> npt.NDArray[np.float64] | scipy.sparse.csc_matrix:
         """The scores of pairs given as positions in adata.var_names, so the
         thousands of random pairs of a background are never named.
 
@@ -138,13 +131,13 @@ class LRScorer:
 def get_lrs_scores(
     adata: AnnData,
     lrs: LRPairs,
-    neighbours: np.ndarray,
+    neighbours: scipy.sparse.csr_matrix,
     het_vals: np.ndarray,
     min_expr: float,
     filter_pairs: bool = True,
     spot_indices: npt.NDArray[np.int32] | None = None,
     sparse_result: bool = False,
-) -> tuple[npt.NDArray[np.float64] | sparse.csc_matrix, LRPairs]:
+) -> tuple[npt.NDArray[np.float64] | scipy.sparse.csc_matrix, LRPairs]:
     """Gets the scores for the indicated set of LR pairs & the heterogeneity values.
 
     For repeated calls on the same sample, make an LRScorer once and call its
@@ -156,13 +149,13 @@ def get_lrs_scores(
         See run() doc-string.
     lrs: LRPairs
         See run() doc-string.
-    neighbours: np.ndarray
-        Array of arrays with indices specifying neighbours of each spot.
+    neighbours: scipy.sparse.csr_matrix
+        CSR Matrix with indices specifying neighbours of each spot.
     het_vals: np.ndarray
         Cell heterogeneity counts per spot.
     min_expr: float
         Minimum gene expression of either L or R for spot to be considered to
-        have reasonable score.
+        have a reasonable score.
     filter_pairs: bool
         Whether to drop the pairs with a gene not in adata.var_names; if not,
         such a pair raises KeyError.
@@ -209,26 +202,6 @@ def direction_score(at_spot: float, mean_partner: float, min_expr: float) -> flo
     return at_spot * (mean_partner > min_expr) + (at_spot > min_expr) * mean_partner
 
 
-@njit(cache=True)
-def flatten_neighbours(neighbours: List) -> tuple[np.ndarray, np.ndarray]:
-    """The neighbours as one array, spot i's at flat[starts[i] : starts[i + 1]]."""
-    starts = np.zeros(len(neighbours) + 1, np.int64)
-    for i in range(len(neighbours)):
-        starts[i + 1] = starts[i] + len(neighbours[i])
-    flat = np.empty(starts[-1], np.int64)
-    for i in range(len(neighbours)):
-        flat[starts[i] : starts[i + 1]] = neighbours[i]
-    return starts, flat
-
-
-def adjacency(neighbours: List) -> sparse.csr_matrix:
-    """The neighbours as a spots-by-spots CSR matrix: row i's indices are spot
-    i's neighbours, in their order, so rows of spots slice out cheaply."""
-    starts, flat = flatten_neighbours(neighbours)
-    n = len(starts) - 1
-    return sparse.csr_matrix((np.ones(len(flat), np.int8), flat, starts), shape=(n, n))
-
-
 @njit(parallel=True)
 def neighbourhood_means(
     expr: np.ndarray,
@@ -244,7 +217,8 @@ def neighbourhood_means(
     expr: np.ndarray
         Spots*Genes expression, column-major.
     starts, flat: np.ndarray
-        The neighbours from flatten_neighbours, as rows of expr.
+        A CSR matrix's indptr and indices: spot i's neighbours, as rows of expr,
+        are flat[starts[i] : starts[i + 1]].
     spot_indices: npt.NDArray[np.int32]
         The spots to compute the means at, as positions in starts.
     Returns
@@ -317,28 +291,28 @@ def _dense_rows(expr: Expression, rows: np.ndarray) -> np.ndarray:
     """These rows of expr, dense and column-major."""
     taken = expr[rows]
     return (
-        taken.toarray(order="F") if sparse.issparse(taken) else np.asfortranarray(taken)
+        taken.toarray(order="F")
+        if scipy.sparse.issparse(taken)
+        else np.asfortranarray(taken)
     )
 
 
 def score_spots(
     expr: Expression,
     pairs: np.ndarray,
-    adjacency: sparse.csr_matrix,
+    adjacency: scipy.sparse.csr_matrix,
     het_vals: np.ndarray,
     min_expr: float,
     spot_indices: npt.NDArray[np.int32],
     sparse_result: bool = False,
-) -> npt.NDArray[np.float64] | sparse.csc_matrix:
+) -> npt.NDArray[np.float64] | scipy.sparse.csc_matrix:
     """Scores the pairs at the spots, a chunk of spots at a time, each chunk's
     rows of expr dense and its neighbourhood means held only while it is scored.
-    See get_scores for the arguments and result; with sparse_result the scores
-    come back as get_lrs_scores describes.
     """
     het_vals = np.asarray(het_vals)
     n_pairs, n_spots = pairs.shape[0], len(spot_indices)
     chunk = spots_per_chunk(expr.shape[1], n_pairs)
-    pieces: list[sparse.csr_matrix] = []
+    pieces: list[scipy.sparse.csr_matrix] = []
     spot_scores = np.empty((n_pairs, 0 if sparse_result else n_spots), np.float64)
 
     n_rows = expr.shape[0]
@@ -371,44 +345,13 @@ def score_spots(
             by_spot = scores.T
             above = by_spot > 0
             pieces.append(
-                sparse.csr_matrix((by_spot[above], np.nonzero(above)), by_spot.shape)
+                scipy.sparse.csr_matrix(
+                    (by_spot[above], np.nonzero(above)), by_spot.shape
+                )
             )
             del scores, by_spot, above  # before the next chunk's are made
     if not sparse_result:
         return spot_scores.T
     if not pieces:
-        return sparse.csc_matrix((n_spots, n_pairs), dtype=np.float64)
-    return sparse.vstack(pieces, format="csc")
-
-
-def get_scores(
-    expr: np.ndarray,
-    pairs: np.ndarray,
-    neighbours: List,
-    het_vals: np.ndarray,
-    min_expr: float,
-    spot_indices: npt.NDArray[np.int32],
-) -> npt.NDArray[np.float64]:
-    """Calculates the scores.
-    Parameters
-    ----------
-    expr: np.ndarray
-        Spots*Genes expression of the genes in the pairs.
-    pairs: np.ndarray
-        Pairs*2 column indices into expr, as (ligand, receptor).
-    neighbours: List
-        List of np.array's indicating neighbours by indices for each spot.
-    het_vals:  np.ndarray
-        Spots*Het counts
-    min_expr: float
-        Minimum expression for gene to be considered expressed.
-    spot_indices: npt.NDArray[np.int32]
-        Subset of spots to score, given as their integer row positions.
-    Returns
-    -------
-    spot_scores: np.ndarray
-        Spots*LR pair of the LR scores per spot.
-    """
-    return score_spots(
-        expr, pairs, adjacency(neighbours), het_vals, min_expr, spot_indices
-    )
+        return scipy.sparse.csc_matrix((n_spots, n_pairs), dtype=np.float64)
+    return scipy.sparse.vstack(pieces, format="csc")

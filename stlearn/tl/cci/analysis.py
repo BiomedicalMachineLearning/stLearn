@@ -4,12 +4,12 @@ the inputted data / state of the anndata object.
 
 import warnings
 
+import anndata
 import numpy as np
-import numpy.typing as npt
-import pandas as pd
-from anndata import AnnData
-from scipy import sparse
-from tqdm import tqdm
+import numpy.typing
+import pandas
+import scipy
+import tqdm
 
 from ...utils import _set_n_threads
 from ._results import (
@@ -30,13 +30,13 @@ from .het import (
 from .ligand_receptors import LRPairs, genes_of, lr_pairs, split_name
 from .neighbours import calc_distance, calc_neighbours, get_neighbourhoods
 from .permutation import perform_spot_testing
-from .scoring import adjacency, get_lrs_scores
+from .scoring import get_lrs_scores
 
 
 def _report_dropped_lrs(
-    adata: AnnData,
+    adata: anndata.AnnData,
     lrs: LRPairs,
-    n_scored: npt.NDArray[np.int64],
+    n_scored: numpy.typing.NDArray[np.int64],
     min_spots: int,
     min_expr: float,
     max_named: int = 10,
@@ -74,7 +74,7 @@ def _report_dropped_lrs(
 
 
 def run(
-    adata: AnnData,
+    adata: anndata.AnnData,
     lrs: LRPairs,
     min_spots: int = 10,
     distance: float | None = None,
@@ -89,7 +89,7 @@ def run(
     random_state: int = 0,
     verbose: bool = True,
     cell_prop_cutoff: float = 0.2,
-) -> AnnData:
+) -> anndata.AnnData:
     """Performs stLearn LR analysis.
 
     Parameters
@@ -204,8 +204,12 @@ def run(
     # Calculating neighbour & storing #
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
-    graph = adjacency(neighbours)
-    adata.obsp["spot_neighbours"] = graph
+    if neighbours.nnz == 0:
+        raise ValueError(
+            "All spots have no neighbours at current distance, set distance to "
+            "higher value, or distance=0 for within-spot mode.",
+        )
+    adata.obsp["spot_neighbours"] = neighbours
 
     if verbose:
         print("Spot neighbours stored in adata.obsp['spot_neighbours'].")
@@ -222,6 +226,7 @@ def run(
             use_label=use_label,
             cell_prop_cutoff=cell_prop_cutoff,
             verbose=verbose,
+            neighbours=neighbours,
         )
         het_vals = adata.obsm["cci_het"].ravel()
     else:
@@ -232,7 +237,7 @@ def run(
     lr_scores, scored = get_lrs_scores(
         adata,
         lrs,
-        graph,
+        neighbours,
         het_vals,
         min_expr,
         sparse_result=True,
@@ -261,7 +266,7 @@ def run(
         lr_scores,
         tested,
         n_pairs,
-        graph,
+        neighbours,
         het_vals,
         min_expr,
         verbose,
@@ -269,9 +274,9 @@ def run(
         neg_binom=neg_binom,
         random_state=random_state,
     )
-    lr_results = AnnData(
-        obs=pd.DataFrame(index=adata.obs_names),
-        var=pd.DataFrame(index=tested.names()),
+    lr_results = anndata.AnnData(
+        obs=pandas.DataFrame(index=adata.obs_names),
+        var=pandas.DataFrame(index=tested.names()),
     )
 
     lr_results.var["source"] = tested.to_frame()["source"].to_numpy(dtype=str)
@@ -293,7 +298,7 @@ def run(
 
 
 def adj_pvals(
-    lr_results: AnnData,
+    lr_results: anndata.AnnData,
     pval_adj_cutoff: float = 0.05,
     correct_axis: str | None = "spot",
     adj_method: str = "fdr_bh",
@@ -334,10 +339,10 @@ def adj_pvals(
 
 
 def run_lr_go(
-    lr_results: AnnData,
+    lr_results: anndata.AnnData,
     r_path: str,
     n_top: int = 100,
-    bg_genes: npt.ArrayLike | None = None,
+    bg_genes: numpy.typing.ArrayLike | None = None,
     min_sig_spots: int = 1,
     species: str | None = None,
     p_cutoff: float = 0.01,
@@ -419,9 +424,9 @@ def run_lr_go(
 
 # Functions for calling Celltype-Celltype interactions
 def run_cci(
-    adata: AnnData,
+    adata: anndata.AnnData,
     use_label: str,
-    lr_results: AnnData | None = None,
+    lr_results: anndata.AnnData | None = None,
     spot_mixtures: bool = False,
     min_spots: int = 3,
     sig_spots: bool = True,
@@ -576,10 +581,10 @@ def run_cci(
             "may need to adjust min_spots, sig_spots parameters, "
             "or re-run st.tl.cci.run with more relaxed parameters.",
         )
-    lr_expr = sparse.csc_matrix(adata[:, lr_genes].X)  # a gene at a time below
+    lr_expr = scipy.sparse.csc_matrix(adata[:, lr_genes].X)  # a gene at a time below
     gene_column = {gene: i for i, gene in enumerate(lr_genes)}
 
-    def expressed(gene: str) -> npt.NDArray[np.bool_]:
+    def expressed(gene: str) -> numpy.typing.NDArray[np.bool_]:
         return lr_expr[:, gene_column[gene]].toarray().ravel() > 0
 
     # Sig-CCIs across all LRs #
@@ -592,7 +597,7 @@ def run_cci(
     lr_n_spot_cci = np.zeros(lr_summary.shape[0])
     lr_n_spot_cci_sig = np.zeros(lr_summary.shape[0])
     lr_n_cci_sig = np.zeros(lr_summary.shape[0])
-    with tqdm(
+    with tqdm.tqdm(
         total=len(best_lrs),
         desc="Counting celltype-celltype interactions per LR and permuting "
         + f"{n_perms} times.",
@@ -643,9 +648,11 @@ def run_cci(
 
             raw_matrix += int_matrix
             all_matrix += sig_int_matrix
-            int_df = pd.DataFrame(int_matrix, index=all_set, columns=all_set)
-            sig_int_df = pd.DataFrame(sig_int_matrix, index=all_set, columns=all_set)
-            pval_df = pd.DataFrame(int_pvals, index=all_set, columns=all_set)
+            int_df = pandas.DataFrame(int_matrix, index=all_set, columns=all_set)
+            sig_int_df = pandas.DataFrame(
+                sig_int_matrix, index=all_set, columns=all_set
+            )
+            pval_df = pandas.DataFrame(int_pvals, index=all_set, columns=all_set)
             per_lr_cci[best_lr] = sig_int_df
             per_lr_cci_pvals[best_lr] = pval_df
             per_lr_cci_raw[best_lr] = int_df
@@ -656,12 +663,12 @@ def run_cci(
     lr.var[f"n_cci_sig_{use_label}"] = lr_n_cci_sig
     lr.var[f"n-spot_cci_{use_label}"] = lr_n_spot_cci
     lr.var[f"n-spot_cci_sig_{use_label}"] = lr_n_spot_cci_sig
-    lr.uns[f"lr_cci_{use_label}"] = pd.DataFrame(
+    lr.uns[f"lr_cci_{use_label}"] = pandas.DataFrame(
         all_matrix,
         index=all_set,
         columns=all_set,
     )
-    lr.uns[f"lr_cci_raw_{use_label}"] = pd.DataFrame(
+    lr.uns[f"lr_cci_raw_{use_label}"] = pandas.DataFrame(
         raw_matrix,
         index=all_set,
         columns=all_set,

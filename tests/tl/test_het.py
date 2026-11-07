@@ -12,6 +12,7 @@ from anndata import AnnData
 import stlearn as st
 from stlearn.tl.cci import lr_result
 from stlearn.tl.cci.het import count, get_data_for_counting
+from stlearn.tl.cci.neighbours import calc_neighbours
 from tests.utils import CCI_LRS, cci_table
 
 LRS = st.tl.cci.LRPairs.from_names(
@@ -195,6 +196,31 @@ class TestHet(unittest.TestCase):
         self.assertNotIn("CT4", counts[False].index)
         self.assertIn("CT4", counts[True].index)
         self.assertGreater(counts[True].loc["CT4"].sum(), 0)
+
+    def test_counts_over_given_neighbours(self):
+        """Given the neighbour graph st.tl.cci.run has already built, count uses
+        it instead of searching again, the spot itself still in its neighbourhood,
+        and leaves the graph as it was."""
+        searched, given, narrow = _make_adata(), _make_adata(), _make_adata()
+        count(searched, use_label="cell_type", verbose=False, distance=1.5)
+        count(narrow, use_label="cell_type", verbose=False, distance=1.0)
+        # 8 neighbours against 4: the two distances must count differently.
+        self.assertFalse(
+            np.array_equal(searched.obsm["cci_het"], narrow.obsm["cci_het"])
+        )
+
+        graph = calc_neighbours(given, 1.5, verbose=False)
+        nnz = graph.nnz
+        # The graph decides the neighbourhood, whatever distance says.
+        count(
+            given, use_label="cell_type", verbose=False, distance=1.0, neighbours=graph
+        )
+        np.testing.assert_array_equal(given.obsm["cci_het"], searched.obsm["cci_het"])
+        # The spot was added to its own neighbourhood in a copy: run stores this
+        # graph as obsp["spot_neighbours"], where a diagonal would make every spot
+        # its own interaction partner in run_cci.
+        self.assertEqual(graph.nnz, nnz)
+        self.assertEqual(graph.diagonal().sum(), 0)
 
 
 if __name__ == "__main__":

@@ -4,10 +4,11 @@ celltype-celltype interaction counts and permutation p-values behind run_cci.
 
 import numpy as np
 import pandas as pd
+import scipy
 from anndata import AnnData
 from numba import njit, prange
 
-from .neighbours import calc_distance, neighbourhood_matrix
+from .neighbours import calc_distance, calc_neighbours
 
 
 def count(
@@ -17,6 +18,7 @@ def count(
     verbose: bool = True,
     distance: float | None = None,
     cell_prop_cutoff: float = 0.2,
+    neighbours: scipy.sparse.csr_matrix | None = None,
 ) -> None:
     """Counts the cell types present in each spot's neighbourhood.
 
@@ -39,6 +41,9 @@ def count(
         distance=0 means within spot
     cell_prop_cutoff: float
         A cell type is present in a spot when its proportion is above this.
+    neighbours: scipy.sparse.csr_matrix
+        The spots-by-spots graph calc_neighbours makes, when the caller already
+        has it (st.tl.cci.run passes its own); otherwise it is found from distance.
 
     Returns
     -------
@@ -53,11 +58,15 @@ def count(
     """
 
     present = label_proportions(adata, use_label).to_numpy() > cell_prop_cutoff
-    # between spot
     if distance != 0:
-        # The default neighbour distance if not given; distance=0 is within-spot.
-        neighbourhoods = neighbourhood_matrix(adata, calc_distance(adata, distance))
-        # The number of cell types present anywhere in each neighbourhood.
+        if neighbours is None:
+            neighbours = calc_neighbours(
+                adata, calc_distance(adata, distance), verbose=False
+            )
+        spots = scipy.sparse.identity(
+            neighbours.shape[0], dtype=neighbours.dtype, format="csr"
+        )
+        neighbourhoods = neighbours.maximum(spots)
         adata.obsm[use_het] = ((neighbourhoods @ present.astype(np.int32)) > 0).sum(1)
 
     # within spot
