@@ -138,7 +138,8 @@ def get_interaction_pvals(
     int_matrix,
     n_perms,
     cell_data,
-    neighbourhood_indices,
+    neigh_indptr,
+    neigh_indices,
     all_set,
     sig_bool,
     L_bool,
@@ -185,7 +186,8 @@ def get_interaction_pvals(
         # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(
             perm_data,
-            neighbourhood_indices,
+            neigh_indptr,
+            neigh_indices,
             all_set,
             sig_bool,
             L_bool,
@@ -213,7 +215,8 @@ def get_interaction_pvals(
 @njit
 def get_interaction_matrix(
     cell_data,
-    neighbourhood_indices,
+    neigh_indptr,
+    neigh_indices,
     all_set,
     sig_bool,
     L_bool,
@@ -237,10 +240,8 @@ def get_interaction_matrix(
                 if cell_data[i, t1] <= cell_prop_cutoff:
                     continue
 
-                neighs = neighbourhood_indices[i][1]
-
-                for k in range(len(neighs)):
-                    n_idx = neighs[k]
+                for k in range(neigh_indptr[i], neigh_indptr[i + 1]):
+                    n_idx = neigh_indices[k]
                     if cell_data[n_idx, t2] > cell_prop_cutoff:
                         valid = False
                         if L_bool[i] and R_bool[n_idx]:

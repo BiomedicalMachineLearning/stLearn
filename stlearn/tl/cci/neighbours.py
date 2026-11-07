@@ -2,7 +2,6 @@ import numpy as np
 import scipy.sparse
 import scipy.spatial as spatial
 from anndata import AnnData
-from numba.typed import List
 
 from ...utils import _image_scalef
 
@@ -95,20 +94,11 @@ def calc_neighbours(
     return graph
 
 
-def get_neighbourhoods(adata):
-    """st.tl.cci.run stores results in obsp["spot_neighbours"]:
-    (barcode, neighbour barcodes) and (index, neighbour indices) per spot."""
-    if "spot_neighbours" in adata.obsp:
-        graph = scipy.sparse.csr_matrix(adata.obsp["spot_neighbours"])
-        spot_bcs = adata.obs_names.to_numpy().astype(str)
-        neighbourhood_bcs, neighbourhood_indices = List(), List()
-        for i in range(graph.shape[0]):
-            start, end = graph.indptr[i], graph.indptr[i + 1]
-            neigh = graph.indices[start:end].astype(np.int64)
-            neighbourhood_indices.append((i, neigh))
-            neighbourhood_bcs.append((spot_bcs[i], spot_bcs[neigh]))
-        return neighbourhood_bcs, neighbourhood_indices
-    else:
+def stored_neighbours(adata) -> scipy.sparse.csr_matrix:
+    """The graph st.tl.cci.run stored in obsp["spot_neighbours"], as CSR: row i's
+    indices are spot i's neighbours. Raises ValueError when there is none."""
+    if "spot_neighbours" not in adata.obsp:
         raise ValueError(
             "No neighbours stored in adata.obsp['spot_neighbours']: call st.tl.cci.run."
         )
+    return scipy.sparse.csr_matrix(adata.obsp["spot_neighbours"])

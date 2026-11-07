@@ -28,7 +28,7 @@ from .het import (
     label_keys,
 )
 from .ligand_receptors import LRPairs, genes_of, lr_pairs, split_name
-from .neighbours import calc_distance, calc_neighbours, get_neighbourhoods
+from .neighbours import calc_distance, calc_neighbours, stored_neighbours
 from .permutation import perform_spot_testing
 from .scoring import get_lrs_scores
 
@@ -558,11 +558,9 @@ def run_cci(
         if len(all_set) < adata.uns[uns_key].shape[1]:
             all_set = adata.uns[uns_key].columns.to_numpy().astype(str)
 
-    # Getting minimum necessary information for edge counting
-    if verbose:
-        print("Getting cached neighbourhood information...")
-    # Getting the neighbourhoods #
-    _, neighbourhood_indices = get_neighbourhoods(adata)
+    graph = stored_neighbours(adata)
+    neigh_indptr = graph.indptr.astype(np.int64)
+    neigh_indices = graph.indices.astype(np.int64)
 
     if verbose:
         print("Getting information for CCI counting...")
@@ -613,7 +611,8 @@ def run_cci(
 
             int_matrix = get_interaction_matrix(
                 cell_data,
-                neighbourhood_indices,
+                neigh_indptr,
+                neigh_indices,
                 all_set,
                 sig_bool,
                 L_bool,
@@ -626,7 +625,8 @@ def run_cci(
                     int_matrix,
                     n_perms,
                     cell_data,
-                    neighbourhood_indices,
+                    neigh_indptr,
+                    neigh_indices,
                     all_set,
                     sig_bool,
                     L_bool,

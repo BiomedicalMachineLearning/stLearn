@@ -19,6 +19,13 @@ API and Bug Fixes:
   ``neighbourhoods_from_barcodes`` are removed.
 * ``LRScorer`` takes a sparse matrix. ``get_scores``, ``adjacency`` and
   ``flatten_neighbours`` are removed from ``stlearn.tl.cci.scoring``.
+* ``st.tl.cci.run_cci`` and ``get_edges`` read the stored graph directly;
+  ``stlearn.tl.cci.neighbours.get_neighbourhoods`` and the edge helpers in
+  ``stlearn.tl.cci.edges`` are removed. ``get_interaction_matrix`` and
+  ``get_interaction_pvals`` take the graph's CSR arrays (``neigh_indptr``,
+  ``neigh_indices``) instead of a numba ``List``.
+* ``get_edges`` no longer deduplicates edges with a quadratic loop: the arrow
+  plots on large neighbourhoods are seconds faster.
 
 1.5.0 (2026-11-01)
 ------------------

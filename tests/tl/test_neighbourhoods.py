@@ -5,12 +5,12 @@ import unittest
 import numpy as np
 
 import stlearn as st
-from stlearn.tl.cci.neighbours import calc_neighbours, get_neighbourhoods
+from stlearn.tl.cci.neighbours import calc_neighbours, stored_neighbours
 from tests.utils import CCI_LRS, cci_table
 
 
-class TestNeighbourhoods(unittest.TestCase):
-    """get_neighbourhoods reads the neighbours st.tl.cci.run stores in obsp."""
+class TestStoredNeighbours(unittest.TestCase):
+    """stored_neighbours reads the graph st.tl.cci.run stores in obsp."""
 
     @classmethod
     def setUpClass(cls):
@@ -29,40 +29,35 @@ class TestNeighbourhoods(unittest.TestCase):
         cls.found = np.split(graph.indices, graph.indptr[1:-1])
 
     def test_matches_calc_neighbours(self):
-        """Each spot's index, barcode and neighbours are those calc_neighbours
-        finds, in its order."""
-        bcs, indices = get_neighbourhoods(self.adata)
-        names = self.adata.obs_names.to_numpy()
-        self.assertEqual(len(bcs), self.adata.n_obs)
-        self.assertEqual(len(indices), self.adata.n_obs)
-        for i in range(self.adata.n_obs):
-            self.assertEqual(indices[i][0], i)
-            np.testing.assert_array_equal(indices[i][1], self.found[i])
-            self.assertEqual(bcs[i][0], names[i])
-            np.testing.assert_array_equal(bcs[i][1], names[self.found[i]])
+        """The stored graph is the one calc_neighbours finds, as CSR, each
+        spot's neighbours in its order."""
+        graph = stored_neighbours(self.adata)
+        self.assertEqual(graph.format, "csr")
+        self.assertEqual(graph.shape, (self.adata.n_obs, self.adata.n_obs))
+        for i, found in enumerate(self.found):
+            np.testing.assert_array_equal(
+                graph.indices[graph.indptr[i] : graph.indptr[i + 1]], found
+            )
 
     def test_subset_keeps_neighbours_still_in_it(self):
         """Subsetting slices obsp on both axes, so a spot keeps only the
         neighbours still in the subset, at their positions in it."""
         keep = np.arange(self.adata.n_obs) % 3 != 0
         subset = self.adata[keep].copy()
-        bcs, indices = get_neighbourhoods(subset)
+        graph = stored_neighbours(subset)
         names = self.adata.obs_names.to_numpy()
-        self.assertEqual(len(bcs), subset.n_obs)
+        self.assertEqual(graph.shape, (subset.n_obs, subset.n_obs))
         for row, i in enumerate(np.flatnonzero(keep)):
             expected = names[[n for n in self.found[i] if keep[n]]]
-            self.assertEqual(bcs[row][0], names[i])
-            self.assertEqual(sorted(bcs[row][1]), sorted(expected))
-            np.testing.assert_array_equal(
-                subset.obs_names[indices[row][1]], bcs[row][1]
-            )
+            neighbours = graph.indices[graph.indptr[row] : graph.indptr[row + 1]]
+            self.assertEqual(sorted(subset.obs_names[neighbours]), sorted(expected))
 
     def test_without_neighbours(self):
         """A table without obsp["spot_neighbours"] says to run st.tl.cci.run."""
         adata = self.adata.copy()
         del adata.obsp["spot_neighbours"]
         with self.assertRaisesRegex(ValueError, r"st\.tl\.cci\.run"):
-            get_neighbourhoods(adata)
+            stored_neighbours(adata)
 
 
 if __name__ == "__main__":
