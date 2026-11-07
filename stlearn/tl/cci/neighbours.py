@@ -168,6 +168,13 @@ def get_neighbourhoods(adata):
             neighbourhood_bcs.append((spot_bcs[i], spot_bcs[neigh]))
         return neighbourhood_bcs, neighbourhood_indices
 
+    if "spot_neighbours" not in adata.obsm and "spot_neigh_bcs" not in adata.obsm:
+        raise ValueError(
+            "No neighbours stored in adata: run st.tl.cci.run on it first. It "
+            "stores them in obsp['spot_neighbours']; a table cached without its "
+            "obsp has lost them."
+        )
+
     # Old stlearn version where didn't store neighbourhood barcodes, not good
     # for anndata subsetting!!
     if "spot_neigh_bcs" not in adata.obsm:
