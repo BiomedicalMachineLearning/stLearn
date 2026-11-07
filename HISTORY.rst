@@ -4,7 +4,15 @@ History
 
 1.5.1 (2026-11-07)
 ------------------
-*
+* `run` stores the neighbours as a graph, adata.obsp["spot_neighbours"] (int8 CSR, row i’s indices spot i’s neighbours).
+* Per spot (obsm["spot_neighbours"] and obsm["spot_neigh_bcs"]) are removed and ignored if loaded. These consume ~25%
+  of the runtime and large amount of memory.
+* `score_spots` finds each chunk’s rows with a boolean mask and position lookup instead of using `np.unique`.
+* The neighbour graph is built once and passed through get_lrs_scores and perform_spot_testing; LRScorer accepts it
+  directly.
+
+API and Bug Fixes:
+
 
 1.5.0 (2026-11-01)
 ------------------
