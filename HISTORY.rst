@@ -2,6 +2,10 @@
 History
 =======
 
+1.5.1 (2026-11-07)
+------------------
+*
+
 1.5.0 (2026-11-01)
 ------------------
 This release contains changes in cell-cell interaction (CCI) mainly
