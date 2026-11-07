@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""Neighbourhood and counting helpers on a toy seven-spot neighbourhood.
-"""
+"""Neighbourhood and counting helpers on a toy seven-spot neighbourhood."""
 
 import unittest
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" Runs st.tl.cci.run_cci on the test data with cell-type labels stored as a
+"""Runs st.tl.cci.run_cci on the test data with cell-type labels stored as a
 categorical and as plain strings.
 """
 
