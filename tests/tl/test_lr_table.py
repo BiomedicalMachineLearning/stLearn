@@ -109,10 +109,8 @@ class TestLrTable(unittest.TestCase):
                     np.testing.assert_array_equal(lr_result(lr, key, j), dense[:, j])
 
     def test_expression_table_keeps_only_what_is_per_spot(self):
-        self.assertEqual(
-            sorted(self.adata.obsm),
-            ["cci_het", "spatial", "spot_neigh_bcs", "spot_neighbours"],
-        )
+        self.assertEqual(sorted(self.adata.obsm), ["cci_het", "spatial"])
+        self.assertEqual(list(self.adata.obsp), ["spot_neighbours"])
         self.assertFalse(set(self.adata.uns) & set(OLD_UNS))
 
     def test_without_lr_results(self):

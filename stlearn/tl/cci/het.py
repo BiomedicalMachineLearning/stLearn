@@ -4,10 +4,11 @@ celltype-celltype interaction counts and permutation p-values behind run_cci.
 
 import numpy as np
 import pandas as pd
+import scipy
 from anndata import AnnData
 from numba import njit, prange
 
-from .neighbours import calc_distance, neighbourhood_matrix
+from .neighbours import calc_distance, calc_neighbours
 
 
 def count(
@@ -17,6 +18,7 @@ def count(
     verbose: bool = True,
     distance: float | None = None,
     cell_prop_cutoff: float = 0.2,
+    neighbours: scipy.sparse.csr_matrix | None = None,
 ) -> None:
     """Counts the cell types present in each spot's neighbourhood.
 
@@ -39,6 +41,9 @@ def count(
         distance=0 means within spot
     cell_prop_cutoff: float
         A cell type is present in a spot when its proportion is above this.
+    neighbours: scipy.sparse.csr_matrix
+        The spots-by-spots graph calc_neighbours makes, when the caller already
+        has it (st.tl.cci.run passes its own); otherwise it is found from distance.
 
     Returns
     -------
@@ -53,11 +58,15 @@ def count(
     """
 
     present = label_proportions(adata, use_label).to_numpy() > cell_prop_cutoff
-    # between spot
     if distance != 0:
-        # The default neighbour distance if not given; distance=0 is within-spot.
-        neighbourhoods = neighbourhood_matrix(adata, calc_distance(adata, distance))
-        # The number of cell types present anywhere in each neighbourhood.
+        if neighbours is None:
+            neighbours = calc_neighbours(
+                adata, calc_distance(adata, distance), verbose=False
+            )
+        spots = scipy.sparse.identity(
+            neighbours.shape[0], dtype=neighbours.dtype, format="csr"
+        )
+        neighbourhoods = neighbours.maximum(spots)
         adata.obsm[use_het] = ((neighbourhoods @ present.astype(np.int32)) > 0).sum(1)
 
     # within spot
@@ -129,7 +138,8 @@ def get_interaction_pvals(
     int_matrix,
     n_perms,
     cell_data,
-    neighbourhood_indices,
+    neigh_indptr,
+    neigh_indices,
     all_set,
     sig_bool,
     L_bool,
@@ -176,7 +186,8 @@ def get_interaction_pvals(
         # Calculating interactions for permuted labels #
         perm_matrix = get_interaction_matrix(
             perm_data,
-            neighbourhood_indices,
+            neigh_indptr,
+            neigh_indices,
             all_set,
             sig_bool,
             L_bool,
@@ -204,7 +215,8 @@ def get_interaction_pvals(
 @njit
 def get_interaction_matrix(
     cell_data,
-    neighbourhood_indices,
+    neigh_indptr,
+    neigh_indices,
     all_set,
     sig_bool,
     L_bool,
@@ -228,10 +240,8 @@ def get_interaction_matrix(
                 if cell_data[i, t1] <= cell_prop_cutoff:
                     continue
 
-                neighs = neighbourhood_indices[i][1]
-
-                for k in range(len(neighs)):
-                    n_idx = neighs[k]
+                for k in range(neigh_indptr[i], neigh_indptr[i + 1]):
+                    n_idx = neigh_indices[k]
                     if cell_data[n_idx, t2] > cell_prop_cutoff:
                         valid = False
                         if L_bool[i] and R_bool[n_idx]:

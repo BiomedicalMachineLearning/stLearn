@@ -5,6 +5,10 @@ run's alone:
 
     python -m tests.acceptance.run_cci SAMPLE.h5ad RESULT.h5ad [--use-label]
 
+The acceptance test runs it for every scenario:
+
+    pytest -m acceptance --acceptance-bins 500000 --acceptance-baseline=write
+
 numba's functions are compiled on a small slice first, so the timed run is
 steady state. Results are stored sparse, as their difference from the value
 most spots have (score 0, p-value 1): the entries of the LR table's sparse
@@ -40,7 +44,8 @@ RESULTS = {
     "neg_log10_p_adjs": 0.0,
     "lr_sig_scores": 0.0,
 }
-NEIGHBOURS = ["spot_neighbours", "spot_neigh_bcs"]
+# The neighbours, obsp["spot_neighbours"], kept in the result as its CSR arrays.
+NEIGHBOURS = ["neighbours_indptr", "neighbours_indices"]
 # Phases of st.tl.cci.run, timed by wrapping the functions it calls.
 PHASES = {
     "neighbours": ("stlearn.tl.cci.analysis", "calc_neighbours"),
@@ -185,8 +190,9 @@ def main() -> None:
     result = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names))
     for key, usual in RESULTS.items():
         result.obsm[key] = shifted(lr_results.layers[key], usual)
-    for key in NEIGHBOURS:
-        result.obs[key] = adata.obsm[key].iloc[:, 0].to_numpy()
+    graph = scipy.sparse.csr_matrix(adata.obsp["spot_neighbours"])
+    result.uns["neighbours_indptr"] = graph.indptr
+    result.uns["neighbours_indices"] = graph.indices
     if args.use_label:
         result.obs["cci_het"] = numpy.asarray(adata.obsm["cci_het"]).ravel()
     # The layout of baselines written before the LR table.

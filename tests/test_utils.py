@@ -61,7 +61,7 @@ class TestMicronsToPixels(unittest.TestCase):
                 ):
                     distance = st.utils.microns_to_pixels(adata, distance_um)
                     neighbours = calc_neighbours(adata, distance, verbose=False)
-                    self.assertEqual(len(neighbours[centre]), n_expected)
+                    self.assertEqual(neighbours[centre].nnz, n_expected)
 
     def test_arrays_and_round_trip(self):
         adata = _spots(microns_per_pixel=0.2125, scalef=0.1)

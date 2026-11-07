@@ -109,7 +109,7 @@ class TestCCIRoundTrip(unittest.TestCase):
                     pd.testing.assert_frame_equal(
                         getattr(read[name], slot), getattr(table, slot)
                     )
-            for slot in ("obsm", "layers", "uns"):
+            for slot in ("obsm", "obsp", "layers", "uns"):
                 written, back = getattr(table, slot), getattr(read[name], slot)
                 self.assertEqual(sorted(back), sorted(written), msg=f"{name}.{slot}")
                 for key in written:

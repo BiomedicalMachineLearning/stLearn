@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 
 
-def write_subset_h5ad(adata, filename, obsm_keys=None, uns_keys=None):
-    """Write only specific obsm and uns components to H5AD"""
+def write_subset_h5ad(adata, filename, obsm_keys=None, uns_keys=None, obsp_keys=None):
+    """Write only specific obsm, obsp and uns components to H5AD"""
 
     # Create a minimal AnnData object with the same structure
     minimal_adata = ad.AnnData(
@@ -32,6 +32,14 @@ def write_subset_h5ad(adata, filename, obsm_keys=None, uns_keys=None):
             else:
                 print(f"Warning: uns['{key}'] not found")
 
+    if obsp_keys:
+        for key in obsp_keys:
+            if key in adata.obsp:
+                minimal_adata.obsp[key] = adata.obsp[key]
+                print(f"Added obsp['{key}'] with {adata.obsp[key].nnz} entries")
+            else:
+                print(f"Warning: obsp['{key}'] not found")
+
     minimal_adata.write_h5ad(filename, compression="gzip", compression_opts=9)
     print(f"Wrote subset to {filename}")
 
@@ -47,5 +55,9 @@ def merge_h5ad_into_adata(adata_main, h5ad_file):
     for key, value in adata_subset.uns.items():
         adata_main.uns[key] = value
         print(f"Added uns['{key}']")
+
+    for key, value in adata_subset.obsp.items():
+        adata_main.obsp[key] = value
+        print(f"Added obsp['{key}'] with {value.nnz} entries")
 
     return adata_main

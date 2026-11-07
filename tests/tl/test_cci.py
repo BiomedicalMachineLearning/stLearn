@@ -1,24 +1,17 @@
 #!/usr/bin/env python
 
-"""Tests for the ligand-receptor and cell-cell interaction functions in `stlearn`.
-
-TestCCI holds unit tests of the neighbourhood and counting helpers on a toy
-seven-spot neighbourhood. TestRunCCILabels runs st.tl.cci.run_cci on the test data
-with cell-type labels stored as a categorical and as plain strings.
-"""
+"""Neighbourhood and counting helpers on a toy seven-spot neighbourhood."""
 
 import unittest
-from typing import ClassVar
+from typing import Any
 
 import numpy as np
 import pandas as pd
+import scipy.sparse
 from anndata import AnnData
-from numba.typed import List
 
-import stlearn as st
-import stlearn.tl.cci.edges as edges
 import stlearn.tl.cci.het as het
-from tests.utils import read_test_data
+from stlearn.tl.cci import get_edges
 
 # Per line - which cells to annotate
 CELL_TYPE_ANNOTATIONS = ["CT1", "CT2", "CT3", "CT2", "CT1", "CT3", "CT2"]
@@ -27,35 +20,9 @@ CELL_TYPE_ANNOTATIONS = ["CT1", "CT2", "CT3", "CT2", "CT1", "CT3", "CT2"]
 CELL_TYPE_LABELS = np.array(["CT1", "CT2", "CT3"])
 
 
-def read_test_data_with_lr_pairs(n_pairs: int = 20):
-    """Test data that ligand-receptor analysis can run on.
-
-    The 100 genes in the test data contain no pair from the ligand-receptor
-    database and the matrix is scaled, so `st.tl.cci.run` has nothing to test. This
-    renames the first `2 * n_pairs` genes to database pairs and clips negative values
-    to zero. It exercises the code path; the scores carry no biological meaning.
-    """
-    adata = read_test_data()
-    lrs = st.tl.cci.lr_pairs("connectomeDB2020")
-
-    genes: list[str] = []
-    for ligand, receptor in zip(
-        lrs.ligands().tolist(), lrs.receptors().tolist(), strict=True
-    ):
-        if ligand != receptor and ligand not in genes and receptor not in genes:
-            genes += [ligand, receptor]
-        if len(genes) == 2 * n_pairs:
-            break
-
-    names = list(adata.var_names)
-    names[: len(genes)] = genes
-    adata.var_names = names
-    adata.X = np.clip(adata.X, 0, None)
-    return adata, lrs
-
-
 class TestCCI(unittest.TestCase):
     """Tests for `stlearn` CCI capability."""
+    all_edges: list[Any]
 
     def setUp(self) -> None:
         """Setup some basic test-cases as sanity checks."""
@@ -75,141 +42,78 @@ class TestCCI(unittest.TestCase):
             "F": ["G", "A", "E"],
             "G": ["F", "A", "B"],
         }
-        neighbourhood_bcs = List()
-        neighbourhood_indices = List()
-        for i, bc in enumerate(spot_bcs):
-            neigh_bcs = np.array(neigh_dict[bc])
-            neigh_indices = np.array(
-                [np.where(spot_bcs == n_bc)[0][0] for n_bc in neigh_bcs]
-            )
-            neighbourhood_bcs.append((bc, neigh_bcs))
-            neighbourhood_indices.append((i, neigh_indices))
-
-        self.neighbourhood_bcs = neighbourhood_bcs
-        self.neighbourhood_indices = neighbourhood_indices
+        position = {bc: i for i, bc in enumerate(spot_bcs)}
+        lengths = [len(neigh_dict[bc]) for bc in spot_bcs]
+        self.indptr = np.concatenate([[0], np.cumsum(lengths)]).astype(np.int64)
+        self.indices = np.array(
+            [position[n] for bc in spot_bcs for n in neigh_dict[bc]], dtype=np.int64
+        )
+        self.adata = AnnData(
+            X=np.zeros((len(spot_bcs), 1)), obs=pd.DataFrame(index=spot_bcs)
+        )
+        self.adata.obsp["spot_neighbours"] = scipy.sparse.csr_matrix(
+            (np.ones(len(self.indices), np.int8), self.indices, self.indptr),
+            shape=(len(spot_bcs), len(spot_bcs)),
+        )
+        self.spot_bcs = spot_bcs
         self.neigh_dict = neigh_dict
+        # Every edge of the neighbourhood, each pair of spots once.
+        self.all_edges = []
+        for bc, neigh_bcs in neigh_dict.items():
+            for neigh_bc in neigh_bcs:
+                if (neigh_bc, bc) not in self.all_edges:
+                    self.all_edges.append((bc, neigh_bc))
+
+    def _bools(self, excluded=()):
+        return np.array([bc not in excluded for bc in self.spot_bcs])
+
+    def assertSameEdges(self, edges, expected):
+        """The same pairs of spots, either way round."""
+        self.assertEqual(len(edges), len(expected))
+        self.assertTrue(all(e in expected or e[::-1] in expected for e in edges))
 
     # Important, granular tests related to LR scoring
 
     # Important, granular tests related to CCI counting
-    def test_edge_retrieval_basic(self):
-        """ Basic test of functionality to retrieve edges via \
-                                                    get_between_spot_edge_array.
-        """
-        neighbourhood_bcs = self.neighbourhood_bcs
-        neighbourhood_indices = self.neighbourhood_indices
+    def test_edges(self):
+        """get_edges draws, forward, from each significant spot with the ligand
+        to its neighbours with the receptor, and reverse the other way round,
+        each pair of spots once."""
+        everywhere = self._bools()
+        forward, reverse = get_edges(self.adata, everywhere, everywhere, everywhere)
+        self.assertSameEdges(forward, self.all_edges)
+        self.assertSameEdges(reverse, self.all_edges)
+        self.assertEqual(len(self.all_edges), 12)
+        # Each edge once, the way round it was first found: A first, then B, ...
+        self.assertEqual(forward[:6], [("A", n) for n in self.neigh_dict["A"]])
+        self.assertEqual(forward[6], ("B", "G"))
 
-        # Initialising the edge list #
-        edge_list = edges.init_edge_list(neighbourhood_bcs)
+        # B and E without the receptor: their edges still come from their own
+        # neighbourhoods, where they are the significant ligand spot.
+        forward, _ = get_edges(self.adata, everywhere, self._bools("BE"), everywhere)
+        self.assertSameEdges(forward, self.all_edges)
 
-        # Basic case, should populate with all edges
-        neigh_bool = np.array([True] * len(neighbourhood_bcs))
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
-        edges.get_between_spot_edge_array(
-            edge_list, neighbourhood_bcs, neighbourhood_indices, neigh_bool, cell_data
-        )
-        edge_list = edge_list[1:]  # Remove initialisation edge
-
-        # Getting all the edges in the neighbourhood #
-        all_edges = []
-        for bc in self.neigh_dict:
-            neigh_bcs = self.neigh_dict[bc]
-            for neigh_bc in neigh_bcs:
-                if (bc, neigh_bc) not in all_edges and (neigh_bc, bc) not in all_edges:
-                    all_edges.append((bc, neigh_bc))
-        n_edges = len(all_edges)
-
-        self.assertEqual(len(edge_list), n_edges)
-        self.assertTrue(
-            np.all([edge in all_edges or edge[::-1] in all_edges for edge in edge_list])
+        # Neighbouring B and C without the receptor: only their edge is lost.
+        forward, _ = get_edges(self.adata, everywhere, self._bools("BC"), everywhere)
+        self.assertSameEdges(
+            forward, [e for e in self.all_edges if set(e) != {"B", "C"}]
         )
 
-        # Some neighbours not valid but no effect on edge list
-        # No effect since though not a valid neighbour, still a valid spot #
-        edge_list = edges.init_edge_list(neighbourhood_bcs)
-        invalid_neighs = ["B", "E"]
-        neigh_bool = np.array([bc not in invalid_neighs for bc in self.neigh_dict])
-        edges.get_between_spot_edge_array(
-            edge_list, neighbourhood_bcs, neighbourhood_indices, neigh_bool, cell_data
-        )
-        edge_list = edge_list[1:]  # Remove initialisation edge
+        # The middle spot neither significant nor with the receptor: the ring.
+        no_a = self._bools("A")
+        forward, _ = get_edges(self.adata, everywhere, no_a, no_a)
+        self.assertSameEdges(forward, [e for e in self.all_edges if "A" not in e])
 
-        self.assertEqual(len(edge_list), n_edges)
-        self.assertTrue(
-            np.all([edge in all_edges or edge[::-1] in all_edges for edge in edge_list])
-        )
+        # Forward and reverse differ when the ligand and receptor spots do.
+        only_a, not_a = ~no_a, no_a
+        forward, reverse = get_edges(self.adata, only_a, not_a, everywhere)
+        self.assertEqual(forward, [("A", n) for n in self.neigh_dict["A"]])
+        self.assertSameEdges(reverse, [e for e in self.all_edges if "A" in e])
+        self.assertEqual(reverse[0], ("B", "A"))
 
-        # Some neighbours not valid, effects the edge list
-        # Two neighbouring spots no longer valid neighbours #
-        edge_list = edges.init_edge_list(neighbourhood_bcs)
-        invalid_neighs = ["B", "C"]
-        neigh_bool = np.array([bc not in invalid_neighs for bc in self.neigh_dict])
-        edges.get_between_spot_edge_array(
-            edge_list, neighbourhood_bcs, neighbourhood_indices, neigh_bool, cell_data
-        )
-        edge_list = edge_list[1:]  # Remove initialisation edge
-
-        sub_edges1 = [
-            edge for edge in all_edges if edge not in [("B", "C"), ("C", "B")]
-        ]
-        n_subedges = len(sub_edges1)
-
-        self.assertEqual(len(edge_list), n_subedges)
-        self.assertTrue(
-            np.all(
-                [edge in sub_edges1 or edge[::-1] in sub_edges1 for edge in edge_list]
-            )
-        )
-
-        # Middle spot not neighbour, cell type, or spot of interest
-        # Removing the centre-spot as being the cell type of interest #
-        neigh_bool = np.array([True] * len(neighbourhood_bcs))
-        neigh_bool[0] = False
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
-        cell_data[0] = 0
-        neigh_bcs = neighbourhood_bcs[1:]
-        neigh_indices = neighbourhood_indices[1:]
-
-        edge_list = edges.init_edge_list(neighbourhood_bcs)
-        edges.get_between_spot_edge_array(
-            edge_list, neigh_bcs, neigh_indices, neigh_bool, cell_data
-        )
-        edge_list = edge_list[1:]  # Remove initialisation edge
-
-        sub_edges2 = [edge for edge in all_edges if "A" not in edge]
-        n_subedges2 = len(sub_edges2)
-
-        self.assertEqual(len(edge_list), n_subedges2)
-        self.assertTrue(
-            np.all(
-                [edge in sub_edges2 or edge[::-1] in sub_edges2 for edge in edge_list]
-            )
-        )
-
-        # Corner spot valid neighbour, not cell type, not spot of interest
-        neigh_bool = np.array([True] * len(neighbourhood_bcs))
-        cell_data = np.array([1] * len(neighbourhood_bcs), dtype=np.float64)
-        cell_data[1] = 0
-        neigh_bcs, neigh_indices = List(), List()
-        for i in range(len(cell_data)):
-            if i != 1:
-                neigh_bcs.append(neighbourhood_bcs[i])
-                neigh_indices.append(neighbourhood_indices[i])
-
-        edge_list = edges.init_edge_list(neighbourhood_bcs)
-        edges.get_between_spot_edge_array(
-            edge_list, neigh_bcs, neigh_indices, neigh_bool, cell_data
-        )
-        edge_list = edge_list[1:]  # Remove initialisation edge
-
-        sub_edges3 = [edge for edge in all_edges if "B" not in edge]
-        n_subedges3 = len(sub_edges3)
-
-        self.assertEqual(len(edge_list), n_subedges3)
-        self.assertTrue(
-            np.all(
-                [edge in sub_edges3 or edge[::-1] in sub_edges3 for edge in edge_list]
-            )
+        # Nothing significant: no edges, and lists all the same.
+        self.assertEqual(
+            get_edges(self.adata, everywhere, everywhere, ~everywhere), [[], []]
         )
 
     def test_get_interaction_matrix(self):
@@ -230,7 +134,8 @@ class TestCCI(unittest.TestCase):
         # Get interaction matrix
         int_matrix = het.get_interaction_matrix(
             cell_data,
-            self.neighbourhood_indices,
+            self.indptr,
+            self.indices,
             CELL_TYPE_LABELS,
             sig_bool,
             ligand_bool,
@@ -254,52 +159,3 @@ class TestCCI(unittest.TestCase):
             ct_index = np.where(unique_cell_type_labels == annot)[0][0]
             cell_data[i, ct_index] = 1
         return cell_data
-
-    # TODO next things to test:
-    #   1. Getting the LR scores.
-
-
-class TestRunCCILabels(unittest.TestCase):
-    """run_cci with cell-type labels stored as a categorical and as plain strings.
-
-    Under pandas 3, `Series.values.astype(str)` returns an Arrow-backed string array,
-    which numba rejects, so run_cci failed for both dtypes.
-    """
-
-    adata: ClassVar[AnnData]
-    lr_results: ClassVar[AnnData]
-
-    @classmethod
-    def setUpClass(cls):
-        adata, lrs = read_test_data_with_lr_pairs()
-        cls.lr_results = st.tl.cci.run(
-            adata, lrs, min_spots=5, distance=None, n_pairs=200, n_cpus=1, verbose=False
-        )
-        # Three bands of cell types across the tissue.
-        bands = pd.qcut(adata.obs["imagecol"], 3, labels=CELL_TYPE_LABELS)
-        adata.obs["cell_type"] = bands
-        adata.obs["cell_type_str"] = bands.to_numpy().astype(str)
-        cls.adata = adata
-
-    def assert_run_cci_runs(self, use_label: str):
-        adata = self.adata.copy()
-        lr_results = self.lr_results.copy()
-        st.tl.cci.run_cci(
-            adata,
-            use_label,
-            lr_results=lr_results,
-            min_spots=3,
-            n_perms=20,
-            n_cpus=1,
-            verbose=False,
-        )
-
-        matrix = lr_results.uns[f"lr_cci_{use_label}"]
-        self.assertEqual(list(matrix.index), CELL_TYPE_LABELS.tolist())
-        self.assertEqual(list(matrix.columns), CELL_TYPE_LABELS.tolist())
-
-    def test_categorical_labels(self):
-        self.assert_run_cci_runs("cell_type")
-
-    def test_string_labels(self):
-        self.assert_run_cci_runs("cell_type_str")
