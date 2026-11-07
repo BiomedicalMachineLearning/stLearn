@@ -34,16 +34,27 @@ class LRScorer:
     ----------
     adata: AnnData
         See get_lrs_scores.
-    neighbours: List
-        Array of arrays with indices specifying neighbours of each spot.
+    neighbours: List | scipy.sparse.csr_matrix
+        Each spot's neighbours: a List of index arrays, or the spots-by-spots CSR
+        matrix `adjacency` makes from one, as st.tl.cci.run stores in
+        obsp["spot_neighbours"].
     by_column: bool
         Keep a column-oriented copy of sparse expression, the size of adata.X.
         Worth it for repeated calls; get_lrs_scores passes False for its one.
     """
 
-    def __init__(self, adata: AnnData, neighbours: List, by_column: bool = True):
+    def __init__(
+        self,
+        adata: AnnData,
+        neighbours: List | sparse.csr_matrix,
+        by_column: bool = True,
+    ):
         self.adata = adata
-        self.adjacency = adjacency(neighbours)
+        self.adjacency = (
+            sparse.csr_matrix(neighbours)
+            if sparse.issparse(neighbours)
+            else adjacency(neighbours)
+        )
         self.columns: sparse.csc_matrix | None = (
             sparse.csc_matrix(adata.X)
             if by_column and sparse.issparse(adata.X)
@@ -329,17 +340,24 @@ def score_spots(
     chunk = spots_per_chunk(expr.shape[1], n_pairs)
     pieces: list[sparse.csr_matrix] = []
     spot_scores = np.empty((n_pairs, 0 if sparse_result else n_spots), np.float64)
+
+    n_rows = expr.shape[0]
+    mask = np.zeros(n_rows, np.bool_)  # the chunk's rows; reset after each chunk
+    position = np.empty(n_rows, np.int64)  # a row's index in the chunk's block
+
     for start in range(0, n_spots, chunk):
         spots = spot_indices[start : start + chunk]
         neighbours = adjacency[spots]
-        rows, local = np.unique(
-            np.concatenate([spots, neighbours.indices]), return_inverse=True
-        )
+        mask[spots] = True
+        mask[neighbours.indices] = True
+        rows = np.flatnonzero(mask)
+        mask[rows] = False
+        position[rows] = np.arange(len(rows))
         block = _dense_rows(expr, rows)
         means = neighbourhood_means(
             block,
             neighbours.indptr.astype(np.int64),
-            local[len(spots) :].astype(np.int64),
+            position[neighbours.indices],
             np.arange(len(spots), dtype=np.int32),
         )
         scores = (
@@ -347,7 +365,7 @@ def score_spots(
             if sparse_result
             else spot_scores[:, start : start + chunk]
         )
-        block_spots = local[: len(spots)].astype(np.int32)
+        block_spots = position[spots].astype(np.int32)
         score_pairs(block, means, pairs, het_vals[rows], min_expr, block_spots, scores)
         if sparse_result:
             by_spot = scores.T

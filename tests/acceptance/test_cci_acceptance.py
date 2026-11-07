@@ -231,7 +231,13 @@ def differences(baseline: anndata.AnnData, current: anndata.AnnData, atol: float
     current_features = current.uns["lrfeatures"].loc[features.index, features.columns]
     if not np.allclose(features, current_features, rtol=0, atol=atol, equal_nan=True):
         problems.append("lrfeatures differ")
-    for key in [*NEIGHBOURS, "cci_het"]:
+    for key in NEIGHBOURS:
+        before, now = baseline.uns.get(key), current.uns.get(key)
+        if (before is None) != (now is None):
+            problems.append(f"{key}: in only one run")
+        elif before is not None and not np.array_equal(before, now):
+            problems.append(f"{key}: the neighbourhoods differ")
+    for key in ["cci_het"]:
         in_baseline, in_current = key in baseline.obs, key in current.obs
         if in_baseline != in_current:
             problems.append(f"{key}: in only one run")

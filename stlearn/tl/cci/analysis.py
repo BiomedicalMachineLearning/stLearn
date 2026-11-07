@@ -30,7 +30,7 @@ from .het import (
 from .ligand_receptors import LRPairs, genes_of, lr_pairs, split_name
 from .neighbours import calc_distance, calc_neighbours, get_neighbourhoods
 from .permutation import perform_spot_testing
-from .scoring import get_lrs_scores
+from .scoring import adjacency, get_lrs_scores
 
 
 def _report_dropped_lrs(
@@ -52,7 +52,8 @@ def _report_dropped_lrs(
         n_above = np.asarray((min_expr < adata[:, genes].X).sum(axis=0)).ravel()
         unexpressed = genes[n_above == 0]  # sorted, as genes() are
         by_gene = np.isin(dropped.ligands(), unexpressed) | np.isin(
-            dropped.receptors(), unexpressed
+            dropped.receptors(),
+            unexpressed,
         )
         n_by_gene = int(by_gene.sum())
     too_few = len(dropped) - n_by_gene
@@ -65,7 +66,7 @@ def _report_dropped_lrs(
         )
         print(
             f"Dropping {n_by_gene} LR pairs with a gene never expressed above "
-            f"min_expr={min_expr}: {named}{more}."
+            f"min_expr={min_expr}: {named}{more}.",
         )
     if too_few:
         print(f"Dropping {too_few} LR pairs scored in {min_spots} or fewer spots.")
@@ -162,8 +163,9 @@ def run(
                 Returns 'lr_species' and 'lrfeatures'
                 With save_bg 'lrs_to_bg' and 'lr_spot_indices'.
         Relevant information stored in adata:
-            adata.obsm['spot_neighbours'] and adata.obsm['spot_neigh_bcs']
-                The neighbours of each spot.
+            adata.obsp['spot_neighbours']
+                The neighbours of each spot, as a spots-by-spots CSR matrix: row
+                i's indices are spot i's neighbours.
             adata.obsm['cci_het']
                 Only if use_label specified; contains the counts of the cell types found
                 per spot.
@@ -180,7 +182,7 @@ def run(
         raise TypeError(
             f"lrs must be LRPairs, got {type(lrs).__name__}; use lr_pairs(database), "
             "read_lr_pairs(path), LRPairs.from_frame(df) or LRPairs.from_names(names, "
-            "species=...)."
+            "species=...).",
         )
 
     if len(lrs) == 0:
@@ -202,25 +204,11 @@ def run(
     # Calculating neighbour & storing #
     distance = calc_distance(adata, distance)
     neighbours = calc_neighbours(adata, distance, verbose=verbose)
-    adata.obsm["spot_neighbours"] = pd.DataFrame(
-        [",".join(x.astype(str)) for x in neighbours],
-        index=adata.obs_names,
-        columns=["neighbour_indices"],
-    )
-
-    # Important to store barcodes in-case adata subsetted #
-    barcodes = adata.obs_names.to_numpy()
-    adata.obsm["spot_neigh_bcs"] = pd.DataFrame(
-        list(map(lambda x: ",".join(barcodes[x]), neighbours)),
-        index=adata.obs_names,
-        columns=["neighbour_bcs"],
-    )
+    graph = adjacency(neighbours)
+    adata.obsp["spot_neighbours"] = graph
 
     if verbose:
-        print(
-            "Spot neighbour indices stored in adata.obsm['spot_neighbours'] "
-            "& adata.obsm['spot_neigh_bcs'].",
-        )
+        print("Spot neighbours stored in adata.obsp['spot_neighbours'].")
 
     # Weighting by cell heterogeneity if given cell types
     if use_label is not None:
@@ -242,14 +230,19 @@ def run(
     # 1. Filter any LRs without stored expression.
     # Calculating the lr_scores across spots for the inputted lrs #
     lr_scores, scored = get_lrs_scores(
-        adata, lrs, neighbours, het_vals, min_expr, sparse_result=True
+        adata,
+        lrs,
+        graph,
+        het_vals,
+        min_expr,
+        sparse_result=True,
     )
     # Fail fast.
     if len(scored) == 0:
         raise ValueError(
             f"None of the {len(lrs)} {lrs.species} LR pairs are in adata.var_names; "
             "check the pairs' species matches the data, e.g. "
-            "lr_pairs(species='mouse')."
+            "lr_pairs(species='mouse').",
         )
     n_scored = np.diff(lr_scores.indptr).astype(np.int64)  # spots scored per LR
     lr_bool = n_scored > min_spots
@@ -260,7 +253,7 @@ def run(
     if len(tested) == 0:
         raise ValueError(
             f"No LR pairs had scores in more than {min_spots} spots; "
-            "try lowering min_spots or min_expr."
+            "try lowering min_spots or min_expr.",
         )
     # Permutation methods generating background per spot, & test lrs in spot.
     tests = perform_spot_testing(
@@ -268,7 +261,7 @@ def run(
         lr_scores,
         tested,
         n_pairs,
-        neighbours,
+        graph,
         het_vals,
         min_expr,
         verbose,
@@ -277,7 +270,8 @@ def run(
         random_state=random_state,
     )
     lr_results = AnnData(
-        obs=pd.DataFrame(index=adata.obs_names), var=pd.DataFrame(index=tested.names())
+        obs=pd.DataFrame(index=adata.obs_names),
+        var=pd.DataFrame(index=tested.names()),
     )
 
     lr_results.var["source"] = tested.to_frame()["source"].to_numpy(dtype=str)
@@ -293,7 +287,7 @@ def run(
     if verbose:
         print(
             "\nLR results returned as a table: the summary in .var, the per-spot "
-            "results in .layers. Pass it to the CCI functions as lr_results=."
+            "results in .layers. Pass it to the CCI functions as lr_results=.",
         )
     return lr_results
 
@@ -391,7 +385,7 @@ def run_lr_go(
         species = pairs_species or "human"
     elif pairs_species is not None and species != pairs_species:
         raise ValueError(
-            f"species is {species!r} but the LR table's pairs are {pairs_species}."
+            f"species is {species!r} but the LR table's pairs are {pairs_species}.",
         )
     all_species = ["human", "mouse"]
     if species not in all_species:
@@ -545,9 +539,10 @@ def run_cci(
         msg = f"Cell type scores misformatted in adata.uns[{uns_key}]:\n"
         if not cols_present or not rows_present:
             if not cols_present:
+                out = [cell for cell in all_set if cell not in adata.uns[uns_key]]
                 msg = (
-                    msg + f"Cell types missing from adata.uns[{uns_key}] columns:\n"
-                    f"{[cell for cell in all_set if cell not in adata.uns[uns_key]]}\n"
+                    msg
+                    + f"Cell types missing from adata.uns[{uns_key}] columns:{out}\n"
                 )
             elif not rows_present:
                 msg = msg + "Rows do not correspond to adata.obs_names.\n"

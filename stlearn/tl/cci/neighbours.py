@@ -154,10 +154,22 @@ def neighbourhoods_from_barcodes(
 
 
 def get_neighbourhoods(adata):
-    """Gets the neighbourhood information stored by st.tl.cci.run."""
+    """The neighbourhoods st.tl.cci.run stored: (barcode, neighbour barcodes) and
+    (index, neighbour indices) per spot, from obsp["spot_neighbours"]. Objects
+    written by earlier versions hold them as comma-joined strings in obsm."""
+    if "spot_neighbours" in adata.obsp:
+        graph = scipy.sparse.csr_matrix(adata.obsp["spot_neighbours"])
+        spot_bcs = adata.obs_names.to_numpy().astype(str)
+        neighbourhood_bcs, neighbourhood_indices = List(), List()
+        for i in range(graph.shape[0]):
+            start, end = graph.indptr[i], graph.indptr[i + 1]
+            neigh = graph.indices[start:end].astype(np.int64)
+            neighbourhood_indices.append((i, neigh))
+            neighbourhood_bcs.append((spot_bcs[i], spot_bcs[neigh]))
+        return neighbourhood_bcs, neighbourhood_indices
 
     # Old stlearn version where didn't store neighbourhood barcodes, not good
-    #   for anndata subsetting!!
+    # for anndata subsetting!!
     if "spot_neigh_bcs" not in adata.obsm:
         # Determining the neighbour spots used for significance testing #
         neighbours = List()
@@ -175,7 +187,7 @@ def get_neighbourhoods(adata):
             neighbourhood_bcs.append((spot_bcs[spot_i], spot_bcs[neighbours[spot_i]]))
 
         return neighbourhood_bcs, neighbourhood_indices
-    else:  # Newer version
+    else:
         spot_bcs = adata.obs_names.to_numpy().astype(str)
         spot_neigh_bcs = adata.obsm["spot_neigh_bcs"].to_numpy().astype(str)
 
