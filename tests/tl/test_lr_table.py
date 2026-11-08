@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 
-"""st.tl.cci.run's results in a table of their own.
-
-st.tl.cci.run returns an AnnData with the same spots as rows and the LR pairs as
-columns: var is the LR summary, each per-spot result is a layer. The expression
-table keeps only what is per spot, so a store can open it without the results.
-Everything that reads or adds to the results takes the table as lr_results=.
-"""
+"""st.tl.cci.run's results in a table of their own."""
 
 import unittest
 from unittest import mock
@@ -24,7 +18,11 @@ import stlearn as st
 from stlearn.tl.cci import LR_RESULTS, lr_result
 from tests.utils import CCI_LRS, cci_table
 
-SUMMARY = ["source", "n_spots", "n_spots_sig", "n_spots_sig_pval"]
+FEATURES = ["nonzero-median", "zero-prop", "median_rank", "prop_rank", "mean_rank"]
+SUMMARY = ["source", "n_spots", "n_spots_sig", "n_spots_sig_pval", *FEATURES]
+# varm key of the ligands' and receptors' expression quantiles, run's defaults.
+QUANTILES = "lr_quantiles"
+RUN_QUANTILES = [0.5, 0.75, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 0.9975, 0.999, 1]
 RUN_CCI_UNS = [
     "lr_cci_cell_type",
     "lr_cci_raw_cell_type",
@@ -81,7 +79,62 @@ class TestLrTable(unittest.TestCase):
         np.testing.assert_array_equal(
             lr.var["n_spots_sig"], (lr_result(lr, "p_adjs") < 0.05).sum(axis=0)
         )
-        self.assertIn("lrfeatures", lr.uns)
+        self.assertEqual(list(lr.uns), ["lr_species"])
+        self.assertEqual(list(lr.varm), [QUANTILES])
+
+    def _genes(self, name):
+        """The expression of pair `name`'s ligand and receptor, spots by 2."""
+        ligand, receptor = name.split("_")
+        return self.adata[:, [ligand, receptor]].X.toarray()
+
+    def test_expression_features_are_var_columns(self):
+        """Each pair's expression features sit beside its summary in var, so they
+        are read by name like any other column and can never be out of step with
+        the layers' columns (what uns['lrfeatures'] was)."""
+        lr = self.lr
+        features = lr.var[FEATURES]
+        self.assertFalse(features.isna().any().any())
+        for name in lr.var_names:
+            with self.subTest(lr=name):
+                expr = self._genes(name)
+                nonzero_medians = [
+                    np.quantile(gene[gene > 0], 0.5, method="nearest")
+                    for gene in expr.T
+                ]
+                self.assertEqual(
+                    features.loc[name, "nonzero-median"], np.mean(nonzero_medians)
+                )
+                self.assertEqual(features.loc[name, "zero-prop"], (expr == 0).mean())
+        # The ranks run over the tested pairs, 0 the lowest expressed; so the most
+        # significant pair, LigA_RecA, with its co-expressed corner, ranks top.
+        for rank in ("median_rank", "prop_rank"):
+            self.assertCountEqual(features[rank], range(lr.n_vars))
+        np.testing.assert_array_equal(
+            features["mean_rank"], features[["median_rank", "prop_rank"]].mean(axis=1)
+        )
+        self.assertEqual(features["mean_rank"].idxmax(), "LigA_RecA")
+
+    def test_expression_quantiles_are_in_varm(self):
+        """The quantiles of each pair's ligand and receptor expression, which the
+        test matched its background genes on, are a DataFrame in varm: a row per
+        pair in the table's order, 'L_q' columns then 'R_q'."""
+        lr = self.lr
+        quantiles = lr.varm[QUANTILES]
+        self.assertIsInstance(quantiles, pd.DataFrame)
+        self.assertTrue(quantiles.index.equals(lr.var_names))
+        expected_columns = [f"L_{float(q)}" for q in RUN_QUANTILES]
+        expected_columns += [f"R_{float(q)}" for q in RUN_QUANTILES]
+        self.assertEqual(list(quantiles.columns), expected_columns)
+        self.assertFalse(quantiles.isna().any().any())
+        for name in lr.var_names:
+            with self.subTest(lr=name):
+                expr = self._genes(name)
+                expected = np.quantile(expr, RUN_QUANTILES, axis=0, method="nearest")
+                np.testing.assert_array_equal(
+                    quantiles.loc[name].to_numpy(), expected.T.ravel()
+                )
+        # Not all zero: the fixture's co-expressed corner expresses LigA at 6.
+        self.assertEqual(quantiles.loc["LigA_RecA", "L_1.0"], 6)
 
     def test_layers_are_sparse_with_the_tested_spots(self):
         """Each layer is a CSC matrix with an entry for each spot scored for an
@@ -143,6 +196,22 @@ class TestLrTable(unittest.TestCase):
                     lr_result(lr, "lr_scores", name),
                     lr_result(self.lr, "lr_scores", name),
                 )
+        self.assertEqual(list(lr.var.columns), SUMMARY)
+        pd.testing.assert_frame_equal(
+            lr.var[FEATURES], self.lr.var.loc[lr.var_names, FEATURES]
+        )
+        pd.testing.assert_frame_equal(
+            lr.varm[QUANTILES], self.lr.varm[QUANTILES].loc[lr.var_names]
+        )
+
+    def test_adj_pvals_drops_run_cci_columns_but_keeps_features(self):
+        lr = self.with_cci.copy()
+        self.assertTrue(set(lr.var.columns) - set(SUMMARY), "run_cci added columns")
+        st.tl.cci.adj_pvals(lr)
+        self.assertEqual(list(lr.var.columns), SUMMARY)
+        pd.testing.assert_frame_equal(
+            lr.var[FEATURES], self.lr.var.loc[lr.var_names, FEATURES]
+        )
 
     def test_plots(self):
         """Every plot of LR results draws from the table given as lr_results=."""

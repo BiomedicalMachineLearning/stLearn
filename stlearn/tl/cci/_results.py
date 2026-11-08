@@ -1,10 +1,14 @@
 """st.tl.cci.run returns an LR table: the obs/spots/cells as rows and LR pairs as
-columns with the most significant first. Its var is the LR summary, each of LR_RESULTS
-is a layer, and its uns holds lrfeatures.
+columns with the most significant first. Its var is the LR summary, with each
+pair's expression features as the LR_FEATURES columns, and each of LR_RESULTS is a
+layer.
 
 The layers are CSC matrices with one structure: an entry for each spot tested for
 an LR, those with a score above 0 for it. Elsewhere a result has its default, a
 score of 0 or a p-value of 1, which lr_result fills in.
+
+varm[LR_QUANTILES] holds the expression quantiles of each pair's ligand and
+receptor. The LR pair on the var axis stays aligned with the layers' columns.
 
 st.tl.cci.run_cci returns cell type interactions and st.tl.cci.run_lr_go's GO terms. The
 table it ran on keeps only what is per spot: the neighbours and cell type counts.
@@ -19,7 +23,19 @@ from scipy import sparse
 from statsmodels.stats.multitest import multipletests
 
 LR_RESULTS = ("lr_scores", "p_vals", "p_adjs", "neg_log10_p_adjs", "lr_sig_scores")
-DEFAULTS = {"p_vals": 1.0, "p_adjs": 1.0}  # a result's value where an LR was not tested
+# A result's value where an LR was not tested
+DEFAULTS = {"p_vals": 1.0, "p_adjs": 1.0}
+# Statistics per LR pair: the average of the L and R non-zero medians and
+# the proportion of spots with a count of zero.
+# Rank is an order of values n-1 to 0 (highest to lowest).
+# Median rank is ordered (ascending) using the pair's non-zero median.
+# Proportion rank is ordered (descending) using the pair's proportions.
+# Mean rank is the average of the median and proportion rank.
+LR_FEATURES = ("nonzero-median", "zero-prop", "median_rank", "prop_rank", "mean_rank")
+# lr_quantiles is stored in varm - the LR pairs by quantile, of each ligand's ('L_q')
+# and receptor's ('R_q') expression quantiles.
+LR_QUANTILES = "lr_quantiles"
+
 type Matrix = sparse.spmatrix | np.ndarray
 
 
@@ -171,14 +187,12 @@ def store_lr_results(
     padjs: Matrix,
     pval_adj_cutoff: float,
 ) -> None:
-    """Writes the LR summary to the LR table's var and the LR_RESULTS layers, CSC
-    on the tested entries, with LRs ordered by their number of significant spots.
+    """Writes the LR summary to the LR table's var and the LR_RESULTS layers, and
+    orders the LRs by their number of significant spots.
 
-    The inputs' columns follow `lr_results.var_names` on the way in. Previous
-    results are replaced; the rest of the table (X, varm, other layers) moves with
-    the summary, as scanpy does. 'source', where each pair came from, is kept; any
-    other summary columns, such as run_cci's, are dropped: they describe the
-    previous results.
+    The inputs' columns are in `lr_results.var_names` order. Reordering var
+    reorders the rest of the table with it (X, varm, other layers), as scanpy does.
+    LR_FEATURES and 'source' var columns are kept - other var columns are dropped.
     """
     scores = scored_entries(lr_scores)
     adj, ps = on_structure(padjs, scores), on_structure(pvals, scores)
@@ -197,6 +211,8 @@ def store_lr_results(
     )
     if "source" in lr_results.var:
         summary.insert(0, "source", lr_results.var["source"])
+    features = [col for col in LR_FEATURES if col in lr_results.var]
+    summary = summary.join(lr_results.var[features])
     order: npt.NDArray[np.intp] = np.argsort(-summary["n_spots_sig"].to_numpy())
 
     for key in LR_RESULTS:

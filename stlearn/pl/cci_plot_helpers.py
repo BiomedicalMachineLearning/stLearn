@@ -37,7 +37,8 @@ def lr_scatter(
     figsize: tuple | None = None,
     show_all: bool = False,
 ):
-    """`feature` of the LR pairs against their rank; `data` is the LR table."""
+    """`feature` of the LR pairs against their rank; `data` is the LR table, whose
+    var holds the summary and the expression features side by side."""
     lr_df = data.var
 
     if max_text > len(lr_df):
@@ -55,8 +56,7 @@ def lr_scatter(
         highlight_lrs = highlight_lrs[0:max_text]
 
     lrs = lr_df.index.to_numpy().astype(str)[0:n_top]
-    lr_features = data.uns["lrfeatures"]
-    lr_df = pd.concat([lr_df, lr_features], axis=1).loc[lrs, :]
+    lr_df = lr_df.loc[lrs, :]
     if feature not in lr_df.columns:
         raise ValueError(f"Inputted {feature}; must be one of {list(lr_df.columns)}")
 
