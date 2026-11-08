@@ -2,30 +2,36 @@
 History
 =======
 
-1.5.1 (2026-11-07)
+1.5.1 (2026-11-09)
 ------------------
 * ``st.tl.cci.run`` now uses a spots-by-spots, sparse graph:
   ``adata.obsp["spot_neighbours"]``. It replaces the comma-joined strings
   ``adata.obsm["spot_neighbours"]`` and ``adata.obsm["spot_neigh_bcs"]``.
-* With ``use_label``, ``run`` counts cell types over the same graph instead of
-  searching the neighbours a second time (``het.count`` takes it as ``neighbours=``).
-* ``st.tl.cache.write_subset_h5ad`` takes ``obsp_keys``, and
-  ``merge_h5ad_into_adata`` copies ``obsp``, so a cached CCI run keeps its neighbours.
+  ``st.tl.cci.run_cci`` and ``get_edges`` read the stored graph directly.
+* With ``use_label``, ``run`` counts cell types over the same graph instead
+  of searching the neighbours a second time (``het.count`` takes it as
+  ``neighbours=``).
 
 API and Bug Fixes:
 
-* ``stlearn.tl.cci.neighbours.calc_neighbours`` returns that sparse matrix instead
-  of a numba ``List``. ``neighbourhood_matrix`` and
+* ``st.tl.cci.run`` no longer stores ``lrfeatures`` in the LR table's ``uns``.
+  ``nonzero-median``, ``zero-prop``, ``median_rank``, ``prop_rank`` and
+  ``mean_rank`` are columns of ``lr_results.var``.
+  ``lr_results.varm["lr_quantiles"]`` stores ligand and receptor expression
+  quantiles.
+* ``st.tl.cache.write_subset_h5ad`` takes ``obsp_keys``, and
+  ``merge_h5ad_into_adata`` copies ``obsp``, so a cached CCI run keeps its
+  neighbours.
+* ``stlearn.tl.cci.neighbours.calc_neighbours`` returns that sparse matrix
+  instead of a numba ``List``. ``neighbourhood_matrix`` and
   ``neighbourhoods_from_barcodes`` are removed.
 * ``LRScorer`` takes a sparse matrix. ``get_scores``, ``adjacency`` and
   ``flatten_neighbours`` are removed from ``stlearn.tl.cci.scoring``.
-* ``st.tl.cci.run_cci`` and ``get_edges`` read the stored graph directly;
-  ``stlearn.tl.cci.neighbours.get_neighbourhoods`` and the edge helpers in
-  ``stlearn.tl.cci.edges`` are removed. ``get_interaction_matrix`` and
-  ``get_interaction_pvals`` take the graph's CSR arrays (``neigh_indptr``,
-  ``neigh_indices``) instead of a numba ``List``.
-* ``get_edges`` no longer deduplicates edges with a quadratic loop: the arrow
-  plots on large neighbourhoods are seconds faster.
+* ``stlearn.tl.cci.neighbours.get_neighbourhoods`` and the edge helpers in
+  ``stlearn.tl.cci.edges`` are removed.
+* ``get_interaction_matrix`` and ``get_interaction_pvals`` take the graph's
+  CSR arrays (``neigh_indptr``, ``neigh_indices``) instead of a numba ``List``.
+* ``get_edges`` no longer needs to deduplicates in a quadratic loop.
 
 1.5.0 (2026-11-01)
 ------------------
@@ -146,8 +152,8 @@ API and Bug Fixes:
   ``st.read_old_st``, ``st.read_slide_seq``, ``st.read_merfish``,
   ``st.read_seq_fish`` and ``st.create_stlearn``.
 * ``st.tl.cci.grid`` vectorised and no longer takes ``n_cpus``.
-* ``obsm["spatial"]`` is in full-resolution pixels (was image pixels), matching
-  the rest of stLearn (used by ``st.tl.cci.grid``).
+* ``obsm["spatial"]`` is in full-resolution pixels (was image pixels),
+  matching the rest of stLearn (used by ``st.tl.cci.grid``).
 * SME outputs are sparse when ``X`` is sparse; no weight matrices in ``uns``.
 * Removed: ``extract_feature(cnn_base="xception")``,
   ``deconvolution_plot(data_alpha=)``, ``local_plot(cluster=)``,
