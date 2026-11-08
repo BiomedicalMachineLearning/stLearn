@@ -66,6 +66,8 @@ def perform_spot_testing(
     get_lrs_scores returns with sparse_result) or dense. lr_scores has a column
     for each of `lrs`, in the order of lrs.names(), as get_lrs_scores gives them.
     The p-values come back sparse, an entry for each.
+
+    Returns lr_features in expression-rank order.
     """
     quantiles = np.array(quantiles)
     scores = scored_entries(lr_scores)

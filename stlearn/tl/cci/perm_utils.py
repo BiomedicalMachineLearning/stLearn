@@ -8,6 +8,7 @@ from anndata import AnnData
 from numba import njit, prange
 from scipy import sparse
 
+from ._results import LR_FEATURES
 from .ligand_receptors import LRPairs
 
 
@@ -218,11 +219,9 @@ def _gen_rand_pairs(genes1, genes2, n_pairs, seed):
 
 
 def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs: LRPairs, quantiles):
-    """Gets expression features of LR pairs; nonzero-median, zero-prop, quantiles.
-    A row per pair, indexed by its name.
-
-    lr_expr is the LR genes' expression, spots by genes: a DataFrame, or an
-    AnnData of those genes, whose sparse X is used as it is, never densified.
+    """Get expression features for a given LR pair (per row). The LR_FEATURES columns
+    then the 'L_q' and 'R_q' quantiles. Rows are ordered by mean_rank; lowest
+    expressed first, not as in lrs.
     """
     quantiles = np.array(quantiles)
     if isinstance(lr_expr, AnnData):
@@ -268,8 +267,7 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs: LRPairs, quantiles):
     prop_ranks = [np.where(prop_order == i)[0][0] for i in range(len(lrs))]
     mean_ranks = np.array([median_ranks, prop_ranks]).mean(axis=0)
 
-    # Saving the lrfeatures...
-    cols = ["nonzero-median", "zero-prop", "median_rank", "prop_rank", "mean_rank"]
+    cols = LR_FEATURES
     lr_features_data = {
         cols[0]: np.array(lr_median_means, dtype=np.float64),
         cols[1]: np.array(lr_prop_means, dtype=np.float64),

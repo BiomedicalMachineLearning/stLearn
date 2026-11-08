@@ -13,6 +13,8 @@ import tqdm
 
 from ...utils import _set_n_threads
 from ._results import (
+    LR_FEATURES,
+    LR_QUANTILES,
     check_lr_results,
     correct_pvals,
     lr_result,
@@ -149,6 +151,11 @@ def run(
                 Summary of significant spots detected per LR: 'n_spots',
                 'n_spots_sig' and 'n_spots_sig_pval'; and with LRPairs, 'source',
                 where each pair came from.
+            varm
+                'lr_quantiles': the expression quantiles of each pair's ligand
+                ('L_0.5' ... 'L_1.0') and receptor ('R_0.5' ... 'R_1.0'), from
+                which the test picked its expression-matched background genes and
+                storing statistics in LR_FEATURES.
             layers
                 'lr_scores', 'lr_sig_scores', 'p_vals', 'p_adjs' and
                 'neg_log10_p_adjs', spots by LR pairs. 'lr_scores' is the raw
@@ -160,7 +167,7 @@ def run(
                 matrices leave out; read a layer with st.tl.cci.lr_result,
                 which fills them in, one LR at a time for a large sample.
             uns
-                Returns 'lr_species' and 'lrfeatures'
+                'lr_species', the species of lrs.
                 With save_bg 'lrs_to_bg' and 'lr_spot_indices'.
         Relevant information stored in adata:
             adata.obsp['spot_neighbours']
@@ -274,14 +281,14 @@ def run(
         neg_binom=neg_binom,
         random_state=random_state,
     )
-    lr_results = anndata.AnnData(
-        obs=pandas.DataFrame(index=adata.obs_names),
-        var=pandas.DataFrame(index=tested.names()),
-    )
-
-    lr_results.var["source"] = tested.to_frame()["source"].to_numpy(dtype=str)
+    features = tests.lr_features.loc[tested.names()]
+    var = pandas.DataFrame(
+        {"source": tested.to_frame()["source"].to_numpy(dtype=str)},
+        index=tested.names(),
+    ).join(features[list(LR_FEATURES)])
+    lr_results = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names), var=var)
+    lr_results.varm[LR_QUANTILES] = features.drop(columns=list(LR_FEATURES))
     lr_results.uns["lr_species"] = lrs.species
-    lr_results.uns["lrfeatures"] = tests.lr_features
 
     padjs = correct_pvals(lr_scores, tests.pvals, "spot", adj_method)
     store_lr_results(lr_results, lr_scores, tests.pvals, padjs, pval_adj_cutoff)

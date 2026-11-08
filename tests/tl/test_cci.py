@@ -22,6 +22,7 @@ CELL_TYPE_LABELS = np.array(["CT1", "CT2", "CT3"])
 
 class TestCCI(unittest.TestCase):
     """Tests for `stlearn` CCI capability."""
+
     all_edges: list[Any]
 
     def setUp(self) -> None:

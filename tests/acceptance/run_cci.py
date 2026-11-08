@@ -195,9 +195,12 @@ def main() -> None:
     result.uns["neighbours_indices"] = graph.indices
     if args.use_label:
         result.obs["cci_het"] = numpy.asarray(adata.obsm["cci_het"]).ravel()
-    # The layout of baselines written before the LR table.
-    result.uns["lr_summary"] = lr_results.var
-    result.uns["lrfeatures"] = lr_results.uns["lrfeatures"]
+    # For backward compatibility - layout of baselines before the LR table.
+    features = list(stlearn.tl.cci.LR_FEATURES)
+    result.uns["lr_summary"] = lr_results.var.drop(columns=features)
+    result.uns["lrfeatures"] = lr_results.var[features].join(
+        lr_results.varm[stlearn.tl.cci.LR_QUANTILES]
+    )
     result.uns["metrics"] = json.dumps(metrics)
     pathlib.Path(args.result).parent.mkdir(parents=True, exist_ok=True)
     result.write_h5ad(args.result, compression="gzip")
