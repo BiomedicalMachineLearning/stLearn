@@ -169,7 +169,7 @@ def grid(
     grid_expr = pd.DataFrame(
         grid_expr,
         index=[f"grid_{i}" for i in range(n_squares)],
-        columns=adata.var_names.values.astype(str),
+        columns=adata.var_names.to_numpy().astype(str),
     )
     grid_data = AnnData(grid_expr)
     grid_data.obs["imagecol"] = grid_coords[:, 0]
@@ -184,7 +184,7 @@ def grid(
     if use_label is not None and cell_info is not None and cell_set is not None:
         grid_data.uns[use_label] = pd.DataFrame(
             cell_info,
-            index=grid_data.obs_names.values.astype(str),
+            index=grid_data.obs_names.to_numpy().astype(str),
             columns=cell_set,
         )
         max_indices = np.apply_along_axis(np.argmax, 1, cell_info)

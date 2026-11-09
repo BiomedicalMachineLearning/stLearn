@@ -148,7 +148,7 @@ class LRPairs:
             examples = frame.loc[with_underscore, ["ligand", "receptor"]].head(3)
             raise ValueError(
                 f"Gene symbols in {source} contain '_', which separates ligand from "
-                f"receptor in 'L_R' pair names; e.g. {examples.values.tolist()}",
+                f"receptor in 'L_R' pair names; e.g. {examples.to_numpy().tolist()}",
             )
         frame = _merge_repeats(frame)
         self._set(frame, species.lower(), _labels(frame))

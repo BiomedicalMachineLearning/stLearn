@@ -229,7 +229,7 @@ def get_lr_features(lr_expr: pd.DataFrame | AnnData, lrs: LRPairs, quantiles):
         # Column by column below, so CSC; dense stays as it is.
         expr = sparse.csc_matrix(expr) if sparse.issparse(expr) else np.asarray(expr)
     else:
-        genes, expr = lr_expr.columns.values, lr_expr.values
+        genes, expr = lr_expr.columns.to_numpy(), lr_expr.to_numpy()
 
     # Determining indices of LR pairs #
     l_indices, r_indices = [], []

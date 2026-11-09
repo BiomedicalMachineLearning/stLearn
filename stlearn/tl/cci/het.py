@@ -123,7 +123,7 @@ def get_data_for_counting(adata, use_label, mix_mode, all_set):
         col_order = [cols.index(cell_type) for cell_type in all_set]
         cell_data = cell_props.iloc[:, col_order].to_numpy(dtype=np.float64)
     else:
-        cell_labels = adata.obs.loc[:, obs_key].values
+        cell_labels = adata.obs[obs_key].to_numpy().astype(str)
         cell_data = np.zeros((len(cell_labels), len(all_set)), dtype=np.float64)
         for i, cell_type in enumerate(all_set):
             cell_data[:, i] = (

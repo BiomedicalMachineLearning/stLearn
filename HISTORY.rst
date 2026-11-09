@@ -32,6 +32,7 @@ API and Bug Fixes:
 * ``get_interaction_matrix`` and ``get_interaction_pvals`` take the graph's
   CSR arrays (``neigh_indptr``, ``neigh_indices``) instead of a numba ``List``.
 * ``get_edges`` no longer needs to deduplicates in a quadratic loop.
+* Removed ``UndefinedException`` from ``resistance_matrix``.
 
 1.5.0 (2026-11-01)
 ------------------

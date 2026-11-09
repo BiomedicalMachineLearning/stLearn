@@ -93,10 +93,10 @@ def perform_spot_testing(
     lr_feats = get_lr_features(adata[:, lr_genes], lrs, quantiles)
     l_quants = lr_feats.loc[
         names, [col for col in lr_feats.columns if "L_" in col]
-    ].values
+    ].to_numpy()
     r_quants = lr_feats.loc[
         names, [col for col in lr_feats.columns if "R_" in col]
-    ].values
+    ].to_numpy()
     candidate_quants = gene_quantiles(
         adata, genes, quantiles, expression=scorer.columns
     )

@@ -547,7 +547,7 @@ def run_cci(
         cols_present = np.all(
             [cell_type in adata.uns[uns_key] for cell_type in all_set],
         )
-        rows_present = np.all(adata.uns[uns_key].index.values == adata.obs_names.values)
+        rows_present = adata.uns[uns_key].index.equals(adata.obs_names)
         msg = f"Cell type scores misformatted in adata.uns[{uns_key}]:\n"
         if not cols_present or not rows_present:
             if not cols_present:
@@ -578,7 +578,7 @@ def run_cci(
     count_col = "n_spots_sig" if sig_spots else "n_spots"
     col = "lr_sig_scores" if sig_spots else "lr_scores"
     best_lr_indices = np.flatnonzero(lr_summary[count_col].to_numpy() > min_spots)
-    best_lrs = lr_summary.index.values[best_lr_indices]
+    best_lrs = lr_summary.index.to_numpy()[best_lr_indices]
     lr_genes = genes_of(best_lrs)
     if len(lr_genes) == 0:
         raise ValueError(
