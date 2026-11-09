@@ -298,18 +298,6 @@ def laplacian_matrix(A, normalized=False):
 
 # """
 # **********
-# Exceptions
-# **********
-# Custom exceptions for NetComp.
-# """
-
-
-class UndefinedException(Exception):
-    """Raised when matrix to be returned is undefined"""
-
-
-# """
-# **********
 # Resistance
 # **********
 # Resistance matrix. Renormalized version, as well as conductance and commute matrices.
@@ -329,6 +317,11 @@ def resistance_matrix(A, check_connected=True):
     -------
     R : NumPy matrix
        Matrix of pairwise resistances between nodes.
+    Raises
+    ------
+    ValueError
+        If check_connected is True and the graph is not connected, since the
+        resistance matrix is undefined in that case.
     Notes
     -----
     Uses formula for resistance matrix R in terms of Moore-Penrose of
@@ -358,9 +351,7 @@ def resistance_matrix(A, check_connected=True):
         else:
             G = nx.from_numpy_array(A)
         if not nx.is_connected(G):
-            raise UndefinedException(
-                "Graph is not connected. Resistance matrix is undefined."
-            )
+            raise ValueError("Graph is not connected. Resistance matrix is undefined.")
     L = laplacian_matrix(A)
     with contextlib.suppress(AttributeError):
         L = L.todense()
