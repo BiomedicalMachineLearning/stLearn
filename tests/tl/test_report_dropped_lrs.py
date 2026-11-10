@@ -5,6 +5,7 @@ import io
 import unittest
 
 import numpy as np
+
 from stlearn.tl.cci import LRPairs
 from stlearn.tl.cci.analysis import _report_dropped_lrs
 from tests.utils import spot_table

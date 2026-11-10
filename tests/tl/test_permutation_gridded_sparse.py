@@ -4,19 +4,20 @@
 under both nulls ("codetected", the default, and "random", the original), on a
 gridded sample of well-covered spots and on sparse single cells without a grid."""
 
+import itertools
 import unittest
 
 import numpy as np
-import itertools
 import scipy.sparse
 from anndata import AnnData
-from stlearn.tl.cci.ligand_receptors import LRPairs
+
 from stlearn.tl.cci._results import to_dense
+from stlearn.tl.cci.ligand_receptors import LRPairs
 from stlearn.tl.cci.neighbours import calc_neighbours
 from stlearn.tl.cci.permutation import (
     empirical_pvals,
-    perform_spot_testing,
     gene_quantiles,
+    perform_spot_testing,
 )
 from stlearn.tl.cci.scoring import get_lrs_scores
 from tests.utils import spot_table

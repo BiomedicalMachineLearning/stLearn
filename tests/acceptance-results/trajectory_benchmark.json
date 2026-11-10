@@ -1,0 +1,22 @@
+[
+  {
+    "name": "trajectory clusters_12: time",
+    "unit": "s",
+    "value": 1.3604363750200719
+  },
+  {
+    "name": "trajectory clusters_12: peak memory",
+    "unit": "GB",
+    "value": 0.75604248046875
+  },
+  {
+    "name": "trajectory clusters_30: time",
+    "unit": "s",
+    "value": 180.21018641709816
+  },
+  {
+    "name": "trajectory clusters_30: peak memory",
+    "unit": "GB",
+    "value": 0.760894775390625
+  }
+]

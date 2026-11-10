@@ -1,0 +1,32 @@
+[
+  {
+    "name": "cci.run lit: time",
+    "unit": "s",
+    "value": 95.05016879201867
+  },
+  {
+    "name": "cci.run lit: peak memory",
+    "unit": "GB",
+    "value": 6.740997314453125
+  },
+  {
+    "name": "cci.run cell_types: time",
+    "unit": "s",
+    "value": 130.382964166929
+  },
+  {
+    "name": "cci.run cell_types: peak memory",
+    "unit": "GB",
+    "value": 6.8622894287109375
+  },
+  {
+    "name": "cci.run wide: time",
+    "unit": "s",
+    "value": 538.8811077499995
+  },
+  {
+    "name": "cci.run wide: peak memory",
+    "unit": "GB",
+    "value": 8.301010131835938
+  }
+]

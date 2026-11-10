@@ -1,9 +1,10 @@
 import unittest
 
 import numpy as np
+
 import stlearn as st
 from stlearn.tl.cci.permutation import empirical_pvals
-from tests.utils import cci_table, CCI_LRS
+from tests.utils import CCI_LRS, cci_table
 
 
 class TestRunNull(unittest.TestCase):
