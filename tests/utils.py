@@ -44,18 +44,21 @@ def scores_and_pvals(n_spots=30, seed=0):
     return scores, pvals
 
 
-def spot_table(X, rows, cols, lr_genes) -> anndata.AnnData:
-    """Spots at `rows` and `cols` (obs imagerow and imagecol), named spot0, spot1,
-    ..., with counts `X`, stored sparse: genes `lr_genes` first, then gene0,
-    gene1, ... for the rest of X's columns."""
+def spot_table(
+    X, rows, cols, lr_genes, sparse=True, dtype=np.float32
+) -> anndata.AnnData:
     n_other_genes = X.shape[1] - len(lr_genes)
     var_names = list(lr_genes) + [f"gene{i}" for i in range(n_other_genes)]
     obs = pd.DataFrame(
         {"imagerow": np.asarray(rows, float), "imagecol": np.asarray(cols, float)},
         index=[f"spot{i}" for i in range(len(X))],
     )
-    X = scipy.sparse.csr_matrix(np.asarray(X, dtype=np.float32))
+    X = np.asarray(X, dtype=np.float32)
+    X = np.asarray(X, dtype=dtype)
+    if sparse:
+        X = scipy.sparse.csr_matrix(X)
     return anndata.AnnData(X=X, obs=obs, var=pd.DataFrame(index=var_names))
+
 
 
 CCI_LRS = LRPairs.from_names(["LigA_RecA", "LigB_RecB", "LigC_RecC"], species="human")
