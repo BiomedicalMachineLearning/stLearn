@@ -11,14 +11,7 @@ import pandas as pd
 from anndata import AnnData
 from scipy import sparse
 
-# 8 µm bins imaged at 0.2738 µm per pixel, hires image at 0.08 of full size.
-SCALEFACTORS = {
-    "bin_size_um": 8.0,
-    "microns_per_pixel": 0.2738,
-    "spot_diameter_fullres": 8.0 / 0.2738,
-    "tissue_hires_scalef": 0.08,
-    "tissue_lowres_scalef": 0.024,
-}
+from tests.acceptance.visium_hd import barcodes, bin_grid, place_bins
 
 
 def make_sample(
@@ -26,8 +19,8 @@ def make_sample(
 ) -> AnnData:
     """The sample, with `lr_genes` first among its genes."""
     rng = np.random.default_rng(seed)
-    n_side = round(np.sqrt(n_bins))
-    n_bins = n_side * n_side
+    _, row, col = bin_grid(n_bins)
+    n_bins = len(row)
     genes = lr_genes + list(map(lambda i: f"GENE{i}", range(n_genes - len(lr_genes))))
 
     # Each gene's share of bins expressing it: mostly rare, a few common.
@@ -44,26 +37,10 @@ def make_sample(
         (values, (rows, columns)), shape=(n_bins, n_genes), dtype=np.float32
     )
 
-    row, col = np.divmod(np.arange(n_bins), n_side)
-    barcodes = list(
-        map(
-            lambda rc: f"s_008um_{rc[0]:05d}_{rc[1]:05d}-1",
-            zip(row, col, strict=True),
-        )
+    adata = AnnData(
+        X, obs=pd.DataFrame(index=barcodes(row, col)), var=pd.DataFrame(index=genes)
     )
-    adata = AnnData(X, obs=pd.DataFrame(index=barcodes), var=pd.DataFrame(index=genes))
-    spot = SCALEFACTORS["spot_diameter_fullres"]
-    hires = SCALEFACTORS["tissue_hires_scalef"]
-    adata.obsm["spatial"] = np.column_stack([col, row]) * spot + 1000
-    adata.obs["imagecol"] = adata.obsm["spatial"][:, 0] * hires
-    adata.obs["imagerow"] = adata.obsm["spatial"][:, 1] * hires
-    adata.uns["spatial"] = {
-        "synthetic_hd": {
-            "images": {},
-            "scalefactors": SCALEFACTORS,
-            "use_quality": "hires",
-        }
-    }
+    place_bins(adata, row, col)
 
     # Mostly one cell type per bin.
     proportions = pd.DataFrame(

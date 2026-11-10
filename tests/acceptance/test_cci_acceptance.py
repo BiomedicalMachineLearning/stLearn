@@ -22,29 +22,18 @@ Written to --acceptance-results (default tests/acceptance-results/):
 The JUnit report gets the same measurements as test suite properties.
 """
 
-import csv
 import datetime
-import json
-import shlex
-import shutil
-import signal
-import subprocess
-import sys
-import time
 from pathlib import Path
 
 import anndata
 import numpy as np
-import psutil
 import pytest
 
 from stlearn.tl.cci import lr_pairs
+from tests.acceptance import harness
 from tests.acceptance.cci_sample import make_sample
 from tests.acceptance.run_cci import NEIGHBOURS, RESULTS
 
-BASELINES = Path(__file__).parent / "baselines"
-ROOT = Path(__file__).resolve().parents[2]
-GB = 1024**3
 # Scenario name: arguments for run_cci.py.
 SCENARIOS = {
     "lit": [],
@@ -59,16 +48,17 @@ PHASES = {
     "testing": "phase_testing_seconds",
     "testing: backgrounds": "phase_testing_backgrounds_seconds",
 }
+CRASH_HINT = (
+    "A crash in compiled code. For a readable traceback, rerun with "
+    "NUMBA_NUM_THREADS=1 NUMBA_BOUNDSCHECK=1"
+)
 
 
 @pytest.fixture(scope="session")
 def sample(request: pytest.FixtureRequest, tmp_path_factory) -> Path:
     """The synthetic sample, made once and kept in pytest's cache."""
     bins = request.config.getoption("--acceptance-bins")
-    if getattr(request.config, "cache", None) is not None:
-        folder = request.config.cache.mkdir("cci_acceptance")
-    else:
-        folder = tmp_path_factory.mktemp("cci_acceptance")
+    folder = harness.sample_folder(request, tmp_path_factory, "cci_acceptance")
     path = folder / f"sample_{bins}_bins.h5ad"
     if not path.exists():
         lr_genes = lr_pairs("connectomeDB2025").genes().tolist()
@@ -84,130 +74,34 @@ def report(request: pytest.FixtureRequest):
     if not rows:
         return
     folder = Path(request.config.getoption("--acceptance-results"))
-    benchmarks = [
-        {"name": f"cci.run {row['scenario']}: {name}", "unit": unit, "value": row[key]}
-        for row in rows
-        for name, unit, key in [
-            ("time", "s", "wall_seconds"),
-            ("peak memory", "GB", "peak_memory_gb"),
-        ]
+    harness.write_benchmark(folder / "benchmark.json", "cci.run", rows)
+    lines = [
+        f"{'scenario':12s}{'outcome':>18s}{'time (s)':>11s}{'vs base':>9s}"
+        f"{'vs last':>9s}{'memory (GB)':>13s}{'vs base':>9s}{'vs last':>9s}"
     ]
-    (folder / "benchmark.json").write_text(json.dumps(benchmarks, indent=2))
-
-    plugins = request.config.pluginmanager
-    terminal = plugins.get_plugin("terminalreporter")
-    capture = plugins.get_plugin("capturemanager")
-    if terminal is None or capture is None:
-        return
-    with capture.global_and_fixture_disabled():
-        terminal.write_line("")
-        terminal.write_sep("=", "CCI acceptance")
-        terminal.write_line(
-            f"{'scenario':12s}{'outcome':>18s}{'time (s)':>11s}{'vs base':>9s}"
-            f"{'vs last':>9s}{'memory (GB)':>13s}{'vs base':>9s}{'vs last':>9s}",
+    for row in rows:
+        lines.append(
+            f"{row['scenario']:12s}{row['outcome']:>18s}"
+            f"{row['wall_seconds']:11.1f}{harness.times(row['time_vs_baseline']):>9s}"
+            f"{harness.times(row['time_vs_last']):>9s}{row['peak_memory_gb']:13.2f}"
+            f"{harness.times(row['memory_vs_baseline']):>9s}"
+            f"{harness.times(row['memory_vs_last']):>9s}"
         )
-        for row in rows:
-            terminal.write_line(
-                f"{row['scenario']:12s}{row['outcome']:>18s}"
-                f"{row['wall_seconds']:11.1f}{_times(row['time_vs_baseline']):>9s}"
-                f"{_times(row['time_vs_last']):>9s}{row['peak_memory_gb']:13.2f}"
-                f"{_times(row['memory_vs_baseline']):>9s}"
-                f"{_times(row['memory_vs_last']):>9s}",
-            )
-        terminal.write_line(f"History: {folder / 'history.csv'}")
-
-
-def _metrics(run: anndata.AnnData) -> dict:
-    """run_cci.py's measurements and settings for the run."""
-    return json.loads(run.uns["metrics"])
-
-
-def _times(ratio: float | None) -> str:
-    return "-" if ratio is None else f"{ratio:.2f}x"
-
-
-def _ratio(value: float, earlier: float | str | None) -> float | None:
-    """value / earlier, or None without an earlier value (CSV text is fine)."""
-    return None if earlier in (None, "") else value / float(earlier)
+    harness.write_summary(request, "CCI acceptance", lines, folder / "history.csv")
 
 
 def run_scenario(sample, result, arguments, max_minutes, max_memory_gb):
     """Runs run_cci.py in a fresh process, stopping it if it goes over a limit."""
-    command = [sys.executable, "-m", "tests.acceptance.run_cci", str(sample)]
-    command += [str(result), *arguments]
-    process = subprocess.Popen(
-        command,
-        cwd=ROOT,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        errors="replace",
-    )
-    child, started, stopped = psutil.Process(process.pid), time.monotonic(), None
-    while True:
-        try:  # waits up to a second; retrying keeps the output read so far
-            stdout, stderr = process.communicate(timeout=1)
-            break
-        except subprocess.TimeoutExpired:
-            pass
-        minutes = (time.monotonic() - started) / 60
-        try:
-            memory_gb = child.memory_info().rss / GB
-        except psutil.NoSuchProcess:  # it has just finished
-            continue
-        if max_minutes is not None and minutes > max_minutes:
-            stopped = (
-                f"stopped after {minutes:.0f} minutes, "
-                f"over the {max_minutes:g} minute limit"
-            )
-        elif max_memory_gb is not None and memory_gb > max_memory_gb:
-            stopped = (
-                f"stopped at {memory_gb:.1f} GB, "
-                f"over the {max_memory_gb:g} GB limit"
-            )
-        if stopped:
-            process.kill()
-            stdout, stderr = process.communicate()
-            break
-    finished = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-    if stopped or finished.returncode != 0:
-        pytest.fail(_failure_message(command, finished, stopped), pytrace=False)
+    arguments = [str(sample), str(result), *arguments]
+    run = harness.run_script("run_cci", arguments, max_minutes, max_memory_gb)
+    if run.failed:
+        pytest.fail(harness.failure_message(run, CRASH_HINT), pytrace=False)
     return anndata.read_h5ad(result)
-
-
-def _failure_message(
-    command: list[str],
-    finished: subprocess.CompletedProcess,
-    stopped: str | None = None,
-) -> str:
-    """How run_cci.py ended, how to rerun it, and what it printed."""
-    code = finished.returncode
-    if stopped:
-        lines = [f"run_cci.py was {stopped}"]
-    elif code >= 0:
-        lines = [f"run_cci.py exited with code {code}"]
-    else:
-        try:
-            how = signal.Signals(-code).name
-        except ValueError:
-            how = f"signal {-code}"
-        lines = [f"run_cci.py was killed by {how}"]
-        if how in ("SIGSEGV", "SIGBUS", "SIGABRT"):
-            lines.append(
-                "A crash in compiled code. For a readable traceback, rerun with "
-                "NUMBA_NUM_THREADS=1 NUMBA_BOUNDSCHECK=1",
-            )
-    rerun = f"cd {shlex.quote(str(ROOT))} && {shlex.join(command)}"
-    lines.append(f"Rerun: {rerun}")
-    for stream, text in [("stdout", finished.stdout), ("stderr", finished.stderr)]:
-        text = text.strip()
-        lines.append(f"--- {stream} ---\n{text[-5000:] if text else '(empty)'}")
-    return "\n".join(lines)
 
 
 def differences(baseline: anndata.AnnData, current: anndata.AnnData, atol: float):
     """How the current results differ from the baseline, matching LRs by name."""
-    if _metrics(baseline)["settings"] != _metrics(current)["settings"]:
+    if harness.metrics(baseline)["settings"] != harness.metrics(current)["settings"]:
         return ["the baseline used different settings: write a new one"]
     if not baseline.obs_names.equals(current.obs_names):
         return ["the samples' bins differ: write a new baseline"]
@@ -253,11 +147,11 @@ def history_row(scenario: str, outcome: str, metrics: dict, baseline: dict | Non
     a new history.csv takes its header from the first row."""
     machine = metrics["machine"]
     seconds = metrics["wall_seconds"]
-    memory_gb = metrics["peak_memory_bytes"] / GB
+    memory_gb = metrics["peak_memory_bytes"] / harness.GB
     baseline_seconds = baseline_memory_gb = None
     if baseline is not None:
         baseline_seconds = baseline["wall_seconds"]
-        baseline_memory_gb = baseline["peak_memory_bytes"] / GB
+        baseline_memory_gb = baseline["peak_memory_bytes"] / harness.GB
     return {
         "timestamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
         "scenario": scenario,
@@ -266,12 +160,12 @@ def history_row(scenario: str, outcome: str, metrics: dict, baseline: dict | Non
         "cpu_seconds": metrics["cpu_seconds"],
         "cores_busy": metrics["cpu_seconds"] / seconds,
         "peak_memory_gb": memory_gb,
-        "memory_added_gb": metrics["memory_added_by_run_bytes"] / GB,
+        "memory_added_gb": metrics["memory_added_by_run_bytes"] / harness.GB,
         "warm_up_seconds": metrics["warm_up_seconds"],
         "baseline_wall_seconds": baseline_seconds,
         "baseline_peak_memory_gb": baseline_memory_gb,
-        "time_vs_baseline": _ratio(seconds, baseline_seconds),
-        "memory_vs_baseline": _ratio(memory_gb, baseline_memory_gb),
+        "time_vs_baseline": harness.ratio(seconds, baseline_seconds),
+        "memory_vs_baseline": harness.ratio(memory_gb, baseline_memory_gb),
         **{
             column: metrics["phases"].get(phase, {}).get("wall_seconds")
             for phase, column in PHASES.items()
@@ -290,28 +184,6 @@ def history_row(scenario: str, outcome: str, metrics: dict, baseline: dict | Non
     }
 
 
-def append_history(path: Path, row: dict) -> dict:
-    """Appends the row to history.csv; the scenario's previous run on this
-    machine, or {} if there is none."""
-    earlier, columns = [], None
-    if path.exists():
-        with open(path, newline="") as file:
-            reader = csv.DictReader(file)
-            earlier, columns = list(reader), reader.fieldnames
-    with open(path, "a", newline="") as file:
-        # An existing file keeps its header, so the row lines up with it.
-        writer = csv.DictWriter(file, columns or list(row), extrasaction="ignore")
-        if columns is None:
-            writer.writeheader()
-        writer.writerow(row)
-    same = [
-        run
-        for run in earlier
-        if run["scenario"] == row["scenario"] and run["platform"] == row["platform"]
-    ]
-    return same[-1] if same else {}
-
-
 @pytest.mark.acceptance
 @pytest.mark.parametrize("scenario", SCENARIOS)
 def test_cci_run(scenario, sample, report, request, record_testsuite_property):
@@ -320,7 +192,6 @@ def test_cci_run(scenario, sample, report, request, record_testsuite_property):
     folder = Path(option("--acceptance-results"))
     folder.mkdir(parents=True, exist_ok=True)
     result_path = folder / f"{scenario}.h5ad"
-    baseline_path = BASELINES / f"{scenario}.h5ad"
 
     current = run_scenario(
         sample,
@@ -329,34 +200,24 @@ def test_cci_run(scenario, sample, report, request, record_testsuite_property):
         option("--acceptance-max-minutes"),
         option("--acceptance-max-memory-gb"),
     )
-    metrics = _metrics(current)
+    outcome, problems, baseline_metrics = harness.against_baseline(
+        current,
+        result_path,
+        harness.BASELINES / f"{scenario}.h5ad",
+        option,
+        differences,
+    )
 
-    problems, baseline_metrics = [], None
-    if option("--acceptance-baseline") == "write":
-        BASELINES.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(result_path, baseline_path)
-        outcome = "baseline written"
-    elif not baseline_path.exists():
-        outcome = "no baseline"
-        problems.append(
-            f"no baseline {baseline_path}: write one with --acceptance-baseline=write",
-        )
-    else:
-        baseline = anndata.read_h5ad(baseline_path)
-        baseline_metrics = _metrics(baseline)
-        problems = differences(baseline, current, option("--acceptance-atol"))
-        outcome = "results differ" if problems else "results identical"
-
-    row = history_row(scenario, outcome, metrics, baseline_metrics)
-    last = append_history(folder / "history.csv", row)
-    row["time_vs_last"] = _ratio(row["wall_seconds"], last.get("wall_seconds"))
-    row["memory_vs_last"] = _ratio(row["peak_memory_gb"], last.get("peak_memory_gb"))
-    report.append(row)
-    for key in ["wall_seconds", "cpu_seconds", "peak_memory_gb", "lr_pairs_tested"]:
-        record_testsuite_property(f"{scenario}.{key}", row[key])
-    limit = option("--acceptance-max-memory-gb")
-    if limit is not None and row["peak_memory_gb"] > limit:
-        problems.append(
-            f"peak memory {row['peak_memory_gb']:.1f} GB, over the {limit:g} GB limit",
-        )
+    row = history_row(scenario, outcome, harness.metrics(current), baseline_metrics)
+    harness.record(
+        row,
+        folder / "history.csv",
+        report,
+        record_testsuite_property,
+        scenario,
+        ["wall_seconds", "cpu_seconds", "peak_memory_gb", "lr_pairs_tested"],
+    )
+    problems += harness.over_memory(
+        row["peak_memory_gb"], option("--acceptance-max-memory-gb")
+    )
     assert not problems, "\n".join(problems)
