@@ -14,20 +14,13 @@ stored, as the report in issue #340 did, and counts how each one ends.
 
 import argparse
 import contextlib
-import importlib
 import importlib.metadata
 import io
 import json
-import os
-import pathlib
-import platform
 import re
-import resource
 import sys
 import time
 from collections import Counter
-from types import ModuleType
-from typing import Any
 
 import anndata
 import numpy
@@ -35,6 +28,12 @@ import pandas
 
 import stlearn
 from stlearn.utils import _read_graph
+from tests.acceptance.measure import (
+    PhaseTimer,
+    machine,
+    peak_memory_bytes,
+    write_result,
+)
 
 # Phases of the run, timed by wrapping the functions it calls.
 PHASES = {
@@ -49,45 +48,6 @@ PHASES = {
     "global level": ("stlearn.spatial.trajectory.pseudotimespace", "global_level"),
 }
 LABEL = "cluster"
-
-
-def peak_memory_bytes() -> int:
-    """This process's peak resident memory so far."""
-    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    return peak if sys.platform == "darwin" else peak * 1024  # Linux: kilobytes
-
-
-class PhaseTimer:
-    """Wall and CPU time of each phase, by wrapping the functions it calls."""
-
-    def __init__(self) -> None:
-        self.totals = {name: [0.0, 0.0, 0] for name in PHASES}
-        self._originals: list[tuple[ModuleType, str, Any]] = []
-
-    def __enter__(self) -> "PhaseTimer":
-        for name, (module_name, attribute) in PHASES.items():
-            module = importlib.import_module(module_name)
-            original = getattr(module, attribute)
-            setattr(module, attribute, self._timed(name, original))
-            self._originals.append((module, attribute, original))
-        return self
-
-    def __exit__(self, *exc) -> None:
-        for module, attribute, original in reversed(self._originals):
-            setattr(module, attribute, original)
-
-    def _timed(self, name, function):
-        def wrapper(*args, **kwargs):
-            wall, cpu = time.perf_counter(), time.process_time()
-            try:
-                return function(*args, **kwargs)
-            finally:
-                total = self.totals[name]
-                total[0] += time.perf_counter() - wall
-                total[1] += time.process_time() - cpu
-                total[2] += 1
-
-        return wrapper
 
 
 def first_clusters(adata: anndata.AnnData, n: int) -> anndata.AnnData:
@@ -129,7 +89,7 @@ def main() -> None:
 
     memory_before = peak_memory_bytes()
     lineages: Counter[str] = Counter()
-    with PhaseTimer() as phases, contextlib.redirect_stdout(sys.stderr):
+    with PhaseTimer(PHASES) as phases, contextlib.redirect_stdout(sys.stderr):
         wall, cpu = time.perf_counter(), time.process_time()
         stlearn.spatial.trajectory.pseudotime(adata, **settings)
         pseudotime_seconds = time.perf_counter() - wall
@@ -173,21 +133,13 @@ def main() -> None:
         "peak_memory_bytes": memory_after,
         "memory_added_by_run_bytes": memory_after - memory_before,
         "lineage_outcomes": dict(lineages),
-        "phases": {
-            name: {"wall_seconds": w, "cpu_seconds": c, "calls": n}
-            for name, (w, c, n) in phases.totals.items()
-            if n
-        },
-        "machine": {
-            "platform": platform.platform(),
-            "processor": platform.machine(),
-            "python": platform.python_version(),
-            "cpus": os.cpu_count(),
-            "versions": {
+        "phases": phases.metrics(),
+        "machine": machine(
+            {
                 name: importlib.metadata.version(name)
                 for name in ["numpy", "pandas", "anndata", "scanpy", "networkx"]
-            },
-        },
+            }
+        ),
     }
 
     result = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names))
@@ -202,9 +154,7 @@ def main() -> None:
     result.uns["pts_graph"] = json.dumps(
         sorted([str(u), str(v), float(w)] for u, v, w in pts_graph.edges(data="weight"))
     )
-    result.uns["metrics"] = json.dumps(metrics)
-    pathlib.Path(args.result).parent.mkdir(parents=True, exist_ok=True)
-    result.write_h5ad(args.result, compression="gzip")
+    write_result(result, args.result, metrics)
 
 
 if __name__ == "__main__":

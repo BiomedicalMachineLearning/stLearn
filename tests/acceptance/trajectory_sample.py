@@ -17,14 +17,8 @@ import pandas as pd
 import scanpy as sc
 from anndata import AnnData
 
-# 8 µm bins imaged at 0.2738 µm per pixel, hires image at 0.08 of full size.
-SCALEFACTORS = {
-    "bin_size_um": 8.0,
-    "microns_per_pixel": 0.2738,
-    "spot_diameter_fullres": 8.0 / 0.2738,
-    "tissue_hires_scalef": 0.08,
-    "tissue_lowres_scalef": 0.024,
-}
+from tests.acceptance.visium_hd import SCALEFACTORS, barcodes, bin_grid, place_bins
+
 # Distance between neighbouring bins in imagecol/imagerow (hires pixels).
 BIN_SPACING = (
     SCALEFACTORS["spot_diameter_fullres"] * SCALEFACTORS["tissue_hires_scalef"]
@@ -42,9 +36,8 @@ def make_sample(
     """The sample, with clusters "0" (earliest) to str(n_clusters - 1) in
     obs["cluster"], the root bin in uns["iroot"] and the kNN graph."""
     rng = np.random.default_rng(seed)
-    n_side = round(np.sqrt(n_bins))
-    n_bins = n_side * n_side
-    row, col = np.divmod(np.arange(n_bins), n_side)
+    n_side, row, col = bin_grid(n_bins)
+    n_bins = len(row)
 
     # Latent time: 0 at one corner, 1 at the opposite one.
     time = (row + col) / (2 * (n_side - 1))
@@ -68,28 +61,16 @@ def make_sample(
     cluster = np.searchsorted(edges, read_time)
     labels = [str(i) for i in range(n_clusters)]
 
-    barcodes = [f"s_008um_{r:05d}_{c:05d}-1" for r, c in zip(row, col, strict=True)]
     adata = AnnData(
         X=embedding.copy(),
         obs=pd.DataFrame(
             {"cluster": pd.Categorical.from_codes(cluster, categories=labels)},
-            index=barcodes,
+            index=barcodes(row, col),
         ),
         var=pd.DataFrame(index=[f"PC{i + 1}" for i in range(N_DIMS)]),
     )
     adata.obsm["X_pca"] = embedding
-    spot = SCALEFACTORS["spot_diameter_fullres"]
-    hires = SCALEFACTORS["tissue_hires_scalef"]
-    adata.obsm["spatial"] = np.column_stack([col, row]) * spot + 1000
-    adata.obs["imagecol"] = adata.obsm["spatial"][:, 0] * hires
-    adata.obs["imagerow"] = adata.obsm["spatial"][:, 1] * hires
-    adata.uns["spatial"] = {
-        "synthetic_hd": {
-            "images": {},
-            "scalefactors": SCALEFACTORS,
-            "use_quality": "hires",
-        }
-    }
+    place_bins(adata, row, col)
     adata.uns["iroot"] = int(np.argmin(time))
     sc.pp.neighbors(adata, n_neighbors=15, use_rep="X_pca", random_state=0)
     return adata

@@ -24,28 +24,19 @@ Written to --acceptance-results (default tests/acceptance-results/):
   github-action-benchmark's "customSmallerIsBetter" format.
 """
 
-import csv
 import datetime
 import json
-import shlex
-import shutil
-import signal
-import subprocess
 import sys
-import time
 from dataclasses import dataclass
 from pathlib import Path
 
 import anndata
 import numpy as np
-import psutil
 import pytest
 
+from tests.acceptance import harness
 from tests.acceptance.trajectory_sample import BIN_SPACING, make_sample
 
-BASELINES = Path(__file__).parent / "baselines"
-ROOT = Path(__file__).resolve().parents[2]
-GB = 1024**3
 EPS = 3 * BIN_SPACING  # subclusters: bins within three bins of each other
 
 
@@ -101,10 +92,7 @@ def _scenarios() -> list:
 def samples(request: pytest.FixtureRequest, tmp_path_factory):
     """Makes each scenario's sample once, kept in pytest's cache."""
     bins = request.config.getoption("--acceptance-bins")
-    if getattr(request.config, "cache", None) is not None:
-        folder = request.config.cache.mkdir("trajectory_acceptance")
-    else:
-        folder = tmp_path_factory.mktemp("trajectory_acceptance")
+    folder = harness.sample_folder(request, tmp_path_factory, "trajectory_acceptance")
 
     def sample(n_clusters: int) -> Path:
         path = folder / f"sample_{bins}_bins_{n_clusters}_clusters.h5ad"
@@ -123,140 +111,33 @@ def report(request: pytest.FixtureRequest):
     if not rows:
         return
     folder = Path(request.config.getoption("--acceptance-results"))
-    benchmarks = [
-        {
-            "name": f"trajectory {row['scenario']}: {name}",
-            "unit": unit,
-            "value": row[key],
-        }
-        for row in rows
-        for name, unit, key in [
-            ("time", "s", "wall_seconds"),
-            ("peak memory", "GB", "peak_memory_gb"),
-        ]
+    harness.write_benchmark(folder / "trajectory_benchmark.json", "trajectory", rows)
+    lines = [
+        f"{'scenario':13s}{'outcome':>22s}{'time (s)':>10s}{'vs base':>9s}"
+        f"{'vs last':>9s}{'memory (GB)':>13s}{'paths':>8s}"
     ]
-    (folder / "trajectory_benchmark.json").write_text(json.dumps(benchmarks, indent=2))
-
-    plugins = request.config.pluginmanager
-    terminal = plugins.get_plugin("terminalreporter")
-    capture = plugins.get_plugin("capturemanager")
-    if terminal is None or capture is None:
-        return
-    with capture.global_and_fixture_disabled():
-        terminal.write_line("")
-        terminal.write_sep("=", "Trajectory acceptance")
-        terminal.write_line(
-            f"{'scenario':13s}{'outcome':>22s}{'time (s)':>10s}{'vs base':>9s}"
-            f"{'vs last':>9s}{'memory (GB)':>13s}{'paths':>8s}"
+    for row in rows:
+        paths = "-" if row["available_paths"] is None else str(row["available_paths"])
+        lines.append(
+            f"{row['scenario']:13s}{row['outcome']:>22s}{row['wall_seconds']:10.1f}"
+            f"{harness.times(row['time_vs_baseline']):>9s}"
+            f"{harness.times(row['time_vs_last']):>9s}"
+            f"{row['peak_memory_gb']:13.2f}{paths:>8s}"
         )
-        for row in rows:
-            paths = (
-                "-" if row["available_paths"] is None else str(row["available_paths"])
-            )
-            terminal.write_line(
-                f"{row['scenario']:13s}{row['outcome']:>22s}{row['wall_seconds']:10.1f}"
-                f"{_times(row['time_vs_baseline']):>9s}{_times(row['time_vs_last']):>9s}"
-                f"{row['peak_memory_gb']:13.2f}{paths:>8s}"
-            )
-        terminal.write_line(f"History: {folder / 'trajectory_history.csv'}")
+    history = folder / "trajectory_history.csv"
+    harness.write_summary(request, "Trajectory acceptance", lines, history)
 
 
-def _metrics(run: anndata.AnnData) -> dict:
-    """run_trajectory.py's measurements and settings for the run."""
-    return json.loads(run.uns["metrics"])
-
-
-def _times(ratio: float | None) -> str:
-    return "-" if ratio is None else f"{ratio:.2f}x"
-
-
-def _ratio(value: float, earlier: float | str | None) -> float | None:
-    """value / earlier, or None without an earlier value (CSV text is fine)."""
-    return None if earlier in (None, "") else value / float(earlier)
-
-
-@dataclass
-class Run:
-    """How run_trajectory.py ended: its command and output, how long it ran,
-    the most memory seen, and why it was stopped, if it was."""
-
-    command: list[str]
-    finished: subprocess.CompletedProcess
-    seconds: float
-    memory_gb: float
-    stopped: str | None
-
-
-def run_scenario(sample, result, arguments, max_minutes, max_memory_gb) -> Run:
+def run_scenario(sample, result, arguments, max_minutes, max_memory_gb) -> harness.Run:
     """Runs run_trajectory.py in a fresh process, stopping it if it goes over
     a limit."""
-    command = [sys.executable, "-m", "tests.acceptance.run_trajectory", str(sample)]
-    command += [str(result), "--eps", str(EPS), *arguments]
-    process = subprocess.Popen(
-        command,
-        cwd=ROOT,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        errors="replace",
-    )
-    child, started = psutil.Process(process.pid), time.monotonic()
-    stopped, memory_gb = None, 0.0
-    while True:
-        try:  # waits up to a second; retrying keeps the output read so far
-            stdout, stderr = process.communicate(timeout=1)
-            break
-        except subprocess.TimeoutExpired:
-            pass
-        minutes = (time.monotonic() - started) / 60
-        try:
-            memory_gb = max(memory_gb, child.memory_info().rss / GB)
-        except psutil.NoSuchProcess:  # it has just finished
-            continue
-        if minutes > max_minutes:
-            stopped = (
-                f"stopped after {minutes:.1f} minutes, "
-                f"over the {max_minutes:g} minute limit"
-            )
-        elif memory_gb > max_memory_gb:
-            stopped = (
-                f"stopped at {memory_gb:.1f} GB, over the {max_memory_gb:g} GB limit"
-            )
-        if stopped:
-            process.kill()
-            stdout, stderr = process.communicate()
-            break
-    seconds = time.monotonic() - started
-    finished = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-    return Run(command, finished, seconds, memory_gb, stopped)
-
-
-def _failure_message(run: Run) -> str:
-    """How run_trajectory.py ended, how to rerun it, and what it printed."""
-    code = run.finished.returncode
-    if run.stopped:
-        lines = [f"run_trajectory.py was {run.stopped}"]
-    elif code >= 0:
-        lines = [f"run_trajectory.py exited with code {code}"]
-    else:
-        try:
-            how = signal.Signals(-code).name
-        except ValueError:
-            how = f"signal {-code}"
-        lines = [f"run_trajectory.py was killed by {how}"]
-    lines.append(f"Rerun: cd {shlex.quote(str(ROOT))} && {shlex.join(run.command)}")
-    for stream, text in [
-        ("stdout", run.finished.stdout),
-        ("stderr", run.finished.stderr),
-    ]:
-        text = text.strip()
-        lines.append(f"--- {stream} ---\n{text[-5000:] if text else '(empty)'}")
-    return "\n".join(lines)
+    arguments = [str(sample), str(result), "--eps", str(EPS), *arguments]
+    return harness.run_script("run_trajectory", arguments, max_minutes, max_memory_gb)
 
 
 def differences(baseline: anndata.AnnData, current: anndata.AnnData, atol: float):
     """How the current results differ from the baseline."""
-    if _metrics(baseline)["settings"] != _metrics(current)["settings"]:
+    if harness.metrics(baseline)["settings"] != harness.metrics(current)["settings"]:
         return ["the baseline used different settings: write a new one"]
     if not baseline.obs_names.equals(current.obs_names):
         return ["the samples' bins differ: write a new baseline"]
@@ -291,7 +172,7 @@ def differences(baseline: anndata.AnnData, current: anndata.AnnData, atol: float
     ):
         problems.append("PTS_graph edge weights differ")
 
-    outcomes = [_metrics(run)["lineage_outcomes"] for run in (baseline, current)]
+    outcomes = [harness.metrics(run)["lineage_outcomes"] for run in (baseline, current)]
     if outcomes[0] != outcomes[1]:
         problems.append(
             f"pseudotimespace_global on every path ended differently: "
@@ -300,17 +181,19 @@ def differences(baseline: anndata.AnnData, current: anndata.AnnData, atol: float
     return problems
 
 
-def history_row(scenario: str, outcome: str, run: Run, metrics: dict | None, baseline):
+def history_row(
+    scenario: str, outcome: str, run: harness.Run, metrics: dict | None, baseline
+):
     """A row of trajectory_history.csv. It has every column, even for a run
     stopped at a limit, as a new file takes its header from the first row."""
     metrics = metrics or {}
     machine = metrics.get("machine", {})
     seconds = metrics.get("wall_seconds", run.seconds)
-    memory_gb = metrics["peak_memory_bytes"] / GB if metrics else run.memory_gb
+    memory_gb = metrics["peak_memory_bytes"] / harness.GB if metrics else run.memory_gb
     baseline_seconds = baseline_memory_gb = None
     if baseline is not None:
         baseline_seconds = baseline["wall_seconds"]
-        baseline_memory_gb = baseline["peak_memory_bytes"] / GB
+        baseline_memory_gb = baseline["peak_memory_bytes"] / harness.GB
     phases = metrics.get("phases", {})
     return {
         "timestamp": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
@@ -324,8 +207,8 @@ def history_row(scenario: str, outcome: str, run: Run, metrics: dict | None, bas
         "warm_up_seconds": metrics.get("warm_up_seconds"),
         "baseline_wall_seconds": baseline_seconds,
         "baseline_peak_memory_gb": baseline_memory_gb,
-        "time_vs_baseline": _ratio(seconds, baseline_seconds),
-        "memory_vs_baseline": _ratio(memory_gb, baseline_memory_gb),
+        "time_vs_baseline": harness.ratio(seconds, baseline_seconds),
+        "memory_vs_baseline": harness.ratio(memory_gb, baseline_memory_gb),
         **{
             column: phases.get(phase, {}).get("wall_seconds")
             for phase, column in PHASES.items()
@@ -343,28 +226,6 @@ def history_row(scenario: str, outcome: str, run: Run, metrics: dict | None, bas
     }
 
 
-def append_history(path: Path, row: dict) -> dict:
-    """Appends the row to the history; the scenario's previous run on this
-    machine, or {} if there is none."""
-    earlier, columns = [], None
-    if path.exists():
-        with open(path, newline="") as file:
-            reader = csv.DictReader(file)
-            earlier, columns = list(reader), reader.fieldnames
-    with open(path, "a", newline="") as file:
-        # An existing file keeps its header, so the row lines up with it.
-        writer = csv.DictWriter(file, columns or list(row), extrasaction="ignore")
-        if columns is None:
-            writer.writeheader()
-        writer.writerow(row)
-    same = [
-        run
-        for run in earlier
-        if run["scenario"] == row["scenario"] and run["platform"] == row["platform"]
-    ]
-    return same[-1] if same else {}
-
-
 @pytest.mark.acceptance
 @pytest.mark.parametrize("scenario", _scenarios())
 def test_trajectory(scenario, samples, report, request, record_testsuite_property):
@@ -375,7 +236,6 @@ def test_trajectory(scenario, samples, report, request, record_testsuite_propert
     folder = Path(option("--acceptance-results"))
     folder.mkdir(parents=True, exist_ok=True)
     result_path = folder / f"trajectory_{scenario}.h5ad"
-    baseline_path = BASELINES / f"trajectory_{scenario}.h5ad"
     max_minutes = min(
         settings.max_minutes, option("--acceptance-max-minutes") or np.inf
     )
@@ -392,40 +252,30 @@ def test_trajectory(scenario, samples, report, request, record_testsuite_propert
     )
     current = metrics = None
     problems, baseline_metrics = [], None
-    if run.stopped or run.finished.returncode != 0:
+    if run.failed:
         outcome = "stopped at limit" if run.stopped else "failed"
     else:
         current = anndata.read_h5ad(result_path)
-        metrics = _metrics(current)
-        if option("--acceptance-baseline") == "write":
-            BASELINES.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(result_path, baseline_path)
-            outcome = "baseline written"
-        elif not baseline_path.exists():
-            outcome = "no baseline"
-            problems.append(
-                f"no baseline {baseline_path}: "
-                "write one with --acceptance-baseline=write",
-            )
-        else:
-            baseline = anndata.read_h5ad(baseline_path)
-            baseline_metrics = _metrics(baseline)
-            problems = differences(baseline, current, option("--acceptance-atol"))
-            outcome = "results differ" if problems else "results identical"
+        metrics = harness.metrics(current)
+        outcome, problems, baseline_metrics = harness.against_baseline(
+            current,
+            result_path,
+            harness.BASELINES / f"trajectory_{scenario}.h5ad",
+            option,
+            differences,
+        )
 
     row = history_row(scenario, outcome, run, metrics, baseline_metrics)
-    last = append_history(folder / "trajectory_history.csv", row)
-    row["time_vs_last"] = _ratio(row["wall_seconds"], last.get("wall_seconds"))
-    row["memory_vs_last"] = _ratio(row["peak_memory_gb"], last.get("peak_memory_gb"))
-    report.append(row)
-    for key in ["wall_seconds", "peak_memory_gb", "available_paths"]:
-        record_testsuite_property(f"trajectory_{scenario}.{key}", row[key])
+    harness.record(
+        row,
+        folder / "trajectory_history.csv",
+        report,
+        record_testsuite_property,
+        f"trajectory_{scenario}",
+        ["wall_seconds", "peak_memory_gb", "available_paths"],
+    )
 
     if current is None:
-        pytest.fail(_failure_message(run), pytrace=False)
-    if row["peak_memory_gb"] > max_memory_gb:
-        problems.append(
-            f"peak memory {row['peak_memory_gb']:.1f} GB, "
-            f"over the {max_memory_gb:g} GB limit",
-        )
+        pytest.fail(harness.failure_message(run), pytrace=False)
+    problems += harness.over_memory(row["peak_memory_gb"], max_memory_gb)
     assert not problems, "\n".join(problems)

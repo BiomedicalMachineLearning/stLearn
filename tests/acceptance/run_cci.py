@@ -18,15 +18,8 @@ layers, which hold the tested spots, shifted by that value.
 import argparse
 import contextlib
 import importlib
-import json
-import os
-import pathlib
-import platform
-import resource
 import sys
 import time
-from types import ModuleType
-from typing import Any
 
 import anndata
 import numba
@@ -35,6 +28,12 @@ import pandas
 import scipy
 
 import stlearn
+from tests.acceptance.measure import (
+    PhaseTimer,
+    machine,
+    peak_memory_bytes,
+    write_result,
+)
 
 # Each result, and the value most spots have.
 RESULTS = {
@@ -67,49 +66,6 @@ def shifted(layer, usual: float) -> scipy.sparse.csr_matrix:
         out = scipy.sparse.csr_matrix(numpy.asarray(layer, dtype=numpy.float64) - usual)
     out.eliminate_zeros()
     return out
-
-
-def peak_memory_bytes() -> int:
-    """This process's peak resident memory so far."""
-    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    return peak if sys.platform == "darwin" else peak * 1024  # Linux: kilobytes
-
-
-class PhaseTimer:
-    """Wall and CPU time of each phase, by wrapping the functions it calls.
-
-    CPU time counts every thread, so CPU / wall is the average number of busy
-    cores.
-    """
-
-    def __init__(self) -> None:
-        self.totals = dict(map(lambda name: (name, [0.0, 0.0, 0]), PHASES))
-        self._originals: list[tuple[ModuleType, str, Any]] = []
-
-    def __enter__(self) -> "PhaseTimer":
-        for name, (module_name, attribute) in PHASES.items():
-            module = importlib.import_module(module_name)
-            original = getattr(module, attribute)
-            setattr(module, attribute, self._timed(name, original))
-            self._originals.append((module, attribute, original))
-        return self
-
-    def __exit__(self, *exc) -> None:
-        for module, attribute, original in self._originals:
-            setattr(module, attribute, original)
-
-    def _timed(self, name, function):
-        def wrapper(*args, **kwargs):
-            wall, cpu = time.perf_counter(), time.process_time()
-            try:
-                return function(*args, **kwargs)
-            finally:
-                total = self.totals[name]
-                total[0] += time.perf_counter() - wall
-                total[1] += time.process_time() - cpu
-                total[2] += 1
-
-        return wrapper
 
 
 def main() -> None:
@@ -148,7 +104,7 @@ def main() -> None:
     del warm_up
 
     memory_before = peak_memory_bytes()
-    with PhaseTimer() as phases, contextlib.redirect_stdout(sys.stderr):
+    with PhaseTimer(PHASES) as phases, contextlib.redirect_stdout(sys.stderr):
         wall, cpu = time.perf_counter(), time.process_time()
         lr_results = stlearn.tl.cci.run(adata, lrs, **settings, verbose=False)
         wall, cpu = time.perf_counter() - wall, time.process_time() - cpu
@@ -168,23 +124,15 @@ def main() -> None:
         "cpu_seconds": cpu,
         "peak_memory_bytes": memory_after,
         "memory_added_by_run_bytes": memory_after - memory_before,
-        "phases": {
-            name: {"wall_seconds": w, "cpu_seconds": c, "calls": n}
-            for name, (w, c, n) in phases.totals.items()
-            if n
-        },
-        "machine": {
-            "platform": platform.platform(),
-            "processor": platform.machine(),
-            "python": platform.python_version(),
-            "cpus": os.cpu_count(),
-            "numba_threads": numba.get_num_threads(),
-            "numba_threading_layer": threading_layer,
-            "versions": {
+        "phases": phases.metrics(),
+        "machine": machine(
+            {
                 name: importlib.import_module(name).__version__
                 for name in ["numpy", "scipy", "pandas", "anndata", "numba"]
             },
-        },
+            numba_threads=numba.get_num_threads(),
+            numba_threading_layer=threading_layer,
+        ),
     }
 
     result = anndata.AnnData(obs=pandas.DataFrame(index=adata.obs_names))
@@ -201,9 +149,7 @@ def main() -> None:
     result.uns["lrfeatures"] = lr_results.var[features].join(
         lr_results.varm[stlearn.tl.cci.LR_QUANTILES]
     )
-    result.uns["metrics"] = json.dumps(metrics)
-    pathlib.Path(args.result).parent.mkdir(parents=True, exist_ok=True)
-    result.write_h5ad(args.result, compression="gzip")
+    write_result(result, args.result, metrics)
 
 
 if __name__ == "__main__":
