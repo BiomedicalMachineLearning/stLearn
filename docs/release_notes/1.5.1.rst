@@ -1,8 +1,8 @@
 1.5.1 (2026-11-09)
 ~~~~~~~~~~~~~~~~~~
-This fixes some improvements missed in the 1.5.0 release in the use of LR
-Results. The handoff from run to run_cci and statistics are stored once
-and aligned to other the LR data.
+This improves the use of LR Results that were missed in the initial
+1.5.0 release. This includes the handoff from ``run`` to ``run_cci`` and
+LR statistics are stored once and aligned to the rest of the data.
 
 .. rubric:: Features
 
