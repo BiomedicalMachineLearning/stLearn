@@ -14,8 +14,11 @@ def _adata(sparse=False):
     """Four spots in a row: A is 0.3 everywhere, E is never expressed, the rest
     are 1."""
     return spot_table(
-        np.array([[0.3, 1.0, 1.0, 1.0, 0.0]] * 4), np.zeros(4), np.arange(4),
-        list("ABCDE"), sparse=sparse
+        np.array([[0.3, 1.0, 1.0, 1.0, 0.0]] * 4),
+        np.zeros(4),
+        np.arange(4),
+        list("ABCDE"),
+        sparse=sparse,
     )
 
 

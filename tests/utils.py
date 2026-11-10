@@ -60,7 +60,6 @@ def spot_table(
     return anndata.AnnData(X=X, obs=obs, var=pd.DataFrame(index=var_names))
 
 
-
 CCI_LRS = LRPairs.from_names(["LigA_RecA", "LigB_RecB", "LigC_RecC"], species="human")
 CELL_TYPES = np.array(["CT1", "CT2", "CT3"])
 

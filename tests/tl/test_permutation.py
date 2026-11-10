@@ -40,7 +40,7 @@ class TestPermutation(unittest.TestCase):
                 # n > 3 = 2, 2 / 10 (shape of background column)
                 0.2,
                 # n > 3 = 3, 3 / 10 (shape of background column)
-                0.3
+                0.3,
             ],
         )
 
@@ -56,7 +56,7 @@ class TestPermutation(unittest.TestCase):
                 # n > 3 = 2 + 1, 3 / 5 (non-zero = 4 + 1)
                 0.6,
                 # n > 3 = 3 + 1, 4 / 11 (non-zero = 10 + 1)
-                4 / 11
+                4 / 11,
             ],
         )
 

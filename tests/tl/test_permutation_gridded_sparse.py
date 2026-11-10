@@ -8,6 +8,7 @@ import unittest
 
 import numpy as np
 import itertools
+import scipy.sparse
 from anndata import AnnData
 from stlearn.tl.cci.ligand_receptors import LRPairs
 from stlearn.tl.cci._results import to_dense

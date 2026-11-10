@@ -30,7 +30,7 @@ def read_test_data_with_lr_pairs(n_pairs: int = 20):
 
     genes: list[str] = []
     for ligand, receptor in zip(
-        lrs.ligands().tolist(), lrs.receptors().tolist(), strict=True
+            lrs.ligands().tolist(), lrs.receptors().tolist(), strict=True
     ):
         if ligand != receptor and ligand not in genes and receptor not in genes:
             genes += [ligand, receptor]
@@ -58,7 +58,14 @@ class TestCCILabels(unittest.TestCase):
     def setUpClass(cls):
         adata, lrs = read_test_data_with_lr_pairs()
         cls.lr_results = st.tl.cci.run(
-            adata, lrs, min_spots=5, distance=None, n_pairs=200, n_cpus=1, verbose=False
+            adata,
+            lrs,
+            min_spots=5,
+            distance=None,
+            n_pairs=200,
+            n_cpus=1,
+            verbose=False,
+            null="random"
         )
         # Three bands of cell types across the tissue.
         bands = pd.qcut(adata.obs["imagecol"], 3, labels=CELL_TYPE_LABELS)
