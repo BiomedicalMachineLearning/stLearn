@@ -7,9 +7,7 @@ gridded sample of well-covered spots and on sparse single cells without a grid."
 import unittest
 
 import numpy as np
-import pandas as pd
 import itertools
-import scipy.sparse
 from anndata import AnnData
 from stlearn.tl.cci.ligand_receptors import LRPairs
 from stlearn.tl.cci._results import to_dense
@@ -20,6 +18,7 @@ from stlearn.tl.cci.permutation import (
     gene_quantiles,
 )
 from stlearn.tl.cci.scoring import get_lrs_scores
+from tests.utils import spot_table
 
 # Lig0 and Rec0 are high together in a patch; the other two pairs are noise.
 LRS = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1", "Lig2_Rec2"], species="human")
@@ -42,16 +41,6 @@ def _test(adata, distance, n_pairs, lrs=LRS, sparse_result=False, **kwargs):
     return scores, lrs, results
 
 
-def _adata(X, rows, cols, n_extra_genes):
-    var_names = LR_GENES + [f"gene{i}" for i in range(n_extra_genes)]
-    obs = pd.DataFrame(
-        {"imagerow": np.asarray(rows, float), "imagecol": np.asarray(cols, float)},
-        index=[f"spot{i}" for i in range(len(X))],
-    )
-    X = scipy.sparse.csr_matrix(X.astype(np.float32))
-    return AnnData(X=X, obs=obs, var=pd.DataFrame(index=var_names))
-
-
 def _gridded_adata(n_side=10, n_extra_genes=60, seed=0):
     """Spots on a grid, each covering many cells, as Visium or gridded data: most
     genes are detected at most spots, so most random pairs score at a spot. Lig0
@@ -63,7 +52,7 @@ def _gridded_adata(n_side=10, n_extra_genes=60, seed=0):
     rows, cols = np.divmod(np.arange(n_spots), n_side)
     X[(rows < 4) & (cols < 4), :2] = 12
     X[(rows >= 8) & (cols >= 8), : len(LR_GENES)] = 0
-    return _adata(X, rows, cols, n_extra_genes)
+    return spot_table(X, rows, cols, LR_GENES)
 
 
 def _sparse_cells_adata(n_cells=900, n_extra_genes=150, seed=0):
@@ -77,7 +66,7 @@ def _sparse_cells_adata(n_cells=900, n_extra_genes=150, seed=0):
     X = rng.poisson(0.1, size=(n_cells, len(LR_GENES) + n_extra_genes))
     patch = (rows < side * 0.3) & (cols < side * 0.3)
     X[patch, :2] = rng.poisson(4.0, size=(patch.sum(), 2))
-    return _adata(X, rows, cols, n_extra_genes)
+    return spot_table(X, rows, cols, LR_GENES)
 
 
 class Sample:
