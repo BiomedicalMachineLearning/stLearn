@@ -44,6 +44,22 @@ def scores_and_pvals(n_spots=30, seed=0):
     return scores, pvals
 
 
+def spot_table(
+    X, rows, cols, lr_genes, sparse=True, dtype=np.float32
+) -> anndata.AnnData:
+    n_other_genes = X.shape[1] - len(lr_genes)
+    var_names = list(lr_genes) + [f"gene{i}" for i in range(n_other_genes)]
+    obs = pd.DataFrame(
+        {"imagerow": np.asarray(rows, float), "imagecol": np.asarray(cols, float)},
+        index=[f"spot{i}" for i in range(len(X))],
+    )
+    X = np.asarray(X, dtype=np.float32)
+    X = np.asarray(X, dtype=dtype)
+    if sparse:
+        X = scipy.sparse.csr_matrix(X)
+    return anndata.AnnData(X=X, obs=obs, var=pd.DataFrame(index=var_names))
+
+
 CCI_LRS = LRPairs.from_names(["LigA_RecA", "LigB_RecB", "LigC_RecC"], species="human")
 CELL_TYPES = np.array(["CT1", "CT2", "CT3"])
 
@@ -63,29 +79,17 @@ def cci_table(
     n_spots = n_side * n_side
     lr_genes = np.column_stack((CCI_LRS.ligands(), CCI_LRS.receptors())).ravel()
     lr_genes = lr_genes.tolist()  # each pair's ligand then receptor
-    var_names = lr_genes + [f"gene{i}" for i in range(n_other_genes)]
 
-    X = rng.poisson(0.3, size=(n_spots, len(var_names))).astype(np.float32)
+    X = rng.poisson(0.3, size=(n_spots, len(lr_genes) + n_other_genes))
     rows, cols = np.divmod(np.arange(n_spots), n_side)
     X[(rows < 4) & (cols < 4), :2] = 6
 
-    obs_names = [f"spot{i}" for i in range(n_spots)]
     band = np.minimum(rows * len(CELL_TYPES) // n_side, len(CELL_TYPES) - 1)
-    adata = anndata.AnnData(
-        X=scipy.sparse.csr_matrix(X),
-        obs=pd.DataFrame(
-            {
-                "imagerow": rows.astype(float),
-                "imagecol": cols.astype(float),
-                "cell_type": pd.Categorical(CELL_TYPES[band], categories=CELL_TYPES),
-            },
-            index=obs_names,
-        ),
-        var=pd.DataFrame(index=var_names),
-    )
+    adata = spot_table(X, rows, cols, lr_genes)
+    adata.obs["cell_type"] = pd.Categorical(CELL_TYPES[band], categories=CELL_TYPES)
     adata.obsm["spatial"] = np.column_stack([cols, rows]).astype(float)
     adata.uns["cell_type"] = pd.DataFrame(
-        np.eye(len(CELL_TYPES))[band], index=obs_names, columns=CELL_TYPES
+        np.eye(len(CELL_TYPES))[band], index=adata.obs_names, columns=CELL_TYPES
     )
     adata.uns["spatial"] = {
         "synthetic": {

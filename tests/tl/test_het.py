@@ -13,7 +13,7 @@ import stlearn as st
 from stlearn.tl.cci import lr_result
 from stlearn.tl.cci.het import count, get_data_for_counting
 from stlearn.tl.cci.neighbours import calc_neighbours
-from tests.utils import CCI_LRS, cci_table
+from tests.utils import CCI_LRS, cci_table, spot_table
 
 LRS = st.tl.cci.LRPairs.from_names(
     ["Lig0_Rec0", "Lig1_Rec1"], species="human", source="test"
@@ -25,15 +25,10 @@ def _make_adata(n_side=6, n_extra_genes=40, seed=0):
     """Spots on a unit grid, with cell type proportions in uns["cell_type"]."""
     rng = np.random.default_rng(seed)
     n_spots = n_side * n_side
-    var_names = list(LRS.genes()) + [f"gene{i}" for i in range(n_extra_genes)]
-    X = rng.poisson(3.0, size=(n_spots, len(var_names))).astype(np.float64)
-
+    lr_genes = list(LRS.genes())
+    X = rng.poisson(3.0, size=(n_spots, len(lr_genes) + n_extra_genes))
     rows, cols = np.divmod(np.arange(n_spots), n_side)
-    obs = pd.DataFrame(
-        {"imagerow": rows.astype(float), "imagecol": cols.astype(float)},
-        index=[f"spot{i}" for i in range(n_spots)],
-    )
-    adata = AnnData(X=X, obs=obs, var=pd.DataFrame(index=var_names))
+    adata = spot_table(X, rows, cols, lr_genes, sparse=False, dtype=np.float64)
     adata.uns["spatial"] = {
         "lib": {
             "scalefactors": {"spot_diameter_fullres": 5.0, "tissue_hires_scalef": 0.1},
