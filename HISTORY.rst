@@ -18,7 +18,7 @@ API and Bug Fixes:
   ``nonzero-median``, ``zero-prop``, ``median_rank``, ``prop_rank`` and
   ``mean_rank`` are columns of ``lr_results.var``.
   ``lr_results.varm["lr_quantiles"]`` stores ligand and receptor expression
-  quantiles.
+  quantiles. Addresses issue #369.
 * ``st.tl.cache.write_subset_h5ad`` takes ``obsp_keys``, and
   ``merge_h5ad_into_adata`` copies ``obsp``, so a cached CCI run keeps its
   neighbours.

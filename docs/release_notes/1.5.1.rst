@@ -16,6 +16,7 @@ LR statistics are stored once and aligned to the rest of the data.
 * ``st.tl.cci.run`` no longer stores ``lrfeatures`` in the LR table's ``uns``.
   ``nonzero-median``, ``zero-prop``, ``median_rank``, ``prop_rank`` and
   ``mean_rank`` are columns of ``lr_results.var`` ordered by ``n_spots_sig``.
+  Addresses issue #369.
   ``lr_results.varm["lr_quantiles"]`` stores ligand and receptor expression
   quantiles.
 * ``st.tl.cache.write_subset_h5ad`` takes ``obsp_keys``, and
