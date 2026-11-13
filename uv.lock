@@ -5315,11 +5315,11 @@ wheels = [
 
 [[package]]
 name = "soupsieve"
-version = "3.0.3"
+version = "4.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5e/77/2dcfa996b01702ab8fd0763d84098f6a640d6162a328f1c04c2697579a1a/soupsieve-3.0.3.tar.gz", hash = "sha256:7dcf6022eed0399eb9934a75e020148f7a2024c37b7dfcd3cf2c5505d69c364e", size = 115923, upload-time = "2026-10-12T13:21:17.696Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/5e/19b7c5d20bc2f226c44f33a9d9aab9740efed7555b96e656231fd564e514/soupsieve-4.0.tar.gz", hash = "sha256:ccd6470b256394ac44b08b86fd94b30a17d335a5335c8a3d15565f7b03d3c8cf", size = 151929, upload-time = "2026-11-03T14:28:55.388Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/ca/f639c80449997b88aba7bc9705d25dd76cc0844f45f187862fd8f8bb18fa/soupsieve-3.0.3-py3-none-any.whl", hash = "sha256:fa30e3ba4809cb81ce1f3209f2fbe3e779fc445f0439bc147a0d7c4601743f21", size = 41705, upload-time = "2026-10-12T13:21:16.474Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/18/d24df2f733ee0655c58717d51add4118a70e64692d0e47d403b9aac4cf98/soupsieve-4.0-py3-none-any.whl", hash = "sha256:5e7494bfce90e06676cfb4c5c2cf22243e98e5cf24646bb1ecdda46d318550a0", size = 50158, upload-time = "2026-11-03T14:28:53.988Z" },
 ]
 
 [[package]]
@@ -5618,10 +5618,13 @@ dependencies = [
     { name = "click" },
     { name = "dask" },
     { name = "geopandas" },
+    { name = "h5py" },
     { name = "igraph" },
     { name = "imageio" },
     { name = "leidenalg" },
     { name = "matplotlib" },
+    { name = "natsort" },
+    { name = "networkx" },
     { name = "numba" },
     { name = "numpy" },
     { name = "openpyxl" },
@@ -5638,10 +5641,13 @@ dependencies = [
     { name = "spatialdata" },
     { name = "spatialdata-io" },
     { name = "spatialdata-plot" },
+    { name = "statsmodels" },
     { name = "tifffile" },
     { name = "torch" },
     { name = "torchvision" },
+    { name = "tqdm" },
     { name = "umap-learn" },
+    { name = "xarray" },
     { name = "zarr" },
 ]
 
@@ -5653,7 +5659,9 @@ dev = [
     { name = "mypy" },
     { name = "myst-parser" },
     { name = "nbsphinx" },
+    { name = "psutil" },
     { name = "pytest" },
+    { name = "pytest-cov" },
     { name = "ruff" },
     { name = "sphinx" },
     { name = "sphinx-autodoc-typehints" },
@@ -5685,6 +5693,7 @@ requires-dist = [
     { name = "furo", marker = "extra == 'dev'", specifier = "==2024.8.6" },
     { name = "geopandas", specifier = ">=1.0.0,<2.0" },
     { name = "ghp-import", marker = "extra == 'dev'", specifier = ">=2.1.0" },
+    { name = "h5py", specifier = ">=3.11" },
     { name = "igraph", specifier = ">=1.0.0" },
     { name = "imageio", specifier = ">=2.37.0,<3.0" },
     { name = "ipywidgets", marker = "extra == 'jupyter'", specifier = ">=8.0.0" },
@@ -5694,7 +5703,9 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.11,<4.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.0" },
     { name = "myst-parser", marker = "extra == 'dev'", specifier = ">=0.18" },
+    { name = "natsort" },
     { name = "nbsphinx", marker = "extra == 'dev'", specifier = ">=0.9.0" },
+    { name = "networkx", specifier = ">=3.0" },
     { name = "numba", specifier = ">=0.64.0" },
     { name = "numpy", specifier = ">=2.4.0" },
     { name = "openpyxl", specifier = ">=3.1" },
@@ -5702,9 +5713,11 @@ requires-dist = [
     { name = "pillow", specifier = ">=13.0.0,<14.0" },
     { name = "plotly", marker = "extra == 'jupyter'", specifier = ">=5.0.0" },
     { name = "pooch", extras = ["progress"], specifier = ">=1.8.1" },
+    { name = "psutil", marker = "extra == 'dev'", specifier = ">=5.9" },
     { name = "psutil", marker = "extra == 'test'" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest", marker = "extra == 'test'" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5" },
     { name = "pytest-cov", marker = "extra == 'test'" },
     { name = "requests", specifier = ">=2.32.4" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.17.3" },
@@ -5720,12 +5733,15 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=4.0" },
     { name = "sphinx-autodoc-typehints", marker = "extra == 'dev'", specifier = ">=1.24.0" },
     { name = "sphinx-autosummary-accessors", marker = "extra == 'dev'", specifier = ">=2023.4.0" },
+    { name = "statsmodels", specifier = ">=0.14.5" },
     { name = "tifffile", specifier = ">=2026.5.2" },
     { name = "torch", specifier = ">=2.5.0" },
     { name = "torchvision", specifier = ">=0.20.0" },
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "tqdm" },
     { name = "types-tensorflow", marker = "extra == 'dev'", specifier = ">=2.8.0" },
     { name = "umap-learn", specifier = ">=0.5.12" },
+    { name = "xarray", specifier = ">=2024.10.0" },
     { name = "zarr", specifier = ">=3.1.6,<4.0" },
 ]
 provides-extras = ["dev", "test", "jupyter"]
