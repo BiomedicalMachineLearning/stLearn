@@ -1,9 +1,7 @@
-
-
 stLearn - A Spatial Transcriptomics Toolkit
 ============================================================================
 
-|PyPI| |PyPIDownloads| |Docs|
+|PyPI| |PyPIDownloads| |Docs| |SPEC 0 - Minimum Supported Dependencies|
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/stlearn?logo=PyPI
    :target: https://pypi.org/project/stlearn
@@ -13,6 +11,8 @@ stLearn - A Spatial Transcriptomics Toolkit
 .. |Docs| image:: https://readthedocs.org/projects/stlearn/badge/?version=latest
    :target: https://stlearn.readthedocs.io
 
+.. |SPEC 0 - Minimum Supported Dependencies| image:: https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038
+   :target: https://scientific-python.org/specs/spec-0000/
 
 
 .. image:: images/logo.png
@@ -37,6 +37,8 @@ undissociated tissue sample.
 
 Latest Additions
 ----------------
+
+.. include:: release_notes/1.5.2.rst
 
 .. include:: release_notes/1.5.1.rst
 

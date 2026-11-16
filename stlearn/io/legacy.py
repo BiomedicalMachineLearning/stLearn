@@ -50,7 +50,7 @@ def read_old_st(
     AnnData
     """
 
-    adata = scanpy.read_text(count_matrix_file)
+    adata = scanpy.io.read_text(count_matrix_file)
     adata = stlearn.add.parsing(adata, coordinates_file=spatial_file)
     stlearn.add.image(
         adata,

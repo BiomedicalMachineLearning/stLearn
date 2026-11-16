@@ -42,7 +42,6 @@ def localization(
     if "sub_cluster_labels" in adata.obs.columns:
         adata.obs = adata.obs.drop("sub_cluster_labels", axis=1)
 
-    pd.set_option("mode.chained_assignment", None)
     subclusters_list = []
     for i in adata.obs[use_label].unique():
         tmp = adata.obs[adata.obs[use_label] == i]
@@ -56,11 +55,9 @@ def localization(
         sublabels = []
         for label in labels:
             sublabels.append(str(i) + "_" + str(label))
-        tmp["sub_labels"] = sublabels
-        subclusters_list.append(tmp["sub_labels"])
+        subclusters_list.append(pd.Series(sublabels, index=tmp.index))
 
     subclusters = pd.concat(subclusters_list)
-    pd.reset_option("mode.chained_assignment")
 
     adata.obs = adata.obs.merge(
         pd.DataFrame({"sub_cluster_labels": subclusters}),

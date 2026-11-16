@@ -49,6 +49,7 @@ def parsing(
     counts_table = adata.to_df()
     imgcol = []
     imgrow = []
+    without_coordinates = []
     for index in counts_table.index:
         tokens = index.split("x")
         x = int(tokens[0])
@@ -58,8 +59,9 @@ def parsing(
             imgcol.append(pixel_x)
             imgrow.append(pixel_y)
         except KeyError:
-            counts_table.drop(index, inplace=True)
+            without_coordinates.append(index)
 
+    counts_table = counts_table.drop(index=without_coordinates)
     # Remove genes that have now a total count of zero
     counts_table = counts_table.transpose()[counts_table.sum(axis=0) > 0].transpose()
 

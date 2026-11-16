@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stlearn"
-version = "1.5.1"
+version = "1.5.2"
 authors = [
     { name = "Genomics and Machine Learning Lab", email = "andrew.newman@uq.edu.au" },
 ]
@@ -12,9 +12,9 @@ description = "A downstream analysis toolkit for Spatial Transcriptomic data"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "anndata>=0.12.2",
+    "anndata>=0.13.3",
     "bokeh>=3.7.0,<4.0",
     "click>=8.2.0,<9.0",
     "dask>=2025.12.0",
@@ -25,7 +25,7 @@ dependencies = [
     "leidenalg>=0.11.0",
     "matplotlib>=3.11,<4.0",
     "natsort",
-    "networkx>=3.0",
+    "networkx>=3.5",
     "numba>=0.64.0",
     "numpy>=2.4.0",
     "openpyxl>=3.1",
@@ -33,8 +33,8 @@ dependencies = [
     "pillow>=13.0.0,<14.0",
     "pooch[progress]>=1.8.1",
     "requests>=2.32.4",
-    "scanpy>=1.12.0",
-    "scikit-image>=0.25.0",
+    "scanpy>=1.13.0",
+    "scikit-image>=0.26.0",
     "scikit-learn>=1.8.0,<2.0",
     "scikit-misc>=0.5.1",
     "scipy>=1.17.1,<2.0",
@@ -48,7 +48,7 @@ dependencies = [
     "tqdm",
     "umap-learn>=0.5.12",
     "tifffile>=2026.5.2",
-    "xarray>=2024.10.0",
+    "xarray>=2025.1.0",
     "zarr>=3.1.6,<4.0",
 ]
 
@@ -60,7 +60,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
@@ -114,7 +113,7 @@ markers = [
 ]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 line-length = 88
 exclude = [".git", "__pycache__", "build", "dist", "docs/_build"]
 
