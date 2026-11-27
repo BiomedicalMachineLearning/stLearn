@@ -29,9 +29,9 @@ class SpatialElements:
     """Names of the SpatialData elements that go with one table."""
 
     table: str
-    region: str  # the shapes or labels element the table annotates
+    region: str
     coordinate_system: str
-    image: ImageChoice = ("auto",)
+    image: str | None
 
 
 def is_fluorescence(image: xarray.DataArray | xarray.DataTree) -> bool:
@@ -115,7 +115,7 @@ def spatial_elements(
     region_cs = element_transformations(_element(sdata, region)).keys()
 
     reference: str | None
-    if image == "auto":
+    if image == "auto" or image is None:
         images = list(
             filter(
                 lambda name: (
@@ -138,14 +138,10 @@ def spatial_elements(
             ),
             default=None,
         )
-    elif image is None:
-        reference = None
-    elif image is sdata.images:
+    elif image in sdata.images:
         reference = image
     else:
-        raise ValueError(
-            f"Image not found {image!r}; choose from {sorted(sdata.images)}"
-        )
+        raise ValueError(f"No image {image!r}; choose from {sorted(sdata.images)}")
 
     if coordinate_system is None:
         if reference is None:
@@ -168,5 +164,8 @@ def spatial_elements(
         coordinate_system = options[0]
 
     return SpatialElements(
-        table_key, region, None if image is None else reference, coordinate_system
+        table=table_key,
+        region=region,
+        coordinate_system=coordinate_system,
+        image=None if image is None else reference,
     )

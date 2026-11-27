@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import unittest
 
-import numpy as np
+import numpy
 import scanpy as sc
 
 import stlearn as st
@@ -37,12 +37,12 @@ class TestFeatureExtractionPerformance(unittest.TestCase):
         st.pp.extract_feature(data1, seeds=42)
         st.pp.extract_feature(data2, seeds=42)
 
-        np.testing.assert_array_equal(
+        numpy.testing.assert_array_equal(
             data1.obsm["X_morphology"],
             data2.obsm["X_morphology"],
             err_msg="Results should be deterministic with same seed",
         )
-        np.testing.assert_array_equal(
+        numpy.testing.assert_array_equal(
             data1.obsm["X_tile_feature"],
             data2.obsm["X_tile_feature"],
             err_msg="Results should be deterministic with same seed",

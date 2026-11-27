@@ -98,8 +98,12 @@ class TestSdataPlotImage(unittest.TestCase):
         self.assertEqual(widths, [] if width is None else [width])
 
     def test_auto_chooses_an_image(self):
-        """The default draws the smallest image, and "hires" the largest."""
-        self.assert_image_width(self.plot(visium_hd(), image=None), 50)
+        """
+        The default draws the smallest image, and "hires" the largest.
+
+        The low-res image is 2000 * 0.025 = 50px, the hi-res image is *0.1 = 200px.
+        """
+        self.assert_image_width(self.plot(visium_hd()), 50)
         self.assert_image_width(self.plot(visium_hd(), image="auto"), 50)
         self.assert_image_width(self.plot(visium_hd(), resolution="hires"), 200)
 
