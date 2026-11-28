@@ -5,11 +5,10 @@ import unittest
 
 import anndata
 import numpy as np
-import pandas as pd
-from anndata import AnnData
 
 import stlearn as st
 from stlearn.tl.cci import LRPairs
+from tests.utils import spot_table
 
 
 def _make_cci_adata(dtype=np.float64, n_side=8, n_extra_genes=40, seed=0):
@@ -17,18 +16,9 @@ def _make_cci_adata(dtype=np.float64, n_side=8, n_extra_genes=40, seed=0):
     n_spots = n_side * n_side
 
     lr_genes = ["Lig0", "Rec0", "Lig1", "Rec1"]  # two L-R pairs
-    extra_genes = [f"gene{i}" for i in range(n_extra_genes)]
-    var_names = lr_genes + extra_genes
-
-    X = rng.poisson(3.0, size=(n_spots, len(var_names))).astype(dtype)
-
+    X = rng.poisson(3.0, size=(n_spots, len(lr_genes) + n_extra_genes))
     rows, cols = np.divmod(np.arange(n_spots), n_side)
-    obs = pd.DataFrame(
-        {"imagerow": rows.astype(float), "imagecol": cols.astype(float)},
-        index=[f"spot{i}" for i in range(n_spots)],
-    )
-    var = pd.DataFrame(index=var_names)
-    return AnnData(X=X, obs=obs, var=var)
+    return spot_table(X, rows, cols, lr_genes, sparse=False, dtype=dtype)
 
 
 LRS = LRPairs.from_names(["Lig0_Rec0", "Lig1_Rec1"], species="human")

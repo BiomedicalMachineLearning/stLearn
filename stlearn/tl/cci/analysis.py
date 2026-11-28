@@ -31,7 +31,7 @@ from .het import (
 )
 from .ligand_receptors import LRPairs, genes_of, lr_pairs, split_name
 from .neighbours import calc_distance, calc_neighbours, stored_neighbours
-from .permutation import perform_spot_testing
+from .permutation import Null, perform_spot_testing
 from .scoring import get_lrs_scores
 
 
@@ -91,6 +91,7 @@ def run(
     random_state: int = 0,
     verbose: bool = True,
     cell_prop_cutoff: float = 0.2,
+    null: Null = "codetected",
 ) -> anndata.AnnData:
     """Performs stLearn LR analysis.
 
@@ -140,6 +141,14 @@ def run(
     cell_prop_cutoff: float
         With use_label, a cell type is in a spot when its proportion is above this,
         as in run_cci.
+    null: str
+        Which of an LR's random gene pairs a spot's score is tested against.
+        "codetected" (default): those that score above 0 at the spot, detected
+        there as the LR is, so p = (n_greater + 1) / (n_codetected + 1); for
+        sparse data (single cells, Visium HD bins) without gridding. "random":
+        all n_pairs of them, the original test, p = max(n_greater, 1) / n_pairs,
+        where the pairs not detected at a spot score 0 and make any score there
+        significant. Not used with neg_binom.
     Returns
     -------
     AnnData
@@ -280,6 +289,7 @@ def run(
         save_bg=save_bg,
         neg_binom=neg_binom,
         random_state=random_state,
+        null=null,
     )
     features = tests.lr_features.loc[tested.names()]
     var = pandas.DataFrame(

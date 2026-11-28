@@ -3,6 +3,7 @@ with similar expression."""
 
 from dataclasses import dataclass
 from functools import partial
+from typing import Literal, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -18,6 +19,10 @@ from ._results import Matrix, scored_entries
 from .ligand_receptors import LRPairs
 from .perm_utils import _column_quantiles, background_pairs, get_lr_features
 from .scoring import LRScorer, spots_per_chunk
+
+Null = Literal["codetected", "random"]
+"""What a spot's score is compared with: its random pairs that scored there too
+("codetected"), or all of them, the zeros included ("random")."""
 
 
 @dataclass
@@ -59,6 +64,7 @@ def perform_spot_testing(
         1,
     ),
     random_state: int = 0,
+    null: Null = "codetected",
 ) -> SpotTests:
     """Tests each spot's LR scores against random gene pairs with similar
     expression to the LR pair; backgrounds are only generated for spots
@@ -67,8 +73,16 @@ def perform_spot_testing(
     for each of `lrs`, in the order of lrs.names(), as get_lrs_scores gives them.
     The p-values come back sparse, an entry for each.
 
+    `null` is which of a spot's n_pairs random pairs its score is compared with
+    (see empirical_pvals):
+
+    The backgrounds saved with save_bg, and the negative binomial fitted with
+    neg_binom, are of every random pair under either.
+
     Returns lr_features in expression-rank order.
     """
+    if null not in get_args(Null):
+        raise ValueError(f"null must be one of {get_args(Null)}; got {null!r}.")
     quantiles = np.array(quantiles)
     scores = scored_entries(lr_scores)
     names, ligands, receptors = lrs.names(), lrs.ligands(), lrs.receptors()
@@ -153,10 +167,8 @@ def perform_spot_testing(
                 chunk = spots_per_chunk(2 * n_genes, n_pairs)
                 for a in range(0, len(spot_indices), chunk):
                     background = score(spot_indices[a : a + chunk])
-                    n_greater = (background >= lr_j_scores[a : a + chunk, None]).sum(1)
-                    n_greater = np.maximum(n_greater, 1)  # pseudocount
                     pvals.data[start + a : start + a + len(background)] = (
-                        n_greater / n_pairs
+                        empirical_pvals(lr_j_scores[a : a + chunk], background, null)
                     )
                     # Collect memory before the next chunk is made
                     del background
@@ -184,6 +196,29 @@ def perform_spot_testing(
             pbar.update(1)
 
     return SpotTests(pvals, lr_feats, backgrounds, bg_spot_indices)
+
+
+def empirical_pvals(
+    scores: npt.NDArray[np.float64],
+    background: npt.NDArray[np.float64],
+    null: Null = "codetected",
+) -> npt.NDArray[np.float64]:
+    """A p-value for each spot's score (all above 0) from its row of background:
+    the scores of the LR's random pairs at the spot.
+
+    "random" is a null using any random pairs, where there must be at least one and
+    they must be scored to be at least the spot's own score.
+
+    "codetected" is a null using pairs that score above 0 and where one gene is
+    expressed at the spot and the other in its neighbours. Formulae is:
+    (n_greater + 1) / (n_codetected + 1)
+    """
+    n_greater = (background >= scores[:, None]).sum(1)
+    if null == "random":
+        return np.maximum(n_greater, 1) / background.shape[1]
+    else:
+        n_codetected = (background > 0).sum(1)
+        return (n_greater + 1) / (n_codetected + 1)
 
 
 def score_background(

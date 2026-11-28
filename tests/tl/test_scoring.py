@@ -6,9 +6,7 @@ import unittest
 from unittest import mock
 
 import numpy as np
-import pandas as pd
 import scipy.sparse
-from anndata import AnnData
 
 from stlearn.tl.cci import scoring
 from stlearn.tl.cci.neighbours import calc_neighbours
@@ -19,6 +17,7 @@ from stlearn.tl.cci.scoring import (
     neighbourhood_means,
     score_spots,
 )
+from tests.utils import spot_table
 
 
 def _reference_scores(expr, pairs, neighbour_lists, het_vals, min_expr, spot_indices):
@@ -185,18 +184,10 @@ class TestScoreSpots(unittest.TestCase):
 def _make_adata(n_side=6, seed=0, sparse=True):
     rng = np.random.default_rng(seed)
     n_spots = n_side * n_side
-    var_names = ["Lig0", "Rec0", "Lig1", "Rec1", "Rec2", "gene0"]
-    X = rng.poisson(1.0, size=(n_spots, len(var_names))).astype(np.float32)
+    lr_genes = ["Lig0", "Rec0", "Lig1", "Rec1", "Rec2"]  # and gene0
+    X = rng.poisson(1.0, size=(n_spots, len(lr_genes) + 1))
     rows, cols = np.divmod(np.arange(n_spots), n_side)
-    obs = pd.DataFrame(
-        {"imagerow": rows.astype(float), "imagecol": cols.astype(float)},
-        index=[f"spot{i}" for i in range(n_spots)],
-    )
-    return AnnData(
-        X=scipy.sparse.csr_matrix(X) if sparse else X,
-        obs=obs,
-        var=pd.DataFrame(index=var_names),
-    )
+    return spot_table(X, rows, cols, lr_genes, sparse=sparse)
 
 
 class TestGetLrsScores(unittest.TestCase):

@@ -5,20 +5,21 @@ import io
 import unittest
 
 import numpy as np
-import pandas as pd
-import scipy.sparse
-from anndata import AnnData
 
 from stlearn.tl.cci import LRPairs
 from stlearn.tl.cci.analysis import _report_dropped_lrs
+from tests.utils import spot_table
 
 
 def _adata(sparse=False):
-    """Four spots: A is 0.3 everywhere, E is never expressed, the rest are 1."""
-    X = np.array([[0.3, 1.0, 1.0, 1.0, 0.0]] * 4, dtype=np.float32)
-    return AnnData(
-        scipy.sparse.csr_matrix(X) if sparse else X,
-        var=pd.DataFrame(index=list("ABCDE")),
+    """Four spots in a row: A is 0.3 everywhere, E is never expressed, the rest
+    are 1."""
+    return spot_table(
+        np.array([[0.3, 1.0, 1.0, 1.0, 0.0]] * 4),
+        np.zeros(4),
+        np.arange(4),
+        list("ABCDE"),
+        sparse=sparse,
     )
 
 
@@ -65,7 +66,9 @@ class TestReportDroppedLrs(unittest.TestCase):
 
     def test_names_at_most_max_named_genes(self):
         genes = [f"G{i}" for i in range(12)]
-        adata = AnnData(np.zeros((2, 12)), var=pd.DataFrame(index=genes))
+        adata = spot_table(
+            np.zeros((2, 12)), np.zeros(2), np.arange(2), genes, sparse=False
+        )
         lrs = [f"G{i}_G{i + 1}" for i in range(11)]
         report = _report(adata, lrs, [0] * 11)
         self.assertIn("G0, G1, G10, G11, G2, G3, G4, G5, G6, G7 and 2 more.", report)
