@@ -77,7 +77,9 @@ def cci_table(
             {
                 "imagerow": rows.astype(float),
                 "imagecol": cols.astype(float),
-                "cell_type": pandas.Categorical(CELL_TYPES[band], categories=CELL_TYPES),
+                "cell_type": pandas.Categorical(
+                    CELL_TYPES[band], categories=CELL_TYPES
+                ),
             },
             index=obs_names,
         ),
@@ -89,7 +91,9 @@ def cci_table(
     )
     adata.uns["spatial"] = {
         "synthetic": {
-            "images": {"hires": numpy.full((n_side, n_side, 3), 255, dtype=numpy.uint8)},
+            "images": {
+                "hires": numpy.full((n_side, n_side, 3), 255, dtype=numpy.uint8)
+            },
             "scalefactors": {"tissue_hires_scalef": 1.0, "spot_diameter_fullres": 1.0},
             "use_quality": "hires",
         }
