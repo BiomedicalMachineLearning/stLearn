@@ -22,7 +22,7 @@ def run_umap(
     a: float | None = None,
     b: float | None = None,
     copy: bool = False,
-    method: Literal["umap", "rapids"] = "umap",
+    method: Literal["umap"] = "umap",
 ) -> AnnData | None:
     """\
     Wrap function scanpy.pp.umap

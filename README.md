@@ -16,6 +16,10 @@
       <img src="https://static.pepy.tech/personalized-badge/stlearn?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads"
         alt="PyPI downloads">
       </a>
+      <a href="https://scientific-python.org/specs/spec-0000/">
+      <img src="https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038"
+        alt="SPEC 0 — Minimum Supported Dependencies">
+      </a>
     </td>
   </tr>
   <tr>

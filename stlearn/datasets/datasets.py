@@ -72,7 +72,7 @@ ATERA_SAMPLES = {
 }
 
 VISIUM_HD_SAMPLES = {
-    "Visium_HD_Human_Colon_Cancer": "3.0.0",  # also 4.0.1
+    "Visium_HD_Human_Colon_Cancer": "4.0.1",  # also 3.0.0
     "Visium_HD_Human_Colon_Cancer_P1": "3.0.0",
     "Visium_HD_Human_Colon_Cancer_P2": "3.0.0",
     "Visium_HD_Human_Colon_Cancer_P5": "3.0.0",
@@ -83,11 +83,11 @@ VISIUM_HD_SAMPLES = {
     "Visium_HD_Human_Lung_Cancer_HD_Only_Experiment2": "3.0.0",
     "Visium_HD_Human_Lung_Cancer_post_Xenium_v1_Experiment1": "3.0.0",
     "Visium_HD_Human_Lung_Cancer_post_Xenium_Prime_5K_Experiment2": "3.0.0",
-    "Visium_HD_Human_Pancreas": "3.0.0",  # also 4.0.1
-    "Visium_HD_Mouse_Brain": "3.0.0",  # also 4.0.1
-    "Visium_HD_Mouse_Embryo": "3.0.0",  # also 4.0.1
-    "Visium_HD_Mouse_Kidney": "3.0.0",  # also 4.0.1
-    "Visium_HD_Mouse_Small_Intestine": "3.0.0",  # also 4.0.1
+    "Visium_HD_Human_Pancreas": "4.0.1",  # also 3.0.0
+    "Visium_HD_Mouse_Brain": "4.0.1",  # also 3.0.0
+    "Visium_HD_Mouse_Embryo": "4.0.1",  # also 3.0.0
+    "Visium_HD_Mouse_Kidney": "4.0.1",  # also 3.0.0
+    "Visium_HD_Mouse_Small_Intestine": "4.0.1",  # also 3.0.0
     "Visium_HD_Human_Breast_Cancer_Fresh_Frozen": "3.1.1",
     "Visium_HD_Human_Breast_Cancer_Fixed_Frozen": "3.1.1",
     "Visium_HD_Human_Lung_Cancer_Fixed_Frozen": "3.1.1",
@@ -96,10 +96,10 @@ VISIUM_HD_SAMPLES = {
     "Visium_HD_Mouse_Brain_Fresh_Frozen": "3.1.1",
     "Visium_HD_Mouse_Brain_Fixed_Frozen": "3.1.1",
     "Visium_HD_Mouse_Lung_Fresh_Frozen": "3.1.1",
-    "Visium_HD_FF_Human_Breast_Cancer": "3.1.2",  # also 4.0.1
+    "Visium_HD_FF_Human_Breast_Cancer": "4.0.1",  # also 3.1.2
     "Visium_HD_FF_Human_Tonsil": "3.1.2",
     "Visium_HD_Human_Breast_Cancer_FFPE": "3.1.2",
-    "Visium_HD_Human_Kidney_FFPE": "3.1.2",  # also 4.0.1
+    "Visium_HD_Human_Kidney_FFPE": " 4.0.1",  # also 3.1.2
     "Visium_HD_Human_Lymph_Node_FFPE": "4.0.1",
     "Visium_HD_Human_Prostate_Cancer_FFPE": "4.0.1",
     "Visium_HD_Human_Ovarian_Cancer_FF": "4.0.1",

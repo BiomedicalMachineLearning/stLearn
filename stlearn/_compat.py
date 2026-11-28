@@ -7,6 +7,8 @@ import spatialdata.models
 import spatialdata.transformations
 import xarray
 
+from stlearn.types import ImageChoice
+
 
 def get_adata(data, table_key="table"):
     """Extract AnnData from either SpatialData or AnnData input."""
@@ -27,9 +29,9 @@ class SpatialElements:
     """Names of the SpatialData elements that go with one table."""
 
     table: str
-    region: str  # the shapes or labels element the table annotates
-    image: str
+    region: str
     coordinate_system: str
+    image: str | None
 
 
 def is_fluorescence(image: xarray.DataArray | xarray.DataTree) -> bool:
@@ -93,17 +95,17 @@ def spatial_elements(
     sdata: spatialdata.SpatialData,
     table_key: str = "table",
     resolution: Literal["hires", "lowres"] = "lowres",
-    image: str | None = None,
+    image: ImageChoice = "auto",
     coordinate_system: str | None = None,
 ) -> SpatialElements:
     """Find the element a table annotates, a tissue image, and
     a coordinate system for both.
 
-    The image defaults to one sharing a coordinate system with the table's
-    element, preferring brightfield (RGB, e.g. H&E) over fluorescence, then the
-    smallest image for "lowres" or the largest for "hires". The coordinate
-    system defaults to the one the image and the element share, preferring the
-    image's native resolution.
+    `image` is "auto" to choose an image, None for no image, or the name of the
+    image to use.
+
+    The coordinate system defaults to the one the image and the element share - with
+    no image it is the "auto" coordinates.
     """
     region = sdata.tables[table_key].uns["spatialdata_attrs"]["region"]
     regions = [region] if isinstance(region, str) else list(region)
@@ -112,7 +114,8 @@ def spatial_elements(
     region = regions[0]
     region_cs = element_transformations(_element(sdata, region)).keys()
 
-    if image is None:
+    reference: str | None
+    if image == "auto" or image is None:
         images = list(
             filter(
                 lambda name: (
@@ -121,31 +124,48 @@ def spatial_elements(
                 sdata.images,
             )
         )
-        if not images:
+        if not images and image == "auto":
             raise ValueError(
-                f"No image shares a coordinate system with {region!r}; pass `image`"
+                f"No image shares a coordinate system with {region!r}; "
+                "pass `image=None` to plot without one"
             )
         size_order = 1 if resolution == "lowres" else -1
-        image = min(
+        reference = min(
             images,
             key=lambda name: (
                 is_fluorescence(sdata.images[name]),
                 size_order * _n_pixels(sdata.images[name]),
             ),
+            default=None,
         )
+    elif image in sdata.images:
+        reference = image
+    else:
+        raise ValueError(f"No image {image!r}; choose from {sorted(sdata.images)}")
 
     if coordinate_system is None:
-        image_transformations = element_transformations(sdata.images[image])
-        shared = sorted(region_cs & image_transformations.keys())
-        native = list(
-            filter(lambda cs: _is_unscaled(image_transformations[cs]), shared)
-        )
-        options = native or shared
+        if reference is None:
+            options = shared = sorted(region_cs)
+        else:
+            image_transformations = element_transformations(sdata.images[reference])
+            shared = sorted(region_cs & image_transformations.keys())
+            native = list(
+                filter(lambda cs: _is_unscaled(image_transformations[cs]), shared)
+            )
+            options = native or shared
         if len(options) != 1:
+            names = (
+                repr(region) if reference is None else f"{reference!r} and {region!r}"
+            )
             raise ValueError(
-                f"Can't choose a coordinate system for {image!r} and {region!r}; "
+                f"Can't choose a coordinate system for {names}; "
                 f"pass `coordinate_system`, one of {shared}"
             )
         coordinate_system = options[0]
 
-    return SpatialElements(table_key, region, image, coordinate_system)
+    return SpatialElements(
+        table=table_key,
+        region=region,
+        coordinate_system=coordinate_system,
+        image=None if image is None else reference,
+    )

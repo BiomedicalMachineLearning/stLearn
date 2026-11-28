@@ -1,51 +1,17 @@
-from collections.abc import Callable, Mapping
-from types import MappingProxyType
-from typing import Any, Literal
+from typing import Any
 
-import numpy as np
 import scanpy
 from anndata import AnnData
 from numpy.random import RandomState
-
-_Method = Literal["umap", "gauss"]
-_MetricFn = Callable[[np.ndarray, np.ndarray], float]
-# from sklearn.metrics.pairwise_distances.__doc__:
-_MetricSparseCapable = Literal[
-    "cityblock", "cosine", "euclidean", "l1", "l2", "manhattan"
-]
-_MetricScipySpatial = Literal[
-    "braycurtis",
-    "canberra",
-    "chebyshev",
-    "correlation",
-    "dice",
-    "hamming",
-    "jaccard",
-    "kulsinski",
-    "mahalanobis",
-    "minkowski",
-    "rogerstanimoto",
-    "russellrao",
-    "seuclidean",
-    "sokalmichener",
-    "sokalsneath",
-    "sqeuclidean",
-    "yule",
-]
-_Metric = _MetricSparseCapable | _MetricScipySpatial
 
 
 def neighbors(
     adata: AnnData,
     n_neighbors: int = 15,
     n_pcs: int | None = None,
-    use_rep: str | None = None,
-    knn: bool = True,
+    *,
     random_state: int | RandomState | None = 0,
-    method: _Method = "umap",
-    metric: _Metric | _MetricFn = "euclidean",
-    metric_kwds: Mapping[str, Any] = MappingProxyType({}),
-    copy: bool = False,
+    **kwargs: Any,
 ) -> AnnData | None:
     """\
     Compute a neighborhood graph of observations [McInnes18]_.
@@ -67,28 +33,18 @@ def neighbors(
         If `knn` is `True`, number of nearest neighbors to be searched. If `knn`
         is `False`, a Gaussian kernel width is set to the distance of the
         `n_neighbors` neighbor.
-    {n_pcs}
-    {use_rep}
-    knn:
-        If `True`, use a hard threshold to restrict the number of neighbors to
-        `n_neighbors`, that is, consider a knn graph. Otherwise, use a Gaussian
-        Kernel to assign low weights to neighbors more distant than the
-        `n_neighbors` nearest neighbor.
+    n_pcs:
+        Use this many PCs. If `n_pcs==0` use `.X` if `use` is `None`.
     random_state:
         A numpy random seed.
-    method:
-        Use 'umap' [McInnes18]_ or 'gauss' (Gauss kernel following [Coifman05]_
-        with adaptive width [Haghverdi16]_) for computing connectivities.
-    metric:
-        A known metric's name or a callable that returns a distance.
-    metric_kwds:
-        Options for the metric.
-    copy:
-        Return a copy instead of writing to adata.
+    **kwargs:
+        Any other keyword argument is passed to :func:`scanpy.pp.neighbors`, for
+        example `use` (such as `use="obsm.X_pca"`), `knn`, `method`, `metric`
+        or `metric_kwds`.
 
     Returns
     -------
-    Depending on `copy`, updates or returns `adata` with the following:
+    Updates `adata` with the following:
     **connectivities** : sparse matrix (`.uns['neighbors']`, dtype `float32`)
         Weighted adjacency matrix of the neighborhood graph of data
         points. Weights should be interpreted as connectivities.
@@ -101,15 +57,10 @@ def neighbors(
         adata,
         n_neighbors=n_neighbors,
         n_pcs=n_pcs,
-        use_rep=use_rep,
-        knn=knn,
         random_state=random_state,
-        method=method,
-        metric=metric,
-        metric_kwds=metric_kwds,
-        copy=copy,
+        **kwargs,
     )
 
     print("Created k-Nearest-Neighbor graph in adata.uns['neighbors'] ")
 
-    return adata if copy else None
+    return adata

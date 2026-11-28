@@ -84,7 +84,7 @@ def read_10x(
     """
 
     path = pathlib.Path(path)
-    adata = scanpy.read_10x_h5(path / count_file, genome=genome)
+    adata = scanpy.io.read_10x_h5(path / count_file, genome=genome)
 
     adata.uns["spatial"] = dict()
 

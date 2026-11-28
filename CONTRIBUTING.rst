@@ -67,10 +67,10 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
 3. Install your local copy into a virtualenv. This is how you set up your fork for local development::
 
     Run the following:
-    $ conda create -n stlearn-dev python=3.12 --y
+    $ conda create -n stlearn-dev python=3.13 --y
     $ conda activate stlearn-dev
     $ cd stlearn/
-    $ pip install -e ".[dev,test]"
+    $ pip install -e . --group dev
 
     You can also use conda to install these dependencies (after creating the environment):
     $ conda install -c conda-forge leidenalg python-igraph
@@ -80,7 +80,7 @@ Ready to contribute? Here's how to set up `stlearn` for local development.
     $ python -m venv stlearn-env
     $ source stlearn-env/bin/activate  # On Windows: stlearn-env\Scripts\activate
     $ cd stlearn/
-    $ pip install -e ".[dev,test]"
+    $ pip install -e . --group dev
 
 4. Create a branch for local development::
 
@@ -116,7 +116,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 3.12 and above.
+3. The pull request should work for Python 3.13 and above.
 
 Tips
 ----

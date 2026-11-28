@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import scanpy
 from anndata import AnnData
@@ -8,22 +10,21 @@ from scipy.sparse import spmatrix
 def run_pca(
     data: AnnData | np.ndarray | spmatrix,
     n_comps: int = 50,
-    zero_center: bool | None = True,
+    *,
     svd_solver: str = "arpack",
     random_state: int | RandomState | None = 0,
-    return_info: bool = False,
-    use_highly_variable: bool | None = None,
-    dtype: str = "float32",
-    copy: bool = False,
-    chunked: bool = False,
-    chunk_size: int | None = None,
-) -> AnnData | None:
+    **kwargs: Any,
+) -> AnnData | np.ndarray | spmatrix | tuple | None:
     """\
     Wrap function scanpy.pp.pca
 
     Principal component analysis [Pedregosa11]_.
     Computes PCA coordinates, loadings and variance decomposition.
     Uses the implementation of *scikit-learn* [Pedregosa11]_.
+
+    Only the highly variable genes in `.var['highly_variable']` are used when
+    they have been determined beforehand, otherwise all genes are used. Pass
+    `mask=None` to use all genes regardless.
 
     Parameters
     ----------
@@ -32,12 +33,6 @@ def run_pca(
         Rows correspond to cells and columns to genes.
     n_comps
         Number of principal components to compute.
-    zero_center
-        If `True`, compute standard PCA from covariance matrix.
-        If `False`, omit zero-centering variables
-        (uses :class:`~sklearn.decomposition.TruncatedSVD`),
-        which allows to handle sparse input efficiently.
-        Passing `None` decides automatically based on sparseness of the data.
     svd_solver
         SVD solver to use:
 
@@ -48,33 +43,18 @@ def run_pca(
 
     random_state
         Change to use different initial states for the optimization.
-    return_info
-        Only relevant when not passing an :class:`~anndata.AnnData`:
-        see “**Returns**”.
-    use_highly_variable
-        Whether to use highly variable genes only, stored in
-        `.var['highly_variable']`.
-        By default, uses them if they have been determined beforehand.
-    dtype
-        Numpy data type string to which to convert the result.
-    copy
-        If an :class:`~anndata.AnnData` is passed, determines whether a copy
-        is returned. Is ignored otherwise.
-    chunked
-        If `True`, perform an incremental PCA on segments of `chunk_size`.
-        The incremental PCA automatically zero centers and ignores settings of
-        `random_seed` and `svd_solver`. If `False`, perform a full PCA.
-    chunk_size
-        Number of observations to include in each chunk.
-        Required if `chunked=True` was passed.
+    **kwargs
+        Any other keyword argument is passed to :func:`scanpy.pp.pca`, for
+        example `mask`, `zero_center`, `dtype`, `chunked`, `chunk_size` or
+        `return_info`.
 
     Returns
     -------
     X_pca: :class:`~scipy.sparse.spmatrix`, :class:`~numpy.ndarray`
         If `data` is array-like and `return_info=False` was passed,
         this function only returns `X_pca`.
-    adata: anndata.AnnData
-        Otherwise if `copy=True` it returns or else adds fields to `adata`:
+    None
+        If `data` is an :class:`~anndata.AnnData`, it adds these fields to it:
 
         - `.obsm['X_pca']` - PCA representation of data.
         - `.varm['PCs']` - The principal components containing the loadings.
@@ -84,18 +64,12 @@ def run_pca(
 
     """
 
-    adata = scanpy.pp.pca(
+    result = scanpy.pp.pca(
         data,
         n_comps=n_comps,
-        zero_center=zero_center,
         svd_solver=svd_solver,
         random_state=random_state,
-        return_info=return_info,
-        use_highly_variable=use_highly_variable,
-        dtype=dtype,
-        copy=copy,
-        chunked=chunked,
-        chunk_size=chunk_size,
+        **kwargs,
     )
 
     print(
@@ -103,4 +77,4 @@ def run_pca(
         + "adata.varm['PCs']"
     )
 
-    return adata
+    return result

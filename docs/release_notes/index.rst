@@ -1,6 +1,8 @@
 Release Notes
 ===================================================
 
+.. include:: 1.5.2.rst
+
 .. include:: 1.5.1.rst
 
 .. include:: 1.5.0.rst

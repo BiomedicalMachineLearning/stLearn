@@ -8,6 +8,7 @@ import spatialdata.transformations
 import spatialdata_plot  # noqa: F401  (adds the .pl accessor to SpatialData)
 
 from stlearn._compat import is_fluorescence, spatial_elements
+from stlearn.types import ImageChoice
 
 
 def sdata_plot(
@@ -16,7 +17,7 @@ def sdata_plot(
     *,
     table_key: str = "table",
     resolution: Literal["hires", "lowres"] = "lowres",
-    image: str | None = None,
+    image: ImageChoice = "auto",
     channel: int | str | None = None,
     coordinate_system: str | None = None,
     groups: str | Sequence[str] | None = None,
@@ -37,9 +38,12 @@ def sdata_plot(
         color: Column in the table's `obs`, or a gene name.
         table_key: Table to plot: "table" for Visium and Xenium, "square_008um"
             or "cell_segmentations" for Visium HD.
-        resolution: "lowres" plots on the smallest tissue image, "hires" on
-            the largest. Brightfield (H&E) images are preferred either way.
-        image: Image to plot on, instead of choosing one.
+        resolution: The image that "auto" chooses: "lowres" plots on the
+            smallest tissue image, "hires" on the largest. Brightfield (H&E)
+            images are preferred either way.
+        image: "auto" chooses the image to plot on; a name plots on that image,
+            and is an error if there is no image of that name; None plots
+            without an image, in the coordinates "auto" would plot in.
         channel: Image channel to show. Defaults to the first channel (DAPI)
             for fluorescence images such as Xenium's `morphology_focus`.
         coordinate_system: Coordinate system to plot in, if it can't be
@@ -58,15 +62,17 @@ def sdata_plot(
     """
     elements = spatial_elements(sdata, table_key, resolution, image, coordinate_system)
 
-    if channel is None and is_fluorescence(sdata.images[elements.image]):
-        channel = spatialdata.models.get_channel_names(sdata.images[elements.image])[0]
-
-    plot = sdata.pl.render_images(
-        elements.image,
-        channel=channel,
-        cmap="gray" if channel is not None else None,
-        colorbar=False,
-    )
+    plot = sdata
+    if elements.image is not None:
+        tissue = sdata.images[elements.image]
+        if channel is None and is_fluorescence(tissue):
+            channel = spatialdata.models.get_channel_names(tissue)[0]
+        plot = sdata.pl.render_images(
+            elements.image,
+            channel=channel,
+            cmap="gray" if channel is not None else None,
+            colorbar=False,
+        )
     style = {
         "color": color,
         "table_name": table_key,

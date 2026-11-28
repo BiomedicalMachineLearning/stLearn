@@ -2,6 +2,21 @@
 History
 =======
 
+1.5.2 (2026-11-16)
+------------------
+Upgrades stLearn libraries to scanpy 1.13 and follows minimum supported
+versions `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_.
+
+API and Bug Fixes:
+
+* Aligns ``st.em.run_pca`` with ``scanpy.pp.pca`` - no longer takes
+  ``use_highly_variable``, no longer has a ``copy`` argument (copy ``adata``
+  before calling).
+* ``st.em.run_umap`` no longer accepts ``method="rapids"``.
+* Only Python 3.13 and 3.14 supported. 3.12 not supported by scanpy and 3.15
+  not supported by h5py.
+* Uses ``scanpy.io`` instead of ``scanpy.read_*``.
+
 1.5.1 (2026-11-09)
 ------------------
 * ``st.tl.cci.run`` now uses a spots-by-spots, sparse graph:
