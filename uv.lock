@@ -4337,6 +4337,24 @@ wheels = [
 ]
 
 [[package]]
+name = "repo-review"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown-it-py" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3f/71/9219d726ac7c7d26f5276d789d872bb19237ff4d38e613a72555b8388921/repo_review-1.3.0.tar.gz", hash = "sha256:46b6b500f8fe867e6c0639a08374b01d984b39f480fa1bc7ea1a67360b933d63", size = 120364, upload-time = "2026-10-23T16:21:44.873Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/d9/0d43d43d84bbf32e301cdf45a66be43001717386e7c4c92ba311b66993b3/repo_review-1.3.0-py3-none-any.whl", hash = "sha256:d9693798fb3d76a20b00629d0b2e1abb28e99194d3c4e40012fba8003cf70f66", size = 29062, upload-time = "2026-10-23T16:21:43.681Z" },
+]
+
+[package.optional-dependencies]
+cli = [
+    { name = "rich" },
+]
+
+[[package]]
 name = "requests"
 version = "2.34.2"
 source = { registry = "https://pypi.org/simple" }
@@ -4918,6 +4936,24 @@ wheels = [
 ]
 
 [[package]]
+name = "sp-repo-review"
+version = "2026.8.14"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+    { name = "repo-review" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/40/6a/76076f60ff0798d0dbc614e42b9e1e8e19ef4d1781684813969b17a15889/sp_repo_review-2026.8.14.tar.gz", hash = "sha256:8548cf930141593c82fb869e0a80333da9651bd252efb5b0bd679c2ec409175b", size = 204641, upload-time = "2026-08-14T17:26:40.461Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/da/f9dec1e36bacd504e1bcac373776d3ec0815fdfb8387fc9373182bc25a38/sp_repo_review-2026.8.14-py3-none-any.whl", hash = "sha256:c70f78794cf07cf5ab94480967854a1d5922760ba0f6ab2219d5c5f1ef659b9e", size = 35262, upload-time = "2026-08-14T17:26:39.045Z" },
+]
+
+[package.optional-dependencies]
+cli = [
+    { name = "repo-review", extra = ["cli"] },
+]
+
+[[package]]
 name = "spatial-image"
 version = "1.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -5241,6 +5277,15 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+jupyter = [
+    { name = "bokeh" },
+    { name = "ipywidgets" },
+    { name = "jupyter" },
+    { name = "jupyterlab" },
+    { name = "plotly" },
+]
+
+[package.dev-dependencies]
 dev = [
     { name = "black" },
     { name = "furo" },
@@ -5252,18 +5297,21 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "sp-repo-review", extra = ["cli"] },
     { name = "sphinx" },
     { name = "sphinx-autodoc-typehints" },
     { name = "sphinx-autosummary-accessors" },
     { name = "tox" },
     { name = "types-tensorflow" },
 ]
-jupyter = [
-    { name = "bokeh" },
-    { name = "ipywidgets" },
-    { name = "jupyter" },
-    { name = "jupyterlab" },
-    { name = "plotly" },
+docs = [
+    { name = "furo" },
+    { name = "ghp-import" },
+    { name = "myst-parser" },
+    { name = "nbsphinx" },
+    { name = "sphinx" },
+    { name = "sphinx-autodoc-typehints" },
+    { name = "sphinx-autosummary-accessors" },
 ]
 test = [
     { name = "psutil" },
@@ -5274,14 +5322,11 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "anndata", specifier = ">=0.13.3" },
-    { name = "black", marker = "extra == 'dev'", specifier = ">=26.10" },
     { name = "bokeh", specifier = ">=3.7.0,<4.0" },
     { name = "bokeh", marker = "extra == 'jupyter'", specifier = ">=3.7.0,<4.0" },
     { name = "click", specifier = ">=8.2.0,<9.0" },
     { name = "dask", specifier = ">=2025.12.0" },
-    { name = "furo", marker = "extra == 'dev'", specifier = "==2024.8.6" },
     { name = "geopandas", specifier = ">=1.0.0,<2.0" },
-    { name = "ghp-import", marker = "extra == 'dev'", specifier = ">=2.1.0" },
     { name = "h5py", specifier = ">=3.11" },
     { name = "igraph", specifier = ">=1.0.0" },
     { name = "imageio", specifier = ">=2.37.0,<3.0" },
@@ -5290,10 +5335,7 @@ requires-dist = [
     { name = "jupyterlab", marker = "extra == 'jupyter'", specifier = ">=3.0.0" },
     { name = "leidenalg", specifier = ">=0.11.0" },
     { name = "matplotlib", specifier = ">=3.11,<4.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.0" },
-    { name = "myst-parser", marker = "extra == 'dev'", specifier = ">=0.18" },
     { name = "natsort" },
-    { name = "nbsphinx", marker = "extra == 'dev'", specifier = ">=0.9.0" },
     { name = "networkx", specifier = ">=3.5" },
     { name = "numba", specifier = ">=0.64.0" },
     { name = "numpy", specifier = ">=2.4.0" },
@@ -5302,14 +5344,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=13.0.0,<14.0" },
     { name = "plotly", marker = "extra == 'jupyter'", specifier = ">=5.0.0" },
     { name = "pooch", extras = ["progress"], specifier = ">=1.8.1" },
-    { name = "psutil", marker = "extra == 'dev'", specifier = ">=5.9" },
-    { name = "psutil", marker = "extra == 'test'" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5" },
-    { name = "pytest-cov", marker = "extra == 'test'" },
     { name = "requests", specifier = ">=2.32.4" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.17.3" },
     { name = "scanpy", specifier = ">=1.13.0" },
     { name = "scikit-image", specifier = ">=0.26.0" },
     { name = "scikit-learn", specifier = ">=1.8.0,<2.0" },
@@ -5319,21 +5354,50 @@ requires-dist = [
     { name = "spatialdata", specifier = ">=0.7.3" },
     { name = "spatialdata-io", specifier = ">=0.6.0" },
     { name = "spatialdata-plot", specifier = ">=0.3.0" },
-    { name = "sphinx", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "sphinx-autodoc-typehints", marker = "extra == 'dev'", specifier = ">=1.24.0" },
-    { name = "sphinx-autosummary-accessors", marker = "extra == 'dev'", specifier = ">=2023.4.0" },
     { name = "statsmodels", specifier = ">=0.14.5" },
     { name = "tifffile", specifier = ">=2026.5.2" },
     { name = "torch", specifier = ">=2.5.0" },
     { name = "torchvision", specifier = ">=0.20.0" },
-    { name = "tox", marker = "extra == 'dev'", specifier = ">=4.0" },
     { name = "tqdm" },
-    { name = "types-tensorflow", marker = "extra == 'dev'", specifier = ">=2.8.0" },
     { name = "umap-learn", specifier = ">=0.5.12" },
     { name = "xarray", specifier = ">=2025.1.0" },
     { name = "zarr", specifier = ">=3.1.6,<4.0" },
 ]
-provides-extras = ["dev", "test", "jupyter"]
+provides-extras = ["jupyter"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = ">=26.10" },
+    { name = "furo", specifier = "==2024.8.6" },
+    { name = "ghp-import", specifier = ">=2.1.0" },
+    { name = "mypy", specifier = ">=2.0" },
+    { name = "myst-parser", specifier = ">=0.18" },
+    { name = "nbsphinx", specifier = ">=0.9.0" },
+    { name = "psutil", specifier = ">=5.9" },
+    { name = "pytest", specifier = ">=9.0" },
+    { name = "pytest-cov", specifier = ">=5" },
+    { name = "ruff", specifier = ">=0.17.3" },
+    { name = "sp-repo-review", extras = ["cli"], specifier = ">=2026.8.14" },
+    { name = "sphinx", specifier = ">=4.0" },
+    { name = "sphinx-autodoc-typehints", specifier = ">=1.24.0" },
+    { name = "sphinx-autosummary-accessors", specifier = ">=2023.4.0" },
+    { name = "tox", specifier = ">=4.0" },
+    { name = "types-tensorflow", specifier = ">=2.8.0" },
+]
+docs = [
+    { name = "furo", specifier = "==2024.8.6" },
+    { name = "ghp-import", specifier = ">=2.1.0" },
+    { name = "myst-parser", specifier = ">=0.18" },
+    { name = "nbsphinx", specifier = ">=0.9.0" },
+    { name = "sphinx", specifier = ">=4.0" },
+    { name = "sphinx-autodoc-typehints", specifier = ">=1.24.0" },
+    { name = "sphinx-autosummary-accessors", specifier = ">=2023.4.0" },
+]
+test = [
+    { name = "psutil", specifier = ">=5.9" },
+    { name = "pytest", specifier = ">=9.0" },
+    { name = "pytest-cov", specifier = ">=5" },
+]
 
 [[package]]
 name = "sympy"
